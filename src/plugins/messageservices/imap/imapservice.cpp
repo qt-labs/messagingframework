@@ -588,7 +588,7 @@ bool ImapService::Source::deleteMessages(const QMailMessageIdList &allIds)
     QMailMessageIdList ids;
     QMailMessageIdList localIds;
 
-    foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(QMailMessageKey::id(allIds), props)) {
+    for (const QMailMessageMetaData &metaData : QMailStore::instance()->messagesMetaData(QMailMessageKey::id(allIds), props)) {
         if (!metaData.serverUid().isEmpty()) {
             serverUids.push_back(metaData.serverUid());
             ids.push_back(metaData.id());
@@ -836,7 +836,7 @@ bool ImapService::Source::flagMessages(const QMailMessageIdList &messageIds, qui
             QMailMessageKey key(QMailMessageKey::id(messageIds));
             QMailMessageKey::Properties props(QMailMessageKey::Id | QMailMessageKey::ParentFolderId);
 
-            foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(key, props)) {
+            for (const QMailMessageMetaData &metaData : QMailStore::instance()->messagesMetaData(key, props)) {
                 // If the message is already in the correct location just update the flags to remove \Draft
                 if (metaData.parentFolderId() == sentId) {
                     flagIds.append(metaData.id());
@@ -911,7 +911,7 @@ bool ImapService::Source::flagMessages(const QMailMessageIdList &messageIds, qui
             QMailMessageKey key(QMailMessageKey::id(messageIds));
             QMailMessageKey::Properties props(QMailMessageKey::Id | QMailMessageKey::ParentFolderId);
 
-            foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(key, props, QMailStore::ReturnDistinct)) {
+            for (const QMailMessageMetaData &metaData : QMailStore::instance()->messagesMetaData(key, props, QMailStore::ReturnDistinct)) {
                 QMailFolder folder(metaData.parentFolderId());
                 if (folder.customField("qmf-supports-forwarded").isEmpty()) {
                     supportsForwarded = false;
@@ -1207,7 +1207,7 @@ bool ImapService::Source::prepareMessages(const QList<QPair<QMailMessagePart::Lo
         QMailMessageKey key(QMailMessageKey::id(referringIds.values()));
         QMailMessageKey::Properties props(QMailMessageKey::Id | QMailMessageKey::ParentAccountId | QMailMessageKey::Status);
 
-        foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(key, props)) {
+        for (const QMailMessageMetaData &metaData : QMailStore::instance()->messagesMetaData(key, props)) {
             if ((metaData.parentAccountId() != _service->accountId()) ||
                 !(metaData.status() & QMailMessage::TransmitFromExternal)) {
                 // This message won't be transmitted by reference from the IMAP server - supply an external reference

@@ -183,7 +183,7 @@ void QMailMessageSetContainer::removeDescendants()
 */
 void QMailMessageSetContainer::resyncState()
 {
-    foreach (QMailMessageSet *child, impl(this)->_children) {
+    for (QMailMessageSet *child : impl(this)->_children) {
         child->resyncState();
         update(child);
     }

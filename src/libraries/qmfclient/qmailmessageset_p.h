@@ -47,7 +47,6 @@
 
 #include "qmailmessageset.h"
 
-
 // These classes are implemented via qmailmessageset.cpp and qmailinstantiations.cpp
 
 class QMailMessageSetContainerPrivate : public QPrivateNoncopyableBase

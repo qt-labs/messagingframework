@@ -333,7 +333,7 @@ QMap<QMailAccountId, QMailMessageIdList> QMailStoreEvents::accountMessages(const
 
     // Find which accounts these messages belong to (if the account is in our mapping)
     QMailMessageKey::Properties props(QMailMessageKey::Id | QMailMessageKey::ParentAccountId);
-    foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(QMailMessageKey::id(ids), props)) {
+    for (const QMailMessageMetaData &metaData : QMailStore::instance()->messagesMetaData(QMailMessageKey::id(ids), props)) {
         QMap<QMailAccountId, QMailMessageIdList>::iterator it = map.find(metaData.parentAccountId());
         if (it != map.end())
             it.value().append(metaData.id());

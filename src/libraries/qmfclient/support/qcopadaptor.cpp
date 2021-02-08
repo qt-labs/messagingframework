@@ -33,11 +33,12 @@
 
 #include "qcopadaptor_p.h"
 #include "qcopchannel_p.h"
+#include "qmaillog.h"
+#include "qmflist.h"
 #include <QtCore/qmap.h>
 #include <QtCore/qmetaobject.h>
 #include <QtCore/qdatastream.h>
 #include <QtCore/qatomic.h>
-#include "qmaillog.h"
 #include <QtCore/qcoreapplication.h>
 #include <QtCore/qvarlengtharray.h>
 #include <QIODevice>
@@ -602,7 +603,7 @@ void QCopAdaptor::received(const QString& msg, const QByteArray& data)
 
         // Convert "data" into a set of arguments suitable for qt_metacall.
         QDataStream stream(data);
-        QList<QVariant> args;
+        QmfList<QVariant> args;
         QVariant returnValue;
         QVarLengthArray<void *, 32> a(info->numArgs + 1);
         if (info->returnType != (int)QVariant::Invalid && info->returnType != (int)QMetaType::Void) {

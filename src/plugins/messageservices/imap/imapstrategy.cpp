@@ -133,7 +133,7 @@ bool purge(ImapStrategyContextBase *context, const QMailMessageKey &removedKey)
 {
     bool result(true);
     QStringList vanishedIds;
-    foreach (const QMailMessageMetaData& r, QMailStore::instance()->messagesMetaData(removedKey, QMailMessageKey::ServerUid))  {
+    for (const QMailMessageMetaData& r : QMailStore::instance()->messagesMetaData(removedKey, QMailMessageKey::ServerUid))  {
         const QString &uid(r.serverUid()); 
         // We might have a deletion record for this UID
         vanishedIds << uid;
@@ -180,7 +180,7 @@ bool updateMessagesMetaData(ImapStrategyContextBase *context,
         qWarning() << "Unable to update un-removed message metadata for account:" << context->config().id();
     }
 
-    foreach (const QMailMessageMetaData& r, QMailStore::instance()->messagesMetaData(nonexistentKey, QMailMessageKey::ServerUid))  {
+    for (const QMailMessageMetaData& r : QMailStore::instance()->messagesMetaData(nonexistentKey, QMailMessageKey::ServerUid))  {
         const QString &uid(r.serverUid()); 
         // We might have a deletion record for this UID
         if (!QMailStore::instance()->purgeMessageRemovalRecords(context->config().id(), QStringList() << uid)) {
@@ -326,7 +326,7 @@ QSet<QMailFolderId> foldersApplicableTo(QMailMessageKey const& messagekey, QSet<
             QSet<QMailFolderId> & included = isNegated ? r.second : r.first;
             QSet<QMailFolderId> & excluded = isNegated ? r.first : r.second;
 
-            foreach(QMailMessageKey::ArgumentType const& arg, key.arguments())
+            for (QMailMessageKey::ArgumentType const& arg : key.arguments())
             {
                 switch (arg.property)
                 {
@@ -386,7 +386,7 @@ QSet<QMailFolderId> foldersApplicableTo(QMailMessageKey const& messagekey, QSet<
                 Q_ASSERT(key.subKeys().size() == 0);
                 Q_ASSERT(key.arguments().size() <= 1);
             } else if (key.combiner() == QMailKey::Or) {
-                foreach (QMailMessageKey const& k, key.subKeys()) {
+                for (QMailMessageKey const& k : key.subKeys()) {
                     IncludedExcludedPair v(extractFolders(k));
                     included.unite(v.first);
                     excluded.unite(v.second);
@@ -394,7 +394,7 @@ QSet<QMailFolderId> foldersApplicableTo(QMailMessageKey const& messagekey, QSet<
             } else if (key.combiner() == QMailKey::And) {
                 bool filled(included.size() == 0 && excluded.size() == 0 ? false : true);
 
-                for (QList<QMailMessageKey>::const_iterator it(key.subKeys().begin()) ; it != key.subKeys().end() ; ++it) {
+                for (QmfList<QMailMessageKey>::const_iterator it(key.subKeys().begin()) ; it != key.subKeys().end() ; ++it) {
                     IncludedExcludedPair next(extractFolders(*it));
                     if (next.first.size() != 0 || next.second.size() != 0) {
                         if (filled) {
@@ -1188,7 +1188,7 @@ void ImapMessageListStrategy::selectedMailsAppend(const QMailMessageIdList& ids)
         return;
 
     QMailMessageKey::Properties props(QMailMessageKey::Id | QMailDisconnected::parentFolderProperties() | QMailMessageKey::ServerUid);
-    foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(QMailMessageKey::id(ids), props)) {
+    for (const QMailMessageMetaData &metaData : QMailStore::instance()->messagesMetaData(QMailMessageKey::id(ids), props)) {
         uint serverUid(stripFolderPrefix(metaData.serverUid()).toUInt());
         _selectionMap[QMailDisconnected::sourceFolderId(metaData)].append(MessageSelector(serverUid, metaData.id(), SectionProperties()));
     }
@@ -1727,7 +1727,7 @@ void ImapFetchSelectedMessagesStrategy::selectedMailsAppend(const QMailMessageId
             ++i;
         }
 
-        foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(QMailMessageKey::id(idsBatch), props)) {
+        for (const QMailMessageMetaData &metaData : QMailStore::instance()->messagesMetaData(QMailMessageKey::id(idsBatch), props)) {
             uint serverUid(stripFolderPrefix(metaData.serverUid()).toUInt());
 
             QMailFolderId remoteFolderId(QMailDisconnected::sourceFolderId(metaData));
@@ -3112,7 +3112,7 @@ ImapExportUpdatesStrategy::ImapExportUpdatesStrategy()
 static void updateFolderExportsMap(QMap<QMailFolderId, QStringList > *folderExportMap, QMailMessageKey filter)
 {
     QMailMessageKey::Properties props(QMailMessageKey::Id | QMailDisconnected::parentFolderProperties() | QMailMessageKey::ServerUid);
-    foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(filter, props)) {
+    for (const QMailMessageMetaData &metaData : QMailStore::instance()->messagesMetaData(filter, props)) {
         if (!metaData.serverUid().isEmpty() && metaData.parentFolderId().isValid()) {
             (*folderExportMap)[metaData.parentFolderId()] +=  metaData.serverUid();
         } else {
@@ -3168,7 +3168,7 @@ void ImapExportUpdatesStrategy::handleLogin(ImapStrategyContextBase *context)
     updateFolderExportsMap(&unimportant, accountKey & unimportantStatusKey);
     if (imapCfg.canDeleteMail()) {
         // Also find messages deleted locally
-        foreach (const QMailMessageRemovalRecord& r, QMailStore::instance()->messageRemovalRecords(c->account())) {
+        for (const QMailMessageRemovalRecord& r : QMailStore::instance()->messageRemovalRecords(c->account())) {
             int index = r.serverUid().indexOf(UID_SEPARATOR);
             if (index > 0) {
                 const QMailFolderId folderId(r.serverUid().left(index).toUInt());
@@ -3320,7 +3320,7 @@ void ImapUpdateMessagesFlagsStrategy::handleLogin(ImapStrategyContextBase *conte
     // Associate each message to the relevant folder
     _folderMessageUids.clear();
     if (!_selectedMessageIds.isEmpty()) {
-        foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(QMailMessageKey::id(_selectedMessageIds), 
+        for (const QMailMessageMetaData &metaData : QMailStore::instance()->messagesMetaData(QMailMessageKey::id(_selectedMessageIds),
                                                                                                 QMailMessageKey::ServerUid 
                                                                                                 | QMailDisconnected::parentFolderProperties(),
                                                                                                 QMailStore::ReturnAll)) {
@@ -3653,7 +3653,7 @@ void ImapRetrieveMessageListStrategy::handleFetchFlags(ImapStrategyContextBase *
     QMailMessageKey sourceKey(QMailDisconnected::sourceKey(folder.id()));
     
     IntegerRegion trueClientRegion;
-    foreach (const QMailMessageMetaData& r, QMailStore::instance()->messagesMetaData(sourceKey, QMailMessageKey::ServerUid)) {
+    for (const QMailMessageMetaData& r : QMailStore::instance()->messagesMetaData(sourceKey, QMailMessageKey::ServerUid)) {
         const QString uid(r.serverUid());
         int serverUid(stripFolderPrefix(uid).toUInt());
         trueClientRegion.add(serverUid);
@@ -3664,7 +3664,7 @@ void ImapRetrieveMessageListStrategy::handleFetchFlags(ImapStrategyContextBase *
     if (missingRegion.cardinality()) {
         // Don't fetch message deleted on client but not yet deleted on remote server
         IntegerRegion removedRegion;
-        foreach (const QMailMessageRemovalRecord& r, QMailStore::instance()->messageRemovalRecords(context->config().id(), folder.id())) {
+        for (const QMailMessageRemovalRecord& r : QMailStore::instance()->messageRemovalRecords(context->config().id(), folder.id())) {
             if (!r.serverUid().isEmpty() && (r.parentFolderId() == folder.id())) {
                 const QString uid(r.serverUid());
                 int serverUid(stripFolderPrefix(uid).toUInt());
@@ -3691,7 +3691,7 @@ void ImapRetrieveMessageListStrategy::handleFetchFlags(ImapStrategyContextBase *
         if (_listAll) {
             // Considering all messages on the client in the folder
             IntegerRegion beginningClientRegion; // none of these messages are on the server
-            foreach (const QMailMessageMetaData& r, QMailStore::instance()->messagesMetaData(sourceKey, QMailMessageKey::ServerUid)) {
+            for (const QMailMessageMetaData& r : QMailStore::instance()->messagesMetaData(sourceKey, QMailMessageKey::ServerUid)) {
                 const QString uid(r.serverUid());
                 int serverUid(stripFolderPrefix(uid).toUInt());
                 if (serverUid < serverMinimum)
@@ -3887,7 +3887,7 @@ void ImapRetrieveMessageListStrategy::qresyncHandleUidSearch(ImapStrategyContext
     // Retrieve messages list in _qresyncRetrieve region that are not already in the store
     QMailMessageKey sourceKey(QMailDisconnected::sourceKey(properties.id));
     IntegerRegion clientRegion;
-    foreach (const QMailMessageMetaData& r, QMailStore::instance()->messagesMetaData(sourceKey, QMailMessageKey::ServerUid)) {
+    for (const QMailMessageMetaData& r : QMailStore::instance()->messagesMetaData(sourceKey, QMailMessageKey::ServerUid)) {
         const QString uid(r.serverUid());
         int serverUid(stripFolderPrefix(uid).toUInt());
         clientRegion.add(serverUid);

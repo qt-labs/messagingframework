@@ -45,6 +45,7 @@
 // We mean it.
 //
 
+#include "qmflist.h"
 #include "qmaildatacomparator.h"
 #include <QDataStream>
 #include <QIODevice>
@@ -128,7 +129,7 @@ template<typename PropertyType, typename ComparatorType = QMailKey::Comparator>
 class QMailKeyArgument
 {
 public:
-    class ValueList : public QVariantList
+    class ValueList : public QmfList<QVariant>
     {
     public:
         bool operator==(const ValueList& other) const
@@ -154,7 +155,7 @@ public:
         template <typename Stream> void serialize(Stream &stream) const
         {
             stream << count();
-            Q_FOREACH (const QVariant& var, *this)
+            for (const QVariant& var : *this)
                 stream << var;
         }
 

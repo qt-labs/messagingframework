@@ -91,7 +91,7 @@ QMailThreadSortKey::QMailThreadSortKey(Property p, Qt::SortOrder order, quint64 
 }
 
 /*! \internal */
-QMailThreadSortKey::QMailThreadSortKey(const QList<QMailThreadSortKey::ArgumentType> &args)
+QMailThreadSortKey::QMailThreadSortKey(const QmfList<QMailThreadSortKey::ArgumentType> &args)
     : d(new QMailThreadSortKeyPrivate(args))
 {
 }
@@ -168,7 +168,7 @@ bool QMailThreadSortKey::isEmpty() const
 /*!
     Returns the list of arguments to this QMailThreadSortKey.
 */
-const QList<QMailThreadSortKey::ArgumentType> &QMailThreadSortKey::arguments() const
+const QmfList<QMailThreadSortKey::ArgumentType> &QMailThreadSortKey::arguments() const
 {
     return d->arguments();
 }

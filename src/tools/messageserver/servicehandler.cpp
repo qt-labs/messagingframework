@@ -34,8 +34,7 @@
 
 #include "servicehandler.h"
 #include <private/longstream_p.h>
-#include <QDataStream>
-#include <QIODevice>
+#include <qmflist.h>
 #include <qmailmessageserver.h>
 #include <qmailserviceconfiguration.h>
 #include <qmailstore.h>
@@ -44,6 +43,9 @@
 #include <qmailmessage.h>
 #include <qmailcontentmanager.h>
 #include <qmailnamespace.h>
+
+#include <QDataStream>
+#include <QIODevice>
 #include <QCoreApplication>
 #include <QDir>
 #include <QDateTime>
@@ -154,7 +156,7 @@ QSet<QMailAccountId> messageAccounts(const QMailMessageIdList &ids)
 {
     QSet<QMailAccountId> accountIds; // accounts that own these messages
 
-    foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(
+    for (const QMailMessageMetaData &metaData : QMailStore::instance()->messagesMetaData(
                                                        QMailMessageKey::id(ids),
                                                        QMailMessageKey::ParentAccountId,
                                                        QMailStore::ReturnDistinct))
@@ -196,7 +198,7 @@ QMap<QMailAccountId, QMailMessageIdList> accountMessages(const QMailMessageIdLis
     // Allocate each message to the relevant account
     QMap<QMailAccountId, QMailMessageIdList> map;
 
-        foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(QMailMessageKey::id(ids),
+        for (const QMailMessageMetaData &metaData : QMailStore::instance()->messagesMetaData(QMailMessageKey::id(ids),
                                                                                                 QMailMessageKey::Id | QMailMessageKey::ParentAccountId, 
                                                                                                 QMailStore::ReturnAll)) {
             if (metaData.id().isValid() && metaData.parentAccountId().isValid())
@@ -282,7 +284,7 @@ QSet<QMailAccountId> accountsApplicableTo(QMailMessageKey messagekey, QSet<QMail
             QSet<QMailAccountId> & included = isNegated ? r.second : r.first;
             QSet<QMailAccountId> & excluded = isNegated ? r.first : r.second;
 
-            foreach(QMailMessageKey::ArgumentType const& arg, key.arguments())
+            for (QMailMessageKey::ArgumentType const& arg : key.arguments())
             {
                 switch (arg.property)
                 {
@@ -321,7 +323,7 @@ QSet<QMailAccountId> accountsApplicableTo(QMailMessageKey messagekey, QSet<QMail
                 Q_ASSERT(key.subKeys().size() == 0);
                 Q_ASSERT(key.arguments().size() <= 1);
             } else if (key.combiner() == QMailKey::Or) {
-                foreach (QMailMessageKey const& k, key.subKeys()) {
+                for (QMailMessageKey const& k : key.subKeys()) {
                     IncludedExcludedPair v(extractAccounts(k));
                     included.unite(v.first);
                     excluded.unite(v.second);
@@ -329,7 +331,7 @@ QSet<QMailAccountId> accountsApplicableTo(QMailMessageKey messagekey, QSet<QMail
             } else if (key.combiner() == QMailKey::And) {
                 bool filled(included.size() == 0 && excluded.size() == 0 ? false : true);
 
-                for (QList<QMailMessageKey>::const_iterator it(key.subKeys().begin()) ; it != key.subKeys().end() ; ++it) {
+                for (QmfList<QMailMessageKey>::const_iterator it(key.subKeys().begin()) ; it != key.subKeys().end() ; ++it) {
                     IncludedExcludedPair next(extractAccounts(*it));
                     if (next.first.size() != 0 || next.second.size() != 0) {
                         if (filled) {
@@ -2248,7 +2250,7 @@ void ServiceHandler::addMessages(quint64 action, const QMailMessageMetaDataList 
     if (messages.count()) {
         scheme = messages.first().contentScheme();
     }
-    foreach (QMailMessageMetaData m, messages) {
+    for (const QMailMessageMetaData &m : messages) {
         if (m.contentScheme() != scheme) {
             reportFailure(action,
                           QMailServiceAction::Status::ErrFrameworkFault,
@@ -2256,7 +2258,7 @@ void ServiceHandler::addMessages(quint64 action, const QMailMessageMetaDataList 
                              "inconsistent contentscheme"));
         }
     }
-    foreach (QMailMessageMetaData m, messages) {
+    for (const QMailMessageMetaData &m : messages) {
         list.append(new QMailMessageMetaData(m));
     }
     if (scheme.isEmpty()) {
@@ -2282,7 +2284,7 @@ void ServiceHandler::addMessages(quint64 action, const QMailMessageMetaDataList 
     if (failure) {
         reportFailure(action,
                       QMailServiceAction::Status::ErrFrameworkFault,
-                      tr("Unable to async update messages"));
+                      tr("Unable to async add messages"));
         return;
     }
 
@@ -2300,7 +2302,7 @@ void ServiceHandler::updateMessages(quint64 action, const QMailMessageMetaDataLi
     if (messages.count()) {
         scheme = messages.first().contentScheme();
     }
-    foreach (QMailMessageMetaData m, messages) {
+    for (const QMailMessageMetaData &m : messages) {
         if (m.contentScheme() != scheme) {
             reportFailure(action,
                           QMailServiceAction::Status::ErrFrameworkFault,
@@ -2308,7 +2310,7 @@ void ServiceHandler::updateMessages(quint64 action, const QMailMessageMetaDataLi
                              "inconsistent contentscheme"));
         }
     }
-    foreach (QMailMessageMetaData m, messages) {
+    for (const QMailMessageMetaData &m : messages) {
         list.append(new QMailMessageMetaData(m));
     }
     if (scheme.isEmpty()) {
@@ -2319,7 +2321,7 @@ void ServiceHandler::updateMessages(quint64 action, const QMailMessageMetaDataLi
         QList<QString> obsoleteIds(obsoleteContentIdentifiers(list));
         if (!obsoleteIds.isEmpty()) {
             content->ensureDurability(contentIdentifiers(list));
-            foreach (QMailMessageMetaData *m, list) {
+            for (QMailMessageMetaData *m : list) {
                 m->removeCustomField("qmf-obsolete-contentid");
             }
         } // else only update metadata in mailstore

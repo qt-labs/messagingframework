@@ -38,6 +38,7 @@
 #include <qobject.h>
 #include <qstringlist.h>
 #include <qlist.h>
+#include <qmflist.h>
 #include <qmailaccountconfiguration.h>
 #include <qmailmessage.h>
 #include <qmailmessageserver.h>
@@ -118,9 +119,9 @@ private:
 
     QMailAccountConfiguration config;
     TransferStatus status;
-    QList<RawEmail> mailList;
-    QList<RawEmail>::Iterator mailItr;
-    QList<QMailMessage::MessageChunk> mailChunks;
+    QmfList<RawEmail> mailList;
+    QmfList<RawEmail>::iterator mailItr;
+    QmfList<QMailMessage::MessageChunk> mailChunks;
     QMailMessageId sendingId;
     uint messageLength;
     uint sentLength;

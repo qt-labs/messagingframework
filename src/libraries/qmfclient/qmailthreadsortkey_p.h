@@ -53,7 +53,7 @@ class QMailThreadSortKeyPrivate : public MailSortKeyImpl<QMailThreadSortKey>
 public:
     QMailThreadSortKeyPrivate() : MailSortKeyImpl<QMailThreadSortKey>() {};
     QMailThreadSortKeyPrivate(QMailThreadSortKey::Property p, Qt::SortOrder o, quint64 m) : MailSortKeyImpl<QMailThreadSortKey>(p, o, m) {};
-    QMailThreadSortKeyPrivate(const QList<QMailThreadSortKey::ArgumentType> args) : MailSortKeyImpl<QMailThreadSortKey>(args) {};
+    QMailThreadSortKeyPrivate(const QmfList<QMailThreadSortKey::ArgumentType> args) : MailSortKeyImpl<QMailThreadSortKey>(args) {};
 };
 
 #endif

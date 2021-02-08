@@ -101,7 +101,7 @@ QMailFolderSortKey::QMailFolderSortKey(Property p, Qt::SortOrder order, quint64 
 }
 
 /*! \internal */
-QMailFolderSortKey::QMailFolderSortKey(const QList<QMailFolderSortKey::ArgumentType> &args)
+QMailFolderSortKey::QMailFolderSortKey(const QmfList<QMailFolderSortKey::ArgumentType> &args)
     : d(new QMailFolderSortKeyPrivate(args))
 {
 }
@@ -178,7 +178,7 @@ bool QMailFolderSortKey::isEmpty() const
 /*!
     Returns the list of arguments to this QMailFolderSortKey.
 */
-const QList<QMailFolderSortKey::ArgumentType> &QMailFolderSortKey::arguments() const
+const QmfList<QMailFolderSortKey::ArgumentType> &QMailFolderSortKey::arguments() const
 {
     return d->arguments();
 }

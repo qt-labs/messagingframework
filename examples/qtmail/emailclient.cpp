@@ -39,6 +39,7 @@
 #include "searchview.h"
 #include "readmail.h"
 #include "writemail.h"
+#include <qmflist.h>
 #include <qmaillog.h>
 #include <qmailnamespace.h>
 #include <qmailaccount.h>
@@ -1242,7 +1243,7 @@ void EmailClient::sendAllQueuedMail(bool userRequest)
 
     if (transmitAccountIds.isEmpty()) {
         // Find which accounts have messages to transmit in the outbox
-        foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(outboxFilter, QMailMessageKey::ParentAccountId, QMailStore::ReturnDistinct)) {
+        for (const QMailMessageMetaData &metaData : QMailStore::instance()->messagesMetaData(outboxFilter, QMailMessageKey::ParentAccountId, QMailStore::ReturnDistinct)) {
             transmitAccountIds.append(metaData.parentAccountId());
         }
         if (transmitAccountIds.isEmpty())
@@ -1800,7 +1801,7 @@ bool EmailClient::applyToSelectedFolder(void (EmailClient::*function)(const QMai
 
     // Find the current locations for each of the selected messages
     QMailMessageKey key(QMailMessageKey::id(messageListView()->selected()));
-    foreach (const QMailMessageMetaData &message, QMailStore::instance()->messagesMetaData(key, QMailMessageKey::ParentFolderId)) {
+    for (const QMailMessageMetaData &message : QMailStore::instance()->messagesMetaData(key, QMailMessageKey::ParentFolderId)) {
         locationSet.insert(message.parentFolderId());
     }
 

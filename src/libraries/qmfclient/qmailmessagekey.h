@@ -38,12 +38,14 @@
 #include "qmailkeyargument.h"
 #include "qmailid.h"
 #include "qmailmessagefwd.h"
+#include "qmailglobal.h"
+#include "qmailipc.h"
+#include "qmflist.h"
+
 #include <QFlags>
 #include <QList>
 #include <QSharedData>
 #include <QVariant>
-#include "qmailglobal.h"
-#include "qmailipc.h"
 
 class QMailAccountKey;
 class QMailFolderKey;
@@ -114,8 +116,8 @@ public:
 
     operator QVariant() const;
 
-    const QList<ArgumentType> &arguments() const;
-    const QList<QMailMessageKey> &subKeys() const;
+    const QmfList<ArgumentType> &arguments() const;
+    const QmfList<QMailMessageKey> &subKeys() const;
 
     QMailKey::Combiner combiner() const;
 

@@ -462,7 +462,7 @@ ImapClient::~ImapClient()
             protocol->close();
         delete protocol;
     }
-    foreach(QMailMessageBufferFlushCallback *callback, callbacks) {
+    for (QMailMessageBufferFlushCallback *callback : callbacks) {
         QMailMessageBuffer::instance()->removeCallback(callback);
     }
     delete _strategyContext;
@@ -1595,7 +1595,7 @@ QStringList ImapClient::serverUids(QMailMessageKey key) const
 {
     QStringList uidList;
 
-    foreach (const QMailMessageMetaData& r, QMailStore::instance()->messagesMetaData(key, QMailMessageKey::ServerUid))
+    for (const QMailMessageMetaData& r : QMailStore::instance()->messagesMetaData(key, QMailMessageKey::ServerUid))
         if (!r.serverUid().isEmpty())
             uidList.append(r.serverUid());
 
@@ -1619,7 +1619,7 @@ QStringList ImapClient::deletedMessages(const QMailFolderId &folderId) const
 {
     QStringList serverUidList;
 
-    foreach (const QMailMessageRemovalRecord& r, QMailStore::instance()->messageRemovalRecords(_config.id(), folderId))
+    for (const QMailMessageRemovalRecord& r : QMailStore::instance()->messageRemovalRecords(_config.id(), folderId))
         if (!r.serverUid().isEmpty())
             serverUidList.append(r.serverUid());
 

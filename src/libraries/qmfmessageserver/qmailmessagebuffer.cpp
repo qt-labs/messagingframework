@@ -33,10 +33,12 @@
 
 #include "qmailmessagebuffer.h"
 #include "qmailstore.h"
+
+#include <qmflist.h>
 #include <qmaillog.h>
+
 #include <QTimer>
 #include <QElapsedTimer>
-
 #include <QSettings>
 #include <QFile>
 
@@ -100,7 +102,7 @@ bool QMailMessageBuffer::updateMessage(QMailMessage *message)
 
 QMailMessageBuffer::BufferItem *QMailMessageBuffer::get_item(QMailMessage *message)
 {
-    foreach (BufferItem *item, d->waitingForCallback) {
+    for (BufferItem *item : d->waitingForCallback) {
         if (item->message == message) {
             d->waitingForCallback.removeOne(item);
             return item;
@@ -157,32 +159,32 @@ void QMailMessageBuffer::messageFlush()
     commitTimer.start();
 
     // Start by processing all the new messages
-    foreach (BufferItem *item, d->waitingForFlush) {
+    for (BufferItem *item : d->waitingForFlush) {
         if (item->add)
             work.append(item->message);
     }
     if (work.count())
         store->addMessages(work);
-    foreach (BufferItem *item, d->waitingForFlush) {
+    for (BufferItem *item : d->waitingForFlush) {
         if (item->add)
             item->callback->messageFlushed(item->message);
     }
 
     // Now we process all tne updated messages
     work.clear();
-    foreach (BufferItem *item, d->waitingForFlush) {
+    for (BufferItem *item : d->waitingForFlush) {
         if (!item->add)
             work.append(item->message);
     }
     if (work.count())
         store->updateMessages(work);
-    foreach (BufferItem *item, d->waitingForFlush) {
+    for (BufferItem *item : d->waitingForFlush) {
         if (!item->add)
             item->callback->messageFlushed(item->message);
     }
 
     // Delete all the temporarily memory
-    foreach (BufferItem *item, d->waitingForFlush) {
+    for (BufferItem *item : d->waitingForFlush) {
         delete item->callback;
         delete item;
     }
@@ -225,7 +227,7 @@ bool QMailMessageBuffer::isFull() {
         return true;
     }
     int totalSize = 0;
-    foreach (BufferItem *item, d->waitingForFlush) {
+    for (BufferItem *item : d->waitingForFlush) {
         totalSize += item->message->body().length();
         if (totalSize > maximumBufferSize()) {
             return true;
@@ -249,7 +251,7 @@ void QMailMessageBuffer::readConfig()
 
 void QMailMessageBuffer::removeCallback(QMailMessageBufferFlushCallback *callback)
 {
-    foreach (BufferItem *item, d->waitingForFlush) {
+    for (BufferItem *item : d->waitingForFlush) {
         if (item->callback == callback) {
             d->waitingForFlush.removeOne(item);
             delete item->callback;

@@ -789,10 +789,10 @@ QVariantList whereClauseValues(const KeyType& key)
 {
     QVariantList values;
 
-    foreach (const typename KeyType::ArgumentType& a, key.arguments())
+    for (const typename KeyType::ArgumentType& a : key.arguments())
         ::appendWhereValues(a, values);
 
-    foreach (const KeyType& subkey, key.subKeys())
+    for (const KeyType& subkey : key.subKeys())
         values += ::whereClauseValues<KeyType>(subkey);
 
     return values;
@@ -885,7 +885,7 @@ protected:
         } else {
             QVariantList values;
 
-            foreach (const QVariant &item, arg.valueList)
+            for (const QVariant &item : arg.valueList)
                 values.append(QMailStorePrivate::extractValue<typename ClauseKey::IdType>(item).toULongLong());
 
             return values;
@@ -901,7 +901,7 @@ protected:
     {
         QVariantList values;
 
-        foreach (const QVariant &item, arg.valueList)
+        for (const QVariant &item : arg.valueList)
             values.append(QMailStorePrivate::extractValue<int>(item));
 
         return values;
@@ -1703,7 +1703,7 @@ QString buildOrderClause(const ArgumentListType &list, const QString &alias)
         return QString();
 
     QStringList sortColumns;
-    foreach (typename ArgumentListType::const_reference arg, list) {
+    for (typename ArgumentListType::const_reference arg : list) {
         QString field(fieldName(arg.property, alias));
         if (arg.mask) {
             field = QString::fromLatin1("(%1 & %2)").arg(field).arg(QString::number(arg.mask));
@@ -1799,10 +1799,9 @@ QString columnExpression(const QString &column, QMailKey::Comparator op, const Q
     return result;
 }
 
-QString columnExpression(const QString &column, QMailKey::Comparator op, const QVariantList &valueList, bool patternMatch = false, bool bitwiseMultiples = false, bool noCase = false)
+QString columnExpression(const QString &column, QMailKey::Comparator op, const QmfList<QVariant> &valueList, bool patternMatch = false, bool bitwiseMultiples = false, bool noCase = false)
 {
     QString value(QMailStorePrivate::expandValueList(valueList)); 
-
     return columnExpression(column, op, value, (valueList.count() > 1), patternMatch, bitwiseMultiples, noCase);
 }
 
@@ -2242,7 +2241,7 @@ QString whereClauseItem<QMailThreadKey>(const QMailThreadKey &, const QMailThrea
 }
 
 template<typename KeyType, typename ArgumentListType, typename KeyListType, typename CombineType>
-QString buildWhereClause(const KeyType &key, 
+QString buildWhereClause(const KeyType &key,
                          const ArgumentListType &args, 
                          const KeyListType &subKeys, 
                          CombineType combine, 
@@ -2260,7 +2259,7 @@ QString buildWhereClause(const KeyType &key,
         QTextStream s(&whereClause);
 
         QString op(QChar::Space);
-        foreach (typename ArgumentListType::const_reference a, args) {
+        for (typename ArgumentListType::const_reference a : args) {
             s << op << whereClauseItem(key, a, alias, field, store);
             op = logicalOpString;
         }
@@ -2270,7 +2269,7 @@ QString buildWhereClause(const KeyType &key,
         if (whereClause.isEmpty())
             op = QLatin1Char(' ');
 
-        foreach (typename KeyListType::const_reference subkey, subKeys) {
+        for (typename KeyListType::const_reference subkey : subKeys) {
             QString nestedWhere(store.buildWhereClause(QMailStorePrivate::Key(subkey, alias), true));
             if (!nestedWhere.isEmpty()) 
                 s << op << " (" << nestedWhere << ") ";
@@ -2920,7 +2919,7 @@ QSqlQuery QMailStorePrivate::prepare(const QString& sql)
                 }
 
                 // Extract the ID values to INTEGER variants
-                foreach (const QVariant &var, arg->valueList) {
+                for (const QVariant &var : arg->valueList) {
                     quint64 id = 0;
 
                     switch (type) {
@@ -2954,7 +2953,7 @@ QSqlQuery QMailStorePrivate::prepare(const QString& sql)
                     }
                 }
             } else if (key.second == QLatin1String("VARCHAR")) {
-                foreach (const QVariant &var, arg->valueList) {
+                for (const QVariant &var : arg->valueList) {
                     idValues.append(QVariant(var.value<QString>()));
                 }
 
@@ -3440,7 +3439,8 @@ QString QMailStorePrivate::buildWhereClause(const Key& key, bool nested, bool fi
         const QMailMessageKey &messageKey(key.key<QMailMessageKey>());
 
         // See if we need to create any temporary tables to use in this query
-        foreach (const QMailMessageKey::ArgumentType &a, messageKey.arguments()) {
+        // Note: createTemporaryTable takes addressof a, relies on reference stability
+        for (const QMailMessageKey::ArgumentType &a : messageKey.arguments()) {
             if (a.property == QMailMessageKey::Id && a.valueList.count() >= IdLookupThreshold) {
                 createTemporaryTable(a, QLatin1String("INTEGER"));
             } else if (a.property == QMailMessageKey::ServerUid && a.valueList.count() >= IdLookupThreshold) {
@@ -4527,7 +4527,7 @@ QString QMailStorePrivate::parseSql(QTextStream& ts)
     return qry;
 }
 
-QString QMailStorePrivate::expandValueList(const QVariantList& valueList)
+QString QMailStorePrivate::expandValueList(const QmfList<QVariant>& valueList)
 {
     Q_ASSERT(!valueList.isEmpty());
     return expandValueList(valueList.count());
@@ -5147,29 +5147,29 @@ QMailMessageMetaData QMailStorePrivate::messageMetaData(const QString &uid, cons
 
 QMailMessageMetaDataList QMailStorePrivate::messagesMetaData(const QMailMessageKey &key, const QMailMessageKey::Properties &properties, QMailStore::ReturnOption option) const
 {
-    QMailMessageMetaDataList metaData;
-    repeatedly<ReadAccess>(bind(&QMailStorePrivate::attemptMessagesMetaData, const_cast<QMailStorePrivate*>(this), 
-                                cref(key), cref(properties), option, &metaData), 
+    QList<QMailMessageMetaData> metaData;
+    repeatedly<ReadAccess>(bind(&QMailStorePrivate::attemptMessagesMetaData, const_cast<QMailStorePrivate*>(this),
+                                cref(key), cref(properties), option, &metaData),
                            QLatin1String("messagesMetaData"));
-    return metaData;
+    return QMailMessageMetaDataList(metaData);
 }
 
 QMailThreadList QMailStorePrivate::threads(const QMailThreadKey &key, QMailStore::ReturnOption option) const
 {
-    QMailThreadList result;
+    QList<QMailThread> result;
     repeatedly<ReadAccess>(bind(&QMailStorePrivate::attemptThreads, const_cast<QMailStorePrivate*>(this),
                                 cref(key), option, &result),
                            QLatin1String("threads"));
-    return result;
+    return QMailThreadList(result);
 }
 
 QMailMessageRemovalRecordList QMailStorePrivate::messageRemovalRecords(const QMailAccountId &accountId, const QMailFolderId &folderId) const
 {
-    QMailMessageRemovalRecordList removalRecords;
+    QList<QMailMessageRemovalRecord> removalRecords;
     repeatedly<ReadAccess>(bind(&QMailStorePrivate::attemptMessageRemovalRecords, const_cast<QMailStorePrivate*>(this), 
-                                cref(accountId), cref(folderId), &removalRecords), 
+                                cref(accountId), cref(folderId), &removalRecords),
                            QLatin1String("messageRemovalRecords(accountId, folderId)"));
-    return removalRecords;
+    return QMailMessageRemovalRecordList(removalRecords);
 }
 
 bool QMailStorePrivate::registerAccountStatusFlag(const QString &name)
@@ -7725,7 +7725,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptThread(const QMailThr
 
 QMailStorePrivate::AttemptResult QMailStorePrivate::attemptThreads(const QMailThreadKey& key,
                                                                    QMailStore::ReturnOption option,
-                                                                   QMailThreadList *result,
+                                                                   QList<QMailThread> *result,
                                                                    ReadLock &)
 {
     Q_UNUSED (option);
@@ -7865,7 +7865,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptMessageMetaData(const
 }
 
 QMailStorePrivate::AttemptResult QMailStorePrivate::attemptMessagesMetaData(const QMailMessageKey& key, const QMailMessageKey::Properties &properties, QMailStore::ReturnOption option, 
-                                                                            QMailMessageMetaDataList *result, 
+                                                                            QList<QMailMessageMetaData> *result,
                                                                             ReadLock &)
 {
     if (properties == QMailMessageKey::Custom) {
@@ -7895,14 +7895,14 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptMessagesMetaData(cons
 
         // Add all pairs to the results
         foreach (const QString &name, fields.keys()) {
-            QMailMessageMetaDataList::iterator it = result->begin();
+            QList<QMailMessageMetaData>::iterator it = result->begin();
             foreach (const QString &value, fields[name]) {
                 (*it).setCustomField(name, value);
                 ++it;
             }
         }
 
-        QMailMessageMetaDataList::iterator it = result->begin(), end = result->end();
+        QList<QMailMessageMetaData>::iterator it = result->begin(), end = result->end();
         for ( ; it != end; ++it)
             (*it).setCustomFieldsModified(false);
     } else {
@@ -7935,7 +7935,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptMessagesMetaData(cons
         }
 
         if (includeCustom) {
-            QMailMessageMetaDataList::iterator it = result->begin(), end = result->end();
+            QList<QMailMessageMetaData>::iterator it = result->begin(), end = result->end();
             for ( ; it != end; ++it) {
                 // Add the custom fields to the record
                 QMap<QString, QString> fields;
@@ -7957,7 +7957,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptMessagesMetaData(cons
 }
 
 QMailStorePrivate::AttemptResult QMailStorePrivate::attemptMessageRemovalRecords(const QMailAccountId &accountId, const QMailFolderId &folderId, 
-                                                                                 QMailMessageRemovalRecordList *result, 
+                                                                                 QList<QMailMessageRemovalRecord> *result,
                                                                                  ReadLock &)
 {
     QVariantList values;
@@ -8097,7 +8097,7 @@ void QMailStorePrivate::preloadHeaderCache(const QMailMessageId& id) const
 
     QMailMessageMetaData result;
     QMailMessageKey key(QMailMessageKey::id(idBatch));
-    foreach (const QMailMessageMetaData& metaData, messagesMetaData(key, allMessageProperties(), QMailStore::ReturnAll)) {
+    for (const QMailMessageMetaData& metaData : messagesMetaData(key, allMessageProperties(), QMailStore::ReturnAll)) {
         if (metaData.id().isValid()) {
             messageCache.insert(metaData);
             uidCache.insert(qMakePair(metaData.parentAccountId(), metaData.serverUid()), metaData.id());
@@ -8167,7 +8167,7 @@ void QMailStorePrivate::preloadThreadCache(const QMailThreadId& id) const
 
     QMailThread result;
     QMailThreadKey key(QMailThreadKey::id(idBatch));
-    foreach (const QMailThread &thread, threads(key, QMailStore::ReturnAll)) {
+    for (const QMailThread &thread : threads(key, QMailStore::ReturnAll)) {
         if (thread.id().isValid()) {
             threadCache.insert(thread);
             if (thread.id() == id)
@@ -8892,7 +8892,7 @@ bool QMailStorePrivate::recalculateThreadsColumns(const QMailThreadIdList& modif
         quint64 status = 0;
         QStringList senders;
         const QMailMessageMetaDataList &threadsMessagesList = existedMessagesMap.value(threadId);
-        foreach (const QMailMessageMetaData& data, threadsMessagesList)
+        for (const QMailMessageMetaData& data : threadsMessagesList)
         {
             // Messages moved to Draft or Trash folder should not being counted.
             QMailAccount account(data.parentAccountId());
@@ -9655,7 +9655,7 @@ void QMailStorePrivate::emitIpcNotification(QMailStoreImplementation::MessageDat
 
         QMailMessageIdList ids;
 
-        foreach(const QMailMessageMetaData& metaData, data)
+        for (const QMailMessageMetaData& metaData : data)
         {
             messageCache.insert(metaData);
             uidCache.insert(qMakePair(metaData.parentAccountId(), metaData.serverUid()), metaData.id());

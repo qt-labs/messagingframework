@@ -307,7 +307,7 @@ QMailMessageKey::operator QVariant() const
 /*!
     Returns the list of arguments to this QMailMessageKey.
 */
-const QList<QMailMessageKey::ArgumentType> &QMailMessageKey::arguments() const
+const QmfList<QMailMessageKey::ArgumentType> &QMailMessageKey::arguments() const
 {
     return d->arguments;
 }
@@ -315,7 +315,7 @@ const QList<QMailMessageKey::ArgumentType> &QMailMessageKey::arguments() const
 /*!
     Returns the list of sub keys held by this QMailMessageKey.
 */
-const QList<QMailMessageKey> &QMailMessageKey::subKeys() const
+const QmfList<QMailMessageKey> &QMailMessageKey::subKeys() const
 {
     return d->subKeys;
 }

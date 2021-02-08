@@ -47,7 +47,7 @@
 
 #include "qmailmessage.h"
 #include "longstring_p.h"
-
+#include "qmflist.h"
 
 // These classes are implemented via qmailmessage.cpp and qmailinstantiations.cpp
 
@@ -115,7 +115,7 @@ public:
 private:
     friend class QMailMessageHeader;
 
-    QList<QByteArray> _headerFields;
+    QmfList<QByteArray> _headerFields;
 };
 
 
@@ -245,7 +245,7 @@ public:
     template <typename Stream> void deserialize(Stream &stream);
 
     QMailMessagePartContainer::MultipartType _multipartType;
-    QList<QMailMessagePart> _messageParts;
+    QmfList<QMailMessagePart> _messageParts;
     mutable QByteArray _boundary;
     QMailMessageHeader _header;
     QMailMessageBody _body;

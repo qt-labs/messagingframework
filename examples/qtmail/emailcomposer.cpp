@@ -78,7 +78,7 @@ static QCompleter* sentFolderCompleter()
     QMailMessageKey::Properties props(QMailMessageKey::Recipients);
     QMailMessageKey key(QMailMessageKey::status(QMailMessage::Sent));
     QMailMessageMetaDataList metaDataList(QMailStore::instance()->messagesMetaData(key, props, QMailStore::ReturnDistinct));
-    foreach (const QMailMessageMetaData &metaData, metaDataList) {
+    for (const QMailMessageMetaData &metaData : metaDataList) {
         foreach(QMailAddress address, metaData.recipients()) {
             QString s(address.toString());
             if (!s.simplified().isEmpty()) {

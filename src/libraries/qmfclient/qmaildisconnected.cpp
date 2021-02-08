@@ -34,6 +34,7 @@
 #include "qmaildisconnected.h"
 #include "qmailstore.h"
 #include "qmaillog.h"
+#include "qmflist.h"
 
 /*!
     \class QMailDisconnected
@@ -143,7 +144,7 @@ QMap<QMailFolderId, QMailMessageIdList> QMailDisconnected::restoreMap(const QMai
     QMailMessageKey key(QMailMessageKey::id(messageIds));
     QMailMessageKey::Properties props(QMailMessageKey::Id | QMailMessageKey::PreviousParentFolderId);
     
-    foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(key, props)) {
+    for (const QMailMessageMetaData &metaData : QMailStore::instance()->messagesMetaData(key, props)) {
         if (metaData.previousParentFolderId().isValid()) {
             result[metaData.previousParentFolderId()].append(metaData.id());
         }
@@ -219,7 +220,7 @@ bool QMailDisconnected::updatesOutstanding(const QMailAccountId &mailAccountId)
     
     QMailMessageRemovalRecordList removalRecords = QMailStore::instance()->messageRemovalRecords(mailAccountId);
     QStringList serverUidList;
-    foreach (const QMailMessageRemovalRecord& r, removalRecords) {
+    for (const QMailMessageRemovalRecord& r : removalRecords) {
         if (!r.serverUid().isEmpty())
             serverUidList.append(r.serverUid());
     }
@@ -300,7 +301,7 @@ void QMailDisconnected::rollBackUpdates(const QMailAccountId &mailAccountId)
     // undo removals
    QMailMessageRemovalRecordList removalRecords = QMailStore::instance()->messageRemovalRecords(mailAccountId);
    QStringList serverUidList;
-   foreach (const QMailMessageRemovalRecord& r, removalRecords) {
+   for (const QMailMessageRemovalRecord& r : removalRecords) {
        if (!r.serverUid().isEmpty())
            serverUidList.append(r.serverUid());
    }
@@ -377,7 +378,7 @@ void QMailDisconnected::moveToStandardFolder(const QMailMessageIdList& ids, QMai
 
     if (!messages.isEmpty()) {
         QMailStore::instance()->updateMessages(messages);
-        foreach(QMailMessageMetaData *messagePointer, messages) {
+        foreach (QMailMessageMetaData *messagePointer, messages) {
             delete messagePointer;
         }
     }
@@ -404,7 +405,7 @@ void QMailDisconnected::moveToFolder(const QMailMessageIdList& ids, const QMailF
 
     if (!messages.empty()) {
         QMailStore::instance()->updateMessages(messages);
-        foreach(QMailMessageMetaData *messagePointer, messages) {
+        foreach (QMailMessageMetaData *messagePointer, messages) {
             delete messagePointer;
         }
     }
@@ -581,7 +582,7 @@ void QMailDisconnected::restoreToPreviousFolder(const QMailMessageKey& key)
 
     if (!messages.empty()) {
         QMailStore::instance()->updateMessages(messages);
-        foreach(QMailMessageMetaData *messagePointer, messages) {
+        foreach (QMailMessageMetaData *messagePointer, messages) {
             delete messagePointer;
         }
     }

@@ -1870,10 +1870,10 @@ QStringList SearchMessageState::convertKey(const QMailMessageKey &key)
     QStringList result;
     QMailKey::Combiner combiner = key.combiner();
 
-    QList<QMailMessageKey::ArgumentType> args = key.arguments();
+    const QmfList<QMailMessageKey::ArgumentType> args = key.arguments();
 
     QList<QStringList> argSearches;
-    foreach(QMailMessageKey::ArgumentType arg, args) {
+    for (QMailMessageKey::ArgumentType arg : args) {
         Q_ASSERT(arg.valueList.count() == 1); // shouldn't have more than 1 element.
         QStringList searchKey(convertValue(arg.valueList[0], arg.property, arg.op));
         if (!searchKey.isEmpty()) {
@@ -1886,9 +1886,9 @@ QStringList SearchMessageState::convertKey(const QMailMessageKey &key)
 
 
     QList<QStringList> subSearchKeys;
-    QList<QMailMessageKey> subkeys = key.subKeys();
+    const QmfList<QMailMessageKey> subkeys = key.subKeys();
 
-    foreach(QMailMessageKey subkey, subkeys) {
+    for (QMailMessageKey subkey : subkeys) {
         QStringList searchKey(convertKey(subkey));
         if (!searchKey.isEmpty())
             subSearchKeys.append(searchKey);

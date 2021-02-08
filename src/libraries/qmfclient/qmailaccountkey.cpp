@@ -277,7 +277,7 @@ QMailAccountKey::operator QVariant() const
 /*!
     Returns the list of arguments to this QMailAccountKey.
 */
-const QList<QMailAccountKey::ArgumentType> &QMailAccountKey::arguments() const
+const QmfList<QMailAccountKey::ArgumentType> &QMailAccountKey::arguments() const
 {
     return d->arguments;
 }
@@ -285,7 +285,7 @@ const QList<QMailAccountKey::ArgumentType> &QMailAccountKey::arguments() const
 /*!
     Returns the list of sub keys held by this QMailAccountKey.
 */
-const QList<QMailAccountKey> &QMailAccountKey::subKeys() const
+const QmfList<QMailAccountKey> &QMailAccountKey::subKeys() const
 {
     return d->subKeys;
 }

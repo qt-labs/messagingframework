@@ -1050,12 +1050,12 @@ void PopClient::uidlIntegrityCheck()
         // Find the existing UIDs for this account
         QStringList messageUids;
         QMailMessageKey key(QMailMessageKey::parentAccountId(config.id()));
-        foreach (const QMailMessageMetaData& r, QMailStore::instance()->messagesMetaData(key, QMailMessageKey::ServerUid))
+        for (const QMailMessageMetaData& r : QMailStore::instance()->messagesMetaData(key, QMailMessageKey::ServerUid))
             messageUids.append(r.serverUid());
 
         // Find the locally-deleted UIDs for this account
         QStringList deletedUids;
-        foreach (const QMailMessageRemovalRecord& r, QMailStore::instance()->messageRemovalRecords(config.id()))
+        for (const QMailMessageRemovalRecord& r : QMailStore::instance()->messageRemovalRecords(config.id()))
             deletedUids.append(r.serverUid());
 
         obsoleteUids = QStringList();

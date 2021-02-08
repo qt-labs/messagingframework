@@ -46,6 +46,7 @@
 //
 
 #include "qmailstoreimplementation_p.h"
+#include "qmflist.h"
 #include <QSqlDatabase>
 #include <QCache>
 #include <QTimer>
@@ -228,7 +229,7 @@ public:
     QString buildWhereClause(const Key& key, bool nested = false, bool firstClause = true) const;
     QVariantList whereClauseValues(const Key& key) const;
 
-    static QString expandValueList(const QVariantList& valueList);
+    static QString expandValueList(const QmfList<QVariant>& valueList);
     static QString expandValueList(int valueCount);
 
     static QString temporaryTableName(const QMailMessageKey::ArgumentType &arg);
@@ -655,7 +656,7 @@ private:
                                          ReadLock &);
 
     AttemptResult attemptMessagesMetaData(const QMailMessageKey& key, const QMailMessageKey::Properties &properties, QMailStore::ReturnOption option, 
-                                          QMailMessageMetaDataList *result, 
+                                          QList<QMailMessageMetaData> *result,
                                           ReadLock &);
 
     AttemptResult attemptThread(const QMailThreadId &id,
@@ -664,11 +665,11 @@ private:
 
     AttemptResult attemptThreads(const QMailThreadKey& key,
                                  QMailStore::ReturnOption option,
-                                 QMailThreadList *result,
+                                 QList<QMailThread> *result,
                                  ReadLock &);
 
     AttemptResult attemptMessageRemovalRecords(const QMailAccountId &accountId, const QMailFolderId &parentFolderId,
-                                               QMailMessageRemovalRecordList *result,
+                                               QList<QMailMessageRemovalRecord> *result,
                                                ReadLock &);
 
     AttemptResult attemptMessageFolderIds(const QMailMessageKey &key, 

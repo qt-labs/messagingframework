@@ -265,7 +265,7 @@ QMailThreadKey::operator QVariant() const
 /*!
     Returns the list of arguments to this QMailThreadKey.
 */
-const QList<QMailThreadKey::ArgumentType> &QMailThreadKey::arguments() const
+const QmfList<QMailThreadKey::ArgumentType> &QMailThreadKey::arguments() const
 {
     return d->arguments;
 }
@@ -273,7 +273,7 @@ const QList<QMailThreadKey::ArgumentType> &QMailThreadKey::arguments() const
 /*!
     Returns the list of sub keys held by this QMailThreadKey.
 */
-const QList<QMailThreadKey> &QMailThreadKey::subKeys() const
+const QmfList<QMailThreadKey> &QMailThreadKey::subKeys() const
 {
     return d->subKeys;
 }

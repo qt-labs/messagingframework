@@ -668,7 +668,7 @@ bool QMailStore::updateMessages(const QList<QPair<QMailMessageMetaData*, QMailMe
 
     QList<QMailMessageMetaData*> data;
     typedef QPair<QMailMessageMetaData*, QMailMessage*> Pair;
-    foreach(const Pair& pair, messages) {
+    for (const Pair& pair : messages) {
         Q_ASSERT (pair.first);
         data.append(pair.first);
     }

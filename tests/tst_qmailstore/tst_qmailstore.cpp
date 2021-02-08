@@ -458,7 +458,7 @@ void tst_QMailStore::addMessages()
     QCOMPARE(QMailStore::instance()->countFolders(), 1);
     QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
 
-    QList<QMailMessage> messages;
+    QmfList<QMailMessage> messages;
     QList<QMailMessage*> messageAddresses;
     for (int i = 1; i <= 10; ++i) {
         QMailMessage message;
@@ -467,9 +467,8 @@ void tst_QMailStore::addMessages()
         message.setMessageType(QMailMessage::Sms);
         message.setSubject(QString("Message %1").arg(i));
         message.setBody(QMailMessageBody::fromData(QString("Hi #%1").arg(i), QMailMessageContentType("text/plain"), QMailMessageBody::SevenBit));
-
         messages.append(message);
-        messageAddresses.append(&messages.last());
+        messageAddresses.append(&messages[i-1]);
     }
 
     // Verify that addition is successful
@@ -535,7 +534,7 @@ void tst_QMailStore::addMessages2()
     QCOMPARE(QMailStore::instance()->countFolders(), 1);
     QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
 
-    QList<QMailMessage> messages;
+    QmfList<QMailMessage> messages;
     QList<QMailMessage*> messageAddresses;
     for (int i = 1; i <= 10; ++i) {
         QMailMessage message;
@@ -544,9 +543,8 @@ void tst_QMailStore::addMessages2()
         message.setMessageType(QMailMessage::Sms);
         message.setSubject(QString("Message %1").arg(i));
         message.setBody(QMailMessageBody::fromData(QString("Hi #%1").arg(i), QMailMessageContentType("text/plain"), QMailMessageBody::SevenBit));
-
         messages.append(message);
-        messageAddresses.append(&messages.last());
+        messageAddresses.append(&messages[i-1]);
     }
 
     // Verify that addition is successful
@@ -1106,7 +1104,7 @@ void tst_QMailStore::updateMessage()
     QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
 
     QStringList tags;
-    foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(tagKey, QMailMessageKey::Custom, QMailStore::ReturnDistinct)) {
+    for (const QMailMessageMetaData &metaData : QMailStore::instance()->messagesMetaData(tagKey, QMailMessageKey::Custom, QMailStore::ReturnDistinct)) {
         QString value(metaData.customField("tag"));
         if (!value.isNull())
             tags.append(value);
@@ -1252,7 +1250,7 @@ void tst_QMailStore::updateMessages()
     QCOMPARE(QMailStore::instance()->countFolders(), 1);
     QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
 
-    QList<QMailMessage> messages;
+    QmfList<QMailMessage> messages;
     QList<QMailMessage*> messageAddresses;
     for (int i = 1; i <= 10; ++i) {
         QMailMessage message;
@@ -1261,9 +1259,8 @@ void tst_QMailStore::updateMessages()
         message.setMessageType(QMailMessage::Sms);
         message.setSubject(QString("Message %1").arg(i));
         message.setBody(QMailMessageBody::fromData(QString("Hi #%1").arg(i), QMailMessageContentType("text/plain"), QMailMessageBody::SevenBit));
-
         messages.append(message);
-        messageAddresses.append(&messages.last());
+        messageAddresses.append(&messages[i-1]);
     }
 
     // Verify that addition is successful

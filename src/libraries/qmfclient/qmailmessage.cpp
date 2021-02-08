@@ -38,6 +38,7 @@
 #include "qmailnamespace.h"
 #include "qmailtimestamp.h"
 #include "qmailcrypto.h"
+#include "qmflist.h"
 #include "longstring_p.h"
 
 #ifndef QTOPIAMAIL_PARSING_ONLY
@@ -3034,8 +3035,8 @@ void QMailMessageHeaderPrivate::update(const QByteArray &id, const QByteArray &c
     QPair<QByteArray, QByteArray> parts = fieldParts(id, content);
     QByteArray updated = parts.first + parts.second;
 
-    const QList<QByteArray>::Iterator end = _headerFields.end();
-    for (QList<QByteArray>::Iterator it = _headerFields.begin(); it != end; ++it) {
+    const QmfList<QByteArray>::iterator end = _headerFields.end();
+    for (QmfList<QByteArray>::iterator it = _headerFields.begin(); it != end; ++it) {
         if ( matchingId(id, (*it)) ) {
             *it = updated;
             return;
@@ -3060,15 +3061,15 @@ void QMailMessageHeaderPrivate::append(const QByteArray &id, const QByteArray &c
 
 void QMailMessageHeaderPrivate::remove(const QByteArray &id)
 {
-    QList<QList<QByteArray>::Iterator> matches;
+    QList<QmfList<QByteArray>::iterator> matches;
 
-    const QList<QByteArray>::Iterator end = _headerFields.end();
-    for (QList<QByteArray>::Iterator it = _headerFields.begin(); it != end; ++it) {
+    const QmfList<QByteArray>::iterator end = _headerFields.end();
+    for (QmfList<QByteArray>::iterator it = _headerFields.begin(); it != end; ++it) {
         if ( matchingId(id, (*it)) )
             matches.prepend(it);
     }
 
-    foreach (QList<QByteArray>::Iterator it, matches)
+    foreach (QmfList<QByteArray>::iterator it, matches)
         _headerFields.erase(it);
 }
 
@@ -3076,7 +3077,7 @@ QList<QMailMessageHeaderField> QMailMessageHeaderPrivate::fields(const QByteArra
 {
     QList<QMailMessageHeaderField> result;
 
-    foreach (const QByteArray& field, _headerFields) {
+    for (const QByteArray& field : _headerFields) {
         QMailMessageHeaderField headerField(field, QMailMessageHeaderField::UnstructuredField);
         if ( matchingId(id, headerField.id()) ) {
             result.append(headerField);
@@ -3090,7 +3091,7 @@ QList<QMailMessageHeaderField> QMailMessageHeaderPrivate::fields(const QByteArra
 
 void QMailMessageHeaderPrivate::output(QDataStream& out, const QList<QByteArray>& exclusions, bool excludeInternalFields) const
 {
-    foreach (const QByteArray& field, _headerFields) {
+    for (const QByteArray& field : _headerFields) {
         QMailMessageHeaderField headerField(field, QMailMessageHeaderField::UnstructuredField);
         const QByteArray& id = headerField.id();
         bool excluded = false;
@@ -3172,8 +3173,8 @@ QList<const QByteArray*> QMailMessageHeader::fieldList() const
 {
     QList<const QByteArray*> result;
 
-    QList<QByteArray>::ConstIterator const end = impl(this)->_headerFields.end();
-    for (QList<QByteArray>::ConstIterator it = impl(this)->_headerFields.begin(); it != end; ++it)
+    QmfList<QByteArray>::const_iterator const end = impl(this)->_headerFields.end();
+    for (QmfList<QByteArray>::const_iterator it = impl(this)->_headerFields.begin(); it != end; ++it)
         result.append(&(*it));
 
     return result;
@@ -3928,7 +3929,7 @@ void QMailMessagePartContainerPrivate::setLocation(const QMailMessageId& id, con
     _indices = indices;
 
     if (!_messageParts.isEmpty()) {
-        QList<QMailMessagePart>::iterator it = _messageParts.begin(), end = _messageParts.end();
+        QmfList<QMailMessagePart>::iterator it = _messageParts.begin(), end = _messageParts.end();
         for (uint i = 0; it != end; ++it, ++i) {
             QList<uint> location(_indices);
             location.append(i + 1);
@@ -3945,7 +3946,7 @@ int QMailMessagePartContainerPrivate::partNumber() const
 bool QMailMessagePartContainerPrivate::contains(const QMailMessagePart::Location& location) const
 {
     const QMailMessagePart* part = 0; 
-    const QList<QMailMessagePart>* partList = &_messageParts; 
+    const QmfList<QMailMessagePart>* partList = &_messageParts;
 
     foreach (int index, location.d->_indices) {
         if (partList->count() < index) {
@@ -3962,10 +3963,10 @@ bool QMailMessagePartContainerPrivate::contains(const QMailMessagePart::Location
 const QMailMessagePart& QMailMessagePartContainerPrivate::partAt(const QMailMessagePart::Location& location) const
 {
     const QMailMessagePart* part = 0; 
-    const QList<QMailMessagePart>* partList = &_messageParts; 
+    const QmfList<QMailMessagePart>* partList = &_messageParts;
 
     foreach (int index, location.d->_indices) {
-        if (index > 0 && index <= partList->size()) {
+        if (index > 0 && index <= partList->count()) {
             part = &(partList->at(index - 1));
             partList = &(part->impl<const QMailMessagePartContainerPrivate>()->_messageParts);
         } else {
@@ -3981,10 +3982,10 @@ const QMailMessagePart& QMailMessagePartContainerPrivate::partAt(const QMailMess
 QMailMessagePart& QMailMessagePartContainerPrivate::partAt(const QMailMessagePart::Location& location)
 {
     QMailMessagePart* part = 0; 
-    QList<QMailMessagePart>* partList = &_messageParts; 
+    QmfList<QMailMessagePart>* partList = &_messageParts;
 
     foreach (int index, location.d->_indices) {
-        if (index > 0 && index <= partList->size()) {
+        if (index > 0 && index <= partList->count()) {
             part = &((*partList)[index - 1]);
             partList = &(part->impl<QMailMessagePartContainerPrivate>()->_messageParts);
         } else {
@@ -4218,7 +4219,7 @@ void QMailMessagePartContainerPrivate::generateBoundary()
         && _boundary.isEmpty()) {
         // Include a hash of the header data in the boundary
         QCryptographicHash hash(QCryptographicHash::Md5);
-        foreach (const QByteArray *field, _header.fieldList())
+        for (const QByteArray *field : _header.fieldList())
             hash.addData(*field);
 
         setBoundary(boundaryString(hash.result()));
@@ -4297,7 +4298,7 @@ QList<QByteArray> QMailMessagePartContainerPrivate::headerFields( const QByteArr
 
     QByteArray id(plainId(name));
 
-    foreach (const QByteArray* field, _header.fieldList()) {
+    for (const QByteArray* field : _header.fieldList()) {
         QMailMessageHeaderField headerField(*field, QMailMessageHeaderField::UnstructuredField);
         if (insensitiveEqual(headerField.id(), id)) {
             result.append(headerField.content());
@@ -4313,7 +4314,7 @@ QList<QByteArray> QMailMessagePartContainerPrivate::headerFields() const
 {
     QList<QByteArray> result;
 
-    foreach (const QByteArray* field, _header.fieldList())
+    for (const QByteArray* field : _header.fieldList())
         result.append(*field);
 
     return result;
@@ -4381,7 +4382,7 @@ void QMailMessagePartContainerPrivate::removeHeaderField(const QByteArray &id)
 
 void QMailMessagePartContainerPrivate::appendPart(const QMailMessagePart &part)
 {
-    QList<QMailMessagePart>::iterator it = _messageParts.insert( _messageParts.end(), part );
+    QmfList<QMailMessagePart>::iterator it = _messageParts.insert( _messageParts.end(), part );
 
     QList<uint> location(_indices);
     location.append(_messageParts.count());
@@ -4394,7 +4395,7 @@ void QMailMessagePartContainerPrivate::appendPart(const QMailMessagePart &part)
 void QMailMessagePartContainerPrivate::prependPart(const QMailMessagePart &part)
 {
     // Increment the part numbers for existing parts
-    QList<QMailMessagePart>::iterator it = _messageParts.begin(), end = _messageParts.end();
+    QmfList<QMailMessagePart>::iterator it = _messageParts.begin(), end = _messageParts.end();
     for (uint i = 1; it != end; ++it, ++i) {
         QList<uint> location(_indices);
         location.append(i + 1);
@@ -4604,7 +4605,7 @@ bool QMailMessagePartContainerPrivate::dirty(bool recursive) const
         return true;
 
     if (recursive) {
-        foreach (const QMailMessagePart& part, _messageParts)
+        for (const QMailMessagePart& part : _messageParts)
             if (part.impl<const QMailMessagePartContainerPrivate>()->dirty(true))
                 return true;
     }
@@ -4617,8 +4618,8 @@ void QMailMessagePartContainerPrivate::setDirty(bool value, bool recursive)
     _dirty = value;
 
     if (recursive) {
-        const QList<QMailMessagePart>::Iterator end = _messageParts.end();
-        for (QList<QMailMessagePart>::Iterator it = _messageParts.begin(); it != end; ++it)
+        const QmfList<QMailMessagePart>::iterator end = _messageParts.end();
+        for (QmfList<QMailMessagePart>::iterator it = _messageParts.begin(); it != end; ++it)
             (*it).impl<QMailMessagePartContainerPrivate>()->setDirty(value, true);
     }
 }
@@ -4628,8 +4629,8 @@ bool QMailMessagePartContainerPrivate::previewDirty() const
     if (_previewDirty)
         return true;
 
-    const QList<QMailMessagePart>::const_iterator end = _messageParts.end();
-    for (QList<QMailMessagePart>::const_iterator it = _messageParts.begin(); it != end; ++it)
+    const QmfList<QMailMessagePart>::const_iterator end = _messageParts.end();
+    for (QmfList<QMailMessagePart>::const_iterator it = _messageParts.begin(); it != end; ++it)
         if ((*it).impl<QMailMessagePartContainerPrivate>()->previewDirty())
             return true;
 
@@ -4640,8 +4641,8 @@ void QMailMessagePartContainerPrivate::setPreviewDirty(bool value)
 {
     _previewDirty = value;
 
-    const QList<QMailMessagePart>::Iterator end = _messageParts.end();
-    for (QList<QMailMessagePart>::Iterator it = _messageParts.begin(); it != end; ++it)
+    const QmfList<QMailMessagePart>::iterator end = _messageParts.end();
+    for (QmfList<QMailMessagePart>::iterator it = _messageParts.begin(); it != end; ++it)
         (*it).impl<QMailMessagePartContainerPrivate>()->setPreviewDirty(value);
 }
 
@@ -5195,7 +5196,7 @@ QList<QMailMessagePart::Location> QMailMessagePartContainer::findAttachmentLocat
 {
     QList<QMailMessagePart::Location> found;
 
-    foreach (const findAttachments::AttachmentFindStrategy* strategy, findAttachments::allStrategies) {
+    for (const findAttachments::AttachmentFindStrategy* strategy : findAttachments::allStrategies) {
         if (strategy->findAttachmentLocations(*this, &found, 0)) {
             break;
         } else {
@@ -5258,7 +5259,7 @@ bool QMailMessagePartContainer::hasHtmlBody() const
 bool QMailMessagePartContainer::hasAttachments() const
 {
     bool hasAttachments;
-    foreach (const findAttachments::AttachmentFindStrategy* strategy, findAttachments::allStrategies) {
+    for (const findAttachments::AttachmentFindStrategy* strategy : findAttachments::allStrategies) {
         if (strategy->findAttachmentLocations(*this, 0, &hasAttachments)) {
             return hasAttachments;
         }
@@ -5314,7 +5315,7 @@ void QMailMessagePartContainer::setHtmlAndPlainTextBody(const QMailMessageBody& 
         if (hasInlineImages) {
             // Copy relevant data of the message to subpart
             subpart.setMultipartType(QMailMessagePartContainer::MultipartRelated);
-            foreach (const QMailMessagePart *part, ctx.htmlImageParts) {
+            for (const QMailMessagePart *part : ctx.htmlImageParts) {
                 subpart.appendPart(*part);
             }
         }
@@ -8551,7 +8552,7 @@ bool QMailMessage::hasCalendarInvitation() const
         const QMailMessagePartContainer *part(parts.takeFirst());
         if (part->multipartType() != QMailMessagePartContainer::MultipartNone) {
             for (uint i = 0; i < part->partCount(); ++i) {
-            parts.append(&part->partAt(i));
+                parts.append(&part->partAt(i));
             }
         } else {
             const QMailMessageContentType &ct(part->contentType());

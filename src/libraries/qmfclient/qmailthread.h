@@ -38,6 +38,7 @@
 #include "qmailid.h"
 #include "qmailaddress.h"
 #include "qmailtimestamp.h"
+#include "qmflist.h"
 #include "qprivateimplementation.h"
 #include <QString>
 #include <QList>
@@ -90,6 +91,6 @@ public:
 private:
 };
 
-typedef QList<QMailThread> QMailThreadList;
+typedef QmfList<QMailThread> QMailThreadList;
 
 #endif

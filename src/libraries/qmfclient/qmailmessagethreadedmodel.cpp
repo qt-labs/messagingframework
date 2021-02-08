@@ -34,6 +34,8 @@
 #include "qmailmessagethreadedmodel.h"
 #include "qmailstore.h"
 #include "qmailnamespace.h"
+#include "qmflist.h"
+
 #include <QCache>
 #include <QtAlgorithms>
 
@@ -59,7 +61,7 @@ public:
 
     QMailMessageId _id;
     QMailMessageThreadedModelItem *_parent;
-    QList<QMailMessageThreadedModelItem> _children;
+    QmfList<QMailMessageThreadedModelItem> _children;
 };
 
 
@@ -401,7 +403,7 @@ bool QMailMessageThreadedModelPrivate::appendMessages(const QMailMessageIdList &
     QMailMessageKey::Properties props(QMailMessageKey::Id | QMailMessageKey::InResponseTo);
 
     QMap<QMailMessageId, QMailMessageId> predecessor;
-    foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(conversationKey, props)) {
+    for (const QMailMessageMetaData &metaData : QMailStore::instance()->messagesMetaData(conversationKey, props)) {
         predecessor.insert(metaData.id(), metaData.inResponseTo());
     }
 
@@ -566,7 +568,7 @@ bool QMailMessageThreadedModelPrivate::updateMessages(const QMailMessageIdList &
     QMailMessageKey::Properties props(QMailMessageKey::Id | QMailMessageKey::InResponseTo);
 
     QMap<QMailMessageId, QMailMessageId> predecessor;
-    foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(conversationKey, props)) {
+    for (const QMailMessageMetaData &metaData : QMailStore::instance()->messagesMetaData(conversationKey, props)) {
         predecessor.insert(metaData.id(), metaData.inResponseTo());
     }
 
@@ -600,7 +602,7 @@ bool QMailMessageThreadedModelPrivate::updateMessages(const QMailMessageIdList &
             int row = item->rowInParent();
             int messagePos = newIds.indexOf(messageId);
 
-            QList<QMailMessageThreadedModelItem> &container(item->_parent->_children);
+            QmfList<QMailMessageThreadedModelItem> &container(item->_parent->_children);
             if (row > 0) {
                 // Ensure that we still sort after our immediate predecessor
                 if (newIds.indexOf(container.at(row - 1)._id) > messagePos) {
@@ -724,10 +726,10 @@ void QMailMessageThreadedModelPrivate::insertItemAt(int row, const QModelIndex &
         parent = &_root;
     }
 
-    QList<QMailMessageThreadedModelItem> &container(parent->_children);
+    QmfList<QMailMessageThreadedModelItem> &container(parent->_children);
 
-    container.insert(row, QMailMessageThreadedModelItem(id, parent));
-    _messageItem[id] = &(container[row]);
+    container.insert(std::next(container.begin(), row), QMailMessageThreadedModelItem(id, parent));
+    _messageItem[id] = &(*std::next(container.begin(), row));
     _currentIds.append(id);
 }
 
@@ -740,7 +742,7 @@ void QMailMessageThreadedModelPrivate::removeItemAt(int row, const QModelIndex &
         parent = &_root;
     }
 
-    QList<QMailMessageThreadedModelItem> &container(parent->_children);
+    QmfList<QMailMessageThreadedModelItem> &container(parent->_children);
 
     if (container.count() > row) {
         QMailMessageThreadedModelItem *item = &(container[row]);
@@ -818,7 +820,7 @@ void QMailMessageThreadedModelPrivate::init() const
         QMailMessageKey::Properties props(QMailMessageKey::Id | QMailMessageKey::InResponseTo);
 
         QMap<QMailMessageId, QMailMessageId> predecessor;
-        foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(conversationKey, props)) {
+        for (const QMailMessageMetaData &metaData : QMailStore::instance()->messagesMetaData(conversationKey, props)) {
             predecessor.insert(metaData.id(), metaData.inResponseTo());
         }
 
@@ -869,7 +871,7 @@ void QMailMessageThreadedModelPrivate::init() const
                 }
                 if (insertParent != 0) {
                     // Append the message to the existing children of the parent
-                    QList<QMailMessageThreadedModelItem> &container(insertParent->_children);
+                    QmfList<QMailMessageThreadedModelItem> &container(insertParent->_children);
 
                     // Determine where this message should sort amongst its siblings
                     int index = container.count();
@@ -883,7 +885,7 @@ void QMailMessageThreadedModelPrivate::init() const
                         }
                     }
 
-                    container.insert(index, QMailMessageThreadedModelItem(messageId, insertParent));
+                    container.insert(std::next(container.begin(), index), QMailMessageThreadedModelItem(messageId, insertParent));
                     _messageItem[messageId] = &(container[index]);
                     _currentIds.append(messageId);
                     

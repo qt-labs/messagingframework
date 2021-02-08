@@ -608,7 +608,7 @@ void tst_qmailthread::test_threadKeys()
     QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
 
     QStringList tags;
-    foreach (const QMailMessageMetaData &metaData, QMailStore::instance()->messagesMetaData(tagKey, QMailMessageKey::Custom, QMailStore::ReturnDistinct)) {
+    for (const QMailMessageMetaData &metaData : QMailStore::instance()->messagesMetaData(tagKey, QMailMessageKey::Custom, QMailStore::ReturnDistinct)) {
         QString value(metaData.customField("tag"));
         if (!value.isNull())
             tags.append(value);

@@ -35,15 +35,16 @@
 #define QMAILMESSAGESET_H
 
 #include "qprivateimplementation.h"
+#include "qmflist.h"
 
 #include <QAbstractItemModel>
 #include <QList>
-#include "qmailaccountkey.h"
-#include "qmailfolderkey.h"
-#include "qmailmessagekey.h"
 #include <QMap>
 #include <QString>
 
+#include "qmailaccountkey.h"
+#include "qmailfolderkey.h"
+#include "qmailmessagekey.h"
 
 class QMailMessageSet;
 class QMailMessageSetModel;

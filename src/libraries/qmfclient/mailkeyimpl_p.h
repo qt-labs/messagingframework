@@ -47,7 +47,7 @@
 
 #include <QList>
 #include <QStringList>
-
+#include "qmflist.h"
 
 template<typename Key> 
 class MailKeyImpl : public QSharedData
@@ -84,8 +84,8 @@ public:
 
     QMailKey::Combiner combiner;
     bool negated;
-    QList<Argument> arguments;
-    QList<Key> subKeys;
+    QmfList<Argument> arguments;
+    QmfList<Key> subKeys;
 };
 
 
@@ -146,7 +146,7 @@ Key MailKeyImpl<Key>::negate(const Key &self)
 
     if (!self.d->arguments.isEmpty() && (self.d->arguments.first().property == Key::Custom)) {
         // Cannot allow negated custom keys, due to SQL expansion variation
-        Argument &arg(result.d->arguments.first());
+        Argument &arg(result.d->arguments.front());
         if (arg.op == QMailKey::Equal) {
             arg.op = QMailKey::NotEqual;
         } else if (arg.op == QMailKey::NotEqual) {
@@ -252,7 +252,7 @@ bool MailKeyImpl<Key>::isNonMatching() const
     (arguments.first().property == Key::Id) &&
     (arguments.first().op == QMailKey::Equal) &&
     (arguments.first().valueList.count() == 1)) {
-        QVariant v = arguments.first().valueList.first();
+        const QVariant &v = arguments.first().valueList.first();
         return (v.canConvert<IdType>() && !v.value<IdType>().isValid());
     }
     return false;
@@ -272,11 +272,11 @@ void MailKeyImpl<Key>::serialize(Stream &stream) const
     stream << negated;
 
     stream << arguments.count();
-    foreach (const Argument& a, arguments)
+    for (const Argument& a : arguments)
         a.serialize(stream);
 
     stream << subKeys.count();
-    foreach (const Key& k, subKeys)
+    for (const Key& k : subKeys)
         k.serialize(stream);
 }
 

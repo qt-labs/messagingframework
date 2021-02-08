@@ -35,6 +35,7 @@
 #define QMAILMESSAGEREMOVALRECORD_H
 
 #include "qmailid.h"
+#include "qmflist.h"
 #include <QString>
 #include <QSharedData>
 #include <QList>
@@ -71,6 +72,6 @@ private:
 
 };
 
-typedef QList<QMailMessageRemovalRecord> QMailMessageRemovalRecordList;
+typedef QmfList<QMailMessageRemovalRecord> QMailMessageRemovalRecordList;
 
 #endif

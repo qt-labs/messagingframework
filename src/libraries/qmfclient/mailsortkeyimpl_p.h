@@ -35,6 +35,7 @@
 #define MAILSORTKEYIMPL_H
 
 #include "qmailglobal.h"
+#include "qmflist.h"
 #include <QSharedData>
 #include <QtGlobal>
 #include <QPair>
@@ -51,7 +52,7 @@ public:
     MailSortKeyImpl();
     MailSortKeyImpl(const MailSortKeyImpl& other);
     MailSortKeyImpl(Property p, Qt::SortOrder order, quint64 mask);
-    MailSortKeyImpl(const QList<Argument> &args);
+    MailSortKeyImpl(const QmfList<Argument> &args);
 
     bool operator==(const MailSortKeyImpl& other) const;
     bool operator!=(const MailSortKeyImpl& other) const;
@@ -60,12 +61,12 @@ public:
 
     bool isEmpty() const;
 
-    const QList<Argument> &arguments() const;
+    const QmfList<Argument> &arguments() const;
 
     template <typename Stream> void serialize(Stream &stream) const;
     template <typename Stream> void deserialize(Stream &stream);
 
-    QList<Argument> _arguments;
+    QmfList<Argument> _arguments;
 };
 
 
@@ -89,7 +90,7 @@ MailSortKeyImpl<Key>::MailSortKeyImpl(Property p, Qt::SortOrder order, quint64 m
 }
 
 template<typename Key>
-MailSortKeyImpl<Key>::MailSortKeyImpl(const QList<Argument> &args)
+MailSortKeyImpl<Key>::MailSortKeyImpl(const QmfList<Argument> &args)
     : QSharedData()
 {
     _arguments = args;
@@ -114,7 +115,7 @@ bool MailSortKeyImpl<Key>::isEmpty() const
 }
 
 template<typename Key>
-const QList<typename MailSortKeyImpl<Key>::Argument> &MailSortKeyImpl<Key>::arguments() const
+const QmfList<typename MailSortKeyImpl<Key>::Argument> &MailSortKeyImpl<Key>::arguments() const
 {
     return _arguments;
 }
@@ -124,7 +125,7 @@ template <typename Stream>
 void MailSortKeyImpl<Key>::serialize(Stream &stream) const
 {
     stream << _arguments.count();
-    foreach (const Argument& a, _arguments) {
+    for (const Argument& a : _arguments) {
         a.serialize(stream);
     }
 }

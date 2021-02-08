@@ -38,7 +38,9 @@
 #include "qmailaddress.h"
 #include "qmailid.h"
 #include "qmailtimestamp.h"
+#include "qmflist.h"
 #include "qprivateimplementation.h"
+
 #include <QByteArray>
 #include <QFlags>
 #include <QList>
@@ -825,8 +827,8 @@ public:
     virtual QString preview() const override;
 };
 
-typedef QList<QMailMessage> QMailMessageList;
-typedef QList<QMailMessageMetaData> QMailMessageMetaDataList;
+typedef QmfList<QMailMessage> QMailMessageList;
+typedef QmfList<QMailMessageMetaData> QMailMessageMetaDataList;
 typedef QList<QMailMessage::MessageType> QMailMessageTypeList;
 
 Q_DECLARE_USER_METATYPE_ENUM(QMailMessageBody::TransferEncoding)

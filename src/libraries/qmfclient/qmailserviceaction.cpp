@@ -1502,14 +1502,14 @@ void QMailStorageActionPrivate::addMessages(const QMailMessageList &list)
     // Check to see if any of the messages has unresolved parts (forward without download)
     // If so must use sync adding
     bool fwod(false);
-    foreach (QMailMessage message, list) {
+    for (const QMailMessage &message : list) {
         if (message.status() & (QMailMessage::HasUnresolvedReferences | QMailMessage::TransmitFromExternal)) {
             fwod = true;
             break;
         }
     }
     if (fwod) {
-        foreach (QMailMessage mail, list) {
+        for (QMailMessage mail : list) {
             if (!mail.id().isValid()) {
                 mail.setStatus(QMailMessage::LocalOnly, true);
                 QMailStore::instance()->addMessage(&mail);
@@ -1529,7 +1529,7 @@ void QMailStorageActionPrivate::addMessages(const QMailMessageList &list)
     // Existing message data in mail store and content manager should not be
     // changed directly by this function, instead the messageserver should do it.
     QMailMessageMetaDataList metadata;
-    foreach (QMailMessage message, list) {
+    for (QMailMessage message : list) {
         if (message.contentScheme().isEmpty()) {
             message.setContentScheme(QMailContentManagerFactory::defaultScheme());
         }
@@ -1547,7 +1547,6 @@ void QMailStorageActionPrivate::addMessages(const QMailMessageList &list)
         }
     }
     _server->addMessages(newAction(), metadata);
-
     emitChanges();
 }
 
@@ -1559,14 +1558,14 @@ void QMailStorageActionPrivate::updateMessages(const QMailMessageList &list)
     // Check to see if any of the messages has unresolved parts (forward without download)
     // If so must use sync updating
     bool fwod(false);
-    foreach (QMailMessage message, list) {
+    for (QMailMessage message : list) {
         if (message.status() & (QMailMessage::HasUnresolvedReferences | QMailMessage::TransmitFromExternal | QMailMessage::Outgoing)) {
             fwod = true;
             break;
         }
     }
     if (fwod) {
-        foreach (QMailMessage mail, list) {
+        for (QMailMessage mail : list) {
             if (!mail.id().isValid()) {
                 mail.setStatus(QMailMessage::LocalOnly, true);
                 QMailStore::instance()->addMessage(&mail);
@@ -1587,7 +1586,7 @@ void QMailStorageActionPrivate::updateMessages(const QMailMessageList &list)
     // Existing message data in mail store and content manager should not be
     // changed directly by this function, instead the messageserver should do it.
     QMailMessageMetaDataList metadata;
-    foreach (QMailMessage message, list) {
+    for (QMailMessage message : list) {
         if (message.contentScheme().isEmpty()) {
             message.setContentScheme(QMailContentManagerFactory::defaultScheme());
         }
