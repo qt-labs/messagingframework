@@ -856,11 +856,14 @@ protected:
         QVariantList values;
 
         if (arg.valueList.count() == 1) {
-            values.append(stringValue());
+            const QString &strVal(stringValue());
+            values.append(strVal.isNull() ? QVariant() : QVariant(strVal));
         } else {
             // Includes/Excludes is not a pattern match with multiple values
-            foreach (const QVariant &item, arg.valueList)
-                values.append(QMailStorePrivate::extractValue<QString>(item));
+            foreach (const QVariant &item, arg.valueList) {
+                const QString &strVal(QMailStorePrivate::extractValue<QString>(item));
+                values.append(strVal.isNull() ? QVariant() : QVariant(strVal));
+            }
         }
 
         return values;
@@ -1091,9 +1094,9 @@ public:
 
     QVariantList subject() const { return stringValues(); }
 
-    QVariant date() const { return QMailStorePrivate::extractValue<QDateTime>(arg.valueList.first()); }
+    QVariant date() const { const QDateTime &dt = QMailStorePrivate::extractValue<QDateTime>(arg.valueList.first()); return dt.isNull() ? QVariant() : QVariant(dt); }
 
-    QVariant receivedDate() const { return QMailStorePrivate::extractValue<QDateTime>(arg.valueList.first()); }
+    QVariant receivedDate() const { const QDateTime &dt = QMailStorePrivate::extractValue<QDateTime>(arg.valueList.first()); return dt.isNull() ? QVariant() : QVariant(dt); }
 
     QVariant status() const
     {
@@ -4354,7 +4357,7 @@ bool QMailStorePrivate::setupFolders(const QList<FolderInfo> &folderList)
                                                    << folder.name()
                                                    << quint64(0)
                                                    << quint64(0)
-                                                   << QString()
+                                                   << QVariant() // null display name
                                                    << folder.status()
                                                    << int(0)
                                                    << int(0)
