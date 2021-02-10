@@ -33,6 +33,7 @@
 
 #include "integerregion.h"
 #include <qmaillog.h>
+#include <QRegularExpression>
 
 /*
   \class IntegerRegion
@@ -355,16 +356,16 @@ QList<int> IntegerRegion::toList(const QString &region)
 {
     QList<int> result;
 
-    QRegExp range("(\\d+)(?::(\\d+))?(?:,)?");
-
     int index = 0;
-    while ((index = range.indexIn(region, index)) != -1) {
-        index += range.cap(0).length();
+    QRegularExpression range("(\\d+)(?::(\\d+))?(?:,)?");
+    QRegularExpressionMatch match = range.match(region, index);
 
-        int first = range.cap(1).toInt();
+    while (match.hasMatch()) {
+        index += match.captured(0).length();
+        int first = match.captured(1).toInt();
         int second = first;
-        if (!range.cap(2).isEmpty()) {
-            second = range.cap(2).toInt();
+        if (!match.captured(2).isEmpty()) {
+            second = match.captured(2).toInt();
             if (second < first) {
                 second = first;
             }
@@ -373,6 +374,8 @@ QList<int> IntegerRegion::toList(const QString &region)
         for ( ; first <= second; ++first) {
             result.append(first);
         }
+
+        match = range.match(region, index);
     }
 
     return result;

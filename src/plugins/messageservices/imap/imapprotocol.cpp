@@ -42,6 +42,7 @@
 #include <QTemporaryFile>
 #include <QFileInfo>
 #include <QUrl>
+#include <QRegularExpression>
 #include <qmaillog.h>
 #include <private/longstring_p.h>
 #include <qmailaccountconfiguration.h>
@@ -76,10 +77,10 @@ static QString messageUid(const QMailFolderId &folderId, const QString &id)
 
 static QString extractUid(const QString &field, const QMailFolderId &folderId)
 {
-    QRegExp uidFormat("UID *(\\d+)");
-    uidFormat.setCaseSensitivity(Qt::CaseInsensitive);
-    if (uidFormat.indexIn(field) != -1) {
-        return messageUid(folderId, uidFormat.cap(1));
+    QRegularExpression uidFormat("UID *(\\d+)", QRegularExpression::CaseInsensitiveOption);
+    const QRegularExpressionMatch match = uidFormat.match(field);
+    if (match.hasMatch()) {
+        return messageUid(folderId, match.captured(1));
     }
 
     return QString();
@@ -87,22 +88,23 @@ static QString extractUid(const QString &field, const QMailFolderId &folderId)
 
 static QDateTime extractDate(const QString& field)
 {
-    QRegExp dateFormat("INTERNALDATE *\"([^\"]*)\"");
-    dateFormat.setCaseSensitivity(Qt::CaseInsensitive);
-    if (dateFormat.indexIn(field) != -1) {
-        QString date(dateFormat.cap(1));
+    QRegularExpression dateFormat("INTERNALDATE *\"([^\"]*)\"", QRegularExpression::CaseInsensitiveOption);
+    const QRegularExpressionMatch match = dateFormat.match(field);
+    if (match.hasMatch()) {
+        QString date(match.captured(1));
 
-        QRegExp format("(\\d+)-(\\w{3})-(\\d{4}) (\\d{2}):(\\d{2}):(\\d{2}) ([+-])(\\d{2})(\\d{2})");
-        if (format.indexIn(date) != -1) {
+        QRegularExpression format("(\\d+)-(\\w{3})-(\\d{4}) (\\d{2}):(\\d{2}):(\\d{2}) ([+-])(\\d{2})(\\d{2})");
+        const QRegularExpressionMatch formatMatch = format.match(date);
+        if (formatMatch.hasMatch()) {
             static const QString Months("janfebmaraprmayjunjulaugsepoctnovdec");
-            int month = (Months.indexOf(format.cap(2).toLower()) + 3) / 3;
+            int month = (Months.indexOf(formatMatch.captured(2).toLower()) + 3) / 3;
 
-            QDate dateComponent(format.cap(3).toInt(), month, format.cap(1).toInt());
-            QTime timeComponent(format.cap(4).toInt(), format.cap(5).toInt(), format.cap(6).toInt());
-            int offset = (format.cap(8).toInt() * 3600) + (format.cap(9).toInt() * 60);
+            QDate dateComponent(formatMatch.captured(3).toInt(), month, formatMatch.captured(1).toInt());
+            QTime timeComponent(formatMatch.captured(4).toInt(), formatMatch.captured(5).toInt(), formatMatch.captured(6).toInt());
+            int offset = (formatMatch.captured(8).toInt() * 3600) + (formatMatch.captured(9).toInt() * 60);
 
             QDateTime timeStamp(dateComponent, timeComponent, Qt::UTC);
-            timeStamp = timeStamp.addSecs(offset * (format.cap(7)[0] == '-' ? 1 : -1));
+            timeStamp = timeStamp.addSecs(offset * (formatMatch.captured(7)[0] == '-' ? 1 : -1));
             return timeStamp;
         }
     }
@@ -112,10 +114,10 @@ static QDateTime extractDate(const QString& field)
 
 static uint extractSize(const QString& field)
 {
-    QRegExp sizeFormat("RFC822\\.SIZE *(\\d+)");
-    sizeFormat.setCaseSensitivity(Qt::CaseInsensitive);
-    if (sizeFormat.indexIn(field) != -1) {
-        return sizeFormat.cap(1).toUInt();
+    QRegularExpression sizeFormat("RFC822\\.SIZE *(\\d+)", QRegularExpression::CaseInsensitiveOption);
+    const QRegularExpressionMatch match = sizeFormat.match(field);
+    if (match.hasMatch()) {
+        return match.captured(1).toUInt();
     }
 
     return 0;
@@ -128,14 +130,13 @@ static QStringList extractStructure(const QString& field)
 
 static bool parseFlags(const QString& field, MessageFlags& flags)
 {
-    QRegExp pattern("FLAGS *\\((.*)\\)");
-    pattern.setMinimal(true);
-    pattern.setCaseSensitivity(Qt::CaseInsensitive);
-
-    if (pattern.indexIn(field) == -1)
+    QRegularExpression pattern("FLAGS *\\((.*)\\)", QRegularExpression::CaseInsensitiveOption
+                                                  | QRegularExpression::InvertedGreedinessOption);
+    const QRegularExpressionMatch match = pattern.match(field);
+    if (!match.hasMatch())
         return false;
 
-    QString messageFlags = pattern.cap(1).toLower();
+    QString messageFlags = match.captured(1).toLower();
 
     flags = 0;
     if (messageFlags.indexOf("\\seen") != -1)
@@ -1326,11 +1327,11 @@ void AppendState::taggedResponse(ImapContext *c, const QString &line)
 {
     if (status() == OpOk) {
         // See if we got an APPENDUID response
-        QRegExp appenduidResponsePattern("APPENDUID (\\S+) ([^ \\t\\]]+)");
-        appenduidResponsePattern.setCaseSensitivity(Qt::CaseInsensitive);
-        if (appenduidResponsePattern.indexIn(line) != -1) {
+        QRegularExpression appenduidResponsePattern("APPENDUID (\\S+) ([^ \\t\\]]+)", QRegularExpression::CaseInsensitiveOption);
+        const QRegularExpressionMatch match = appenduidResponsePattern.match(line);
+        if (match.hasMatch()) {
             const AppendParameters &params(mParameters.first());
-            emit messageCreated(params.mMessageId, messageUid(params.mDestination.id(), appenduidResponsePattern.cap(2)));
+            emit messageCreated(params.mMessageId, messageUid(params.mDestination.id(), match.captured(2)));
         }
     }
     
@@ -1520,19 +1521,21 @@ QString QResyncState::transmit(ImapContext *c)
 
 void QResyncState::untaggedResponse(ImapContext *c, const QString &line)
 {
+    // TODO: simplify: QRegularExpression fetchResponsePattern("^\\*\\s+\\d+\\s+FETCH", QRegularExpression::CaseInsensitiveOption); ?
     QString str = line;
-    QRegExp fetchResponsePattern("\\*\\s+\\d+\\s+(\\w+)");
-    QRegExp vanishResponsePattern("\\*\\s+\\VANISHED\\s+\\(EARLIER\\)\\s+(\\S+)");
-    vanishResponsePattern.setCaseSensitivity(Qt::CaseInsensitive);
-    if ((fetchResponsePattern.indexIn(str) == 0) && (fetchResponsePattern.cap(1).compare("FETCH", Qt::CaseInsensitive) == 0)) {
+    QRegularExpression fetchResponsePattern("\\*\\s+\\d+\\s+(\\w+)");
+    QRegularExpression vanishResponsePattern("\\*\\s+\\VANISHED\\s+\\(EARLIER\\)\\s+(\\S+)", QRegularExpression::CaseInsensitiveOption);
+    const QRegularExpressionMatch frpMatch = fetchResponsePattern.match(str);
+    const QRegularExpressionMatch vrpMatch = vanishResponsePattern.match(str);
+    if ((frpMatch.capturedStart() == 0) && (frpMatch.captured(1).compare("FETCH", Qt::CaseInsensitive) == 0)) {
         QString uid = extractUid(str, c->mailbox().id);
         if (!uid.isEmpty()) {
             MessageFlags flags = 0;
             parseFlags(str, flags);
             changes.append(FlagChange(uid, flags));
         }
-    } else if (vanishResponsePattern.indexIn(str) == 0) {
-        vanished = vanishResponsePattern.cap(1);
+    } else if (vrpMatch.capturedStart() == 0) {
+        vanished = vrpMatch.captured(1);
     } else {
         SelectState::untaggedResponse(c, line);
     }
@@ -1586,8 +1589,9 @@ void FetchFlagsState::init()
 void FetchFlagsState::untaggedResponse(ImapContext *c, const QString &line)
 {
     QString str = line;
-    QRegExp fetchResponsePattern("\\*\\s+\\d+\\s+(\\w+)");
-    if ((fetchResponsePattern.indexIn(str) == 0) && (fetchResponsePattern.cap(1).compare("FETCH", Qt::CaseInsensitive) == 0)) {
+    QRegularExpression fetchResponsePattern("\\*\\s+\\d+\\s+(\\w+)");
+    const QRegularExpressionMatch frpMatch = fetchResponsePattern.match(str);
+    if ((frpMatch.capturedStart() == 0) && (frpMatch.captured(1).compare("FETCH", Qt::CaseInsensitive) == 0)) {
         QString uid = extractUid(str, c->mailbox().id);
         if (!uid.isEmpty()) {
             MessageFlags flags = 0;
@@ -2335,8 +2339,9 @@ void UidFetchState::leave(ImapContext *)
 void UidFetchState::untaggedResponse(ImapContext *c, const QString &line)
 {
     QString str = line;
-    QRegExp fetchResponsePattern("\\*\\s+\\d+\\s+(\\w+)");
-    if ((fetchResponsePattern.indexIn(str) == 0) && (fetchResponsePattern.cap(1).compare("FETCH", Qt::CaseInsensitive) == 0)) {
+    QRegularExpression fetchResponsePattern("\\*\\s+\\d+\\s+(\\w+)");
+    const QRegularExpressionMatch frpMatch = fetchResponsePattern.match(str);
+    if ((frpMatch.capturedStart() == 0) && (frpMatch.captured(1).compare("FETCH", Qt::CaseInsensitive) == 0)) {
         QString element(fetchResponseElement(str));
         QMap<QString, int>::iterator it = mParametersMap.find(element);
         if (it != mParametersMap.end()) {
@@ -2451,19 +2456,19 @@ bool UidFetchState::appendLiteralData(ImapContext *c, const QString &preceding)
         // We're finished with this literal data
         mLiteralIndex = -1;
 
-        QRegExp pattern;
+        QRegularExpression pattern;
         if (fp.mDataItems & F_Rfc822_Header) {
             // If the literal is the header data, keep it in the buffer file
-            pattern = QRegExp("RFC822\\.HEADER ");
+            pattern = QRegularExpression("RFC822\\.HEADER ", QRegularExpression::CaseInsensitiveOption);
         } else {
             // If the literal is the body data, keep it in the buffer file
-            pattern = QRegExp("BODY\\[\\S*\\] ");
+            pattern = QRegularExpression("BODY\\[\\S*\\] ", QRegularExpression::CaseInsensitiveOption);
         }
 
-        pattern.setCaseSensitivity(Qt::CaseInsensitive);
-        int index = pattern.lastIndexIn(preceding);
+        const QRegularExpressionMatch match = pattern.match(preceding);
+        int index = match.lastCapturedIndex();
         if (index != -1) {
-            if ((index + pattern.cap(0).length()) == preceding.length()) {
+            if ((index + match.captured(0).length()) == preceding.length()) {
                 // Detach the retrieved data to a file we have ownership of
                 fp.mDetachedSize = c->buffer().length();
                 fp.mDetachedFile = c->buffer().detach();
@@ -2481,18 +2486,18 @@ QString UidFetchState::fetchResponseElement(const QString &line)
 {
     QString result;
 
-    QRegExp uidPattern("UID\\s+(\\d+)");
-    uidPattern.setCaseSensitivity(Qt::CaseInsensitive);
-    if (uidPattern.indexIn(line) != -1) {
-        result = uidPattern.cap(1);
+    QRegularExpression uidPattern("UID\\s+(\\d+)", QRegularExpression::CaseInsensitiveOption);
+    const QRegularExpressionMatch match = uidPattern.match(line);
+    if (match.hasMatch()) {
+        result = match.captured(1);
     }
 
-    QRegExp bodyPattern("BODY\\[([^\\]]*)\\](<[^>]*>)?");
-    bodyPattern.setCaseSensitivity(Qt::CaseInsensitive);
-    if (bodyPattern.indexIn(line) != -1) {
-        QString section(bodyPattern.cap(1));
+    QRegularExpression bodyPattern("BODY\\[([^\\]]*)\\](<[^>]*>)?", QRegularExpression::CaseInsensitiveOption);
+    const QRegularExpressionMatch bpMatch = bodyPattern.match(line);
+    if (bpMatch.hasMatch()) {
+        QString section(bpMatch.captured(1));
         if (!section.isEmpty()) {
-            result.append(' ' + section + bodyPattern.cap(2));
+            result.append(' ' + section + bpMatch.captured(2));
         }
     }
 
@@ -2615,11 +2620,11 @@ void UidCopyState::taggedResponse(ImapContext *c, const QString &line)
         const QPair<QString, QMailFolder> &params(_parameters.first());
 
         // See if we got a COPYUID response
-        QRegExp copyuidResponsePattern("COPYUID (\\S+) (\\S+) ([^ \\t\\]]+)");
-        copyuidResponsePattern.setCaseSensitivity(Qt::CaseInsensitive);
-        if (copyuidResponsePattern.indexIn(line) != -1) {
-            QList<uint> copiedUids = sequenceUids(copyuidResponsePattern.cap(2));
-            QList<uint> createdUids = sequenceUids(copyuidResponsePattern.cap(3));
+        QRegularExpression copyuidResponsePattern("COPYUID (\\S+) (\\S+) ([^ \\t\\]]+)", QRegularExpression::CaseInsensitiveOption);
+        const QRegularExpressionMatch match = copyuidResponsePattern.match(line);
+        if (match.hasMatch()) {
+            QList<uint> copiedUids = sequenceUids(match.captured(2));
+            QList<uint> createdUids = sequenceUids(match.captured(3));
 
             // Report the completed copies
             if (copiedUids.count() != createdUids.count()) {
@@ -2796,16 +2801,17 @@ bool IdleState::continuationResponse(ImapContext *c, const QString &)
 void IdleState::untaggedResponse(ImapContext *c, const QString &line)
 {
     QString str = line;
-    QRegExp idleResponsePattern("\\*\\s+\\d+\\s+(\\w+)");
+    QRegularExpression idleResponsePattern("\\*\\s+\\d+\\s+(\\w+)");
     quint32 previousExists = c->exists();
     SelectedState::untaggedResponse(c, line);
-    if (idleResponsePattern.indexIn(str) == 0) {
+    const QRegularExpressionMatch match = idleResponsePattern.match(str);
+    if (match.capturedStart() == 0) {
         // Treat this event as a continuation point
         if (previousExists < c->exists()) { // '<' to avoid double check for expunges
              c->continuation(command(), QString("newmail"));
-        } else if (idleResponsePattern.cap(1).compare("FETCH", Qt::CaseInsensitive) == 0) {
+        } else if (match.captured(1).compare("FETCH", Qt::CaseInsensitive) == 0) {
             c->continuation(command(), QString("flagschanged"));
-        } else if (idleResponsePattern.cap(1).compare("EXPUNGE", Qt::CaseInsensitive) == 0) {
+        } else if (match.captured(1).compare("EXPUNGE", Qt::CaseInsensitive) == 0) {
             c->continuation(command(), QString("flagschanged")); // flags check will find expunged messages
         }
     }
@@ -3413,13 +3419,15 @@ void ImapProtocol::sendData(const QString &cmd, bool maskDebug)
         qMailLog(IMAP) << objectName() << (compress() ? "SENDC:" : "SEND") << "SEND: <login hidden>";
     } else {
         QString logCmd(cmd);
-        QRegExp authExp("^[^\\s]+\\sAUTHENTICATE\\s[^\\s]+\\s");
-        if (authExp.indexIn(cmd) != -1) {
-            logCmd = cmd.left(authExp.matchedLength()) + "<password hidden>";
+        QRegularExpression authExp("^[^\\s]+\\sAUTHENTICATE\\s[^\\s]+\\s", QRegularExpression::CaseInsensitiveOption);
+        const QRegularExpressionMatch authMatch = authExp.match(cmd);
+        if (authMatch.hasMatch()) {
+            logCmd = cmd.left(authMatch.capturedLength()) + "<password hidden>";
         } else {
-            QRegExp loginExp("^[^\\s]+\\sLOGIN\\s[^\\s]+\\s");
-            if (loginExp.indexIn(cmd) != -1) {
-                logCmd = cmd.left(loginExp.matchedLength()) + "<password hidden>";
+            QRegularExpression loginExp("^[^\\s]+\\sLOGIN\\s[^\\s]+\\s", QRegularExpression::CaseInsensitiveOption);
+            const QRegularExpressionMatch loginMatch = loginExp.match(cmd);
+            if (loginMatch.hasMatch()) {
+                logCmd = cmd.left(loginMatch.capturedLength()) + "<password hidden>";
             }
         }
         qMailLog(IMAP) << objectName() << (compress() ? "SENDC:" : "SEND") << qPrintable(logCmd);}
@@ -3579,12 +3587,13 @@ void ImapProtocol::processResponse(QString line)
 
             if (remainder.endsWith("\n")) {
                 // Is this trailing part followed by a literal data segment?
-                QRegExp literalPattern("\\{(\\d*)\\}\\r?\\n");
-                int literalIndex = literalPattern.indexIn(remainder);
+                QRegularExpression literalPattern("\\{(\\d*)\\}\\r?\\n");
+                const QRegularExpressionMatch lpMatch = literalPattern.match(remainder);
+                int literalIndex = lpMatch.capturedStart();
                 if (literalIndex != -1) {
                     // We are waiting for literal data to complete this line
                     setPrecedingLiteral(_unprocessedInput + remainder.left(literalIndex));
-                    setLiteralDataRemaining(literalPattern.cap(1).toInt());
+                    setLiteralDataRemaining(lpMatch.captured(1).toInt());
                     _stream.reset();
                 }
 
@@ -3601,12 +3610,13 @@ void ImapProtocol::processResponse(QString line)
         }
 
         // Is this line followed by a literal data segment?
-        QRegExp literalPattern("\\{(\\d*)\\}\\r?\\n");
-        int literalIndex = literalPattern.indexIn(line);
+        QRegularExpression literalPattern("\\{(\\d*)\\}\\r?\\n");
+        const QRegularExpressionMatch lpMatch = literalPattern.match(line);
+        int literalIndex = lpMatch.capturedStart();
         if (literalIndex != -1) {
             // We are waiting for literal data to complete this line
             setPrecedingLiteral(line.left(literalIndex));
-            setLiteralDataRemaining(literalPattern.cap(1).toInt());
+            setLiteralDataRemaining(lpMatch.captured(1).toInt());
             _stream.reset();
         }
 
@@ -3778,13 +3788,13 @@ QString ImapProtocol::unescapeFolderPath(const QString &path)
 QString ImapProtocol::quoteString(const QString& input)
 {
     // We can't easily catch controls other than those caught by \\s...
-    QRegExp atomSpecials("[\\(\\)\\{\\s\\*%\\\\\"\\]]");
+    QRegularExpression atomSpecials("[\\(\\)\\{\\s\\*%\\\\\"\\]]");
 
     // The empty string must be quoted
     if (input.isEmpty())
         return QString("\"\"");
 
-    if (atomSpecials.indexIn(input) == -1)
+    if (!atomSpecials.match(input).hasMatch())
         return input;
         
     // We need to quote this string because it is not an atom
