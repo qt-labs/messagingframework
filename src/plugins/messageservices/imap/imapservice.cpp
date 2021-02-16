@@ -45,7 +45,6 @@
 #include <qmaildisconnected.h>
 #include <QCoreApplication>
 #include <typeinfo>
-#include <QNetworkConfigurationManager>
 
 namespace { 
 
@@ -1453,7 +1452,6 @@ ImapService::ImapService(const QMailAccountId &accountId)
       _accountWasEnabled(false),
       _accountWasPushEnabled(false),
       _initiatePushEmailTimer(new QTimer(this)),
-      _networkConfigManager(0),
       _networkSession(0),
       _networkSessionTimer(new QTimer(this))
 {
@@ -1637,7 +1635,7 @@ void ImapService::initiatePushEmail()
     _initiatePushEmailTimer->stop();
     setPersistentConnectionStatus(false);
 
-    if (!_networkSession || _networkSession->state() != QNetworkSession::Connected) {
+    if (!_networkSession || _networkSession->state() != IdleNetworkSession::Connected) {
         createIdleSession();
         return;
     }
@@ -1698,16 +1696,11 @@ void ImapService::updateStatus(const QString &text)
 
 void ImapService::createIdleSession()
 {
-    if (!_networkConfigManager) {
-        _networkConfigManager = new QNetworkConfigurationManager(this);
-        connect(_networkConfigManager, SIGNAL(onlineStateChanged(bool)),
-                    SLOT(onOnlineStateChanged(bool)));
-        // Fail after 10 sec if no network reply is received
-        _networkSessionTimer->setSingleShot(true);
-        _networkSessionTimer->setInterval(10000);
-        connect(_networkSessionTimer,SIGNAL(timeout()),
-                this,SLOT(onSessionConnectionTimeout()));
-    }
+    // Fail after 10 sec if no network reply is received
+    _networkSessionTimer->setSingleShot(true);
+    _networkSessionTimer->setInterval(10000);
+    connect(_networkSessionTimer,SIGNAL(timeout()),
+            this,SLOT(onSessionConnectionTimeout()));
     openIdleSession();
 }
 
@@ -1718,46 +1711,25 @@ void ImapService::destroyIdleSession()
     if (_networkSession) {
        closeIdleSession();
     }
-
-    delete _networkConfigManager;
-    _networkConfigManager = 0;
 }
 
 void ImapService::openIdleSession()
 {
     closeIdleSession();
-    if (_networkConfigManager) {
-        qMailLog(Messaging) << "IDLE Session: Opening...";
-        QNetworkConfiguration netConfig = _networkConfigManager->defaultConfiguration();
 
-        if (!netConfig.isValid()) {
-            qMailLog(Messaging) << "IDLE Session: default configuration is not valid, looking for another...";
-            foreach (const QNetworkConfiguration & cfg, _networkConfigManager->allConfigurations()) {
-                if (cfg.isValid()) {
-                    netConfig = cfg;
-                    break;
-                }
-            }
-            if (!netConfig.isValid()) {
-                qWarning() << "IDLE Session:: no valid configuration found";
-                return;
-            }
-        }
+    qMailLog(Messaging) << "IDLE Session: Opening...";
+    _networkSession = new IdleNetworkSession(this);
 
-        _networkSession = new QNetworkSession(netConfig);
+    connect(_networkSession, &IdleNetworkSession::errorChanged,
+            this, &ImapService::onSessionError);
+    connect(_networkSession, &IdleNetworkSession::opened,
+            this, &ImapService::onSessionOpened);
 
-        connect(_networkSession, SIGNAL(error(QNetworkSession::SessionError)),
-                SLOT(onSessionError(QNetworkSession::SessionError)));
-        connect(_networkSession, SIGNAL(opened()), this, SLOT(onSessionOpened()));
+    _networkSession->open();
 
-        _networkSession->open();
-        // This timer will cancel the IDLE session if no network
-        // connection can be established in a given amount of time.
-        _networkSessionTimer->start();
-    } else {
-        qMailLog(Messaging) << "IDLE session error: Invalid network configuration manager";
-        createIdleSession();
-    }
+    // This timer will cancel the IDLE session if no network
+    // connection can be established in a given amount of time.
+    _networkSessionTimer->start();
 }
 
 void ImapService::closeIdleSession()
@@ -1778,10 +1750,10 @@ void ImapService::onOnlineStateChanged(bool isOnline)
     qMailLog(Messaging) << "IDLE Session: Network state changed: " << isOnline;
     if (accountPushEnabled() && isOnline
         && (!_networkSession
-            || _networkSession->state() != QNetworkSession::Connected)) {
+            || _networkSession->state() != IdleNetworkSession::Connected)) {
         openIdleSession();
     } else if (!isOnline) {
-        onSessionError(QNetworkSession::InvalidConfigurationError);
+        onSessionError(IdleNetworkSession::InvalidConfigurationError);
         closeIdleSession();
     }
 }
@@ -1795,71 +1767,46 @@ void ImapService::onSessionOpened()
     _networkSessionTimer->disconnect();
 
     qMailLog(Messaging) << "IDLE session opened, state" << _networkSession->state();
-    connect(_networkSession, SIGNAL(stateChanged(QNetworkSession::State)), this,
-            SLOT(onSessionStateChanged(QNetworkSession::State)));
+    connect(_networkSession, &IdleNetworkSession::stateChanged,
+            this, &ImapService::onSessionStateChanged);
 
     if (accountPushEnabled() && !_idling) {
         restartPushEmail();
     }
 }
 
-void ImapService::onSessionStateChanged(QNetworkSession::State status)
+void ImapService::onSessionStateChanged(IdleNetworkSession::State status)
 {
-    switch (status) {
-    case QNetworkSession::Invalid:
-        qMailLog(Messaging) << "IDLE session error: QNetworkSession::Invalid";
-        onSessionError(QNetworkSession::InvalidConfigurationError);
-        break;
-    case QNetworkSession::NotAvailable:
-        qMailLog(Messaging) << "IDLE session error: QNetworkSession::NotAvailable";
-        onSessionError(QNetworkSession::InvalidConfigurationError);
-        break;
-    case QNetworkSession::Connecting:
-        qMailLog(Messaging) << "IDLE session error: QNetworkSession::Connecting";
-        onSessionError(QNetworkSession::InvalidConfigurationError);
-        break;
-    case QNetworkSession::Connected:
-        qMailLog(Messaging) << "IDLE session connected: QNetworkSession::Connected";
-        break;
-    case QNetworkSession::Closing:
-        qMailLog(Messaging) << "IDLE session error: QNetworkSession::Closing";
-        onSessionError(QNetworkSession::InvalidConfigurationError);
-        break;
-    case QNetworkSession::Disconnected:
-        qMailLog(Messaging) << "IDLE session error: QNetworkSession::Disconnected";
-        onSessionError(QNetworkSession::InvalidConfigurationError);
-        break;
-    case QNetworkSession::Roaming:
-        qMailLog(Messaging) << "IDLE session error: QNetworkSession::Roaming";
-        onSessionError(QNetworkSession::InvalidConfigurationError);
-        break;
-    default:
-        qMailLog(Messaging) << "IDLE session error: QNetworkSession:: Unknown status change";
-        onSessionError(QNetworkSession::InvalidConfigurationError);
-        break;
+
+    qMailLog(Messaging) << "IDLE session state now: " << status;
+    if (status != IdleNetworkSession::Connecting
+            && status != IdleNetworkSession::Connected
+            && status != IdleNetworkSession::Closing
+            && status != IdleNetworkSession::Disconnected) {
+        onSessionError(IdleNetworkSession::InvalidConfigurationError);
     }
 }
 
-void ImapService::onSessionError(QNetworkSession::SessionError error)
+void ImapService::onSessionError(IdleNetworkSession::Error error)
 {
     switch (error) {
-    case QNetworkSession::UnknownSessionError:
-        qMailLog(Messaging) << "IDLE session error: QNetworkSession::UnknownSessionError";
+    case IdleNetworkSession::UnknownError:
+        qMailLog(Messaging) << "IDLE session error: IdleNetworkSession::UnknownError";
         break;
-    case QNetworkSession::SessionAbortedError:
-        qMailLog(Messaging) << "IDLE session error: QNetworkSession::SessionAbortedError";
+    case IdleNetworkSession::AbortedError:
+        qMailLog(Messaging) << "IDLE session error: IdleNetworkSession::AbortedError";
         break;
-    case QNetworkSession::RoamingError:
-        qMailLog(Messaging) << "IDLE session error: QNetworkSession::RoamingError";
+    case IdleNetworkSession::RoamingError:
+        qMailLog(Messaging) << "IDLE session error: IdleNetworkSession::RoamingError";
         break;
-    case QNetworkSession::OperationNotSupportedError:
-        qMailLog(Messaging) << "IDLE session error: QNetworkSession::OperationNotSupportedError";
+    case IdleNetworkSession::OperationNotSupportedError:
+        qMailLog(Messaging) << "IDLE session error: IdleNetworkSession::OperationNotSupportedError";
         break;
-    case QNetworkSession::InvalidConfigurationError:
-        qMailLog(Messaging) << "IDLE session error: QNetworkSession::InvalidConfigurationError";
+    case IdleNetworkSession::InvalidConfigurationError:
+        qMailLog(Messaging) << "IDLE session error: IdleNetworkSession::InvalidConfigurationError";
         break;
     default:
-        qMailLog(Messaging) << "IDLE session error: QNetworkSession:: Invalid error code";
+        qMailLog(Messaging) << "IDLE session error: IdleNetworkSession:: Invalid error code";
         break;
     }
 

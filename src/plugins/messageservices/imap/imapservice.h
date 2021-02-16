@@ -35,14 +35,8 @@
 #define IMAPSERVICE_H
 
 #include "imapclient.h"
+#include "idlenetworksession.h"
 #include <qmailmessageservice.h>
-#include <QNetworkSession>
-
-QT_BEGIN_NAMESPACE
-
-class QNetworkConfigurationManager;
-
-QT_END_NAMESPACE
 
 class ImapService : public QMailMessageService
 {
@@ -86,8 +80,8 @@ protected slots:
 private slots:
     void onOnlineStateChanged(bool isOnline);
     void onSessionOpened();
-    void onSessionStateChanged(QNetworkSession::State status);
-    void onSessionError(QNetworkSession::SessionError error);
+    void onSessionStateChanged(IdleNetworkSession::State status);
+    void onSessionError(IdleNetworkSession::Error error);
     void onSessionConnectionTimeout();
 
 private:
@@ -111,8 +105,7 @@ private:
     enum { ThirtySeconds = 30 };
     static QMap<QMailAccountId, int> _initiatePushDelay; // Limit battery consumption
     QTimer *_initiatePushEmailTimer;
-    QNetworkConfigurationManager    *_networkConfigManager;    // Qt network configuration manager
-    QNetworkSession                 *_networkSession;          // Qt network session
+    IdleNetworkSession              *_networkSession;          // IDLE network session
     QTimer                          *_networkSessionTimer;
 };
 
