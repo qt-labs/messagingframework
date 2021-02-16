@@ -39,9 +39,19 @@
 #include <QTimer>
 #include <QCoreApplication>
 #include <qmaillog.h>
-#include <QNetworkConfigurationManager>
 
 namespace { const QString serviceKey("smtp"); }
+
+/* TODO: in future, use QNetworkInformation class */
+class NetworkStatusMonitor : public QObject
+{
+    Q_OBJECT
+public:
+    NetworkStatusMonitor(QObject *parent = nullptr) : QObject(parent) {}
+    bool isOnline() const { return true; }
+Q_SIGNALS:
+    void onlineStateChanged(bool online);
+};
 
 class SmtpService::Sink : public QMailMessageSink
 {
@@ -107,7 +117,7 @@ SmtpService::SmtpService(const QMailAccountId &accountId)
       _sink(new Sink(this)),
       _capabilityFetchAction(0),
       _capabilityFetchTimeout(0),
-      _networkManager(0)
+      _networkMonitor(0)
 {
     connect(&_client, SIGNAL(progressChanged(uint, uint)), this, SIGNAL(progressChanged(uint, uint)));
 
@@ -162,9 +172,9 @@ void SmtpService::onCapabilityFetchingActivityChanged(QMailServiceAction::Activi
             delete _capabilityFetchTimeout;
             _capabilityFetchTimeout = 0;
         }
-        if (_networkManager) {
-            delete _networkManager;
-            _networkManager = 0;
+        if (_networkMonitor) {
+            delete _networkMonitor;
+            _networkMonitor = 0;
         }
         _capabilityFetchAction->deleteLater();
         _capabilityFetchAction = 0;
@@ -173,12 +183,12 @@ void SmtpService::onCapabilityFetchingActivityChanged(QMailServiceAction::Activi
 
     // The capabilities are not fetched yet. We
     // have to schedule another request.
-    if (!_networkManager) {
-        _networkManager = new QNetworkConfigurationManager(this);
-        connect(_networkManager, SIGNAL(onlineStateChanged(bool)),
-                this, SLOT(onOnlineStateChanged(bool)));
+    if (!_networkMonitor) {
+        _networkMonitor = new NetworkStatusMonitor(this);
+        connect(_networkMonitor, &NetworkStatusMonitor::onlineStateChanged,
+                this, &SmtpService::onOnlineStateChanged);
     }
-    if (_networkManager->isOnline()) {
+    if (_networkMonitor->isOnline()) {
         // We are online. It makes sense to try again.
         uint capabilityCheckTimeoutLimit = 5 * 60 * 1000; // 5 minutes
         uint timeout = 1000;
@@ -225,10 +235,10 @@ void SmtpService::onOnlineStateChanged(bool isOnline)
 void SmtpService::onAccountsUpdated(const QMailAccountIdList &accountIds)
 {
     Q_ASSERT(_capabilityFetchAction);
-    Q_ASSERT(_networkManager);
+    Q_ASSERT(_networkMonitor);
     Q_ASSERT(_capabilityFetchTimeout);
     if (!accountIds.contains(_client.account())
-        || !_networkManager->isOnline()
+        || !_networkMonitor->isOnline()
         || _capabilityFetchAction->activity() == QMailServiceAction::InProgress) {
         return;
     }
