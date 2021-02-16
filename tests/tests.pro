@@ -21,7 +21,8 @@ SUBDIRS = \
       tst_qmaildisconnected \
       tst_qmailnamespace \
       tst_locks \
-      tst_qmailthread
+      tst_qmailthread \
+      tst_qmflist
 
 exists(/usr/bin/gpgme-config) {
     SUBDIRS += tst_crypto

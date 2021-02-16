@@ -19,7 +19,6 @@ contains(DEFINES, USE_HTML_PARSER) {
     QT += gui
 }
 
-
 HEADERS += \
     qmailaccount.h \
     qmailaccountconfiguration.h \
@@ -58,6 +57,7 @@ HEADERS += \
     qmailthreadkey.h \
     qmailthreadlistmodel.h \
     qmailthreadsortkey.h \
+    qmflist.h \
     qprivateimplementation.h \
     qprivateimplementationdef_p.h \
     support/qmailglobal.h \
