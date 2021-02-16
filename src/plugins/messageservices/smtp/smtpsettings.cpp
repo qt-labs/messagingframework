@@ -52,7 +52,7 @@ class SigEntry : public QDialog
     Q_OBJECT
 
 public:
-    SigEntry(QWidget *parent, const char* name, Qt::WindowFlags fl = 0);
+    SigEntry(QWidget *parent, const char* name, Qt::WindowFlags fl = Qt::Widget);
 
     void setEntry(QString sig);
     QString entry() const;
