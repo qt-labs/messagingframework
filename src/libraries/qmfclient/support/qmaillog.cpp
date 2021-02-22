@@ -39,6 +39,7 @@
 #include <QHash>
 #include <QStringList>
 #include <QSettings>
+#include <QDir>
 
 #include <sys/types.h>
 #if !defined(Q_OS_WIN)
@@ -123,8 +124,11 @@ QMF_EXPORT void qMailLoggersRecreate(const QString& organization, const QString&
 
     const bool syslogEnabled = settings.value(QLatin1String("Syslog/Enabled"), false).toBool();
     const bool stderrEnabled = settings.value(QLatin1String("StdStreamLog/Enabled"), defaultStdError).toBool();
-    const QString filePath = settings.value(QLatin1String("FileLog/Path")).toString();
+    QString filePath = settings.value(QLatin1String("FileLog/Path")).toString();
     const bool fileEnabled = settings.value(QLatin1String("FileLog/Enabled"), false).toBool() && !filePath.isEmpty();
+
+    if (filePath.startsWith(QStringLiteral("~/")))
+        filePath.replace(0, 1, QDir::homePath());
 
     LogSystem& loggers = LogSystem::getInstance();
     loggers.clear();
