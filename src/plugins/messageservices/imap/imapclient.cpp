@@ -1222,7 +1222,7 @@ void ImapClient::dataFetched(const QString &uid, const QString &section, const Q
         mail = new QMailMessage(uid, _config.id());
     }
 
-    detachedTempFiles.insertMulti(mail->id(),fileName);
+    detachedTempFiles.insert(mail->id(),fileName); // multi
 
     if (mail->id().isValid()) {
         if (section.isEmpty()) {
@@ -1359,7 +1359,7 @@ void ImapClient::dataFetched(const QString &uid, const QString &section, const Q
     }
 }
 
-void ImapClient::partHeaderFetched(const QString &uid, const QString &section, const QString &fileName, int size)
+void ImapClient::partHeaderFetched(const QString &uid, const QString &section, const QString &fileName, int /* size */)
 {
     static const QString tempDir = QMail::tempPath();
 
@@ -1377,7 +1377,7 @@ void ImapClient::partHeaderFetched(const QString &uid, const QString &section, c
         mail = new QMailMessage(uid, _config.id());
     }
 
-    detachedTempFiles.insertMulti(mail->id(),fileName);
+    detachedTempFiles.insert(mail->id(),fileName); // multi
 
     if (mail->id().isValid() && !section.isEmpty()) {
         // This is data for a sub-part of the message

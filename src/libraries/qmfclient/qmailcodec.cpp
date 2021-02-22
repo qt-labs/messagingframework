@@ -409,6 +409,7 @@ QString QMailCodec::autoDetectEncoding(const QByteArray& text)
     QString result(charsetDetector.detect().name());
     return result;
 #else
+    Q_UNUSED(text);
     return QString();
 #endif
 }

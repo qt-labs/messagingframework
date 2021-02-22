@@ -343,9 +343,9 @@ void decorate(QString* message, int code, const ErrorSet& errorSet)
 
     bool handledByHandler = true;
     if (code == QMailServiceAction::Status::ErrFileSystemFull) {
-        message->append(' ').append(LongStream::errorMessage());
+        message->append(QString::fromLatin1(" ").append(LongStream::errorMessage()));
     } else if (code == QMailServiceAction::Status::ErrEnqueueFailed) {
-        message->append('\n' + qApp->translate("QMailServiceAction", "Unable to send; message moved to Drafts folder"));
+        message->append(QString::fromLatin1("\n").append(qApp->translate("QMailServiceAction", "Unable to send; message moved to Drafts folder")));
     } else if (code == QMailServiceAction::Status::ErrUnknownResponse) {
         message->prepend(qApp->translate("QMailServiceAction", "Unexpected response from server: "));
     } else {
@@ -354,8 +354,10 @@ void decorate(QString* message, int code, const ErrorSet& errorSet)
 
     if (!handledByErrorSet && !handledByHandler) {
         if (!message->isEmpty())
-            message->append('\n');
-        message->append('<' + QString(qApp->translate("QMailServiceAction", "Error %1", "%1 contains numeric error code")).arg(code) + '>');
+            message->append(QChar::LineFeed);
+        message->append(QChar::fromLatin1('<')
+                        + QString(qApp->translate("QMailServiceAction", "Error %1", "%1 contains numeric error code")).arg(code)
+                        + QChar::fromLatin1('>'));
     }
 }
 

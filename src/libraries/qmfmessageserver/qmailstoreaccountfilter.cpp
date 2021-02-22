@@ -272,9 +272,11 @@ void QMailStoreEvents::foreachAccount(const QMailAccountIdList& ids, const Conne
 {
     foreach (const QMailAccountId &id, ids) {
         ConnectionType::const_iterator it = connection.find(id);
-        if (it != connection.end())
-            foreach (QMailStoreAccountFilter *filter, it.value())
+        if (it != connection.end()) {
+            foreach (QMailStoreAccountFilter *filter, it.value()) {
                 emit (filter->*signal)();
+            }
+        }
     }
 }
 
@@ -286,10 +288,13 @@ void QMailStoreEvents::foreachFolder(const QMailFolderIdList& ids, const Connect
         ConnectionType::const_iterator it = connection.begin(), end = connection.end();
         for ( ; it != end; ++it) {
             QMap<QMailAccountId, QMailFolderIdList>::const_iterator fit = folders.find(it.key());
-            if (fit != folders.end())
-                if (!fit.value().isEmpty())
-                    foreach (QMailStoreAccountFilter *filter, it.value())
+            if (fit != folders.end()) {
+                if (!fit.value().isEmpty()) {
+                    foreach (QMailStoreAccountFilter *filter, it.value()) {
                         emit (filter->*signal)(fit.value());
+                    }
+                }
+            }
         }
     }
 }
@@ -302,10 +307,13 @@ void QMailStoreEvents::foreachMessage(const QMailMessageIdList& ids, const Conne
         ConnectionType::const_iterator it = connection.begin(), end = connection.end();
         for ( ; it != end; ++it) {
             QMap<QMailAccountId, QMailMessageIdList>::const_iterator mit = messages.find(it.key());
-            if (mit != messages.end())
-                if (!mit.value().isEmpty())
-                    foreach (QMailStoreAccountFilter *filter, it.value())
+            if (mit != messages.end()) {
+                if (!mit.value().isEmpty()) {
+                    foreach (QMailStoreAccountFilter *filter, it.value()) {
                         emit (filter->*signal)(mit.value());
+                    }
+                }
+            }
         }
     }
 }

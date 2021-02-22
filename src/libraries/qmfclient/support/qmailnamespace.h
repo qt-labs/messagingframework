@@ -89,6 +89,14 @@ namespace QMail
     QMF_EXPORT int maximumPushConnections();
     QMF_EXPORT int databaseAutoCloseTimeout();
 
+    template<typename StringType> struct qchar_conversion;
+    template<> struct qchar_conversion<QString> { static QChar fn(const QChar c) { return c; } };
+    template<> struct qchar_conversion<QByteArray> { static QChar fn(const char c) { return QChar::fromLatin1(c); } };
+
+    template<typename StringType> struct ascii_str_conversion;
+    template<> struct ascii_str_conversion<QString> { static QString fn(const char *str) { return QString::fromLatin1(str); } };
+    template<> struct ascii_str_conversion<QByteArray> { static QByteArray fn(const char *str) { return QByteArray(str); } };
+
     template<typename StringType>
     StringType unquoteString(const StringType& src)
     {
@@ -100,7 +108,9 @@ namespace QMail
             typename StringType::const_iterator const begin = src.constData();
             typename StringType::const_iterator const last = begin + length - 1;
 
-            if ((last > begin) && (*begin == '"' && *last == '"'))
+            if ((last > begin)
+                    && (qchar_conversion<StringType>::fn(*begin) == QChar::fromLatin1('"')
+                    &&  qchar_conversion<StringType>::fn(*last)  == QChar::fromLatin1('"')))
                 return src.mid(1, length - 2);
         }
 
@@ -110,7 +120,7 @@ namespace QMail
     template<typename StringType>
     StringType quoteString(const StringType& src)
     {
-        StringType result("\"\"");
+        StringType result(ascii_str_conversion<StringType>::fn("\"\""));
 
         // Return the input string surrounded by double-quotes, which are added if not present
         int length = src.length();
@@ -121,10 +131,10 @@ namespace QMail
             typename StringType::const_iterator begin = src.constData();
             typename StringType::const_iterator last = begin + length - 1;
 
-            if (*begin == '"')
+            if (qchar_conversion<StringType>::fn(*begin) == QChar::fromLatin1('"'))
                 begin += 1;
 
-            if ((last >= begin) && (*last == '"'))
+            if ((last >= begin) && (qchar_conversion<StringType>::fn(*last) == QChar::fromLatin1('"')))
                 last -= 1;
 
             if (last >= begin)

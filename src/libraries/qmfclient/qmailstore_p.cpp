@@ -3067,7 +3067,7 @@ void QMailStorePrivate::clearQueryError(void)
 template<bool PtrSizeExceedsLongSize>
 QString numericPtrValue(const void *ptr)
 {
-    return QString::number(reinterpret_cast<unsigned long long>(ptr), 16).rightJustified(16, '0');
+    return QString::number(reinterpret_cast<unsigned long long>(ptr), 16).rightJustified(16, QChar::fromLatin1('0'));
 }
 
 template<>
