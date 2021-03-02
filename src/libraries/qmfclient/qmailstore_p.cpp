@@ -7426,6 +7426,7 @@ QMailStorePrivate::AttemptResult QMailStorePrivate::attemptEnsureDurability(Tran
         qWarning() << "Could not ensure durability of mail store";
         return DatabaseFailure;
     }
+    query.finish();
 
     if (commitOnSuccess && !t.commit()) {
         qWarning() << "Could not commit message removal record deletion to database";
