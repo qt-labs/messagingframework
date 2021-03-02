@@ -268,7 +268,7 @@ template<typename Key>
 template <typename Stream> 
 void MailKeyImpl<Key>::serialize(Stream &stream) const
 {
-    stream << combiner;          
+    stream << static_cast<int>(combiner);
     stream << negated;
 
     stream << arguments.count();
@@ -289,15 +289,16 @@ void MailKeyImpl<Key>::deserialize(Stream &stream)
     combiner = static_cast<QMailKey::Combiner>(i);
     stream >> negated;
 
-    stream >> i;
-    for (int j = 0; j < i; ++j) {
+    qsizetype s;
+    stream >> s;
+    for (qsizetype j = 0; j < s; ++j) {
         Argument a;
         a.deserialize(stream);
         arguments.append(a);
     }
 
-    stream >> i;
-    for (int j = 0; j < i; ++j) {
+    stream >> s;
+    for (qsizetype j = 0; j < i; ++j) {
         Key subKey;
         subKey.deserialize(stream);
         subKeys.append(subKey);

@@ -134,9 +134,9 @@ template<typename Key>
 template <typename Stream> 
 void MailSortKeyImpl<Key>::deserialize(Stream &stream)
 {
-    int i = 0;
+    qsizetype i = 0;
     stream >> i;
-    for (int j = 0; j < i; ++j) {
+    for (qsizetype j = 0; j < i; ++j) {
         Argument a;
         a.deserialize(stream);
         _arguments.append(a);
