@@ -414,10 +414,10 @@ QList<QString> obsoleteContentIdentifiers(QList<QMailMessageMetaData*> list)
     return result;
 }
 
-QList<QString> contentIdentifiers(QList<QMailMessageMetaData*> list)
+QList<QString> contentIdentifiers(const QList<QMailMessageMetaData*> &list)
 {
     QList<QString> result;
-    foreach (QMailMessageMetaData *m, list) {
+    for (QMailMessageMetaData *m : list) {
         QString identifier = m->contentIdentifier();
         if (!identifier.isEmpty()) {
             result.append(identifier);
