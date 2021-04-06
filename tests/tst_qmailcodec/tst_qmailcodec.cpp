@@ -110,22 +110,22 @@ void tst_QMailCodec::encode_data()
     QTest::addColumn<QByteArray>("qp2047_encoded");
 
     QTest::newRow("no padding")
-        << "abc xyz ABC XYZ 01 89"
-        << "UTF-8"
+        << QStringLiteral("abc xyz ABC XYZ 01 89")
+        << QByteArray("UTF-8")
         << QByteArray("YWJjIHh5eiBBQkMgWFlaIDAxIDg5")
         << QByteArray("abc xyz ABC XYZ 01 89")
         << QByteArray("abc_xyz_ABC_XYZ_01_89");
 
     QTest::newRow("one padding byte")
-        << "|#abc xyz ABC XYZ 01 89"
-        << "UTF-8"
+        << QStringLiteral("|#abc xyz ABC XYZ 01 89")
+        << QByteArray("UTF-8")
         << QByteArray("fCNhYmMgeHl6IEFCQyBYWVogMDEgODk=")
         << QByteArray("|#abc xyz ABC XYZ 01 89")
         << QByteArray("=7C=23abc_xyz_ABC_XYZ_01_89");
 
     QTest::newRow("two padding bytes")
-        << "#abc xyz ABC XYZ 01 89"
-        << "UTF-8"
+        << QStringLiteral("#abc xyz ABC XYZ 01 89")
+        << QByteArray("UTF-8")
         << QByteArray("I2FiYyB4eXogQUJDIFhZWiAwMSA4OQ==")
         << QByteArray("#abc xyz ABC XYZ 01 89")
         << QByteArray("=23abc_xyz_ABC_XYZ_01_89");
@@ -137,7 +137,7 @@ void tst_QMailCodec::encode_data()
                             static_cast<char16_t>(0x06b4) };
     QTest::newRow("unicode characters")
         << QString(chars, 7)
-        << "UTF-8"
+        << QByteArray("UTF-8")
         << QByteArray("2LYg2akJ2qUg2rQ=")
         << QByteArray("=D8=B6 =D9=A9\t=DA=A5 =DA=B4")
         << QByteArray("=D8=B6_=D9=A9=09=DA=A5_=DA=B4");
@@ -316,8 +316,8 @@ void tst_QMailCodec::line_lengths_data()
     QTest::newRow("default line length")
         << Base64MaxLineLength
         << QuotedPrintableMaxLineLength
-        << "The quick brown fox jumps over the lazy dog"
-        << "UTF-8"
+        << QStringLiteral("The quick brown fox jumps over the lazy dog")
+        << QByteArray("UTF-8")
         << QByteArray("VGhlIHF1aWNrIGJyb3duIGZveCBqdW1wcyBvdmVyIHRoZSBsYXp5IGRvZw==")
         << QByteArray("The quick brown fox jumps over the lazy dog")
         << QByteArray("The_quick_brown_fox_jumps_over_the_lazy_dog");
@@ -325,8 +325,8 @@ void tst_QMailCodec::line_lengths_data()
     QTest::newRow("line length 32")
         << 32
         << 32
-        << "The quick brown fox jumps over the lazy dog"
-        << "UTF-8"
+        << QStringLiteral("The quick brown fox jumps over the lazy dog")
+        << QByteArray("UTF-8")
         << QByteArray("VGhlIHF1aWNrIGJyb3duIGZveCBqdW1w\r\ncyBvdmVyIHRoZSBsYXp5IGRvZw==")
         << QByteArray("The quick brown fox jumps over=\r\n the lazy dog")
         << QByteArray("The_quick_brown_fox_jumps_over=\r\n_the_lazy_dog");
@@ -334,8 +334,8 @@ void tst_QMailCodec::line_lengths_data()
     QTest::newRow("line length 16")
         << 16
         << 16
-        << "The quick brown fox jumps over the lazy dog"
-        << "UTF-8"
+        << QStringLiteral("The quick brown fox jumps over the lazy dog")
+        << QByteArray("UTF-8")
         << QByteArray("VGhlIHF1aWNrIGJy\r\nb3duIGZveCBqdW1w\r\ncyBvdmVyIHRoZSBs\r\nYXp5IGRvZw==")
         << QByteArray("The quick brown=\r\n fox jumps over=\r\n the lazy dog")
         << QByteArray("The_quick_brown=\r\n_fox_jumps_over=\r\n_the_lazy_dog");
@@ -343,8 +343,8 @@ void tst_QMailCodec::line_lengths_data()
     QTest::newRow("line length 8")
         << 8
         << 8
-        << "The quick brown fox jumps over the lazy dog"
-        << "UTF-8"
+        << QStringLiteral("The quick brown fox jumps over the lazy dog")
+        << QByteArray("UTF-8")
         << QByteArray("VGhlIHF1\r\naWNrIGJy\r\nb3duIGZv\r\neCBqdW1w\r\ncyBvdmVy\r\nIHRoZSBs\r\nYXp5IGRv\r\nZw==")
         << QByteArray("The quic=\r\nk brown=\r\n fox jum=\r\nps over=\r\n the laz=\r\ny dog")
         << QByteArray("The_quic=\r\nk_brown=\r\n_fox_jum=\r\nps_over=\r\n_the_laz=\r\ny_dog");
@@ -352,8 +352,8 @@ void tst_QMailCodec::line_lengths_data()
     QTest::newRow("whitespace")
         << 8
         << 8
-        << "The    quick\t\t  brown\t     \tfox"
-        << "UTF-8"
+        << QStringLiteral("The    quick\t\t  brown\t     \tfox")
+        << QByteArray("UTF-8")
         << QByteArray("VGhlICAg\r\nIHF1aWNr\r\nCQkgIGJy\r\nb3duCSAg\r\nICAgCWZv\r\neA==")
         << QByteArray("The  =20=\r\n quick=\r\n\t\t  brow=\r\nn\t   =20=\r\n \tfox")
         << QByteArray("The__=20=\r\n_quick=\r\n=09=09=\r\n__brown=\r\n=09__=20=\r\n__=09fox");
@@ -361,8 +361,8 @@ void tst_QMailCodec::line_lengths_data()
     QTest::newRow("middle line trailing spaces")
         << 8
         << 8
-        << "  \nPlop"
-        << "UTF-8"
+        << QStringLiteral("  \nPlop")
+        << QByteArray("UTF-8")
         << QByteArray("ICAKUGxv\r\ncA==")
         << QByteArray(" =20\r\nPlop")
         << QByteArray("_=20\r\nPlop");
@@ -372,7 +372,7 @@ void tst_QMailCodec::line_lengths_data()
         << Base64MaxLineLength
         << QuotedPrintableMaxLineLength
         << QString()
-        << "UTF-8"
+        << QByteArray("UTF-8")
         << QByteArray()
         << QByteArray()
         << QByteArray();
@@ -579,8 +579,8 @@ void tst_QMailCodec::embedded_newlines_data()
     //   CR - 0x0D - \015
     //   LF - 0x0A - \012
     QTest::newRow("new lines")
-        << "The\012quick\015\012\015brown\015fox"
-        << "UTF-8"
+        << QStringLiteral("The\012quick\015\012\015brown\015fox")
+        << QByteArray("UTF-8")
         << QByteArray("The\015\012quick\015\012\015\012brown\015\012fox")
         << QString("The\nquick\n\nbrown\nfox")
         << QByteArray("The=0Aquick=0D=0A=0Dbrown=0Dfox")

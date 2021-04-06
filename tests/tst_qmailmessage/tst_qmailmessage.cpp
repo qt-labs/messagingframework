@@ -286,10 +286,10 @@ void tst_QMailMessage::toRfc2822_data()
     QTest::newRow("simple") 
         /* from              */ << latin1Address
         /* to                */ << toAddressList
-        /* subject           */ << "Test"
-        /* time_stamp        */ << "Fri, 21 Nov 1997 09:55:06 -0600"
+        /* subject           */ << QStringLiteral("Test")
+        /* time_stamp        */ << QStringLiteral("Fri, 21 Nov 1997 09:55:06 -0600")
         /* content_type      */ << QByteArray("text/plain; charset=utf-8")
-        /* plain_text        */ << "Plain text."
+        /* plain_text        */ << QStringLiteral("Plain text.")
         /* text_parts        */ << QList<pair_type>()
         /* rfc_header_text   */ << QByteArray(
 "From: =?ISO-8859-1?Q?=22Joh=F1_D=F6e=22?= <jdoe@example.net>" CRLF
@@ -305,10 +305,10 @@ void tst_QMailMessage::toRfc2822_data()
     QTest::newRow("multipart") 
         /* from              */ << latin1Address
         /* to                */ << toAddressList
-        /* subject           */ << "Test"
-        /* time_stamp        */ << "Fri, 21 Nov 1997 09:55:06 -0600"
+        /* subject           */ << QStringLiteral("Test")
+        /* time_stamp        */ << QStringLiteral("Fri, 21 Nov 1997 09:55:06 -0600")
         /* content_type      */ << QByteArray("multipart/alternative; boundary=bound01")
-        /* plain_text        */ << ""
+        /* plain_text        */ << QStringLiteral("")
         /* text_parts        */ << ( QList<pair_type>() << qMakePair(QByteArray("text/plain"), QByteArray("Hello."))
                                                         << qMakePair(QByteArray("text/html"), QByteArray("<p>Hello.</p>")) )
         /* rfc_header_text   */ << QByteArray(
