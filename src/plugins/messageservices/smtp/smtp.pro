@@ -1,6 +1,7 @@
 TEMPLATE = lib 
 TARGET = smtp 
 PLUGIN_TYPE = messageservices
+PLUGIN_CLASS_NAME = QmfSmtpPlugin
 load(qt_plugin)
 
 QT = core core5compat network qmfclient qmfmessageserver

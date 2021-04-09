@@ -1,6 +1,7 @@
 TEMPLATE = lib
 TARGET = qmfsettings
 PLUGIN_TYPE = messageservices
+PLUGIN_CLASS_NAME = QmfSettingsPlugin
 load(qt_plugin)
 
 QT = core network qmfclient qmfmessageserver
