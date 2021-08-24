@@ -2465,8 +2465,9 @@ bool UidFetchState::appendLiteralData(ImapContext *c, const QString &preceding)
             pattern = QRegularExpression("BODY\\[\\S*\\] ", QRegularExpression::CaseInsensitiveOption);
         }
 
-        const QRegularExpressionMatch match = pattern.match(preceding);
-        int index = match.lastCapturedIndex();
+        QRegularExpressionMatch match;
+        preceding.lastIndexOf(pattern, -1, &match);
+        int index = match.capturedStart(0);
         if (index != -1) {
             if ((index + match.captured(0).length()) == preceding.length()) {
                 // Detach the retrieved data to a file we have ownership of
