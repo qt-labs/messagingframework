@@ -298,7 +298,7 @@ void MailKeyImpl<Key>::deserialize(Stream &stream)
     }
 
     stream >> s;
-    for (qsizetype j = 0; j < i; ++j) {
+    for (qsizetype j = 0; j < s; ++j) {
         Key subKey;
         subKey.deserialize(stream);
         subKeys.append(subKey);
