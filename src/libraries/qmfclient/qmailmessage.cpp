@@ -1185,12 +1185,16 @@ namespace findAttachments
             bool isAttachment = (!part.contentDisposition().isNull()) &&
                 (part.contentDisposition().type() == QMailMessageContentDisposition::Attachment);
 
+            bool isNone = (part.contentDisposition().isNull()) ||
+                (part.contentDisposition().type() == QMailMessageContentDisposition::None);
+
             bool isRFC822 = contentType.matches("message", "rfc822");
 
             // Attached messages are considered as attachments even if content disposition
             // is inline instead of attachment, but only if they aren't text/plain nor text/html
             if (isRFC822 || (isAttachment && !excludedApp)
-                || (isInLine && !excludedText && !excludedApp)) {
+                || (isInLine && !excludedText && !excludedApp)
+                || (isNone && !excludedText && !excludedApp)) {
                 if (found) {
                     *found << part.location();
                 }
