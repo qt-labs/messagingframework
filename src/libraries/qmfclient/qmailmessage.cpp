@@ -5273,6 +5273,23 @@ bool QMailMessagePartContainer::hasAttachments() const
 }
 
 /*!
+  Returns true if the container is itself an encryption container,
+  see RFC1847, section 2.2 for the definition of an encryption container.
+*/
+bool QMailMessagePartContainer::isEncrypted() const
+{
+    if (multipartType() == QMailMessagePart::MultipartEncrypted
+        && partCount() == 2) {
+        const QMailMessagePart &part = partAt(1);
+        // RFC requires the content type to be application/octet-stream
+        // but some implementations are not conforming. So we don't test
+        // the content-type for correctness.
+        return (part.multipartType() == QMailMessagePart::MultipartNone);
+    }
+    return false;
+}
+
+/*!
   Sets the plain text body of a container to \a plainTextBody.
  */
 void QMailMessagePartContainer::setPlainTextBody(const QMailMessageBody& plainTextBody)
@@ -6495,6 +6512,7 @@ static quint64 partialContentAvailableFlag = 0;
 static quint64 hasAttachmentsFlag = 0;
 static quint64 hasReferencesFlag = 0;
 static quint64 hasSignatureFlag = 0;
+static quint64 hasEncryptionFlag = 0;
 static quint64 hasUnresolvedReferencesFlag = 0;
 static quint64 draftFlag = 0;
 static quint64 outboxFlag = 0;
@@ -7169,6 +7187,7 @@ const quint64 &QMailMessageMetaData::PartialContentAvailable = partialContentAva
 const quint64 &QMailMessageMetaData::HasAttachments = hasAttachmentsFlag;
 const quint64 &QMailMessageMetaData::HasReferences = hasReferencesFlag;
 const quint64 &QMailMessageMetaData::HasSignature = hasSignatureFlag;
+const quint64 &QMailMessageMetaData::HasEncryption = hasEncryptionFlag;
 const quint64 &QMailMessageMetaData::HasUnresolvedReferences = hasUnresolvedReferencesFlag;
 const quint64 &QMailMessageMetaData::Draft = draftFlag;
 const quint64 &QMailMessageMetaData::Outbox = outboxFlag;
@@ -8833,6 +8852,9 @@ QMailMessage QMailMessage::fromRfc2822(LongString& ls)
     mail.refreshPreview();
     if (mail.hasAttachments()) {
         mail.setStatus( QMailMessage::HasAttachments, true );
+    }
+    if (mail.isEncrypted()) {
+        mail.setStatus(QMailMessage::HasEncryption, true);
     }
 
     return mail;

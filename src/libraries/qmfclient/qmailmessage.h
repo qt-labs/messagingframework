@@ -393,6 +393,7 @@ public:
     bool hasPlainTextBody() const;
     bool hasHtmlBody() const;
     bool hasAttachments() const;
+    bool isEncrypted() const;
     void setPlainTextBody(const QMailMessageBody& plainTextBody);
     void setHtmlAndPlainTextBody(const QMailMessageBody& htmlBody, const QMailMessageBody& plainTextBody);
     void setInlineImages(const QMap<QString, QString> &htmlImagesMap);
@@ -570,6 +571,7 @@ public:
     static const quint64 &HasAttachments;
     static const quint64 &HasReferences;
     static const quint64 &HasSignature;
+    static const quint64 &HasEncryption;
     static const quint64 &HasUnresolvedReferences;
     static const quint64 &Draft;
     static const quint64 &Outbox;
