@@ -51,6 +51,9 @@ public:
     virtual QMailCryptoFwd::SignatureResult sign(QMailMessagePartContainer *part,
                                                  const QStringList &keys) const = 0;
 
+    virtual bool canDecrypt(const QMailMessagePartContainer &part) const = 0;
+    virtual QMailCryptoFwd::DecryptionResult decrypt(QMailMessagePartContainer *part) const = 0;
+
     virtual void setPassphraseCallback(QMailCryptoFwd::PassphraseCallback cb) = 0;
     virtual QString passphraseCallback(const QString &info) const = 0;
 
@@ -71,12 +74,17 @@ public:
     static const QMailMessagePartContainer* findSignedContainer(const QMailMessagePartContainer *part, QMailCryptographicServiceInterface **engine = Q_NULLPTR);
 
     QMailCryptographicServiceInterface* instance(const QString &engine);
+    QMailCryptographicServiceInterface* decryptionEngine(const QMailMessagePartContainer &part);
 
     static QMailCryptoFwd::VerificationResult verifySignature(const QMailMessagePartContainer &part);
     static QMailCryptoFwd::SignatureResult sign(QMailMessagePartContainer *part,
                                                 const QString &crypto,
                                                 const QStringList &keys,
                                                 QMailCryptoFwd::PassphraseCallback cb = Q_NULLPTR);
+
+    static bool canDecrypt(const QMailMessagePartContainer &part);
+    static QMailCryptoFwd::DecryptionResult decrypt(QMailMessagePartContainer *part,
+                                                    QMailCryptoFwd::PassphraseCallback cb = Q_NULLPTR);
 
 private:
     QMailCryptographicService(QObject *parent = Q_NULLPTR);

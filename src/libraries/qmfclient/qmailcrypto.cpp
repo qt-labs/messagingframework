@@ -113,6 +113,19 @@ QMailCryptographicServiceInterface* QMailCryptographicService::instance(const QS
     return qobject_cast<QMailCryptographicServiceInterface*>(QMailPluginManager::instance(engine));
 }
 
+QMailCryptographicServiceInterface* QMailCryptographicService::decryptionEngine(const QMailMessagePartContainer &part)
+{
+    if (part.isEncrypted()) {
+        QStringList engines = list();
+        for (QStringList::iterator it = engines.begin(); it != engines.end(); it++) {
+            QMailCryptographicServiceInterface *engine = instance(*it);
+            if (engine && engine->canDecrypt(part))
+                return engine;
+        }
+    }
+    return Q_NULLPTR;
+}
+
 QMailMessagePartContainer* QMailCryptographicService::findSignedContainer(QMailMessagePartContainer *part, QMailCryptographicServiceInterface **engine)
 {
     QMailCryptographicService *plugins =
@@ -189,4 +202,35 @@ QMailCryptoFwd::SignatureResult QMailCryptographicService::sign(QMailMessagePart
     }
 
     return QMailCryptoFwd::BadSignature;
+}
+
+bool QMailCryptographicService::canDecrypt(const QMailMessagePartContainer &part)
+{
+    return instance()->decryptionEngine(part) != Q_NULLPTR;
+}
+
+QMailCryptoFwd::DecryptionResult QMailCryptographicService::decrypt(QMailMessagePartContainer *part,
+                                                                    QMailCryptoFwd::PassphraseCallback cb)
+{
+    if (!part || !part->isEncrypted()) {
+        return QMailCryptoFwd::DecryptionResult(QMailCryptoFwd::NoDigitalEncryption);
+    }
+
+    QMailCryptographicServiceInterface *engine = instance()->decryptionEngine(*part);
+    if (engine) {
+        engine->setPassphraseCallback(cb);
+        QMailCryptoFwd::DecryptionResult result = engine->decrypt(part);
+        if (result.status == QMailCryptoFwd::Decrypted) {
+            QMailMessage* message = dynamic_cast<QMailMessage*>(part);
+            if (message && message->hasAttachments()) {
+                message->setStatus(QMailMessage::HasAttachments, true);
+            }
+            if (message && findSignedContainer(part)) {
+                message->setStatus(QMailMessage::HasSignature, true);
+            }
+        }
+        return result;
+    } else {
+        return QMailCryptoFwd::DecryptionResult(QMailCryptoFwd::UnsupportedProtocol);
+    }
 }

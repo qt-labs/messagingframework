@@ -68,6 +68,9 @@ class QMailCryptoGPGME: public QObject,
                                            const QByteArray &messageData,
                                            QList<QMailCryptoFwd::KeyResult> &keyResults) const;
 
+    QMailCryptoFwd::CryptResult decrypt(const QByteArray &encData,
+                                        QByteArray &decData) const;
+
  private:
     QMailCryptoFwd::SignatureResult getSignature(const QByteArray &message,
                                                  const QStringList &keys,

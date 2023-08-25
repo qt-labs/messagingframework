@@ -106,3 +106,15 @@ QMailCryptoFwd::SignatureResult QMailCryptoSMIME::sign(QMailMessagePartContainer
 
     return QMailCryptoFwd::SignatureValid;
 }
+
+bool QMailCryptoSMIME::canDecrypt(const QMailMessagePartContainer &part) const
+{
+    Q_UNUSED(part);
+    return false;
+}
+
+QMailCryptoFwd::DecryptionResult QMailCryptoSMIME::decrypt(QMailMessagePartContainer *part) const
+{
+    Q_UNUSED(part);
+    return QMailCryptoFwd::DecryptionResult(QMailCryptoFwd::UnsupportedProtocol);
+}

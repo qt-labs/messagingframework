@@ -426,3 +426,52 @@ QMailCryptoFwd::SignatureResult QMailCryptoGPGME::verify(const QByteArray &sigDa
 
     return toSignatureResult(err);
 }
+
+static QMailCryptoFwd::CryptResult toCryptResult(gpgme_error_t err)
+{
+    switch (gpgme_err_code(err)) {
+    case GPG_ERR_NO_ERROR:
+        return QMailCryptoFwd::Decrypted;
+    case GPG_ERR_BAD_PASSPHRASE:
+        return QMailCryptoFwd::WrongPassphrase;
+    case GPG_ERR_DECRYPT_FAILED:
+    case GPG_ERR_NO_DATA:
+    case GPG_ERR_INV_VALUE:
+    case GPG_ERR_NO_PUBKEY:
+        return QMailCryptoFwd::NoDigitalEncryption;
+    default:
+        return QMailCryptoFwd::UnknownCryptError;
+    }
+}
+
+QMailCryptoFwd::CryptResult QMailCryptoGPGME::decrypt(const QByteArray &encData,
+                                                      QByteArray &decData) const
+{
+    GPGmeContext ctx(m_protocol);
+    if (!ctx) {
+        qWarning() << "cannot create context:" << ctx.errorMessage();
+        return toCryptResult(ctx.err);
+    }
+
+    GPGmeData enc(encData);
+    if (!enc.isValid()) {
+        qWarning() << "cannot create encoded data:" << enc.errorMessage();
+        return toCryptResult(enc.err);
+    }
+
+    GPGmeData dec;
+    if (!dec.isValid()) {
+        qWarning() << "cannot create decoded data:" << dec.errorMessage();
+        return toCryptResult(dec.err);
+    }
+
+    gpgme_error_t err;
+    err = gpgme_op_decrypt(ctx, enc, dec);
+    if (gpgme_err_code(err) != GPG_ERR_NO_ERROR) {
+        qWarning() << "decryption fails:" << gpgme_strerror(err);
+        return toCryptResult(err);
+    }
+    decData = dec.releaseData();
+
+    return QMailCryptoFwd::Decrypted;
+}

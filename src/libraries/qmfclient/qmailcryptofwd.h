@@ -56,6 +56,13 @@ public:
         UnusableKey,
         UnknownError
     };
+    enum CryptResult {
+        NoDigitalEncryption,
+        Decrypted,
+        WrongPassphrase,
+        UnsupportedProtocol,
+        UnknownCryptError
+    };
     typedef QString (*PassphraseCallback)(const QString &info);
 
     struct QMF_EXPORT KeyResult {
@@ -78,6 +85,16 @@ public:
         VerificationResult(SignatureResult status = UnknownError,
                            const QList<KeyResult> &results = QList<KeyResult>())
             : summary(status), keyResults(results)
+        {
+        }
+    };
+
+    struct QMF_EXPORT DecryptionResult {
+        QString engine;
+        CryptResult status;
+
+        DecryptionResult(CryptResult result = UnknownCryptError)
+            : status(result)
         {
         }
     };

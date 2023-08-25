@@ -52,6 +52,9 @@ public:
     bool partHasSignature(const QMailMessagePartContainer &part) const Q_DECL_OVERRIDE;
     QMailCryptoFwd::VerificationResult verifySignature(const QMailMessagePartContainer &part) const Q_DECL_OVERRIDE;
     QMailCryptoFwd::SignatureResult sign(QMailMessagePartContainer *part, const QStringList &keys) const Q_DECL_OVERRIDE;
+
+    bool canDecrypt(const QMailMessagePartContainer &part) const Q_DECL_OVERRIDE;
+    QMailCryptoFwd::DecryptionResult decrypt(QMailMessagePartContainer *part) const Q_DECL_OVERRIDE;
 };
 
 #endif

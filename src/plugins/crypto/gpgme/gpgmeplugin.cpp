@@ -103,3 +103,51 @@ QMailCryptoFwd::SignatureResult QMailCryptoGPG::sign(QMailMessagePartContainer *
 
     return QMailCryptoFwd::SignatureValid;
 }
+
+bool QMailCryptoGPG::canDecrypt(const QMailMessagePartContainer &part) const
+{
+    if (part.isEncrypted()) {
+        const QMailMessagePart &control = part.partAt(0);
+        if (control.contentType().matches("application", "pgp-encrypted")
+            && control.hasBody()) {
+            return control.body().data().startsWith(QString::fromLatin1("Version: 1"));
+        }
+    }
+    return false;
+}
+
+QMailCryptoFwd::DecryptionResult QMailCryptoGPG::decrypt(QMailMessagePartContainer *part) const
+{
+    if (!part) {
+        qWarning() << "unable to decrypt a NULL part.";
+        return QMailCryptoFwd::DecryptionResult();
+    }
+
+    if (!canDecrypt(*part))
+        return QMailCryptoFwd::DecryptionResult(QMailCryptoFwd::UnsupportedProtocol);
+
+    const QMailMessagePart &body = part->partAt(1);
+
+    if (!body.contentAvailable())
+        return QMailCryptoFwd::DecryptionResult();
+
+    QByteArray decData;
+    QMailCryptoFwd::DecryptionResult result;
+    result.engine = QStringLiteral("libgpgme.so");
+    result.status = QMailCryptoGPGME::decrypt(body.body().data(QMailMessageBodyFwd::Decoded), decData);
+    if (result.status == QMailCryptoFwd::Decrypted) {
+        const QMailMessage mail = QMailMessage::fromRfc2822(decData);
+
+        part->clearParts();
+        if (mail.partCount() > 0) {
+            part->setMultipartType(mail.multipartType(),
+                                   mail.contentType().parameters());
+            for (uint i = 0; i < mail.partCount(); i++) {
+                part->appendPart(mail.partAt(i));
+            }
+        } else {
+            part->setBody(mail.body());
+        }
+    }
+    return result;
+}
