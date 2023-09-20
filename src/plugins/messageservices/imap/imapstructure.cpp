@@ -545,6 +545,9 @@ bool setMessageContentFromStructure(const QStringList &structure, QMailMessage *
         if (message->hasAttachments()) {
             message->setStatus( QMailMessage::HasAttachments, true );
         }
+        if (message->isEncrypted()) {
+            message->setStatus(QMailMessage::HasEncryption, true);
+        }
     }
     return wellFormed;
 }
