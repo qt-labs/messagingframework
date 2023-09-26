@@ -32,15 +32,11 @@
 ****************************************************************************/
 
 #include "qmailstoreimplementation_p.h"
+#include "qmailstore_adaptor.h"
 #include <qmailipc.h>
 #include "qmaillog.h"
-#include <qcopadaptor_p.h>
-#include <qcopchannel_p.h>
-#include <qcopserver_p.h>
 #include <qmailnamespace.h>
 #include <QCoreApplication>
-#include <QFileSystemWatcher>
-#include <QFile>
 
 namespace {
 
@@ -49,8 +45,6 @@ const int preFlushTimeout = 250;
 
 // Events occurring within this period are batched
 const int flushTimeout = 1000;
-
-const uint pid = static_cast<uint>(QCoreApplication::applicationPid() & 0xffffffff);
 
 typedef QPair<int,int> Segment; //start,end - end non inclusive
 typedef QList<Segment> SegmentList;
@@ -77,85 +71,64 @@ SegmentList createSegments(int numItems, int segmentSize)
 }
 
 template<typename IDListType>
-void emitIpcUpdates(const IDListType& ids, const QString& sig, int max = QMailStoreImplementationBase::maxNotifySegmentSize)
+void emitIpcUpdates(MailstoreAdaptor &adaptor, const IDListType& ids, const QString& sig, int max = QMailStoreImplementationBase::maxNotifySegmentSize)
 {
-    if (!sig.isEmpty()) {
-        if (max > 0) {
-            SegmentList segmentList = createSegments(ids.count(), max);
-            foreach (const Segment& segment, segmentList) {
-                IDListType idSegment = ids.mid(segment.first, (segment.second - segment.first));
+    if (max > 0) {
+        SegmentList segmentList = createSegments(ids.count(), max);
+        foreach (const Segment& segment, segmentList) {
+            IDListType idSegment = ids.mid(segment.first, (segment.second - segment.first));
 
-                QCopAdaptor a(QLatin1String("QPE/qmf"));
-                QCopAdaptorEnvelope e = a.send(sig.toLatin1());
-				e << pid;
-                e << idSegment; 
-            }
-        } else {
-
-            QCopAdaptor a(QLatin1String("QPE/qmf"));
-            QCopAdaptorEnvelope e = a.send(sig.toLatin1());
-            e << pid;
-            e << ids;
+            QByteArray payload;
+            QDataStream stream(&payload, QIODevice::WriteOnly);
+            stream << idSegment;
+            emit adaptor.updated(sig, payload);
         }
     } else {
-        qWarning() << "No signature for IPC updates!";
+        QByteArray payload;
+        QDataStream stream(&payload, QIODevice::WriteOnly);
+        stream << ids;
+        emit adaptor.updated(sig, payload);
     }
 }
 
-void emitIpcUpdates(const QMailMessageMetaDataList& data, const QString& sig)
+void emitIpcUpdates(MailstoreAdaptor &adaptor, const QMailMessageMetaDataList& data, const QString& sig)
 {
-    if (!sig.isEmpty()) {
-            static QCopAdaptor a(QLatin1String("QPE/qmf")); // do not want to recreate heavy objects
-            QCopAdaptorEnvelope e = a.send(sig.toLatin1());
-            e << pid;
-            e << data;
-    } else {
-        qWarning() << "No signature for IPC updates!";
-    }
+    QByteArray payload;
+    QDataStream stream(&payload, QIODevice::WriteOnly);
+    stream << data;
+    emit adaptor.updated(sig, payload);
 }
 
-void emitIpcUpdates(const QMailMessageIdList& ids,  const QMailMessageKey::Properties& properties,
+void emitIpcUpdates(MailstoreAdaptor &adaptor, const QMailMessageIdList& ids,  const QMailMessageKey::Properties& properties,
                     const QMailMessageMetaData& data, const QString& sig)
 {
-    if (!sig.isEmpty()) {
-            QCopAdaptor a(QLatin1String("QPE/qmf")); // to do: not want to recreate heavy objects
-            QCopAdaptorEnvelope e = a.send(sig.toLatin1());
-            e << pid;
-            e << ids;
-            e << int(properties);
-            e << data;
-    } else {
-        qWarning() << "No signature for IPC updates!";
-    }
+    QByteArray payload;
+    QDataStream stream(&payload, QIODevice::WriteOnly);
+    stream << ids << static_cast<qint32>(properties) << data;
+    emit adaptor.updated(sig, payload);
 }
 
-void emitIpcUpdates(const QMailMessageIdList& ids,  quint64 status, bool set, const QString& sig)
+void emitIpcUpdates(MailstoreAdaptor &adaptor, const QMailMessageIdList& ids,  quint64 status, bool set, const QString& sig)
 {
-    if (!sig.isEmpty()) {
-            QCopAdaptor a(QLatin1String("QPE/qmf")); // to do: not want to recreate heavy objects
-            QCopAdaptorEnvelope e = a.send(sig.toLatin1());
-            e << pid;
-            e << ids;
-            e << status;
-            e << set;
-    } else {
-        qWarning() << "No signature for IPC updates!";
-    }
+    QByteArray payload;
+    QDataStream stream(&payload, QIODevice::WriteOnly);
+    stream << ids << status << set;
+    emit adaptor.updated(sig, payload);
 }
 
 template<typename IDType>
-void dispatchNotifications(QSet<IDType> &ids, const QString &sig)
+void dispatchNotifications(MailstoreAdaptor &adaptor, QSet<IDType> &ids, const QString &sig)
 {
     if (!ids.isEmpty()) {
-        emitIpcUpdates(ids.values(), sig);
+        emitIpcUpdates(adaptor, ids.values(), sig);
         ids.clear();
     }
 } 
 
-void dispatchNotifications(QMailMessageMetaDataList& data, const QString &sig)
+void dispatchNotifications(MailstoreAdaptor &adaptor, QMailMessageMetaDataList& data, const QString &sig)
 {
     if (!data.isEmpty()) {
-        emitIpcUpdates(data, sig);
+        emitIpcUpdates(adaptor, data, sig);
         data.clear();
     }
 }
@@ -163,11 +136,11 @@ void dispatchNotifications(QMailMessageMetaDataList& data, const QString &sig)
 typedef QPair<QPair<QMailMessageKey::Properties, QMailMessageMetaData>, QSet<QMailMessageId> > MessagesProperties;
 typedef QList <MessagesProperties> MessagesPropertiesBuffer;
 
-void dispatchNotifications(MessagesPropertiesBuffer& data, const QString &sig)
+void dispatchNotifications(MailstoreAdaptor &adaptor, MessagesPropertiesBuffer& data, const QString &sig)
 {
     if (!data.isEmpty()) {
         foreach (const MessagesProperties& props, data) {
-            emitIpcUpdates(props.second.values(), props.first.first, props.first.second, sig);
+            emitIpcUpdates(adaptor, props.second.values(), props.first.first, props.first.second, sig);
         }
         data.clear();
     }
@@ -176,19 +149,18 @@ void dispatchNotifications(MessagesPropertiesBuffer& data, const QString &sig)
 typedef QPair<quint64, bool> MessagesStatus;
 typedef QMap<MessagesStatus, QSet<QMailMessageId> > MessagesStatusBuffer;
 
-void dispatchNotifications(MessagesStatusBuffer& data, const QString &sig)
+void dispatchNotifications(MailstoreAdaptor &adaptor, MessagesStatusBuffer& data, const QString &sig)
 {
     if (!data.isEmpty()) {
         foreach (const MessagesStatus& status, data.keys()) {
             const QSet<QMailMessageId> ids = data[status];
-            emitIpcUpdates(ids.values(), status.first, status.second, sig);
+            emitIpcUpdates(adaptor,ids.values(), status.first, status.second, sig);
         }
         data.clear();
     }
 }
 
 } 
-
 
 QMailStore::InitializationState QMailStoreImplementationBase::initState = QMailStore::Uninitialized;
 
@@ -199,18 +171,16 @@ QMailStoreImplementationBase::QMailStoreImplementationBase(QMailStore* parent)
       asyncEmission(false),
       retrievalSetInitialized(false),
       transmissionSetInitialized(false),
-      watcher(0)
+      ipcAdaptor(new MailstoreAdaptor(this))
 {
     Q_ASSERT(q);
 
-    ipcChannel = new QCopChannel(QLatin1String("QPE/qmf"), this);
-    ENFORCE (connect (ipcChannel, SIGNAL(connected()), q, SIGNAL(ipcConnectionEstablished())));
-    ENFORCE (connect (ipcChannel, SIGNAL(connectionFailed()), this, SLOT(ipcConnectionFailed())));
+    ENFORCE (isIpcConnectionEstablished());
+    if (!QDBusConnection::sessionBus().registerObject(QString::fromLatin1("/mailstore/client"), this)) {
+        qCritical() << "Failed to register to D-Bus, notifications to other clients will not work.";
+    }
 
-    connect(ipcChannel,
-            SIGNAL(received(QString,QByteArray)),
-            this,
-            SLOT(ipcMessage(QString,QByteArray)));
+    reconnectIpc();
 
     preFlushTimer.setSingleShot(true);
 
@@ -232,6 +202,7 @@ QMailStoreImplementationBase::QMailStoreImplementationBase(QMailStore* parent)
 
 QMailStoreImplementationBase::~QMailStoreImplementationBase()
 {
+    QDBusConnection::sessionBus().unregisterObject(QString::fromLatin1("/mailstore/client"));
 }
 
 void QMailStoreImplementationBase::initialize()
@@ -276,9 +247,7 @@ void QMailStoreImplementationBase::flushIpcNotifications()
     flushNotifications();
 
     // Tell the recipients to process the notifications synchronously
-    QCopAdaptor a(QLatin1String("QPE/qmf"));
-    QCopAdaptorEnvelope e = a.send("forceIpcFlush");
-    e << pid;
+    emit ipcAdaptor->updated(forceIpcFlushSig(), QByteArray());
 
     if (flushTimer.isActive()) {
         // We interrupted a batching period - reset the flush timer to its full period
@@ -301,31 +270,6 @@ void QMailStoreImplementationBase::aboutToQuit()
 {
     // Ensure that any pending updates are flushed
     flushNotifications();
-}
-
-void QMailStoreImplementationBase::ipcConnectionFailed()
-{    
-    if (!watcher) {
-        watcher = new QFileSystemWatcher(this);
-        ENFORCE (connect(watcher, SIGNAL(fileChanged(QString)), this, SLOT(lockFileUpdated())));
-        const QString& path = QMail::messageServerLockFilePath();
-        if (!QFile::exists(path)) {
-            QFile file(path);
-            file.open(QIODevice::WriteOnly);
-            file.close();
-        }
-        watcher->addPath(path);       
-    }
-}
-
-void QMailStoreImplementationBase::lockFileUpdated()
-{
-    if (!ipcChannel->isConnected()) {
-        ipcChannel->connectRepeatedly();
-        // should be invoked only once, then it will reconnect automatically
-        Q_ASSERT (watcher);
-        ENFORCE (watcher->disconnect(this, SLOT(lockFileUpdated())));
-    }
 }
 
 typedef QMap<QMailStore::ChangeType, QString> NotifyFunctionMap;
@@ -417,7 +361,7 @@ void QMailStoreImplementationBase::notifyAccountsChange(QMailStore::ChangeType c
             break;
         }
     } else {
-        emitIpcUpdates(ids, sig[changeType]);
+        emitIpcUpdates(*ipcAdaptor, ids, sig[changeType]);
         
         preFlushTimer.start(preFlushTimeout);
     }
@@ -454,7 +398,7 @@ void QMailStoreImplementationBase::notifyMessagesChange(QMailStore::ChangeType c
             break;
         }
     } else {
-        emitIpcUpdates(ids, sig[changeType]);
+        emitIpcUpdates(*ipcAdaptor, ids, sig[changeType]);
 
         preFlushTimer.start(preFlushTimeout);
     }
@@ -484,7 +428,7 @@ void QMailStoreImplementationBase::notifyMessagesDataChange(QMailStore::ChangeTy
         }
 
     } else {
-        emitIpcUpdates(data, sig[changeType]);
+        emitIpcUpdates(*ipcAdaptor, data, sig[changeType]);
 
         preFlushTimer.start(preFlushTimeout);
     }
@@ -504,7 +448,7 @@ void QMailStoreImplementationBase::notifyMessagesDataChange(const QMailMessageId
         messagesPropertiesBuffer.append(props);;
 
     } else {
-        emitIpcUpdates(ids, properties, data, messagePropertyUpdatedSig());
+        emitIpcUpdates(*ipcAdaptor, ids, properties, data, messagePropertyUpdatedSig());
 
         preFlushTimer.start(preFlushTimeout);
     }
@@ -523,7 +467,7 @@ void QMailStoreImplementationBase::notifyMessagesDataChange(const QMailMessageId
         messagesStatusBuffer[messageStatus] += QSet<QMailMessageId>(ids.constBegin(), ids.constEnd());
 
     } else {
-        emitIpcUpdates(ids, status, set, messageStatusUpdatedSig());
+        emitIpcUpdates(*ipcAdaptor, ids, status, set, messageStatusUpdatedSig());
 
         preFlushTimer.start(preFlushTimeout);
     }
@@ -560,7 +504,7 @@ void QMailStoreImplementationBase::notifyThreadsChange(QMailStore::ChangeType ch
             break;
         }
     } else {
-        emitIpcUpdates(ids, sig[changeType]);
+        emitIpcUpdates(*ipcAdaptor, ids, sig[changeType]);
 
         preFlushTimer.start(preFlushTimeout);
     }
@@ -598,7 +542,7 @@ void QMailStoreImplementationBase::notifyFoldersChange(QMailStore::ChangeType ch
             break;
         }
     } else {
-        emitIpcUpdates(ids, sig[changeType]);
+        emitIpcUpdates(*ipcAdaptor, ids, sig[changeType]);
 
         preFlushTimer.start(preFlushTimeout);
     }
@@ -629,7 +573,7 @@ void QMailStoreImplementationBase::notifyMessageRemovalRecordsChange(QMailStore:
             break;
         }
     } else {
-        emitIpcUpdates(ids, sig[changeType]);
+        emitIpcUpdates(*ipcAdaptor, ids, sig[changeType]);
 
         preFlushTimer.start(preFlushTimeout);
     }
@@ -641,14 +585,14 @@ void QMailStoreImplementationBase::notifyRetrievalInProgress(const QMailAccountI
     // we must ensure that all previous events are actually delivered before this one is.
     flushIpcNotifications();
 
-    emitIpcUpdates(ids, retrievalInProgressSig());
+    emitIpcUpdates(*ipcAdaptor, ids, retrievalInProgressSig());
 }
 
 void QMailStoreImplementationBase::notifyTransmissionInProgress(const QMailAccountIdList& ids)
 {
     flushIpcNotifications();
 
-    emitIpcUpdates(ids, transmissionInProgressSig());
+    emitIpcUpdates(*ipcAdaptor, ids, transmissionInProgressSig());
 }
 
 bool QMailStoreImplementationBase::setRetrievalInProgress(const QMailAccountIdList& ids)
@@ -677,17 +621,21 @@ bool QMailStoreImplementationBase::setTransmissionInProgress(const QMailAccountI
 
 bool QMailStoreImplementationBase::isIpcConnectionEstablished() const
 {
-    return ipcChannel->isConnected();
+    return QDBusConnection::sessionBus().isConnected();
 }
 
 void QMailStoreImplementationBase::disconnectIpc()
 {
-    ipcChannel->disconnectFromServer();
+    QDBusConnection::sessionBus().disconnect(QString(), QString(), QString::fromLatin1("org.qt.mailstore"),
+                                             QString::fromLatin1("updated"), this,
+                                             SLOT(ipcMessage(const QString&, const QByteArray&)));
 }
 
 void QMailStoreImplementationBase::reconnectIpc()
 {
-    ipcChannel->connectRepeatedly();
+    QDBusConnection::sessionBus().connect(QString(), QString(), QString::fromLatin1("org.qt.mailstore"),
+                                          QString::fromLatin1("updated"), this,
+                                          SLOT(ipcMessage(const QString&, const QByteArray&)));
 }
 
 QString QMailStoreImplementationBase::accountAddedSig()
@@ -802,13 +750,17 @@ QString QMailStoreImplementationBase::messageRemovalRecordsRemovedSig()
 
 QString QMailStoreImplementationBase::retrievalInProgressSig()
 {
-	// TODO: why no PID in theses messages?
     return QStringLiteral("retrievalInProgress(QList<quint64>)");
 }
 
 QString QMailStoreImplementationBase::transmissionInProgressSig()
 {
     return QStringLiteral("transmissionInProgress(QList<quint64>)");
+}
+
+QString QMailStoreImplementationBase::forceIpcFlushSig()
+{
+    return QStringLiteral("forceIpcFlush");
 }
 
 QMailStoreImplementationBase::AccountUpdateSignalMap QMailStoreImplementationBase::initAccountUpdateSignals()
@@ -875,61 +827,60 @@ void QMailStoreImplementationBase::flushNotifications()
     accountContentsModifiedBuffer -= removeAccountsBuffer;
 
     // The order of emission is significant:
-    dispatchNotifications(addAccountsBuffer, sigAccount[QMailStore::Added]);
-    dispatchNotifications(addFoldersBuffer, sigFolder[QMailStore::Added]);
-    dispatchNotifications(addMessagesBuffer, sigMessage[QMailStore::Added]);
-    dispatchNotifications(addThreadsBuffer, sigthread[QMailStore::Added]);
-    dispatchNotifications(addMessageRemovalRecordsBuffer, sigRemoval[QMailStore::Added]);
+    dispatchNotifications(*ipcAdaptor, addAccountsBuffer, sigAccount[QMailStore::Added]);
+    dispatchNotifications(*ipcAdaptor, addFoldersBuffer, sigFolder[QMailStore::Added]);
+    dispatchNotifications(*ipcAdaptor, addMessagesBuffer, sigMessage[QMailStore::Added]);
+    dispatchNotifications(*ipcAdaptor, addThreadsBuffer, sigthread[QMailStore::Added]);
+    dispatchNotifications(*ipcAdaptor, addMessageRemovalRecordsBuffer, sigRemoval[QMailStore::Added]);
 
-    dispatchNotifications(messageContentsModifiedBuffer, sigMessage[QMailStore::ContentsModified]);
-    dispatchNotifications(updateMessagesBuffer, sigMessage[QMailStore::Updated]);
-    dispatchNotifications(updateThreadsBuffer, sigthread[QMailStore::Updated]);
-    dispatchNotifications(updateFoldersBuffer, sigFolder[QMailStore::Updated]);
-    dispatchNotifications(updateAccountsBuffer, sigAccount[QMailStore::Updated]);
+    dispatchNotifications(*ipcAdaptor, messageContentsModifiedBuffer, sigMessage[QMailStore::ContentsModified]);
+    dispatchNotifications(*ipcAdaptor, updateMessagesBuffer, sigMessage[QMailStore::Updated]);
+    dispatchNotifications(*ipcAdaptor, updateThreadsBuffer, sigthread[QMailStore::Updated]);
+    dispatchNotifications(*ipcAdaptor, updateFoldersBuffer, sigFolder[QMailStore::Updated]);
+    dispatchNotifications(*ipcAdaptor, updateAccountsBuffer, sigAccount[QMailStore::Updated]);
 
-    dispatchNotifications(removeMessageRemovalRecordsBuffer, sigRemoval[QMailStore::Removed]);
-    dispatchNotifications(removeMessagesBuffer, sigMessage[QMailStore::Removed]);
-    dispatchNotifications(removeThreadsBuffer, sigthread[QMailStore::Removed]);
-    dispatchNotifications(removeFoldersBuffer, sigFolder[QMailStore::Removed]);
-    dispatchNotifications(removeAccountsBuffer, sigAccount[QMailStore::Removed]);
+    dispatchNotifications(*ipcAdaptor, removeMessageRemovalRecordsBuffer, sigRemoval[QMailStore::Removed]);
+    dispatchNotifications(*ipcAdaptor, removeMessagesBuffer, sigMessage[QMailStore::Removed]);
+    dispatchNotifications(*ipcAdaptor, removeThreadsBuffer, sigthread[QMailStore::Removed]);
+    dispatchNotifications(*ipcAdaptor, removeFoldersBuffer, sigFolder[QMailStore::Removed]);
+    dispatchNotifications(*ipcAdaptor, removeAccountsBuffer, sigAccount[QMailStore::Removed]);
 
-    dispatchNotifications(folderContentsModifiedBuffer, sigFolder[QMailStore::ContentsModified]);
-    dispatchNotifications(accountContentsModifiedBuffer, sigAccount[QMailStore::ContentsModified]);
+    dispatchNotifications(*ipcAdaptor, folderContentsModifiedBuffer, sigFolder[QMailStore::ContentsModified]);
+    dispatchNotifications(*ipcAdaptor, accountContentsModifiedBuffer, sigAccount[QMailStore::ContentsModified]);
 
-    dispatchNotifications(addMessagesDataBuffer, sigMessageData[QMailStore::Added]);
-    dispatchNotifications(updateMessagesDataBuffer, sigMessageData[QMailStore::Updated]);
+    dispatchNotifications(*ipcAdaptor, addMessagesDataBuffer, sigMessageData[QMailStore::Added]);
+    dispatchNotifications(*ipcAdaptor, updateMessagesDataBuffer, sigMessageData[QMailStore::Updated]);
 
-    dispatchNotifications(messagesPropertiesBuffer, messagePropertyUpdatedSig());
-    dispatchNotifications(messagesStatusBuffer, messageStatusUpdatedSig());
+    dispatchNotifications(*ipcAdaptor, messagesPropertiesBuffer, messagePropertyUpdatedSig());
+    dispatchNotifications(*ipcAdaptor, messagesStatusBuffer, messageStatusUpdatedSig());
 }
 
-void QMailStoreImplementationBase::ipcMessage(const QString& message, const QByteArray& data) 
+void QMailStoreImplementationBase::ipcMessage(const QString& signal, const QByteArray& data)
 {
-    QDataStream ds(data);
-
-    uint origin;
-    ds >> origin;
-
-    if (pid == origin) // don't notify ourselves
+    if (!calledFromDBus()
+        || message().service() == QDBusConnection::sessionBus().baseService()) {
+        // don't notify ourselves
         return;
+    }
 
-    if (message == QLatin1String("forceIpcFlush")) {
+    if (signal == forceIpcFlushSig()) {
         // We have been told to flush any pending ipc notifications
         queueTimer.stop();
         while (emitIpcNotification()) {}
-    } else if ((message == retrievalInProgressSig()) || (message == transmissionInProgressSig())) {
-        // Emit this message immediately
+    } else if ((signal == retrievalInProgressSig()) || (signal == transmissionInProgressSig())) {
+        QDataStream ds(data);
+        // Emit this signal immediately
         QMailAccountIdList ids;
         ds >> ids;
 
-        if (message == retrievalInProgressSig()) {
+        if (signal == retrievalInProgressSig()) {
             emitIpcNotification(&QMailStore::retrievalInProgress, ids);
         } else {
             emitIpcNotification(&QMailStore::transmissionInProgress, ids);
         }
     } else {
-        // Queue this message for batched delivery
-        messageQueue.append(qMakePair(message, data));
+        // Queue this signal for batched delivery
+        messageQueue.append(qMakePair(signal, data));
         queueTimer.start(0);
     }
 }
@@ -944,9 +895,6 @@ bool QMailStoreImplementationBase::emitIpcNotification()
     const QByteArray &data = notification.second;
 
     QDataStream ds(data);
-
-    uint origin;
-    ds >> origin;
 
     static AccountUpdateSignalMap accountUpdateSignals(initAccountUpdateSignals());
     static FolderUpdateSignalMap folderUpdateSignals(initFolderUpdateSignals());

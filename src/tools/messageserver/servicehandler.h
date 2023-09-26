@@ -141,6 +141,10 @@ signals:
     void protocolRequestCompleted(quint64 action);
 
     void newMessagesAvailable();
+    void messageCountUpdated();
+
+    void transmissionReady(quint64 action);
+    void retrievalReady(quint64 action);
 
 private slots:
     void statusChanged(const QMailServiceAction::Status);

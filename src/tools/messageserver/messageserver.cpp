@@ -33,7 +33,6 @@
 
 #include "messageserver.h"
 #include "servicehandler.h"
-#include "mailmessageclient.h"
 #include <qmailfolder.h>
 #include <qmailmessage.h>
 #include <qmailstore.h>
@@ -43,8 +42,9 @@
 #include <qmaillog.h>
 #include <qmailipc.h>
 #include <newcountnotifier.h>
-#include <private/qcopserver_p.h>
 #include <qmailmessageserverplugin.h>
+
+#include "qmailservice_adaptor.h"
 
 extern "C" {
 #ifndef Q_OS_WIN
@@ -63,13 +63,10 @@ int MessageServer::sigintFd[2];
 MessageServer::MessageServer(QObject *parent)
     : QObject(parent),
       handler(0),
-      client(new MailMessageClient(this)),
-      messageCountUpdate("QPE/Messages/MessageCountUpdated"),
       newMessageTotal(0),
       completionAttempted(false)
 {
     qMailLog(Messaging) << "MessageServer ctor begin";
-    new QCopServer(this);
 
 #if defined(Q_OS_UNIX)
     // Unix signal handlers. We use the trick described here: http://doc.qt.io/qt-5/unix-signals.html
@@ -118,154 +115,41 @@ MessageServer::MessageServer(QObject *parent)
         qFatal("Messaging DB Invalid: Messaging cannot operate due to database incompatibilty!");
         // Do not close, however, or QPE will start another instance.
     } else {
-        handler = new ServiceHandler(this);
-
         connect(store, SIGNAL(messagesAdded(QMailMessageIdList)),
                 this, SLOT(messagesAdded(QMailMessageIdList)));
         connect(store, SIGNAL(messagesUpdated(QMailMessageIdList)),
                 this, SLOT(messagesUpdated(QMailMessageIdList)));
         connect(store, SIGNAL(messagesRemoved(QMailMessageIdList)),
                 this, SLOT(messagesRemoved(QMailMessageIdList)));
-
-        // Propagate email handler signals to the client
-        connect(handler, SIGNAL(actionStarted(QMailActionData)),
-                client, SIGNAL(actionStarted(QMailActionData)));
-        connect(handler, SIGNAL(activityChanged(quint64, QMailServiceAction::Activity)),
-                client, SIGNAL(activityChanged(quint64, QMailServiceAction::Activity)));
-        connect(handler, SIGNAL(connectivityChanged(quint64, QMailServiceAction::Connectivity)),
-                client, SIGNAL(connectivityChanged(quint64, QMailServiceAction::Connectivity)));
-        connect(handler, SIGNAL(statusChanged(quint64, const QMailServiceAction::Status)),
-                client, SIGNAL(statusChanged(quint64, const QMailServiceAction::Status)));
-        connect(handler, SIGNAL(progressChanged(quint64, uint, uint)),
-                client, SIGNAL(progressChanged(quint64, uint, uint)));
-        connect(handler, SIGNAL(messagesDeleted(quint64, QMailMessageIdList)), 
-                client, SIGNAL(messagesDeleted(quint64, QMailMessageIdList)));
-        connect(handler, SIGNAL(messagesCopied(quint64, QMailMessageIdList)), 
-                client, SIGNAL(messagesCopied(quint64, QMailMessageIdList)));
-        connect(handler, SIGNAL(messagesMoved(quint64, QMailMessageIdList)), 
-                client, SIGNAL(messagesMoved(quint64, QMailMessageIdList)));
-        connect(handler, SIGNAL(messagesFlagged(quint64, QMailMessageIdList)), 
-                client, SIGNAL(messagesFlagged(quint64, QMailMessageIdList)));
-        connect(handler, SIGNAL(folderCreated(quint64, QMailFolderId)),
-                client, SIGNAL(folderCreated(quint64, QMailFolderId)));
-        connect(handler, SIGNAL(folderRenamed(quint64, QMailFolderId)),
-                client, SIGNAL(folderRenamed(quint64, QMailFolderId)));
-        connect(handler, SIGNAL(folderDeleted(quint64, QMailFolderId)),
-                client, SIGNAL(folderDeleted(quint64, QMailFolderId)));
-        connect(handler, SIGNAL(folderMoved(quint64, QMailFolderId)),
-                client, SIGNAL(folderMoved(quint64, QMailFolderId)));
-        connect(handler, SIGNAL(storageActionCompleted(quint64)),
-                client, SIGNAL(storageActionCompleted(quint64)));
-        connect(handler, SIGNAL(matchingMessageIds(quint64, QMailMessageIdList)), 
-                client, SIGNAL(matchingMessageIds(quint64, QMailMessageIdList)));
-        connect(handler, SIGNAL(remainingMessagesCount(quint64, uint)), 
-                client, SIGNAL(remainingMessagesCount(quint64, uint)));
-        connect(handler, SIGNAL(messagesCount(quint64, uint)), 
-                client, SIGNAL(messagesCount(quint64, uint)));
-        connect(handler, SIGNAL(searchCompleted(quint64)),
-                client, SIGNAL(searchCompleted(quint64)));
-        connect(handler, SIGNAL(actionsListed(QMailActionDataList)),
-                client, SIGNAL(actionsListed(QMailActionDataList)));
-        connect(handler, SIGNAL(protocolResponse(quint64, QString, QVariant)), 
-                client, SIGNAL(protocolResponse(quint64, QString, QVariant)));
-        connect(handler, SIGNAL(protocolRequestCompleted(quint64)),
-                client, SIGNAL(protocolRequestCompleted(quint64)));
-        connect(handler, SIGNAL(messagesTransmitted(quint64, QMailMessageIdList)), 
-                client, SIGNAL(messagesTransmitted(quint64, QMailMessageIdList)));
-        connect(handler, SIGNAL(messagesFailedTransmission(quint64, QMailMessageIdList, QMailServiceAction::Status::ErrorCode)), 
-                client, SIGNAL(messagesFailedTransmission(quint64, QMailMessageIdList, QMailServiceAction::Status::ErrorCode)));
-
-        connect(handler, SIGNAL(transmissionCompleted(quint64)), 
-                this, SLOT(transmissionCompleted(quint64)));
-        connect(handler, SIGNAL(retrievalCompleted(quint64)),
-                this, SLOT(retrievalCompleted(quint64)));
-
-        // The email handler should handle the email client signals
-        connect(client, SIGNAL(transmitMessages(quint64, QMailAccountId)),
-                handler, SLOT(transmitMessages(quint64, QMailAccountId)));
-        connect(client, SIGNAL(transmitMessage(quint64, QMailMessageId)),
-                handler, SLOT(transmitMessage(quint64, QMailMessageId)));
-        connect(client, SIGNAL(retrieveFolderList(quint64, QMailAccountId, QMailFolderId, bool)),
-                handler, SLOT(retrieveFolderList(quint64, QMailAccountId, QMailFolderId, bool)));
-        connect(client, SIGNAL(retrieveMessageList(quint64, QMailAccountId, QMailFolderId, uint, QMailMessageSortKey)),
-                handler, SLOT(retrieveMessageList(quint64, QMailAccountId, QMailFolderId, uint, QMailMessageSortKey)));
-        connect(client, SIGNAL(retrieveMessageLists(quint64, QMailAccountId, QMailFolderIdList, uint, QMailMessageSortKey)),
-                handler, SLOT(retrieveMessageLists(quint64, QMailAccountId, QMailFolderIdList, uint, QMailMessageSortKey)));
-        connect(client, SIGNAL(retrieveNewMessages(quint64, QMailAccountId, QMailFolderIdList)),
-                handler, SLOT(retrieveNewMessages(quint64, QMailAccountId, QMailFolderIdList)));
-        connect(client, SIGNAL(createStandardFolders(quint64, QMailAccountId)),
-                handler, SLOT(createStandardFolders(quint64, QMailAccountId)));
-        connect(client, SIGNAL(retrieveMessages(quint64, QMailMessageIdList, QMailRetrievalAction::RetrievalSpecification)),
-                handler, SLOT(retrieveMessages(quint64, QMailMessageIdList, QMailRetrievalAction::RetrievalSpecification)));
-        connect(client, SIGNAL(retrieveMessagePart(quint64, QMailMessagePart::Location)),
-                handler, SLOT(retrieveMessagePart(quint64, QMailMessagePart::Location)));
-        connect(client, SIGNAL(retrieveMessageRange(quint64, QMailMessageId, uint)),
-                handler, SLOT(retrieveMessageRange(quint64, QMailMessageId, uint)));
-        connect(client, SIGNAL(retrieveMessagePartRange(quint64, QMailMessagePart::Location, uint)),
-                handler, SLOT(retrieveMessagePartRange(quint64, QMailMessagePart::Location, uint)));
-        connect(client, SIGNAL(retrieveAll(quint64, QMailAccountId)),
-                handler, SLOT(retrieveAll(quint64, QMailAccountId)));
-        connect(client, SIGNAL(exportUpdates(quint64, QMailAccountId)),
-                handler, SLOT(exportUpdates(quint64, QMailAccountId)));
-        connect(client, SIGNAL(synchronize(quint64, QMailAccountId)),
-                handler, SLOT(synchronize(quint64, QMailAccountId)));
-        connect(client, SIGNAL(onlineDeleteMessages(quint64, QMailMessageIdList, QMailStore::MessageRemovalOption)),
-                handler, SLOT(onlineDeleteMessages(quint64, QMailMessageIdList, QMailStore::MessageRemovalOption)));
-        connect(client, SIGNAL(onlineCopyMessages(quint64, QMailMessageIdList, QMailFolderId)),
-                handler, SLOT(onlineCopyMessages(quint64, QMailMessageIdList, QMailFolderId)));
-        connect(client, SIGNAL(onlineMoveMessages(quint64, QMailMessageIdList, QMailFolderId)),
-                handler, SLOT(onlineMoveMessages(quint64, QMailMessageIdList, QMailFolderId)));
-        connect(client, SIGNAL(onlineFlagMessagesAndMoveToStandardFolder(quint64, QMailMessageIdList, quint64, quint64)),
-                handler, SLOT(onlineFlagMessagesAndMoveToStandardFolder(quint64, QMailMessageIdList, quint64, quint64)));
-        connect(client, SIGNAL(addMessages(quint64, QMailMessageMetaDataList)),
-                handler, SLOT(addMessages(quint64, QMailMessageMetaDataList)));
-        connect(client, SIGNAL(updateMessages(quint64, QMailMessageMetaDataList)),
-                handler, SLOT(updateMessages(quint64, QMailMessageMetaDataList)));
-        connect(client, SIGNAL(deleteMessages(quint64, QMailMessageIdList)),
-                handler, SLOT(deleteMessages(quint64, QMailMessageIdList)));
-        connect(client, SIGNAL(rollBackUpdates(quint64, QMailAccountId)),
-                handler, SLOT(rollBackUpdates(quint64, QMailAccountId)));
-        connect(client, SIGNAL(moveToStandardFolder(quint64, QMailMessageIdList, quint64)),
-                handler, SLOT(moveToStandardFolder(quint64, QMailMessageIdList, quint64)));
-        connect(client, SIGNAL(moveToFolder(quint64, QMailMessageIdList, QMailFolderId)),
-                handler, SLOT(moveToFolder(quint64, QMailMessageIdList, QMailFolderId)));
-        connect(client, SIGNAL(flagMessages(quint64, QMailMessageIdList, quint64, quint64)),
-                handler, SLOT(flagMessages(quint64, QMailMessageIdList, quint64, quint64)));
-        connect(client, SIGNAL(restoreToPreviousFolder(quint64, QMailMessageKey)),
-                handler, SLOT(restoreToPreviousFolder(quint64, QMailMessageKey)));
-        connect(client, SIGNAL(onlineCreateFolder(quint64, QString, QMailAccountId, QMailFolderId)),
-                handler, SLOT(onlineCreateFolder(quint64, QString, QMailAccountId, QMailFolderId)));
-        connect(client, SIGNAL(onlineRenameFolder(quint64, QMailFolderId, QString)),
-                handler, SLOT(onlineRenameFolder(quint64, QMailFolderId, QString)));
-        connect(client, SIGNAL(onlineDeleteFolder(quint64, QMailFolderId)),
-                handler, SLOT(onlineDeleteFolder(quint64, QMailFolderId)));
-        connect(client, SIGNAL(onlineMoveFolder(quint64, QMailFolderId, QMailFolderId)),
-                handler, SLOT(onlineMoveFolder(quint64, QMailFolderId, QMailFolderId)));
-        connect(client, SIGNAL(cancelTransfer(quint64)),
-                handler, SLOT(cancelTransfer(quint64)));
-        connect(client, SIGNAL(protocolRequest(quint64, QMailAccountId, QString, QVariant)),
-                handler, SLOT(protocolRequest(quint64, QMailAccountId, QString, QVariant)));
-        connect(client, SIGNAL(searchMessages(quint64, QMailMessageKey, QString, QMailSearchAction::SearchSpecification, QMailMessageSortKey)),
-                handler, SLOT(searchMessages(quint64, QMailMessageKey, QString, QMailSearchAction::SearchSpecification, QMailMessageSortKey)));
-        connect(client, SIGNAL(searchMessages(quint64, QMailMessageKey, QString, QMailSearchAction::SearchSpecification, quint64, QMailMessageSortKey)),
-                handler, SLOT(searchMessages(quint64, QMailMessageKey, QString, QMailSearchAction::SearchSpecification, quint64, QMailMessageSortKey)));
-        connect(client, SIGNAL(countMessages(quint64, QMailMessageKey, QString)),
-                handler, SLOT(countMessages(quint64, QMailMessageKey, QString)));
-        connect(client, SIGNAL(shutdown()),
-                handler, SLOT(shutdown()));
-        connect(client, SIGNAL(listActions()),
-                handler, SLOT(listActions()));
-       connect(handler, SIGNAL(newMessagesAvailable()),
-                this, SLOT(reportNewCounts()));
-
-        QCopAdaptor::connect(this, SIGNAL(messageCountUpdated()),
-             &messageCountUpdate, MESSAGE(changeValue()));
-
-        //clean up any temporary messages that were not cleaned up by clients
-        QTimer::singleShot(0, this, SLOT(cleanupTemporaryMessages()));
-
-        emit client->actionsListed(QMailActionDataList());
     }
+
+    // Register our object on the session bus and expose interface to others.
+    handler = new ServiceHandler(this);
+    new MessageserverAdaptor(handler);
+
+    QDBusConnection dbus = QDBusConnection::sessionBus();
+    if (!dbus.registerObject("/messageserver", handler) ||
+        !dbus.registerService("org.qt.messageserver")) {
+        qFatal("Failed to register to D-Bus, aborting start");
+    } else {
+        qMailLog(Messaging) << "Registered messageserver to D-Bus";
+    }
+
+    connect(handler, &ServiceHandler::transmissionReady,
+            this, &MessageServer::transmissionCompleted);
+    connect(handler, &ServiceHandler::retrievalReady,
+            this, &MessageServer::retrievalCompleted);
+
+    connect(handler, SIGNAL(newMessagesAvailable()),
+            this, SLOT(reportNewCounts()));
+
+    connect(this, &MessageServer::messageCountUpdated,
+            handler, &ServiceHandler::messageCountUpdated);
+
+    //clean up any temporary messages that were not cleaned up by clients
+    QTimer::singleShot(0, this, SLOT(cleanupTemporaryMessages()));
+
+    emit handler->actionsListed(QMailActionDataList());
 
 #ifdef MESSAGESERVER_PLUGINS
     qMailLog(Messaging) << "Initiating messageserver plugins.";
@@ -280,6 +164,14 @@ MessageServer::MessageServer(QObject *parent)
 
 MessageServer::~MessageServer()
 {
+    // Unregister from D-Bus.
+    QDBusConnection dbus = QDBusConnection::sessionBus();
+    dbus.unregisterObject("/messageserver");
+    if (!dbus.unregisterService("org.qt.messageserver")) {
+        qWarning() << "Failed to unregister messageserver from D-Bus";
+    } else {
+        qMailLog(Messaging) << "Unregistered messageserver from D-Bus";
+    }
 }
 
 void MessageServer::retrievalCompleted(quint64 action)
@@ -299,7 +191,7 @@ void MessageServer::retrievalCompleted(quint64 action)
     }
 
     completionAttempted = false;
-    emit client->retrievalCompleted(action);
+    emit handler->retrievalCompleted(action);
 }
 
 QMap<QMailMessage::MessageType, QString> typeSignatureInit()
@@ -432,7 +324,7 @@ void MessageServer::transmissionCompleted(quint64 action)
     // Ensure the client receives any resulting events before the completion notification
     QMailStore::instance()->flushIpcNotifications();
 
-    emit client->transmissionCompleted(action);
+    emit handler->transmissionCompleted(action);
 }
 
 void MessageServer::messagesAdded(const QMailMessageIdList &ids)

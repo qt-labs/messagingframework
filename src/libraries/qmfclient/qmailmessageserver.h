@@ -59,6 +59,8 @@ public:
     QMailMessageServer(QObject* parent = Q_NULLPTR);
     ~QMailMessageServer();
 
+    static void registerTypes();
+
 private:
     // Disallow copying
     QMailMessageServer(const QMailMessageServer&);
@@ -100,9 +102,6 @@ Q_SIGNALS:
 
     void protocolResponse(quint64, const QString &response, const QVariant &data);
     void protocolRequestCompleted(quint64);
-
-    void connectionDown();
-    void reconnectionTimeout();
 
 public Q_SLOTS:
     void transmitMessages(quint64, const QMailAccountId &accountId);

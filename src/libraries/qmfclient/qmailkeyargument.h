@@ -50,6 +50,7 @@
 #include <QDataStream>
 #include <QIODevice>
 #include <QVariantList>
+#include <QDBusArgument>
 
 namespace QMailKey {
 
@@ -213,7 +214,7 @@ public:
     {
         stream << property;
         stream << op;
-        stream << valueList;
+        valueList.serialize(stream);
     }
 
     template <typename Stream> void deserialize(Stream &stream)
@@ -225,7 +226,7 @@ public:
         stream >> v;
         op = static_cast<Comparator>(v);
 
-        stream >> valueList;
+        valueList.deserialize(stream);
     }
 };
 

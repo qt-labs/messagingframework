@@ -8,13 +8,13 @@ else:DEFINES+=QTOPIA_NO_SMS QTOPIA_NO_MMS
 
 HEADERS=\
     servicehandler.h\
-    mailmessageclient.h\
+    messageserverDBusAdaptor.h\
     messageserver.h\
     newcountnotifier.h
 
 SOURCES=\
     servicehandler.cpp\
-    mailmessageclient.cpp\
+    messageserverDBusAdaptor.cpp\
     messageserver.cpp\
     prepareaccounts.cpp\
     newcountnotifier.cpp\

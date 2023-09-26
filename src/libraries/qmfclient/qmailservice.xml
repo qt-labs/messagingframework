@@ -1,0 +1,399 @@
+<!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
+<node>
+  <interface name="org.qt.messageserver">
+    <signal name="actionStarted">
+      <arg type="((t)(i)uu((i)s(t)(t)(t)))" direction="out"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QMailActionData"/>
+    </signal>
+    <signal name="statusChanged">
+      <arg name="action" type="t" direction="out"/>
+      <arg name="status" type="((i)s(t)(t)(t))" direction="out"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out1" value="QMailServiceAction::Status"/>
+    </signal>
+    <signal name="activityChanged">
+      <arg name="action" type="t" direction="out"/>
+      <arg name="activity" type="(i)" direction="out"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out1" value="QMailServiceAction::Activity"/>
+    </signal>
+    <signal name="connectivityChanged">
+      <arg name="action" type="t" direction="out"/>
+      <arg name="connectivity" type="(i)" direction="out"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out1" value="QMailServiceAction::Connectivity"/>
+    </signal>
+    <signal name="progressChanged">
+      <arg type="t" direction="out"/>
+      <arg type="u" direction="out"/>
+      <arg type="u" direction="out"/>
+    </signal>
+    <signal name="retrievalCompleted">
+      <arg name="action" type="t" direction="out"/>
+    </signal>
+    <signal name="messagesTransmitted">
+      <arg name="action" type="t" direction="out"/>
+      <arg name="ids" type="a(t)" direction="out"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out1" value="QMailMessageIdList"/>
+    </signal>
+    <signal name="messagesFailedTransmission">
+      <arg name="action" type="t" direction="out"/>
+      <arg name="ids" type="a(t)" direction="out"/>
+      <arg name="code" type="(i)" direction="out"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out1" value="QMailMessageIdList"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out2" value="QMailServiceAction::Status::ErrorCode"/>
+    </signal>
+    <signal name="transmissionCompleted">
+      <arg name="action" type="t" direction="out"/>
+    </signal>
+    <signal name="messagesDeleted">
+      <arg name="action" type="t" direction="out"/>
+      <arg name="ids" type="a(t)" direction="out"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out1" value="QMailMessageIdList"/>
+    </signal>
+    <signal name="messagesCopied">
+      <arg name="action" type="t" direction="out"/>
+      <arg name="ids" type="a(t)" direction="out"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out1" value="QMailMessageIdList"/>
+    </signal>
+    <signal name="messagesMoved">
+      <arg name="action" type="t" direction="out"/>
+      <arg name="ids" type="a(t)" direction="out"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out1" value="QMailMessageIdList"/>
+    </signal>
+    <signal name="messagesFlagged">
+      <arg name="action" type="t" direction="out"/>
+      <arg name="ids" type="a(t)" direction="out"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out1" value="QMailMessageIdList"/>
+    </signal>
+    <signal name="messagesAdded">
+      <arg name="action" type="t" direction="out"/>
+      <arg name="ids" type="a(t)" direction="out"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out1" value="QMailMessageIdList"/>
+    </signal>
+    <signal name="messagesUpdated">
+      <arg name="action" type="t" direction="out"/>
+      <arg name="ids" type="a(t)" direction="out"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out1" value="QMailMessageIdList"/>
+    </signal>
+    <signal name="folderCreated">
+      <arg name="action" type="t" direction="out"/>
+      <arg name="folderId" type="(t)" direction="out"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out1" value="QMailFolderId"/>
+    </signal>
+    <signal name="folderRenamed">
+      <arg name="action" type="t" direction="out"/>
+      <arg name="folderId" type="(t)" direction="out"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out1" value="QMailFolderId"/>
+    </signal>
+    <signal name="folderDeleted">
+      <arg name="action" type="t" direction="out"/>
+      <arg name="folderId" type="(t)" direction="out"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out1" value="QMailFolderId"/>
+    </signal>
+    <signal name="folderMoved">
+      <arg name="action" type="t" direction="out"/>
+      <arg name="folderId" type="(t)" direction="out"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out1" value="QMailFolderId"/>
+    </signal>
+    <signal name="storageActionCompleted">
+      <arg name="action" type="t" direction="out"/>
+    </signal>
+    <signal name="matchingMessageIds">
+      <arg name="action" type="t" direction="out"/>
+      <arg name="ids" type="a(t)" direction="out"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out1" value="QMailMessageIdList"/>
+    </signal>
+    <signal name="remainingMessagesCount">
+      <arg name="action" type="t" direction="out"/>
+      <arg type="u" direction="out"/>
+    </signal>
+    <signal name="messagesCount">
+      <arg name="action" type="t" direction="out"/>
+      <arg type="u" direction="out"/>
+    </signal>
+    <signal name="remoteSearchCompleted">
+      <arg name="action" type="t" direction="out"/>
+    </signal>
+    <signal name="searchCompleted">
+      <arg name="action" type="t" direction="out"/>
+    </signal>
+    <signal name="actionsListed">
+      <arg name="actions" type="a((t)(i)uu((i)s(t)(t)(t)))" direction="out"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QMailActionDataList"/>
+    </signal>
+    <signal name="protocolResponse">
+      <arg name="action" type="t" direction="out"/>
+      <arg name="response" type="s" direction="out"/>
+      <arg name="data" type="v" direction="out"/>
+    </signal>
+    <signal name="protocolRequestCompleted">
+      <arg name="action" type="t" direction="out"/>
+    </signal>
+    <signal name="newMessagesAvailable">
+    </signal>
+    <method name="transmitMessages">
+      <arg name="actionId" type="t" direction="in"/>
+      <arg name="accountId" type="(t)" direction="in"/>
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="QMailAccountId"/>
+    </method>
+    <method name="transmitMessage">
+      <arg name="actionId" type="t" direction="in"/>
+      <arg name="messageId" type="(t)" direction="in"/>
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="QMailMessageId"/>
+    </method>
+    <method name="retrieveFolderList">
+      <arg name="actionId" type="t" direction="in"/>
+      <arg name="accountId" type="(t)" direction="in"/>
+      <arg name="folderId" type="(t)" direction="in"/>
+      <arg name="descending" type="b" direction="in"/>
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="QMailAccountId"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In2" value="QMailFolderId"/>
+    </method>
+    <method name="retrieveMessageList">
+      <arg name="actionId" type="t" direction="in"/>
+      <arg name="accountId" type="(t)" direction="in"/>
+      <arg name="folderId" type="(t)" direction="in"/>
+      <arg name="minimum" type="u" direction="in"/>
+      <arg name="sort" type="(iai)" direction="in"/>
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="QMailAccountId"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In2" value="QMailFolderId"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In4" value="QMailMessageSortKey"/>
+    </method>
+    <method name="retrieveMessageLists">
+      <arg name="actionId" type="t" direction="in"/>
+      <arg name="accountId" type="(t)" direction="in"/>
+      <arg name="folderIds" type="a(t)" direction="in"/>
+      <arg name="minimum" type="u" direction="in"/>
+      <arg name="sort" type="(iai)" direction="in"/>
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="QMailAccountId"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In2" value="QMailFolderIdList"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In4" value="QMailMessageSortKey"/>
+    </method>
+    <method name="retrieveNewMessages">
+      <arg name="actionId" type="t" direction="in"/>
+      <arg name="accountId" type="(t)" direction="in"/>
+      <arg name="folderIds" type="a(t)" direction="in"/>
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="QMailAccountId"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In2" value="QMailFolderIdList"/>
+    </method>
+    <method name="createStandardFolders">
+      <arg name="actionId" type="t" direction="in"/>
+      <arg name="accountId" type="(t)" direction="in"/>
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="QMailAccountId"/>
+    </method>
+    <method name="retrieveMessages">
+      <arg name="actionId" type="t" direction="in"/>
+      <arg name="messageIds" type="a(t)" direction="in"/>
+      <arg name="spec" type="(i)" direction="in"/>
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="QMailMessageIdList"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In2" value="QMailRetrievalAction::RetrievalSpecification"/>
+    </method>
+    <method name="retrieveMessagePart">
+      <arg name="actionId" type="t" direction="in"/>
+      <arg name="partLocation" type="((t)au)" direction="in"/>
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="QMailMessagePartContainer::Location"/>
+    </method>
+    <method name="retrieveMessageRange">
+      <arg name="actionId" type="t" direction="in"/>
+      <arg name="messageId" type="(t)" direction="in"/>
+      <arg name="minimum" type="u" direction="in"/>
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="QMailMessageId"/>
+    </method>
+    <method name="retrieveMessagePartRange">
+      <arg name="actionId" type="t" direction="in"/>
+      <arg name="partLocation" type="((t)au)" direction="in"/>
+      <arg name="minimum" type="u" direction="in"/>
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="QMailMessagePartContainer::Location"/>
+    </method>
+    <method name="retrieveAll">
+      <arg name="actionId" type="t" direction="in"/>
+      <arg name="accountId" type="(t)" direction="in"/>
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="QMailAccountId"/>
+    </method>
+    <method name="exportUpdates">
+      <arg name="actionId" type="t" direction="in"/>
+      <arg name="accountId" type="(t)" direction="in"/>
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="QMailAccountId"/>
+    </method>
+    <method name="synchronize">
+      <arg name="actionId" type="t" direction="in"/>
+      <arg name="accountId" type="(t)" direction="in"/>
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="QMailAccountId"/>
+    </method>
+    <method name="onlineDeleteMessages">
+      <arg name="actionId" type="t" direction="in"/>
+      <arg name="mailList" type="a(t)" direction="in"/>
+      <arg name="option" type="(i)" direction="in"/>
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="QMailMessageIdList"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In2" value="QMailStore::MessageRemovalOption"/>
+    </method>
+    <method name="onlineCopyMessages">
+      <arg name="actionId" type="t" direction="in"/>
+      <arg name="mailList" type="a(t)" direction="in"/>
+      <arg name="destination" type="(t)" direction="in"/>
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="QMailMessageIdList"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In2" value="QMailFolderId"/>
+    </method>
+    <method name="onlineMoveMessages">
+      <arg name="actionId" type="t" direction="in"/>
+      <arg name="mailList" type="a(t)" direction="in"/>
+      <arg name="destination" type="(t)" direction="in"/>
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="QMailMessageIdList"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In2" value="QMailFolderId"/>
+    </method>
+    <method name="onlineFlagMessagesAndMoveToStandardFolder">
+      <arg name="actionId" type="t" direction="in"/>
+      <arg name="mailList" type="a(t)" direction="in"/>
+      <arg name="setMask" type="t" direction="in"/>
+      <arg name="unsetMask" type="t" direction="in"/>
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="QMailMessageIdList"/>
+    </method>
+    <method name="addMessages">
+      <arg name="actionId" type="t" direction="in"/>
+      <arg name="messages" type="a((i)t(i)(t)su(t)(t)(t)ssssss(t)ssss(t)(i)mssbbs(t))" direction="in"/>
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="QMailMessageMetaDataList"/>
+    </method>
+    <method name="updateMessages">
+      <arg name="actionId" type="t" direction="in"/>
+      <arg name="messages" type="a((i)t(i)(t)su(t)(t)(t)ssssss(t)ssss(t)(i)mssbbs(t))" direction="in"/>
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="QMailMessageMetaDataList"/>
+    </method>
+    <method name="deleteMessages">
+      <arg name="actionId" type="t" direction="in"/>
+      <arg name="ids" type="a(t)" direction="in"/>
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="QMailMessageIdList"/>
+    </method>
+    <method name="rollBackUpdates">
+      <arg name="actionId" type="t" direction="in"/>
+      <arg name="accountId" type="(t)" direction="in"/>
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="QMailAccountId"/>
+    </method>
+    <method name="moveToStandardFolder">
+      <arg name="actionId" type="t" direction="in"/>
+      <arg name="ids" type="a(t)" direction="in"/>
+      <arg name="standardFolder" type="t" direction="in"/>
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="QMailMessageIdList"/>
+    </method>
+    <method name="moveToFolder">
+      <arg name="actionId" type="t" direction="in"/>
+      <arg name="ids" type="a(t)" direction="in"/>
+      <arg name="folderId" type="(t)" direction="in"/>
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="QMailMessageIdList"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In2" value="QMailFolderId"/>
+    </method>
+    <method name="flagMessages">
+      <arg name="actionId" type="t" direction="in"/>
+      <arg name="mailList" type="a(t)" direction="in"/>
+      <arg name="setMask" type="t" direction="in"/>
+      <arg name="unsetMask" type="t" direction="in"/>
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="QMailMessageIdList"/>
+    </method>
+    <method name="restoreToPreviousFolder">
+      <arg name="actionId" type="t" direction="in"/>
+      <arg name="key" type="(iba(iiav))" direction="in"/>
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="QMailMessageKey"/>
+    </method>
+    <method name="onlineCreateFolder">
+      <arg name="actionId" type="t" direction="in"/>
+      <arg name="name" type="s" direction="in"/>
+      <arg name="accountId" type="(t)" direction="in"/>
+      <arg name="parentId" type="(t)" direction="in"/>
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In2" value="QMailAccountId"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In3" value="QMailFolderId"/>
+    </method>
+    <method name="onlineRenameFolder">
+      <arg name="actionId" type="t" direction="in"/>
+      <arg name="folderId" type="(t)" direction="in"/>
+      <arg name="name" type="s" direction="in"/>
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="QMailFolderId"/>
+    </method>
+    <method name="onlineDeleteFolder">
+      <arg name="actionId" type="t" direction="in"/>
+      <arg name="folderId" type="(t)" direction="in"/>
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="QMailFolderId"/>
+    </method>
+    <method name="onlineMoveFolder">
+      <arg name="actionId" type="t" direction="in"/>
+      <arg name="folderId" type="(t)" direction="in"/>
+      <arg name="newParentId" type="(t)" direction="in"/>
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="QMailFolderId"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In2" value="QMailFolderId"/>
+    </method>
+    <method name="cancelTransfer">
+      <arg name="actionId" type="t" direction="in"/>
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+    </method>
+    <method name="protocolRequest">
+      <arg name="actionId" type="t" direction="in"/>
+      <arg name="accountId" type="(t)" direction="in"/>
+      <arg name="request" type="s" direction="in"/>
+      <arg name="data" type="v" direction="in"/>
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="QMailAccountId"/>
+    </method>
+    <method name="searchMessages">
+      <arg name="actionId" type="t" direction="in"/>
+      <arg name="filter" type="(iiaiiav)" direction="in"/>
+      <arg name="bodyText" type="s" direction="in"/>
+      <arg name="spec" type="(i)" direction="in"/>
+      <arg name="sortKey" type="(iai)" direction="in"/>
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="QMailMessageKey"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In3" value="QMailSearchAction::SearchSpecification"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In4" value="QMailMessageSortKey"/>
+    </method>
+    <method name="searchMessages">
+      <arg name="actionId" type="t" direction="in"/>
+      <arg name="filter" type="(iiaiiav)" direction="in"/>
+      <arg name="bodyText" type="s" direction="in"/>
+      <arg name="spec" type="(i)" direction="in"/>
+      <arg name="limit" type="t" direction="in"/>
+      <arg name="sortKey" type="(iai)" direction="in"/>
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="QMailMessageKey"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In3" value="QMailSearchAction::SearchSpecification"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In5" value="QMailMessageSortKey"/>
+    </method>
+    <method name="countMessages">
+      <arg name="actionId" type="t" direction="in"/>
+      <arg name="filter" type="(iiaiiav)" direction="in"/>
+      <arg name="bodyText" type="s" direction="in"/>
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="QMailMessageKey"/>
+    </method>
+    <method name="shutdown">
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+    </method>
+    <method name="listActions">
+      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
+    </method>
+  </interface>
+</node>

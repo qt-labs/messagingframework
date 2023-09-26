@@ -1,5 +1,5 @@
 TARGET     = QmfClient
-QT         = core sql network core5compat
+QT         = core dbus sql network core5compat
 CONFIG    += warn_on
 
 MODULE_PLUGIN_TYPES = \
@@ -9,7 +9,7 @@ MODULE_PLUGIN_TYPES = \
 load(qt_module)
 CONFIG -= create_cmake
 
-DEFINES += QT_BUILD_QCOP_LIB QMF_INTERNAL
+DEFINES += QMF_INTERNAL
 DEFINES += QMF_INSTALL_ROOT=\\\"$$QMF_INSTALL_ROOT\\\"
 
 #DEPENDPATH += .
@@ -86,14 +86,7 @@ HEADERS += \
     qmailthreadkey_p.h \
     qmailthreadsortkey_p.h \
     longstring_p.h \
-    longstream_p.h \
-    support/qcopchannel_p_p.h \
-    support/qringbuffer_p.h \
-    support/qcopadaptor_p.h \
-    support/qcopapplicationchannel_p.h \
-    support/qcopchannel_p.h \
-    support/qcopchannelmonitor_p.h \
-    support/qcopserver_p.h
+    longstream_p.h
 
 SOURCES += longstream.cpp \
            longstring.cpp \
@@ -141,12 +134,13 @@ SOURCES += longstream.cpp \
            support/qmaillog.cpp \
            support/qlogsystem.cpp \
            support/qloggers.cpp \
-           support/qcopadaptor.cpp \
-           support/qcopapplicationchannel.cpp \
-           support/qcopchannel.cpp \
-           support/qcopchannelmonitor.cpp \
-           support/qcopserver.cpp \
            support/qmailpluginmanager.cpp
+
+mailservice.files = qmailservice.xml
+mailservice.header_flags = -i qmailid.h -i qmailaction.h -i qmailserviceaction.h -i qmailstore.h
+mailstore.files = qmailstore.xml
+DBUS_INTERFACES += mailservice
+DBUS_ADAPTORS += mailstore
 
 RESOURCES += qmf.qrc \
              qmf_icons.qrc \

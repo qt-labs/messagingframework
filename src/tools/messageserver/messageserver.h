@@ -38,10 +38,9 @@
 #include <QObject>
 #include <QSet>
 #include <QSocketNotifier>
-#include <private/qcopadaptor_p.h>
 
 class ServiceHandler;
-class MailMessageClient;
+class StoreHandler;
 class QDSData;
 class QMailMessageMetaData;
 class QNetworkState;
@@ -96,10 +95,9 @@ private:
 
 
     ServiceHandler *handler;
-    MailMessageClient *client;
+    StoreHandler *storeHandler;
     QMailMessageCountMap messageCounts;
 
-    QCopAdaptor messageCountUpdate;
     QMap<NewCountNotifier*, QMailMessage::MessageType> actionType;
     int newMessageTotal;
 

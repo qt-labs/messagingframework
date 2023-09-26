@@ -32,17 +32,9 @@
 ****************************************************************************/
 
 #include "qmailmessageserver.h"
-#include <qcopadaptor_p.h>
-#include <qcopchannel_p.h>
-#include <qcopserver_p.h>
+#include "qmailservice_interface.h"
 
-static bool connectIpc( QObject *sender, const QByteArray& signal,
-        QObject *receiver, const QByteArray& member)
-{
-    return QCopAdaptor::connect(sender,signal,receiver,member);
-}
-
-class QMF_EXPORT QMailMessageServerPrivate : public QObject
+class QMailMessageServerPrivate : public OrgQtMessageserverInterface
 {
     Q_OBJECT
 
@@ -51,213 +43,78 @@ class QMF_EXPORT QMailMessageServerPrivate : public QObject
 public:
     QMailMessageServerPrivate(QMailMessageServer* parent);
     ~QMailMessageServerPrivate();
-
-signals:
-    void transmitMessages(quint64, const QMailAccountId &accountId);
-    void transmitMessage(quint64, const QMailMessageId &messageId);
-
-    void retrieveFolderList(quint64, const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending);
-    void retrieveMessageLists(quint64, const QMailAccountId &accountId, const QMailFolderIdList &folderIds, uint minimum, const QMailMessageSortKey &sort);
-    void retrieveMessageList(quint64, const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort);
-    void retrieveNewMessages(quint64, const QMailAccountId &accountId, const QMailFolderIdList &folderIds);
-
-    void createStandardFolders(quint64, const QMailAccountId &accountId);
-
-    void retrieveMessages(quint64, const QMailMessageIdList &messageIds, QMailRetrievalAction::RetrievalSpecification spec);
-    void retrieveMessagePart(quint64, const QMailMessagePart::Location &partLocation);
-
-    void retrieveMessageRange(quint64, const QMailMessageId &messageId, uint minimum);
-    void retrieveMessagePartRange(quint64, const QMailMessagePart::Location &partLocation, uint minimum);
-
-    void retrieveAll(quint64, const QMailAccountId &accountId);
-    void exportUpdates(quint64, const QMailAccountId &accountId);
-
-    void synchronize(quint64, const QMailAccountId &accountId);
-
-    void onlineCopyMessages(quint64, const QMailMessageIdList& mailList, const QMailFolderId &destination);
-    void onlineMoveMessages(quint64, const QMailMessageIdList& mailList, const QMailFolderId &destination);
-    void onlineFlagMessagesAndMoveToStandardFolder(quint64, const QMailMessageIdList& mailList, quint64 setMask, quint64 unsetMask);
-    void addMessages(quint64, const QMailMessageMetaDataList &list);
-    void updateMessages(quint64, const QMailMessageMetaDataList &list);
-    void deleteMessages(quint64, const QMailMessageIdList &ids);
-    void rollBackUpdates(quint64, const QMailAccountId &mailAccountId);
-    void moveToStandardFolder(quint64, const QMailMessageIdList& ids, quint64 standardFolder);
-    void moveToFolder(quint64, const QMailMessageIdList& ids, const QMailFolderId& folderId);
-    void flagMessages(quint64, const QMailMessageIdList& ids, quint64 setMask, quint64 unsetMask);
-    void restoreToPreviousFolder(quint64, const QMailMessageKey& key);
-    void onlineCreateFolder(quint64, const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId);
-    void onlineRenameFolder(quint64, const QMailFolderId &folderId, const QString &name);
-    void onlineDeleteFolder(quint64, const QMailFolderId &folderId);
-    void onlineMoveFolder(quint64, const QMailFolderId &folderId, const QMailFolderId &newParentId);
-
-    void cancelTransfer(quint64);
-
-    void onlineDeleteMessages(quint64, const QMailMessageIdList& id, QMailStore::MessageRemovalOption);
-
-    void searchMessages(quint64, const QMailMessageKey& filter, const QString& bodyText, QMailSearchAction::SearchSpecification spec, const QMailMessageSortKey &sort);
-    void searchMessages(quint64, const QMailMessageKey& filter, const QString& bodyText, QMailSearchAction::SearchSpecification spec, quint64 limit, const QMailMessageSortKey &sort);
-    void countMessages(quint64, const QMailMessageKey& filter, const QString& bodyText);
-
-    void cancelSearch(quint64);
-
-    void shutdown();
-
-    void listActions();
-
-    void protocolRequest(quint64, const QMailAccountId &accountId, const QString &request, const QVariant &data);
-
-private:
-    QCopAdaptor* adaptor;
 };
 
+static QString SERVICE = QLatin1String("org.qt.messageserver");
+static QString PATH = QLatin1String("/messageserver");
 
 QMailMessageServerPrivate::QMailMessageServerPrivate(QMailMessageServer* parent)
-    : QObject(parent),
-      adaptor(new QCopAdaptor(QLatin1String("QPE/QMailMessageServer"), this))
+    : OrgQtMessageserverInterface(SERVICE, PATH, QDBusConnection::sessionBus(), parent)
 {
-    // Forward signals to the message server
-    connectIpc(this, SIGNAL(transmitMessages(quint64, QMailAccountId)),
-               adaptor, MESSAGE(transmitMessages(quint64, QMailAccountId)));
-    connectIpc(this, SIGNAL(transmitMessage(quint64, QMailMessageId)),
-               adaptor, MESSAGE(transmitMessage(quint64, QMailMessageId)));
-    connectIpc(this, SIGNAL(retrieveFolderList(quint64, QMailAccountId, QMailFolderId, bool)),
-               adaptor, MESSAGE(retrieveFolderList(quint64, QMailAccountId, QMailFolderId, bool)));
-    connectIpc(this, SIGNAL(retrieveMessageList(quint64, QMailAccountId, QMailFolderId, uint, QMailMessageSortKey)),
-               adaptor, MESSAGE(retrieveMessageList(quint64, QMailAccountId, QMailFolderId, uint, QMailMessageSortKey)));
-    connectIpc(this, SIGNAL(retrieveMessageLists(quint64, QMailAccountId, QMailFolderIdList, uint, QMailMessageSortKey)),
-               adaptor, MESSAGE(retrieveMessageLists(quint64, QMailAccountId, QMailFolderIdList, uint, QMailMessageSortKey)));
-    connectIpc(this, SIGNAL(retrieveNewMessages(quint64, QMailAccountId, QMailFolderIdList)),
-               adaptor, MESSAGE(retrieveNewMessages(quint64, QMailAccountId, QMailFolderIdList)));
-    connectIpc(this, SIGNAL(createStandardFolders(quint64, QMailAccountId)),
-               adaptor, MESSAGE(createStandardFolders(quint64, QMailAccountId)));
-    connectIpc(this, SIGNAL(retrieveMessages(quint64, QMailMessageIdList, QMailRetrievalAction::RetrievalSpecification)),
-               adaptor, MESSAGE(retrieveMessages(quint64, QMailMessageIdList, QMailRetrievalAction::RetrievalSpecification)));
-    connectIpc(this, SIGNAL(retrieveMessagePart(quint64, QMailMessagePart::Location)),
-               adaptor, MESSAGE(retrieveMessagePart(quint64, QMailMessagePart::Location)));
-    connectIpc(this, SIGNAL(retrieveMessageRange(quint64, QMailMessageId, uint)),
-               adaptor, MESSAGE(retrieveMessageRange(quint64, QMailMessageId, uint)));
-    connectIpc(this, SIGNAL(retrieveMessagePartRange(quint64, QMailMessagePart::Location, uint)),
-               adaptor, MESSAGE(retrieveMessagePartRange(quint64, QMailMessagePart::Location, uint)));
-    connectIpc(this, SIGNAL(retrieveAll(quint64, QMailAccountId)),
-               adaptor, MESSAGE(retrieveAll(quint64, QMailAccountId)));
-    connectIpc(this, SIGNAL(exportUpdates(quint64, QMailAccountId)),
-               adaptor, MESSAGE(exportUpdates(quint64, QMailAccountId)));
-    connectIpc(this, SIGNAL(synchronize(quint64, QMailAccountId)),
-               adaptor, MESSAGE(synchronize(quint64, QMailAccountId)));
-    connectIpc(this, SIGNAL(cancelTransfer(quint64)),
-               adaptor, MESSAGE(cancelTransfer(quint64)));
-    connectIpc(this, SIGNAL(onlineCopyMessages(quint64, QMailMessageIdList, QMailFolderId)),
-               adaptor, MESSAGE(onlineCopyMessages(quint64, QMailMessageIdList, QMailFolderId)));
-    connectIpc(this, SIGNAL(onlineMoveMessages(quint64, QMailMessageIdList, QMailFolderId)),
-               adaptor, MESSAGE(onlineMoveMessages(quint64, QMailMessageIdList, QMailFolderId)));
-    connectIpc(this, SIGNAL(onlineDeleteMessages(quint64, QMailMessageIdList, QMailStore::MessageRemovalOption)),
-               adaptor, MESSAGE(onlineDeleteMessages(quint64, QMailMessageIdList, QMailStore::MessageRemovalOption)));
-    connectIpc(this, SIGNAL(onlineFlagMessagesAndMoveToStandardFolder(quint64, QMailMessageIdList, quint64, quint64)),
-               adaptor, MESSAGE(onlineFlagMessagesAndMoveToStandardFolder(quint64, QMailMessageIdList, quint64, quint64)));
-    connectIpc(this, SIGNAL(addMessages(quint64, QMailMessageMetaDataList)),
-               adaptor, MESSAGE(addMessages(quint64, QMailMessageMetaDataList)));
-    connectIpc(this, SIGNAL(updateMessages(quint64, QMailMessageMetaDataList)),
-               adaptor, MESSAGE(updateMessages(quint64, QMailMessageMetaDataList)));
-    connectIpc(this, SIGNAL(onlineCreateFolder(quint64, QString, QMailAccountId, QMailFolderId)),
-               adaptor, MESSAGE(onlineCreateFolder(quint64, QString, QMailAccountId, QMailFolderId)));
-    connectIpc(this, SIGNAL(onlineRenameFolder(quint64, QMailFolderId, QString)),
-               adaptor, MESSAGE(onlineRenameFolder(quint64, QMailFolderId, QString)));
-    connectIpc(this, SIGNAL(onlineMoveFolder(quint64, QMailFolderId, QMailFolderId)),
-               adaptor, MESSAGE(onlineMoveFolder(quint64, QMailFolderId, QMailFolderId)));
-    connectIpc(this, SIGNAL(onlineDeleteFolder(quint64, QMailFolderId)),
-               adaptor, MESSAGE(onlineDeleteFolder(quint64, QMailFolderId)));
-    connectIpc(this, SIGNAL(deleteMessages(quint64, QMailMessageIdList)),
-               adaptor, MESSAGE(deleteMessages(quint64, QMailMessageIdList)));
-    connectIpc(this, SIGNAL(rollBackUpdates(quint64, QMailAccountId)),
-               adaptor, MESSAGE(rollBackUpdates(quint64, QMailAccountId)));
-    connectIpc(this, SIGNAL(moveToStandardFolder(quint64, QMailMessageIdList, quint64)),
-               adaptor, MESSAGE(moveToStandardFolder(quint64, QMailMessageIdList, quint64)));
-    connectIpc(this, SIGNAL(moveToFolder(quint64, QMailMessageIdList, QMailFolderId)),
-               adaptor, MESSAGE(moveToFolder(quint64, QMailMessageIdList, QMailFolderId)));
-    connectIpc(this, SIGNAL(flagMessages(quint64, QMailMessageIdList, quint64, quint64)),
-               adaptor, MESSAGE(flagMessages(quint64, QMailMessageIdList, quint64, quint64)));
-    connectIpc(this, SIGNAL(restoreToPreviousFolder(quint64, QMailMessageKey)),
-               adaptor, MESSAGE(restoreToPreviousFolder(quint64, QMailMessageKey)));
-    connectIpc(this, SIGNAL(searchMessages(quint64, QMailMessageKey, QString, QMailSearchAction::SearchSpecification, QMailMessageSortKey)),
-               adaptor, MESSAGE(searchMessages(quint64, QMailMessageKey, QString, QMailSearchAction::SearchSpecification, QMailMessageSortKey)));
-    connectIpc(this, SIGNAL(searchMessages(quint64, QMailMessageKey, QString, QMailSearchAction::SearchSpecification, quint64, QMailMessageSortKey)),
-               adaptor, MESSAGE(searchMessages(quint64, QMailMessageKey, QString, QMailSearchAction::SearchSpecification, quint64, QMailMessageSortKey)));
-    connectIpc(this, SIGNAL(countMessages(quint64, QMailMessageKey, QString)),
-               adaptor, MESSAGE(countMessages(quint64, QMailMessageKey, QString)));
-    connectIpc(this, SIGNAL(cancelSearch(quint64)),
-               adaptor, MESSAGE(cancelSearch(quint64)));
-    connectIpc(this, SIGNAL(shutdown()),
-               adaptor, MESSAGE(shutdown()));
-    connectIpc(this, SIGNAL(listActions()),
-               adaptor, MESSAGE(listActions()));
-    connectIpc(this, SIGNAL(protocolRequest(quint64, QMailAccountId, QString, QVariant)),
-               adaptor, MESSAGE(protocolRequest(quint64, QMailAccountId, QString, QVariant)));
-
     // Propagate received events as exposed signals
-    connectIpc(adaptor, MESSAGE(actionStarted(QMailActionData)),
-               parent, SIGNAL(actionStarted(QMailActionData)));
-    connectIpc(adaptor, MESSAGE(activityChanged(quint64, QMailServiceAction::Activity)),
-               parent, SIGNAL(activityChanged(quint64, QMailServiceAction::Activity)));
-    connectIpc(adaptor, MESSAGE(connectivityChanged(quint64, QMailServiceAction::Connectivity)),
-               parent, SIGNAL(connectivityChanged(quint64, QMailServiceAction::Connectivity)));
-    connectIpc(adaptor, MESSAGE(statusChanged(quint64, const QMailServiceAction::Status)),
-               parent, SIGNAL(statusChanged(quint64, const QMailServiceAction::Status)));
-    connectIpc(adaptor, MESSAGE(progressChanged(quint64, uint, uint)),
-               parent, SIGNAL(progressChanged(quint64, uint, uint)));
-    connectIpc(adaptor, MESSAGE(messagesDeleted(quint64, QMailMessageIdList)),
-               parent, SIGNAL(messagesDeleted(quint64, QMailMessageIdList)));
-    connectIpc(adaptor, MESSAGE(messagesCopied(quint64, QMailMessageIdList)),
-               parent, SIGNAL(messagesCopied(quint64, QMailMessageIdList)));
-    connectIpc(adaptor, MESSAGE(messagesMoved(quint64, QMailMessageIdList)),
-               parent, SIGNAL(messagesMoved(quint64, QMailMessageIdList)));
-    connectIpc(adaptor, MESSAGE(messagesFlagged(quint64, QMailMessageIdList)),
-               parent, SIGNAL(messagesFlagged(quint64, QMailMessageIdList)));
-    connectIpc(adaptor, MESSAGE(messagesAdded(quint64, QMailMessageIdList)),
-               parent, SIGNAL(messagesAdded(quint64, QMailMessageIdList)));
-    connectIpc(adaptor, MESSAGE(messagesUpdated(quint64, QMailMessageIdList)),
-               parent, SIGNAL(messagesUpdated(quint64, QMailMessageIdList)));
-    connectIpc(adaptor, MESSAGE(folderCreated(quint64, QMailFolderId)),
-               parent, SIGNAL(folderCreated(quint64, QMailFolderId)));
-    connectIpc(adaptor, MESSAGE(folderRenamed(quint64, QMailFolderId)),
-               parent, SIGNAL(folderRenamed(quint64, QMailFolderId)));
-    connectIpc(adaptor, MESSAGE(folderDeleted(quint64, QMailFolderId)),
-               parent, SIGNAL(folderDeleted(quint64, QMailFolderId)));
-    connectIpc(adaptor, MESSAGE(folderMoved(quint64, QMailFolderId)),
-               parent, SIGNAL(folderMoved(quint64, QMailFolderId)));
-    connectIpc(adaptor, MESSAGE(storageActionCompleted(quint64)),
-               parent, SIGNAL(storageActionCompleted(quint64)));
-    connectIpc(adaptor, MESSAGE(retrievalCompleted(quint64)),
-               parent, SIGNAL(retrievalCompleted(quint64)));
-    connectIpc(adaptor, MESSAGE(messagesTransmitted(quint64, QMailMessageIdList)),
-               parent, SIGNAL(messagesTransmitted(quint64, QMailMessageIdList)));
-    connectIpc(adaptor, MESSAGE(messagesFailedTransmission(quint64, QMailMessageIdList, QMailServiceAction::Status::ErrorCode)),
-               parent, SIGNAL(messagesFailedTransmission(quint64, QMailMessageIdList, QMailServiceAction::Status::ErrorCode)));
-    connectIpc(adaptor, MESSAGE(transmissionCompleted(quint64)),
-               parent, SIGNAL(transmissionCompleted(quint64)));
-    connectIpc(adaptor, MESSAGE(matchingMessageIds(quint64, QMailMessageIdList)),
-               parent, SIGNAL(matchingMessageIds(quint64, QMailMessageIdList)));
-    connectIpc(adaptor, MESSAGE(remainingMessagesCount(quint64, uint)),
-               parent, SIGNAL(remainingMessagesCount(quint64, uint)));
-    connectIpc(adaptor, MESSAGE(messagesCount(quint64, uint)),
-               parent, SIGNAL(messagesCount(quint64, uint)));
-    connectIpc(adaptor, MESSAGE(searchCompleted(quint64)),
-               parent, SIGNAL(searchCompleted(quint64)));
-    connectIpc(adaptor, MESSAGE(actionsListed(QMailActionDataList)),
-               parent, SIGNAL(actionsListed(QMailActionDataList)));
-    connectIpc(adaptor, MESSAGE(protocolResponse(quint64, QString, QVariant)),
-               parent, SIGNAL(protocolResponse(quint64, QString, QVariant)));
-    connectIpc(adaptor, MESSAGE(protocolRequestCompleted(quint64)),
-               parent, SIGNAL(protocolRequestCompleted(quint64)));
-    QObject::connect(adaptor, SIGNAL(connectionDown()),
-                     parent, SIGNAL(connectionDown()));
-    QObject::connect(adaptor, SIGNAL(reconnectionTimeout()),
-                     parent, SIGNAL(reconnectionTimeout()));
+    connect(this, &OrgQtMessageserverInterface::actionStarted,
+            parent, &QMailMessageServer::actionStarted);
+    connect(this, &OrgQtMessageserverInterface::activityChanged,
+            parent, &QMailMessageServer::activityChanged);
+    connect(this, &OrgQtMessageserverInterface::connectivityChanged,
+            parent, &QMailMessageServer::connectivityChanged);
+    connect(this, &OrgQtMessageserverInterface::statusChanged,
+            parent, &QMailMessageServer::statusChanged);
+    connect(this, &OrgQtMessageserverInterface::progressChanged,
+            parent, &QMailMessageServer::progressChanged);
+    connect(this, &OrgQtMessageserverInterface::messagesDeleted,
+            parent, &QMailMessageServer::messagesDeleted);
+    connect(this, &OrgQtMessageserverInterface::messagesCopied,
+            parent, &QMailMessageServer::messagesCopied);
+    connect(this, &OrgQtMessageserverInterface::messagesMoved,
+            parent, &QMailMessageServer::messagesMoved);
+    connect(this, &OrgQtMessageserverInterface::messagesFlagged,
+            parent, &QMailMessageServer::messagesFlagged);
+    connect(this, &OrgQtMessageserverInterface::messagesAdded,
+            parent, &QMailMessageServer::messagesAdded);
+    connect(this, &OrgQtMessageserverInterface::messagesUpdated,
+            parent, &QMailMessageServer::messagesUpdated);
+    connect(this, &OrgQtMessageserverInterface::folderCreated,
+            parent, &QMailMessageServer::folderCreated);
+    connect(this, &OrgQtMessageserverInterface::folderRenamed,
+            parent, &QMailMessageServer::folderRenamed);
+    connect(this, &OrgQtMessageserverInterface::folderDeleted,
+            parent, &QMailMessageServer::folderDeleted);
+    connect(this, &OrgQtMessageserverInterface::folderMoved,
+            parent, &QMailMessageServer::folderMoved);
+    connect(this, &OrgQtMessageserverInterface::storageActionCompleted,
+            parent, &QMailMessageServer::storageActionCompleted);
+    connect(this, &OrgQtMessageserverInterface::retrievalCompleted,
+            parent, &QMailMessageServer::retrievalCompleted);
+    connect(this, &OrgQtMessageserverInterface::messagesTransmitted,
+            parent, &QMailMessageServer::messagesTransmitted);
+    connect(this, &OrgQtMessageserverInterface::messagesFailedTransmission,
+            parent, &QMailMessageServer::messagesFailedTransmission);
+    connect(this, &OrgQtMessageserverInterface::transmissionCompleted,
+            parent, &QMailMessageServer::transmissionCompleted);
+    connect(this, &OrgQtMessageserverInterface::matchingMessageIds,
+            parent, &QMailMessageServer::matchingMessageIds);
+    connect(this, &OrgQtMessageserverInterface::remainingMessagesCount,
+            parent, &QMailMessageServer::remainingMessagesCount);
+    connect(this, &OrgQtMessageserverInterface::messagesCount,
+            parent, &QMailMessageServer::messagesCount);
+    connect(this, &OrgQtMessageserverInterface::searchCompleted,
+            parent, &QMailMessageServer::searchCompleted);
+    connect(this, &OrgQtMessageserverInterface::remoteSearchCompleted,
+            parent, &QMailMessageServer::searchCompleted);
+    connect(this, &OrgQtMessageserverInterface::actionsListed,
+            parent, &QMailMessageServer::actionsListed);
+    connect(this, &OrgQtMessageserverInterface::protocolResponse,
+            [parent] (qulonglong action, const QString &response, const QDBusVariant &data) {
+                emit parent->protocolResponse(action, response, data.variant());
+            });
+    connect(this, &OrgQtMessageserverInterface::protocolRequestCompleted,
+            parent, &QMailMessageServer::protocolRequestCompleted);
 }
 
 QMailMessageServerPrivate::~QMailMessageServerPrivate()
 {
 }
-
 
 /*!
     \class QMailMessageServer
@@ -520,6 +377,7 @@ QMailMessageServer::QMailMessageServer(QObject* parent)
     : QObject(parent),
       d(new QMailMessageServerPrivate(this))
 {
+    registerTypes();
 }
 
 /*!
@@ -527,6 +385,56 @@ QMailMessageServer::QMailMessageServer(QObject* parent)
 */
 QMailMessageServer::~QMailMessageServer()
 {
+}
+
+/*!
+    Register types for IPC.
+*/
+void QMailMessageServer::registerTypes()
+{
+    static bool registrationDone = false;
+
+    if (!registrationDone) {
+        qRegisterMetaType<QMailAccountId>("QMailAccountId");
+        qDBusRegisterMetaType<QMailAccountId>();
+        qRegisterMetaType<QMailFolderId>("QMailFolderId");
+        qDBusRegisterMetaType<QMailFolderId>();
+        qRegisterMetaType<QMailFolderIdList>("QMailFolderIdList");
+        qDBusRegisterMetaType<QMailFolderIdList>();
+        qRegisterMetaType<QMailMessageId>("QMailMessageId");
+        qDBusRegisterMetaType<QMailMessageId>();
+        qRegisterMetaType<QMailMessageIdList>("QMailMessageIdList");
+        qDBusRegisterMetaType<QMailMessageIdList>();
+        qRegisterMetaType<QMailServiceAction::Status::ErrorCode>("QMailServiceAction::Status::ErrorCode");
+        qDBusRegisterMetaType<QMailServiceAction::Status::ErrorCode>();
+        qRegisterMetaType<QMailServiceAction::Status>("QMailServiceAction::Status");
+        qDBusRegisterMetaType<QMailServiceAction::Status>();
+        qRegisterMetaType<QMailServiceAction::Activity>("QMailServiceAction::Activity");
+        qDBusRegisterMetaType<QMailServiceAction::Activity>();
+        qRegisterMetaType<QMailServiceAction::Connectivity>("QMailServiceAction::Connectivity");
+        qDBusRegisterMetaType<QMailServiceAction::Connectivity>();
+        qRegisterMetaType<QMailRetrievalAction::RetrievalSpecification>("QMailRetrievalAction::RetrievalSpecification");
+        qDBusRegisterMetaType<QMailRetrievalAction::RetrievalSpecification>();
+        qRegisterMetaType<QMailSearchAction::SearchSpecification>("QMailSearchAction::SearchSpecification");
+        qDBusRegisterMetaType<QMailSearchAction::SearchSpecification>();
+        qRegisterMetaType<QMailActionData>("QMailActionData");
+        qDBusRegisterMetaType<QMailActionData>();
+        qRegisterMetaType<QMailActionDataList>("QMailActionDataList");
+        qDBusRegisterMetaType<QMailActionDataList>();
+        qRegisterMetaType<QMailMessageSortKey>("QMailMessageSortKey");
+        qDBusRegisterMetaType<QMailMessageSortKey>();
+        qRegisterMetaType<QMailMessagePartContainer::Location>("QMailMessagePartContainer::Location");
+        qDBusRegisterMetaType<QMailMessagePartContainer::Location>();
+        qRegisterMetaType<QMailStore::MessageRemovalOption>("QMailStore::MessageRemovalOption");
+        qDBusRegisterMetaType<QMailStore::MessageRemovalOption>();
+        qRegisterMetaType<QMailMessageMetaData>("QMailMessageMetaData");
+        qDBusRegisterMetaType<QMailMessageMetaData>();
+        qRegisterMetaType<QMailMessageMetaDataList>("QMailMessageMetaDataList");
+        qDBusRegisterMetaType<QMailMessageMetaDataList>();
+        qRegisterMetaType<QMailMessageKey>("QMailMessageKey");
+        qDBusRegisterMetaType<QMailMessageKey>();
+        registrationDone = true;
+    }
 }
 
 /*!
@@ -541,7 +449,7 @@ QMailMessageServer::~QMailMessageServer()
 */
 void QMailMessageServer::transmitMessages(quint64 action, const QMailAccountId &accountId)
 {
-    emit d->transmitMessages(action, accountId);
+    d->transmitMessages(action, accountId);
 }
 
 /*!
@@ -553,7 +461,7 @@ void QMailMessageServer::transmitMessages(quint64 action, const QMailAccountId &
 */
 void QMailMessageServer::transmitMessage(quint64 action, const QMailMessageId &messageId)
 {
-    emit d->transmitMessage(action, messageId);
+    d->transmitMessage(action, messageId);
 }
 
 /*!
@@ -571,7 +479,7 @@ void QMailMessageServer::transmitMessage(quint64 action, const QMailMessageId &m
 */
 void QMailMessageServer::retrieveFolderList(quint64 action, const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending)
 {
-    emit d->retrieveFolderList(action, accountId, folderId, descending);
+    d->retrieveFolderList(action, accountId, folderId, descending);
 }
 
 /*!
@@ -595,7 +503,7 @@ void QMailMessageServer::retrieveFolderList(quint64 action, const QMailAccountId
 */
 void QMailMessageServer::retrieveMessageList(quint64 action, const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort)
 {
-    emit d->retrieveMessageList(action, accountId, folderId, minimum, sort);
+    d->retrieveMessageList(action, accountId, folderId, minimum, sort);
 }
 
 /*!
@@ -619,7 +527,7 @@ void QMailMessageServer::retrieveMessageList(quint64 action, const QMailAccountI
 */
 void QMailMessageServer::retrieveMessageLists(quint64 action, const QMailAccountId &accountId, const QMailFolderIdList &folderIds, uint minimum, const QMailMessageSortKey &sort)
 {
-    emit d->retrieveMessageLists(action, accountId, folderIds, minimum, sort);
+    d->retrieveMessageLists(action, accountId, folderIds, minimum, sort);
 }
 
 /*!
@@ -644,7 +552,7 @@ void QMailMessageServer::retrieveMessageLists(quint64 action, const QMailAccount
 */
 void QMailMessageServer::retrieveNewMessages(quint64 action, const QMailAccountId &accountId, const QMailFolderIdList &folderIds)
 {
-    emit d->retrieveNewMessages(action, accountId, folderIds);
+    d->retrieveNewMessages(action, accountId, folderIds);
 }
 
 /*!
@@ -664,7 +572,7 @@ void QMailMessageServer::retrieveNewMessages(quint64 action, const QMailAccountI
 */
 void QMailMessageServer::createStandardFolders(quint64 action, const QMailAccountId &accountId)
 {
-    emit d->createStandardFolders(action, accountId);
+    d->createStandardFolders(action, accountId);
 }
 
 /*!
@@ -691,7 +599,7 @@ void QMailMessageServer::createStandardFolders(quint64 action, const QMailAccoun
 */
 void QMailMessageServer::retrieveMessages(quint64 action, const QMailMessageIdList &messageIds, QMailRetrievalAction::RetrievalSpecification spec)
 {
-    emit d->retrieveMessages(action, messageIds, spec);
+    d->retrieveMessages(action, messageIds, spec);
 }
 
 /*!
@@ -707,7 +615,7 @@ void QMailMessageServer::retrieveMessages(quint64 action, const QMailMessageIdLi
 */
 void QMailMessageServer::retrieveMessagePart(quint64 action, const QMailMessagePart::Location &partLocation)
 {
-    emit d->retrieveMessagePart(action, partLocation);
+    d->retrieveMessagePart(action, partLocation);
 }
 
 /*!
@@ -722,7 +630,7 @@ void QMailMessageServer::retrieveMessagePart(quint64 action, const QMailMessageP
 */
 void QMailMessageServer::retrieveMessageRange(quint64 action, const QMailMessageId &messageId, uint minimum)
 {
-    emit d->retrieveMessageRange(action, messageId, minimum);
+    d->retrieveMessageRange(action, messageId, minimum);
 }
 
 /*!
@@ -738,7 +646,7 @@ void QMailMessageServer::retrieveMessageRange(quint64 action, const QMailMessage
 */
 void QMailMessageServer::retrieveMessagePartRange(quint64 action, const QMailMessagePart::Location &partLocation, uint minimum)
 {
-    emit d->retrieveMessagePartRange(action, partLocation, minimum);
+    d->retrieveMessagePartRange(action, partLocation, minimum);
 }
 
 /*!
@@ -753,7 +661,7 @@ void QMailMessageServer::retrieveMessagePartRange(quint64 action, const QMailMes
 */
 void QMailMessageServer::retrieveAll(quint64 action, const QMailAccountId &accountId)
 {
-    emit d->retrieveAll(action, accountId);
+    d->retrieveAll(action, accountId);
 }
 
 /*!
@@ -772,7 +680,7 @@ void QMailMessageServer::retrieveAll(quint64 action, const QMailAccountId &accou
 */
 void QMailMessageServer::exportUpdates(quint64 action, const QMailAccountId &accountId)
 {
-    emit d->exportUpdates(action, accountId);
+    d->exportUpdates(action, accountId);
 }
 
 /*!
@@ -794,7 +702,7 @@ void QMailMessageServer::exportUpdates(quint64 action, const QMailAccountId &acc
 */
 void QMailMessageServer::synchronize(quint64 action, const QMailAccountId &accountId)
 {
-    emit d->synchronize(action, accountId);
+    d->synchronize(action, accountId);
 }
 
 /*!
@@ -808,7 +716,7 @@ void QMailMessageServer::synchronize(quint64 action, const QMailAccountId &accou
 */
 void QMailMessageServer::onlineCopyMessages(quint64 action, const QMailMessageIdList& mailList, const QMailFolderId &destinationId)
 {
-    emit d->onlineCopyMessages(action, mailList, destinationId);
+    d->onlineCopyMessages(action, mailList, destinationId);
 }
 
 /*!
@@ -822,7 +730,7 @@ void QMailMessageServer::onlineCopyMessages(quint64 action, const QMailMessageId
 */
 void QMailMessageServer::onlineMoveMessages(quint64 action, const QMailMessageIdList& mailList, const QMailFolderId &destinationId)
 {
-    emit d->onlineMoveMessages(action, mailList, destinationId);
+    d->onlineMoveMessages(action, mailList, destinationId);
 }
 
 /*!
@@ -841,7 +749,7 @@ void QMailMessageServer::onlineMoveMessages(quint64 action, const QMailMessageId
 */
 void QMailMessageServer::onlineFlagMessagesAndMoveToStandardFolder(quint64 action, const QMailMessageIdList& mailList, quint64 setMask, quint64 unsetMask)
 {
-    emit d->onlineFlagMessagesAndMoveToStandardFolder(action, mailList, setMask, unsetMask);
+    d->onlineFlagMessagesAndMoveToStandardFolder(action, mailList, setMask, unsetMask);
 }
 
 /*!
@@ -852,7 +760,7 @@ void QMailMessageServer::onlineFlagMessagesAndMoveToStandardFolder(quint64 actio
 */
 void QMailMessageServer::addMessages(quint64 action, const QMailMessageMetaDataList& messages)
 {
-    emit d->addMessages(action, messages);
+    d->addMessages(action, messages);
 }
 
 /*!
@@ -863,7 +771,7 @@ void QMailMessageServer::addMessages(quint64 action, const QMailMessageMetaDataL
 */
 void QMailMessageServer::updateMessages(quint64 action, const QMailMessageMetaDataList& messages)
 {
-    emit d->updateMessages(action, messages);
+    d->updateMessages(action, messages);
 }
 
 
@@ -884,7 +792,7 @@ void QMailMessageServer::updateMessages(quint64 action, const QMailMessageMetaDa
 */
 void QMailMessageServer::onlineCreateFolder(quint64 action, const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId)
 {
-    emit d->onlineCreateFolder(action, name, accountId, parentId);
+    d->onlineCreateFolder(action, name, accountId, parentId);
 }
 
 /*!
@@ -900,7 +808,7 @@ void QMailMessageServer::onlineCreateFolder(quint64 action, const QString &name,
 */
 void QMailMessageServer::onlineRenameFolder(quint64 action, const QMailFolderId &folderId, const QString &name)
 {
-    emit d->onlineRenameFolder(action, folderId, name);
+    d->onlineRenameFolder(action, folderId, name);
 }
 
 /*!
@@ -916,7 +824,7 @@ void QMailMessageServer::onlineRenameFolder(quint64 action, const QMailFolderId 
 */
 void QMailMessageServer::onlineDeleteFolder(quint64 action, const QMailFolderId &folderId)
 {
-    emit d->onlineDeleteFolder(action, folderId);
+    d->onlineDeleteFolder(action, folderId);
 }
 
 /*!
@@ -933,7 +841,7 @@ void QMailMessageServer::onlineDeleteFolder(quint64 action, const QMailFolderId 
 */
 void QMailMessageServer::onlineMoveFolder(quint64 action, const QMailFolderId &folderId, const QMailFolderId &newParentId)
 {
-    emit d->onlineMoveFolder(action, folderId, newParentId);
+    d->onlineMoveFolder(action, folderId, newParentId);
 }
 
 /*!
@@ -943,7 +851,7 @@ void QMailMessageServer::onlineMoveFolder(quint64 action, const QMailFolderId &f
 */
 void QMailMessageServer::cancelTransfer(quint64 action)
 {
-    emit d->cancelTransfer(action);
+    d->cancelTransfer(action);
 }
 
 /*!
@@ -962,7 +870,7 @@ void QMailMessageServer::cancelTransfer(quint64 action)
 */
 void QMailMessageServer::onlineDeleteMessages(quint64 action, const QMailMessageIdList& mailList, QMailStore::MessageRemovalOption option)
 {
-    emit d->onlineDeleteMessages(action, mailList, option);
+    d->onlineDeleteMessages(action, mailList, option);
 }
 
 /*!
@@ -980,7 +888,7 @@ void QMailMessageServer::onlineDeleteMessages(quint64 action, const QMailMessage
 */
 void QMailMessageServer::deleteMessages(quint64 action, const QMailMessageIdList& mailList)
 {
-    emit d->deleteMessages(action, mailList);
+    d->deleteMessages(action, mailList);
 }
 
 /*!
@@ -996,7 +904,7 @@ void QMailMessageServer::deleteMessages(quint64 action, const QMailMessageIdList
 */
 void QMailMessageServer::rollBackUpdates(quint64 action, const QMailAccountId &mailAccountId)
 {
-    emit d->rollBackUpdates(action, mailAccountId);
+    d->rollBackUpdates(action, mailAccountId);
 }
 
 /*!
@@ -1013,7 +921,7 @@ void QMailMessageServer::rollBackUpdates(quint64 action, const QMailAccountId &m
 */
 void QMailMessageServer::moveToStandardFolder(quint64 action, const QMailMessageIdList& ids, quint64 standardFolder)
 {
-    emit d->moveToStandardFolder(action, ids, standardFolder);
+    d->moveToStandardFolder(action, ids, standardFolder);
 }
 
 /*!
@@ -1032,7 +940,7 @@ void QMailMessageServer::moveToStandardFolder(quint64 action, const QMailMessage
 */
 void QMailMessageServer::moveToFolder(quint64 action, const QMailMessageIdList& ids, const QMailFolderId& folderId)
 {
-    emit d->moveToFolder(action, ids, folderId);
+    d->moveToFolder(action, ids, folderId);
 }
 
 /*!
@@ -1051,7 +959,7 @@ void QMailMessageServer::moveToFolder(quint64 action, const QMailMessageIdList& 
 */
 void QMailMessageServer::flagMessages(quint64 action, const QMailMessageIdList& ids, quint64 setMask, quint64 unsetMask)
 {
-    emit d->flagMessages(action, ids, setMask, unsetMask);
+    d->flagMessages(action, ids, setMask, unsetMask);
 }
 
 /*!
@@ -1066,7 +974,7 @@ void QMailMessageServer::flagMessages(quint64 action, const QMailMessageIdList& 
 */
 void QMailMessageServer::restoreToPreviousFolder(quint64 action, const QMailMessageKey& key)
 {
-    emit d->restoreToPreviousFolder(action, key);
+    d->restoreToPreviousFolder(action, key);
 }
 
 /*!
@@ -1089,7 +997,7 @@ void QMailMessageServer::restoreToPreviousFolder(quint64 action, const QMailMess
 */
 void QMailMessageServer::searchMessages(quint64 action, const QMailMessageKey& filter, const QString& bodyText, QMailSearchAction::SearchSpecification spec, const QMailMessageSortKey &sort)
 {
-    emit d->searchMessages(action, filter, bodyText, spec, sort);
+    d->searchMessages(action, filter, bodyText, spec, sort);
 }
 
 /*!
@@ -1115,7 +1023,7 @@ void QMailMessageServer::searchMessages(quint64 action, const QMailMessageKey& f
 */
 void QMailMessageServer::searchMessages(quint64 action, const QMailMessageKey& filter, const QString& bodyText, QMailSearchAction::SearchSpecification spec, quint64 limit, const QMailMessageSortKey &sort)
 {
-    emit d->searchMessages(action, filter, bodyText, spec, limit, sort);
+    d->searchMessages(action, filter, bodyText, spec, limit, sort);
 }
 
 /*!
@@ -1134,7 +1042,7 @@ void QMailMessageServer::searchMessages(quint64 action, const QMailMessageKey& f
 */
 void QMailMessageServer::countMessages(quint64 action, const QMailMessageKey& filter, const QString& bodyText)
 {
-    emit d->countMessages(action, filter, bodyText);
+    d->countMessages(action, filter, bodyText);
 }
 
 /*!
@@ -1144,7 +1052,7 @@ void QMailMessageServer::countMessages(quint64 action, const QMailMessageKey& fi
 */
 void QMailMessageServer::cancelSearch(quint64 action)
 {
-    emit d->cancelTransfer(action);
+    d->cancelTransfer(action);
 }
 
 /*!
@@ -1152,7 +1060,7 @@ void QMailMessageServer::cancelSearch(quint64 action)
 */
 void QMailMessageServer::shutdown()
 {
-    emit d->shutdown();
+    d->shutdown();
 }
 
 /*!
@@ -1160,7 +1068,7 @@ void QMailMessageServer::shutdown()
 */
 void QMailMessageServer::listActions()
 {
-    emit d->listActions();
+    d->listActions();
 }
 
 /*!
@@ -1170,7 +1078,7 @@ void QMailMessageServer::listActions()
 */
 void QMailMessageServer::protocolRequest(quint64 action, const QMailAccountId &accountId, const QString &request, const QVariant &data)
 {
-    emit d->protocolRequest(action, accountId, request, data);
+    d->protocolRequest(action, accountId, request, QDBusVariant(data));
 }
 
 Q_IMPLEMENT_USER_METATYPE_TYPEDEF(QMailMessageCountMap, QMailMessageCountMap)

@@ -34,7 +34,6 @@ exists(/usr/bin/gpgme-config) {
 !win32 {
     SUBDIRS += \
         tst_qmaillog \
-        tst_qcop \
         tst_qlogsystem
 }
 

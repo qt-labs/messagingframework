@@ -90,10 +90,6 @@ QMailServiceActionPrivate::QMailServiceActionPrivate(Subclass *p, QMailServiceAc
             this, SLOT(statusChanged(quint64, const QMailServiceAction::Status)));
     connect(_server.data(), SIGNAL(progressChanged(quint64, uint, uint)),
             this, SLOT(progressChanged(quint64, uint, uint)));
-    connect(_server.data(), SIGNAL(connectionDown()),
-            this, SLOT(serverFailure()));
-    connect(_server.data(), SIGNAL(reconnectionTimeout()),
-            this, SLOT(serverFailure()));
 }
 
 QMailServiceActionPrivate::~QMailServiceActionPrivate()
@@ -224,15 +220,6 @@ void QMailServiceActionPrivate::clearSubActions()
             a.action->deleteLater();
         }
         _pendingActions.clear();
-}
-
-void QMailServiceActionPrivate::serverFailure()
-{
-    if (_isValid && _activity != QMailServiceAction::Failed) {
-        _activity = QMailServiceAction::Failed;
-        _activityChanged = true;
-        emitChanges();
-    }
 }
 
 void QMailServiceActionPrivate::init()
@@ -511,6 +498,7 @@ void QMailServiceAction::Status::serialize(Stream &stream) const
 }
 
 template void QMailServiceAction::Status::serialize(QDataStream &) const;
+template void QMailServiceAction::Status::serialize(QDBusArgument &) const;
 
 /*! 
     \fn QMailServiceAction::Status::deserialize(Stream&)
@@ -527,6 +515,7 @@ void QMailServiceAction::Status::deserialize(Stream &stream)
 }
 
 template void QMailServiceAction::Status::deserialize(QDataStream &);
+template void QMailServiceAction::Status::deserialize(const QDBusArgument &);
 
 /*!
     \class QMailServiceAction
@@ -870,7 +859,6 @@ void QMailRetrievalActionPrivate::retrievalCompleted(quint64 action)
         emitChanges();
     }
 }
-
 
 /*!
     \class QMailRetrievalAction

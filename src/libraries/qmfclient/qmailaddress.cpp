@@ -802,7 +802,7 @@ QList<QMailAddress> QMailAddressPrivate::groupMembers() const
 }
 
 // We need to keep a default copy of this, because constructing a new
-// one is expensive and sends multiple QCOP messages, whose responses it
+// one is expensive and sends multiple DBus messages, whose responses it
 // will not survive to receive...
 
 QString QMailAddressPrivate::name() const

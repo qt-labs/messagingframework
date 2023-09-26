@@ -37,6 +37,7 @@
 #include <algorithm>
 #include <list>
 #include <QList>
+#include <QDBusArgument>
 
 /*
  * QMF made use of stable-reference semantics of QList in Qt5.
@@ -102,6 +103,21 @@ QDataStream &operator<<(QDataStream &out, const QmfList<T> &list)
 }
 template <typename T>
 QDataStream &operator>>(QDataStream &in, QmfList<T> &list)
+{
+    QList<T> qlist;
+    in >> qlist;
+    list = QmfList<T>::fromQList(qlist);
+    return in;
+}
+
+template <typename T>
+QDBusArgument &operator<<(QDBusArgument &out, const QmfList<T> &list)
+{
+    out << list.toQList();
+    return out;
+}
+template <typename T>
+const QDBusArgument &operator>>(const QDBusArgument &in, QmfList<T> &list)
 {
     QList<T> qlist;
     in >> qlist;

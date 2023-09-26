@@ -7,7 +7,7 @@ SERVER_AS_DLL: {
 }
 
 TARGET = messageserver5
-QT = core qmfclient qmfclient-private qmfmessageserver
+QT = core dbus qmfclient qmfclient-private qmfmessageserver
 
 contains(DEFINES, USE_HTML_PARSER) {
     QT += gui
@@ -20,16 +20,18 @@ contains(DEFINES, USE_HTML_PARSER) {
 CONFIG -= app_bundle
 target.path += $$QMF_INSTALL_ROOT/bin
 
-HEADERS += mailmessageclient.h \
-           messageserver.h \
+HEADERS += messageserver.h \
            servicehandler.h \
            newcountnotifier.h
 
-SOURCES += mailmessageclient.cpp \
-           messageserver.cpp \
+SOURCES += messageserver.cpp \
            prepareaccounts.cpp \
            newcountnotifier.cpp \
            servicehandler.cpp
+
+mailservice.files = ../../libraries/qmfclient/qmailservice.xml
+mailservice.header_flags = -i qmailid.h -i qmailaction.h -i qmailserviceaction.h -i qmailstore.h
+DBUS_ADAPTORS += mailservice
 
 !SERVER_AS_DLL: {
     SOURCES += main.cpp

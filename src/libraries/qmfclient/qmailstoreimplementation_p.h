@@ -51,14 +51,15 @@
 #include <QPair>
 #include <QString>
 #include <QTimer>
+#include <QDBusContext>
 
 QT_BEGIN_NAMESPACE
 
-class QFileSystemWatcher;
+class MailstoreAdaptor;
 
 QT_END_NAMESPACE
 
-class QMF_EXPORT QMailStoreImplementationBase : public QObject
+class QMF_EXPORT QMailStoreImplementationBase : public QObject, protected QDBusContext
 {
     Q_OBJECT
 
@@ -127,6 +128,8 @@ public:
     static QString retrievalInProgressSig();
     static QString transmissionInProgressSig();
 
+    static QString forceIpcFlushSig();
+
     static const int maxNotifySegmentSize = 0;
 
 public slots:
@@ -134,8 +137,6 @@ public slots:
     void ipcMessage(const QString& message, const QByteArray& data);
     void flushNotifications();
     void aboutToQuit();
-    void ipcConnectionFailed();
-    void lockFileUpdated();
 
 protected:
     typedef void (QMailStore::*AccountUpdateSignal)(const QMailAccountIdList&);
@@ -224,8 +225,7 @@ private:
 
     QTimer queueTimer;
     QList<QPair<QString, QByteArray> > messageQueue;
-    class QCopChannel* ipcChannel;
-    class QFileSystemWatcher* watcher;
+    MailstoreAdaptor *ipcAdaptor;
 };
 
 
