@@ -163,7 +163,7 @@ public:
         {
             clear();
 
-            int v = 0;
+            qsizetype v = 0;
             stream >> v;
             for (int i = 0; i < v; ++i) {
                 QVariant var;
