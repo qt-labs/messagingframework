@@ -207,7 +207,7 @@ private:
         /// Should I close file in destructor?
         bool should_close;
         /// Counter of "doLog" calls
-        unsigned do_cntr;
+        unsigned do_cntr = 0;
         /// Flush period in lines
         const unsigned flush_period;
 };
@@ -283,7 +283,7 @@ inline void BaseLogger<Host, Prefix>::log(const LogLevel _lvl, const char* _fmt,
 
 template <class Prefix>
 inline FileLogger<Prefix>::FileLogger(const QString& _name, const unsigned _flush_period, const LogLevel _min_lvl)
-           : BaseLogger< FileLogger<Prefix>, Prefix >(*this, _min_lvl), name(_name), should_close(true), do_cntr(0), flush_period(_flush_period)
+           : BaseLogger< FileLogger<Prefix>, Prefix >(*this, _min_lvl), name(_name), should_close(true), flush_period(_flush_period)
 {
     f = fopen(qPrintable(_name), "a" );
     if(f == NULL)

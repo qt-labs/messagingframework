@@ -181,6 +181,8 @@ public:
     ValueList valueList;
 
     QMailKeyArgument()
+        : property(Property())
+        , op(Comparator())
     {
     }
 
