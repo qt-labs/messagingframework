@@ -86,7 +86,6 @@ private slots:
     void messagesUpdated(const QMailMessageIdList &ids);
     void messagesRemoved(const QMailMessageIdList &ids);
     void reportNewCounts();
-    void acknowledgeNewMessages(const QMailMessageTypeList&);
 
     void cleanupTemporaryMessages();
 

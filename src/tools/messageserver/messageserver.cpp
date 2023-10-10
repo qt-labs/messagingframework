@@ -261,8 +261,6 @@ MessageServer::MessageServer(QObject *parent)
                 handler, SLOT(listActions()));
        connect(handler, SIGNAL(newMessagesAvailable()),
                 this, SLOT(reportNewCounts()));
-        connect(client, SIGNAL(acknowledgeNewMessages(QMailMessageTypeList)),
-                this, SLOT(acknowledgeNewMessages(QMailMessageTypeList)));
 
         QCopAdaptor::connect(this, SIGNAL(messageCountUpdated()),
              &messageCountUpdate, MESSAGE(changeValue()));
@@ -319,23 +317,6 @@ QMap<QMailMessage::MessageType, QString> typeSignatureInit()
     map.insert(QMailMessage::System, "newSystemCount(int)");
 
     return map;
-}
-
-void MessageServer::acknowledgeNewMessages(const QMailMessageTypeList& types)
-{
-    foreach (QMailMessage::MessageType type, types) {
-        // No messages of this type are new any longer
-        QMailMessageKey newMessages(QMailMessageKey::messageType(type));
-        newMessages &= QMailMessageKey(QMailMessageKey::status(QMailMessage::New, QMailDataComparator::Includes));
-        QMailStore::instance()->updateMessagesMetaData(newMessages, QMailMessage::New, false);
-
-        if (messageCounts[type] != 0) {
-            newMessageTotal -= messageCounts[type];
-
-            messageCounts[type] = 0;
-            NewCountNotifier::notify(type, 0);
-        }
-    }
 }
 
 static QMap<QMailMessage::MessageType, QString> typeServiceInit()
@@ -414,7 +395,18 @@ void MessageServer::response(bool handled)
 {
     if (NewCountNotifier* action = static_cast<NewCountNotifier*>(sender())) {
         if (handled) {
-            acknowledgeNewMessages(QMailMessageTypeList() << actionType[action]);
+            QMailMessage::MessageType type(actionType[action]);
+            // No messages of this type are new any longer
+            QMailMessageKey newMessages(QMailMessageKey::messageType(type));
+            newMessages &= QMailMessageKey(QMailMessageKey::status(QMailMessage::New, QMailDataComparator::Includes));
+            QMailStore::instance()->updateMessagesMetaData(newMessages, QMailMessage::New, false);
+
+            if (messageCounts[type] != 0) {
+                newMessageTotal -= messageCounts[type];
+
+                messageCounts[type] = 0;
+                NewCountNotifier::notify(type, 0);
+            }
         }
         actionType.remove(action);
         action->deleteLater();

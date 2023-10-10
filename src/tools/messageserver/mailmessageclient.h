@@ -56,9 +56,6 @@ private:
     void operator=(const MailMessageClient&);
 
 signals:
-    void newCountChanged(const QMailMessageCountMap&);
-    void acknowledgeNewMessages(const QMailMessageTypeList&);
-
     void transmitMessages(quint64, const QMailAccountId &accountId);
     void transmitMessage(quint64, const QMailMessageId &messageId);
 

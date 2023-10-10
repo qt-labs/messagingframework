@@ -65,8 +65,6 @@ private:
     void operator=(const QMailMessageServer&);
 
 Q_SIGNALS:
-    void newCountChanged(const QMailMessageCountMap&);
-
     void actionStarted(QMailActionData);
     void activityChanged(quint64, QMailServiceAction::Activity);
     void connectivityChanged(quint64, QMailServiceAction::Connectivity);
@@ -107,8 +105,6 @@ Q_SIGNALS:
     void reconnectionTimeout();
 
 public Q_SLOTS:
-    void acknowledgeNewMessages(const QMailMessageTypeList& types);
-
     void transmitMessages(quint64, const QMailAccountId &accountId);
     void transmitMessage(quint64, const QMailMessageId &messageId);
 

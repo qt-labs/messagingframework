@@ -53,8 +53,6 @@ public:
     ~QMailMessageServerPrivate();
 
 signals:
-    void initialise();
-
     void transmitMessages(quint64, const QMailAccountId &accountId);
     void transmitMessage(quint64, const QMailMessageId &messageId);
 
@@ -110,8 +108,6 @@ signals:
 
     void protocolRequest(quint64, const QMailAccountId &accountId, const QString &request, const QVariant &data);
 
-    void acknowledgeNewMessages(const QMailMessageTypeList&);
-
 private:
     QCopAdaptor* adaptor;
 };
@@ -122,13 +118,6 @@ QMailMessageServerPrivate::QMailMessageServerPrivate(QMailMessageServer* parent)
       adaptor(new QCopAdaptor(QLatin1String("QPE/QMailMessageServer"), this))
 {
     // Forward signals to the message server
-    connectIpc(adaptor, MESSAGE(newCountChanged(QMailMessageCountMap)),
-               parent, SIGNAL(newCountChanged(QMailMessageCountMap)));
-    connectIpc(this, SIGNAL(acknowledgeNewMessages(QMailMessageTypeList)),
-               adaptor, MESSAGE(acknowledgeNewMessages(QMailMessageTypeList)));
-
-    connectIpc(this, SIGNAL(initialise()),
-               adaptor, MESSAGE(initialise()));
     connectIpc(this, SIGNAL(transmitMessages(quint64, QMailAccountId)),
                adaptor, MESSAGE(transmitMessages(quint64, QMailAccountId)));
     connectIpc(this, SIGNAL(transmitMessage(quint64, QMailMessageId)),
@@ -345,16 +334,6 @@ QMailMessageServerPrivate::~QMailMessageServerPrivate()
 
     Emitted when the progress of the request identified by \a action changes; 
     \a total indicates the extent of the operation to be performed, \a progress indicates the current degree of completion.
-*/
-
-/*!
-    \fn void QMailMessageServer::newCountChanged(const QMailMessageCountMap& counts);
-
-    Emitted when the count of 'new' messages changes; the new count is described by \a counts.
-    
-    \deprecated
-
-    \sa acknowledgeNewMessages()
 */
 
 /*!
@@ -997,19 +976,6 @@ void QMailMessageServer::onlineMoveFolder(quint64 action, const QMailFolderId &f
 void QMailMessageServer::cancelTransfer(quint64 action)
 {
     emit d->cancelTransfer(action);
-}
-
-/*!
-    Requests that the MessageServer reset the counts of 'new' messages to zero, for
-    each message type listed in \a types.
-    
-    \deprecated
-
-    \sa newCountChanged()
-*/
-void QMailMessageServer::acknowledgeNewMessages(const QMailMessageTypeList& types)
-{
-    emit d->acknowledgeNewMessages(types);
 }
 
 /*!

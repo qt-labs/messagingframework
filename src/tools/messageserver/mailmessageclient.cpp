@@ -44,11 +44,6 @@ MailMessageClient::MailMessageClient(QObject* parent)
     : QObject(parent),
       adaptor(new QCopAdaptor("QPE/QMailMessageServer",this))
 {
-    connectIpc(this, SIGNAL(newCountChanged(QMailMessageCountMap)),
-                              adaptor, MESSAGE(newCountChanged(QMailMessageCountMap)));
-    connectIpc(adaptor, MESSAGE(acknowledgeNewMessages(QMailMessageTypeList)),
-                              this, SIGNAL(acknowledgeNewMessages(QMailMessageTypeList)));
-
     connectIpc(this, SIGNAL(actionStarted(QMailActionData)),
                adaptor, MESSAGE(actionStarted(QMailActionData)));
     connectIpc(this, SIGNAL(activityChanged(quint64, QMailServiceAction::Activity)),
