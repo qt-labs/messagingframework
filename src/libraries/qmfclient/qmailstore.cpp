@@ -1179,7 +1179,12 @@ bool QMailStore::isIpcConnectionEstablished() const
     Disconnect from messageserver
     
     Useful for reducing battery consumption when the client application is not 
-    visible to the end user.
+    visible to the end user. Calling any getter functions like messages() for
+    instance may result in incorrect content after a call to disconnect() since
+    this store client will not be notified of any database change made by other
+    clients. Respectively, calling any setter functions like updateMessages()
+    will not notify any other clients. The host code is responsible to call
+    reconnectIpc() before using any getter or setter functions.
 
     \sa flushIpcNotifications(), isIpcConnectionEstablished(), reconnectIpc()
 */

@@ -236,6 +236,9 @@ public:
 
     virtual QMap<QString, QString> messageCustomFields(const QMailMessageId &id) override;
 
+    virtual void disconnectIpc() override;
+    virtual void reconnectIpc() override;
+
     template<typename ValueType>
     static ValueType extractValue(const QVariant& var, const ValueType &defaultValue = ValueType());
 
@@ -804,6 +807,7 @@ private:
     static ProcessMutex *contentMutex;
 
     int globalLocks;
+    QDateTime ipcLastDbUpdated;
 };
 
 template <typename ValueType>

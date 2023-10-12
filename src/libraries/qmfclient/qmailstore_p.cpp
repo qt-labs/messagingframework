@@ -9795,3 +9795,27 @@ void QMailStorePrivate::emitIpcNotification(const QMailMessageIdList& ids, quint
     QMailStoreImplementation::emitIpcNotification(ids, status, set);
 }
 
+void QMailStorePrivate::disconnectIpc()
+{
+    QMailStoreImplementation::disconnectIpc();
+
+    ipcLastDbUpdated = QMail::lastDbUpdated();
+}
+
+void QMailStorePrivate::reconnectIpc()
+{
+    QMailStoreImplementation::reconnectIpc();
+
+    // clear cache if needed
+    const QDateTime& lastDbUpdated = QMail::lastDbUpdated();
+    if (ipcLastDbUpdated != lastDbUpdated) {
+        // Clear all caches
+        accountCache.clear();
+        folderCache.clear();
+        messageCache.clear();
+        uidCache.clear();
+        threadCache.clear();
+
+        ipcLastDbUpdated = lastDbUpdated;
+    }
+}

@@ -93,8 +93,8 @@ public:
 
     bool isIpcConnectionEstablished() const;
 
-    void disconnectIpc();
-    void reconnectIpc();
+    virtual void disconnectIpc();
+    virtual void reconnectIpc();
 
     static QString accountAddedSig();
     static QString accountRemovedSig();
