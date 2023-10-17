@@ -129,9 +129,7 @@ public Q_SLOTS:
     void onlineCopyMessages(quint64, const QMailMessageIdList& mailList, const QMailFolderId &destinationId);
     void onlineMoveMessages(quint64, const QMailMessageIdList& mailList, const QMailFolderId &destinationId);
     void onlineFlagMessagesAndMoveToStandardFolder(quint64, const QMailMessageIdList& mailList, quint64 setMask, quint64 unsetMask);
-    void addMessages(quint64, const QString &filename);
     void addMessages(quint64, const QMailMessageMetaDataList &messages);
-    void updateMessages(quint64, const QString &filename);
     void updateMessages(quint64, const QMailMessageMetaDataList &messages);
 
     void onlineCreateFolder(quint64, const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId);

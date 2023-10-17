@@ -82,9 +82,7 @@ signals:
     void onlineCopyMessages(quint64, const QMailMessageIdList&, const QMailFolderId&);
     void onlineMoveMessages(quint64, const QMailMessageIdList&, const QMailFolderId&);
     void onlineFlagMessagesAndMoveToStandardFolder(quint64, const QMailMessageIdList&, quint64 setMask, quint64 unsetMask);
-    void addMessages(quint64, const QString &filename);
     void addMessages(quint64, const QMailMessageMetaDataList &metadata);
-    void updateMessages(quint64, const QString &filename);
     void updateMessages(quint64, const QMailMessageMetaDataList &metadata);
     void deleteMessages(quint64, const QMailMessageIdList &ids);
     void rollBackUpdates(quint64, const QMailAccountId &mailAccountId);

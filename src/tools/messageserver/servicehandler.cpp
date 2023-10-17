@@ -2188,60 +2188,6 @@ void ServiceHandler::onlineFlagMessagesAndMoveToStandardFolder(quint64 action, c
     }
 }
 
-void ServiceHandler::addOrUpdateMessages(quint64 action, const QString &filename, bool add)
-{
-    QFile file(filename);
-    QFileInfo fi(file);
-    QMailMessageIdList ids;
-    QString err;
-    if (add) {
-        err = tr("Unable to async add messages");
-    } else {
-        err = tr("Unable to async update messages");
-    }
-    if (fi.exists() && fi.isFile() && fi.isReadable()) {
-        file.open(QIODevice::ReadOnly);
-        QDataStream stream(&file);
-        while (!stream.atEnd()) {
-            QMailMessage message;
-            QMailStore *store = QMailStore::instance();
-            stream >> message;
-            if (add) {
-                store->addMessage(&message);
-            } else {
-                store->updateMessage(&message);
-            }
-            if (store->lastError() != QMailStore::NoError) {
-               reportFailure(action, QMailServiceAction::Status::ErrFrameworkFault, err);
-               return;
-            }
-            ids.append(message.id());
-        }
-        if (add) {
-            emit messagesAdded(action, ids);
-        } else {
-            emit messagesUpdated(action, ids);
-        }
-        emit storageActionCompleted(action);
-        emit activityChanged(action, QMailServiceAction::Successful);
-        return;
-    }
-    file.remove();
-    reportFailure(action, QMailServiceAction::Status::ErrFrameworkFault, err);
-}
-
-void ServiceHandler::addMessages(quint64 action, const QString &filename)
-{
-    addOrUpdateMessages(action, filename, true);
-    QMailStore::instance()->flushIpcNotifications();
-}
-
-void ServiceHandler::updateMessages(quint64 action, const QString &filename)
-{
-    addOrUpdateMessages(action, filename, false);
-    QMailStore::instance()->flushIpcNotifications();
-}
-
 void ServiceHandler::addMessages(quint64 action, const QMailMessageMetaDataList &messages)
 {
     bool failure = false;

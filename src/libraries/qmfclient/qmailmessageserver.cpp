@@ -77,9 +77,7 @@ signals:
     void onlineCopyMessages(quint64, const QMailMessageIdList& mailList, const QMailFolderId &destination);
     void onlineMoveMessages(quint64, const QMailMessageIdList& mailList, const QMailFolderId &destination);
     void onlineFlagMessagesAndMoveToStandardFolder(quint64, const QMailMessageIdList& mailList, quint64 setMask, quint64 unsetMask);
-    void addMessages(quint64, const QString &filename);
     void addMessages(quint64, const QMailMessageMetaDataList &list);
-    void updateMessages(quint64, const QString &filename);
     void updateMessages(quint64, const QMailMessageMetaDataList &list);
     void deleteMessages(quint64, const QMailMessageIdList &ids);
     void rollBackUpdates(quint64, const QMailAccountId &mailAccountId);
@@ -156,12 +154,8 @@ QMailMessageServerPrivate::QMailMessageServerPrivate(QMailMessageServer* parent)
                adaptor, MESSAGE(onlineDeleteMessages(quint64, QMailMessageIdList, QMailStore::MessageRemovalOption)));
     connectIpc(this, SIGNAL(onlineFlagMessagesAndMoveToStandardFolder(quint64, QMailMessageIdList, quint64, quint64)),
                adaptor, MESSAGE(onlineFlagMessagesAndMoveToStandardFolder(quint64, QMailMessageIdList, quint64, quint64)));
-    connectIpc(this, SIGNAL(addMessages(quint64, QString)),
-               adaptor, MESSAGE(addMessages(quint64, QString)));
     connectIpc(this, SIGNAL(addMessages(quint64, QMailMessageMetaDataList)),
                adaptor, MESSAGE(addMessages(quint64, QMailMessageMetaDataList)));
-    connectIpc(this, SIGNAL(updateMessages(quint64, QString)),
-               adaptor, MESSAGE(updateMessages(quint64, QString)));
     connectIpc(this, SIGNAL(updateMessages(quint64, QMailMessageMetaDataList)),
                adaptor, MESSAGE(updateMessages(quint64, QMailMessageMetaDataList)));
     connectIpc(this, SIGNAL(onlineCreateFolder(quint64, QString, QMailAccountId, QMailFolderId)),
@@ -851,19 +845,6 @@ void QMailMessageServer::onlineFlagMessagesAndMoveToStandardFolder(quint64 actio
 }
 
 /*!
-    Requests that the MessageServer add the messages in 
-    \a filename to the message store.
-
-    The request has the identifier \a action.
-
-    \deprecated
-*/
-void QMailMessageServer::addMessages(quint64 action, const QString& filename)
-{
-    emit d->addMessages(action, filename);
-}
-
-/*!
     Requests that the MessageServer update the list of \a messages
     in the message store, and ensure the durability of the content of \a messages.
 
@@ -872,19 +853,6 @@ void QMailMessageServer::addMessages(quint64 action, const QString& filename)
 void QMailMessageServer::addMessages(quint64 action, const QMailMessageMetaDataList& messages)
 {
     emit d->addMessages(action, messages);
-}
-
-/*!
-    Requests that the MessageServer update the messages in 
-    \a filename to the message store.
-
-    The request has the identifier \a action.
-
-    \deprecated
-*/
-void QMailMessageServer::updateMessages(quint64 action, const QString& filename)
-{
-    emit d->updateMessages(action, filename);
 }
 
 /*!

@@ -217,10 +217,6 @@ MessageServer::MessageServer(QObject *parent)
                 handler, SLOT(onlineMoveMessages(quint64, QMailMessageIdList, QMailFolderId)));
         connect(client, SIGNAL(onlineFlagMessagesAndMoveToStandardFolder(quint64, QMailMessageIdList, quint64, quint64)),
                 handler, SLOT(onlineFlagMessagesAndMoveToStandardFolder(quint64, QMailMessageIdList, quint64, quint64)));
-        connect(client, SIGNAL(addMessages(quint64, QString)),
-                handler, SLOT(addMessages(quint64, QString)));
-        connect(client, SIGNAL(updateMessages(quint64, QString)),
-                handler, SLOT(updateMessages(quint64, QString)));
         connect(client, SIGNAL(addMessages(quint64, QMailMessageMetaDataList)),
                 handler, SLOT(addMessages(quint64, QMailMessageMetaDataList)));
         connect(client, SIGNAL(updateMessages(quint64, QMailMessageMetaDataList)),

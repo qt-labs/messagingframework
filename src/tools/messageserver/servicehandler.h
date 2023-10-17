@@ -77,9 +77,7 @@ public slots:
     void onlineCopyMessages(quint64 action, const QMailMessageIdList& mailList, const QMailFolderId &destination);
     void onlineMoveMessages(quint64 action, const QMailMessageIdList& mailList, const QMailFolderId &destination);
     void onlineFlagMessagesAndMoveToStandardFolder(quint64 action, const QMailMessageIdList& mailList, quint64 setMask, quint64 unsetMask);
-    void addMessages(quint64 action, const QString &filename);
     void addMessages(quint64 action, const QMailMessageMetaDataList &messages);
-    void updateMessages(quint64 action, const QString &filename);
     void updateMessages(quint64 action, const QMailMessageMetaDataList &messages);
     void deleteMessages(quint64 action, const QMailMessageIdList &ids);
     void rollBackUpdates(quint64 action, const QMailAccountId &mailAccountId);
@@ -279,7 +277,6 @@ private:
 
     void setRetrievalInProgress(const QMailAccountId &id, bool inProgress);
     void setTransmissionInProgress(const QMailAccountId &id, bool inProgress);
-    void addOrUpdateMessages(quint64 action, const QString &filename, bool add);
 
     QMap<QPair<QMailAccountId, QString>, QPointer<QMailMessageService> > serviceMap;
     QMap<QMailAccountId, QMailMessageSource*> sourceMap;
