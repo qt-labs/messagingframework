@@ -2581,6 +2581,8 @@ QMailActionObserverPrivate::QMailActionObserverPrivate(QMailActionObserver *i)
             this, SLOT(actionStarted(QMailActionData)));
     connect(_server, SIGNAL(actionsListed(QMailActionDataList)),
             this, SLOT(actionsListed(QMailActionDataList)));
+    connect(_server, &QMailMessageServer::activityChanged,
+            this, &QMailActionObserverPrivate::onActivityChanged);
 
     _server->listActions();
 
@@ -2614,19 +2616,6 @@ void QMailActionObserverPrivate::actionsListed(const QMailActionDataList &action
     emit actionsChanged(runningActions());
 }
 
-void QMailActionObserverPrivate::removeOldActions()
-{
-    Q_ASSERT(_isReady);
-    bool changed(false);
-    while(!_delayRemoveList.isEmpty()) {
-        _runningActions.remove(_delayRemoveList.takeFirst());
-        changed = true;
-    }
-
-    if (changed)
-        emit actionsChanged(runningActions());
-}
-
 void QMailActionObserverPrivate::actionStarted(const QMailActionData &action)
 {
     if (_isReady) {
@@ -2638,24 +2627,20 @@ void QMailActionObserverPrivate::actionStarted(const QMailActionData &action)
 QSharedPointer<QMailActionInfo> QMailActionObserverPrivate::addAction(const QMailActionData &action)
 {
     QSharedPointer<QMailActionInfo> actionInfo(new QMailActionInfo(action));
-    connect(actionInfo.data(), SIGNAL(activityChanged(QMailServiceAction::Activity)),
-            this, SLOT(anActionActivityChanged(QMailServiceAction::Activity)));
     _runningActions.insert(action.id(), actionInfo);
 
     return actionInfo;
 }
 
-void QMailActionObserverPrivate::anActionActivityChanged(QMailServiceAction::Activity activity)
+void QMailActionObserverPrivate::onActivityChanged(quint64 id, QMailServiceAction::Activity activity)
 {
-    const QMailActionInfo *theAction(qobject_cast<QMailActionInfo *>(sender()));
-    if (theAction) {
-        if (activity == QMailServiceAction::Successful || activity == QMailServiceAction::Failed) {
-            // Avoid possibly deleting from within its own signal
-            _delayRemoveList.append(theAction->id());
-            QTimer::singleShot(0, this, SLOT(removeOldActions()));
+    if (activity == QMailServiceAction::Successful || activity == QMailServiceAction::Failed) {
+        QMap< QMailActionId, QSharedPointer<QMailActionInfo> >::Iterator it
+            = _runningActions.find(QMailActionId(id));
+        if (it != _runningActions.end()) {
+            _runningActions.erase(it);
+            emit actionsChanged(runningActions());
         }
-    } else {
-        qWarning() << "Unable to determine who sent signal";
     }
 }
 

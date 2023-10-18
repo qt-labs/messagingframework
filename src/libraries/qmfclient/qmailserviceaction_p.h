@@ -402,14 +402,12 @@ signals:
 public slots:
     void listActionsRequest();
 private slots:
-    void anActionActivityChanged(QMailServiceAction::Activity activity);
-    void removeOldActions();
+    void onActivityChanged(quint64 id, QMailServiceAction::Activity activity);
     void actionsListed(const QMailActionDataList &actions);
     void actionStarted(const QMailActionData &action);
 private:
     QSharedPointer<QMailActionInfo> addAction(const QMailActionData &action);
     QMap< QMailActionId, QSharedPointer<QMailActionInfo> > _runningActions;
-    QList<QMailActionId> _delayRemoveList;
     bool _isReady;
 };
 
