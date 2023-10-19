@@ -291,6 +291,7 @@ public Q_SLOTS:
 };
 
 class QMailActionInfoPrivate;
+class QMailMessageServer;
 
 class QMF_EXPORT  QMailActionInfo : public QMailServiceAction {
     Q_OBJECT
@@ -316,7 +317,7 @@ Q_SIGNALS:
     void totalProgressChanged(float progress);
 protected:
     friend class QMailActionObserverPrivate;
-    QMailActionInfo(const QMailActionData &data);
+    QMailActionInfo(const QMailActionData &data, QSharedPointer<QMailMessageServer> server);
 };
 
 class QMailActionObserverPrivate;

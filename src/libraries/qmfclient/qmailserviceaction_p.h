@@ -70,7 +70,8 @@ class QMailServiceActionPrivate : public QObject, public QPrivateNoncopyableBase
 
 public:
     template<typename Subclass>
-    QMailServiceActionPrivate(Subclass *p, QMailServiceAction *i);
+    QMailServiceActionPrivate(Subclass *p, QMailServiceAction *i,
+                              QSharedPointer<QMailMessageServer> server = QSharedPointer<QMailMessageServer>());
 
     virtual ~QMailServiceActionPrivate();
 
@@ -114,7 +115,7 @@ protected:
     void emitChanges();
 
     QMailServiceAction *_interface;
-    QMailMessageServer *_server;
+    QSharedPointer<QMailMessageServer> _server;
 
     QMailServiceAction::Connectivity _connectivity;
     QMailServiceAction::Activity _activity;
@@ -361,7 +362,8 @@ class QMailActionInfoPrivate : public QMailServiceActionPrivate
 {
     Q_OBJECT
 public:
-    QMailActionInfoPrivate(const QMailActionData &data, QMailActionInfo *i);
+    QMailActionInfoPrivate(const QMailActionData &data, QMailActionInfo *i,
+                           QSharedPointer<QMailMessageServer> server);
 
     quint64 actionId() const;
     QMailServerRequestType requestType() const;

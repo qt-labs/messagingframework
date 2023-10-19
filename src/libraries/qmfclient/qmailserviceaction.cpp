@@ -65,10 +65,11 @@ QPair<uint, uint> messageActionParts(quint64 action)
 
 
 template<typename Subclass>
-QMailServiceActionPrivate::QMailServiceActionPrivate(Subclass *p, QMailServiceAction *i)
+QMailServiceActionPrivate::QMailServiceActionPrivate(Subclass *p, QMailServiceAction *i,
+                                                     QSharedPointer<QMailMessageServer> server)
     : QPrivateNoncopyableBase(p),
       _interface(i),
-      _server(new QMailMessageServer(this)),
+      _server(server ? server : QSharedPointer<QMailMessageServer>(new QMailMessageServer)),
       _connectivity(QMailServiceAction::Offline),
       _activity(QMailServiceAction::Pending),
       _status(QMailServiceAction::Status::ErrNoError, QString(), QMailAccountId(), QMailFolderId(), QMailMessageId()),
@@ -81,17 +82,17 @@ QMailServiceActionPrivate::QMailServiceActionPrivate(Subclass *p, QMailServiceAc
       _progressChanged(false),
       _statusChanged(false)
 {
-    connect(_server, SIGNAL(activityChanged(quint64, QMailServiceAction::Activity)),
+    connect(_server.data(), SIGNAL(activityChanged(quint64, QMailServiceAction::Activity)),
             this, SLOT(activityChanged(quint64, QMailServiceAction::Activity)));
-    connect(_server, SIGNAL(connectivityChanged(quint64, QMailServiceAction::Connectivity)),
+    connect(_server.data(), SIGNAL(connectivityChanged(quint64, QMailServiceAction::Connectivity)),
             this, SLOT(connectivityChanged(quint64, QMailServiceAction::Connectivity)));
-    connect(_server, SIGNAL(statusChanged(quint64, const QMailServiceAction::Status)),
+    connect(_server.data(), SIGNAL(statusChanged(quint64, const QMailServiceAction::Status)),
             this, SLOT(statusChanged(quint64, const QMailServiceAction::Status)));
-    connect(_server, SIGNAL(progressChanged(quint64, uint, uint)),
+    connect(_server.data(), SIGNAL(progressChanged(quint64, uint, uint)),
             this, SLOT(progressChanged(quint64, uint, uint)));
-    connect(_server, SIGNAL(connectionDown()),
+    connect(_server.data(), SIGNAL(connectionDown()),
             this, SLOT(serverFailure()));
-    connect(_server, SIGNAL(reconnectionTimeout()),
+    connect(_server.data(), SIGNAL(reconnectionTimeout()),
             this, SLOT(serverFailure()));
 }
 
@@ -727,7 +728,7 @@ void QMailServiceAction::setStatus(QMailServiceAction::Status::ErrorCode c, cons
 QMailRetrievalActionPrivate::QMailRetrievalActionPrivate(QMailRetrievalAction *i)
     : QMailServiceActionPrivate(this, i)
 {
-    connect(_server, SIGNAL(retrievalCompleted(quint64)),
+    connect(_server.data(), SIGNAL(retrievalCompleted(quint64)),
             this, SLOT(retrievalCompleted(quint64)));
 
     init();
@@ -1283,11 +1284,11 @@ void QMailRetrievalAction::synchronize(const QMailAccountId &accountId, uint min
 QMailTransmitActionPrivate::QMailTransmitActionPrivate(QMailTransmitAction *i)
     : QMailServiceActionPrivate(this, i)
 {
-    connect(_server, SIGNAL(messagesTransmitted(quint64, QMailMessageIdList)),
+    connect(_server.data(), SIGNAL(messagesTransmitted(quint64, QMailMessageIdList)),
             this, SLOT(messagesTransmitted(quint64, QMailMessageIdList)));
-    connect(_server, SIGNAL(messagesFailedTransmission(quint64, QMailMessageIdList, QMailServiceAction::Status::ErrorCode)),
+    connect(_server.data(), SIGNAL(messagesFailedTransmission(quint64, QMailMessageIdList, QMailServiceAction::Status::ErrorCode)),
             this, SLOT(messagesFailedTransmission(quint64, QMailMessageIdList, QMailServiceAction::Status::ErrorCode)));
-    connect(_server, SIGNAL(transmissionCompleted(quint64)),
+    connect(_server.data(), SIGNAL(transmissionCompleted(quint64)),
             this, SLOT(transmissionCompleted(quint64)));
 
     init();
@@ -1430,19 +1431,19 @@ void QMailTransmitAction::transmitMessage(const QMailMessageId &messageId)
 QMailStorageActionPrivate::QMailStorageActionPrivate(QMailStorageAction *i)
     : QMailServiceActionPrivate(this, i)
 {
-    connect(_server, SIGNAL(messagesDeleted(quint64, QMailMessageIdList)),
+    connect(_server.data(), SIGNAL(messagesDeleted(quint64, QMailMessageIdList)),
             this, SLOT(messagesEffected(quint64, QMailMessageIdList)));
-    connect(_server, SIGNAL(messagesMoved(quint64, QMailMessageIdList)),
+    connect(_server.data(), SIGNAL(messagesMoved(quint64, QMailMessageIdList)),
             this, SLOT(messagesEffected(quint64, QMailMessageIdList)));
-    connect(_server, SIGNAL(messagesCopied(quint64, QMailMessageIdList)),
+    connect(_server.data(), SIGNAL(messagesCopied(quint64, QMailMessageIdList)),
             this, SLOT(messagesEffected(quint64, QMailMessageIdList)));
-    connect(_server, SIGNAL(messagesFlagged(quint64, QMailMessageIdList)),
+    connect(_server.data(), SIGNAL(messagesFlagged(quint64, QMailMessageIdList)),
             this, SLOT(messagesEffected(quint64, QMailMessageIdList)));
-    connect(_server, SIGNAL(messagesAdded(quint64, QMailMessageIdList)),
+    connect(_server.data(), SIGNAL(messagesAdded(quint64, QMailMessageIdList)),
             this, SLOT(messagesAdded(quint64, QMailMessageIdList)));
-    connect(_server, SIGNAL(messagesUpdated(quint64, QMailMessageIdList)),
+    connect(_server.data(), SIGNAL(messagesUpdated(quint64, QMailMessageIdList)),
             this, SLOT(messagesUpdated(quint64, QMailMessageIdList)));
-    connect(_server, SIGNAL(storageActionCompleted(quint64)),
+    connect(_server.data(), SIGNAL(storageActionCompleted(quint64)),
             this, SLOT(storageActionCompleted(quint64)));
 
     init();
@@ -2050,13 +2051,13 @@ void QMailStorageAction::onlineMoveFolder(const QMailFolderId &folderId, const Q
 QMailSearchActionPrivate::QMailSearchActionPrivate(QMailSearchAction *i)
     : QMailServiceActionPrivate(this, i)
 {
-    connect(_server, SIGNAL(matchingMessageIds(quint64, QMailMessageIdList)),
+    connect(_server.data(), SIGNAL(matchingMessageIds(quint64, QMailMessageIdList)),
             this, SLOT(matchingMessageIds(quint64, QMailMessageIdList)));
-    connect(_server, SIGNAL(remainingMessagesCount(quint64, uint)),
+    connect(_server.data(), SIGNAL(remainingMessagesCount(quint64, uint)),
             this, SLOT(remainingMessagesCount(quint64, uint)));
-    connect(_server, SIGNAL(messagesCount(quint64, uint)),
+    connect(_server.data(), SIGNAL(messagesCount(quint64, uint)),
             this, SLOT(messagesCount(quint64, uint)));
-    connect(_server, SIGNAL(searchCompleted(quint64)),
+    connect(_server.data(), SIGNAL(searchCompleted(quint64)),
             this, SLOT(searchCompleted(quint64)));
 
     init();
@@ -2324,20 +2325,21 @@ QMailMessageKey QMailSearchAction::temporaryKey()
     \sa messagesCount()
 */
 
-QMailActionInfoPrivate::QMailActionInfoPrivate(const QMailActionData &data, QMailActionInfo *i)
-    : QMailServiceActionPrivate(this, i),
+QMailActionInfoPrivate::QMailActionInfoPrivate(const QMailActionData &data, QMailActionInfo *i,
+                                               QSharedPointer<QMailMessageServer> server)
+    : QMailServiceActionPrivate(this, i, server),
       _requestType(data.requestType()),
       _actionCompleted(false)
 {
     // Service handler really should be sending the activity,
     // rather than us faking it..
-    connect(_server, SIGNAL(retrievalCompleted(quint64)),
+    connect(_server.data(), SIGNAL(retrievalCompleted(quint64)),
             this, SLOT(activityCompleted(quint64)));
-    connect(_server, SIGNAL(storageActionCompleted(quint64)),
+    connect(_server.data(), SIGNAL(storageActionCompleted(quint64)),
             this, SLOT(activityCompleted(quint64)));
-    connect(_server, SIGNAL(searchCompleted(quint64)),
+    connect(_server.data(), SIGNAL(searchCompleted(quint64)),
             this, SLOT(activityCompleted(quint64)));
-    connect(_server, SIGNAL(transmissionCompleted(quint64)),
+    connect(_server.data(), SIGNAL(transmissionCompleted(quint64)),
             this, SLOT(activityCompleted(quint64)));
 
     init();
@@ -2481,8 +2483,8 @@ QMailMessageId QMailActionInfoPrivate::statusMessageId() const
 */
 
 /*! \internal */
-QMailActionInfo::QMailActionInfo(const QMailActionData &data)
-    : QMailServiceAction(new QMailActionInfoPrivate(data, this), 0) // NB: No qobject parent!
+QMailActionInfo::QMailActionInfo(const QMailActionData &data, QSharedPointer<QMailMessageServer> server)
+    : QMailServiceAction(new QMailActionInfoPrivate(data, this, server), 0) // NB: No qobject parent!
 {
     connect(impl(this), SIGNAL(statusAccountIdChanged(QMailAccountId)),
             this, SIGNAL(statusAccountIdChanged(QMailAccountId)));
@@ -2577,11 +2579,11 @@ QMailActionObserverPrivate::QMailActionObserverPrivate(QMailActionObserver *i)
     : QMailServiceActionPrivate(this, i),
       _isReady(false)
 {
-    connect(_server, SIGNAL(actionStarted(QMailActionData)),
+    connect(_server.data(), SIGNAL(actionStarted(QMailActionData)),
             this, SLOT(actionStarted(QMailActionData)));
-    connect(_server, SIGNAL(actionsListed(QMailActionDataList)),
+    connect(_server.data(), SIGNAL(actionsListed(QMailActionDataList)),
             this, SLOT(actionsListed(QMailActionDataList)));
-    connect(_server, &QMailMessageServer::activityChanged,
+    connect(_server.data(), &QMailMessageServer::activityChanged,
             this, &QMailActionObserverPrivate::onActivityChanged);
 
     _server->listActions();
@@ -2626,7 +2628,7 @@ void QMailActionObserverPrivate::actionStarted(const QMailActionData &action)
 
 QSharedPointer<QMailActionInfo> QMailActionObserverPrivate::addAction(const QMailActionData &action)
 {
-    QSharedPointer<QMailActionInfo> actionInfo(new QMailActionInfo(action));
+    QSharedPointer<QMailActionInfo> actionInfo(new QMailActionInfo(action, _server));
     _runningActions.insert(action.id(), actionInfo);
 
     return actionInfo;
@@ -2714,9 +2716,9 @@ void QMailActionObserver::listActionsRequest()
 QMailProtocolActionPrivate::QMailProtocolActionPrivate(QMailProtocolAction *i)
     : QMailServiceActionPrivate(this, i)
 {
-    connect(_server, SIGNAL(protocolResponse(quint64, QString, QVariant)),
+    connect(_server.data(), SIGNAL(protocolResponse(quint64, QString, QVariant)),
             this, SLOT(protocolResponse(quint64, QString, QVariant)));
-    connect(_server, SIGNAL(protocolRequestCompleted(quint64)),
+    connect(_server.data(), SIGNAL(protocolRequestCompleted(quint64)),
             this, SLOT(protocolRequestCompleted(quint64)));
 
     init();
