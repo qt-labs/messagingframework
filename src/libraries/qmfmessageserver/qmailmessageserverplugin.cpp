@@ -35,7 +35,7 @@
 #include <qmailpluginmanager.h>
 #include <QDebug>
 
-#define PLUGIN_KEY "messageserverplugins"
+static QString PLUGIN_KEY = QStringLiteral("messageserverplugins");
 
 typedef QMap<QString, QMailMessageServerPlugin*> PluginMap;
 

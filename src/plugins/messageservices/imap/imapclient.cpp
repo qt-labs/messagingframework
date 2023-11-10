@@ -773,9 +773,9 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
                     }
                 }
             }
-            // fall through
         }
-        
+        // fall through
+
         default:
         {
             _strategyContext->commandTransition(command, status);
