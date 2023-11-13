@@ -188,11 +188,7 @@ QMailStoreImplementationBase::QMailStoreImplementationBase(QMailStore* parent)
     connect(&flushTimer,
             SIGNAL(timeout()),
             this,
-            SLOT(flushNotifications()));
-    connect(&queueTimer,
-            SIGNAL(timeout()),
-            this,
-            SLOT(processIpcMessageQueue()));
+            SLOT(flushIpcNotifications()));
 
     connect(qApp,
             SIGNAL(aboutToQuit()),
@@ -241,35 +237,10 @@ bool QMailStoreImplementationBase::asynchronousEmission() const
     return asyncEmission;
 }
 
-void QMailStoreImplementationBase::flushIpcNotifications()
-{
-    // We need to emit all pending IPC notifications
-    flushNotifications();
-
-    // Tell the recipients to process the notifications synchronously
-    emit ipcAdaptor->updated(forceIpcFlushSig(), QByteArray());
-
-    if (flushTimer.isActive()) {
-        // We interrupted a batching period - reset the flush timer to its full period
-        flushTimer.start(flushTimeout);
-    }
-}
-
-void QMailStoreImplementationBase::processIpcMessageQueue()
-{
-    if (messageQueue.isEmpty()) {
-        queueTimer.stop();
-        return;
-    }
-
-   if (emitIpcNotification())
-        queueTimer.start(0);
-}
-
 void QMailStoreImplementationBase::aboutToQuit()
 {
     // Ensure that any pending updates are flushed
-    flushNotifications();
+    flushIpcNotifications();
 }
 
 typedef QMap<QMailStore::ChangeType, QString> NotifyFunctionMap;
@@ -758,11 +729,6 @@ QString QMailStoreImplementationBase::transmissionInProgressSig()
     return QStringLiteral("transmissionInProgress(QList<quint64>)");
 }
 
-QString QMailStoreImplementationBase::forceIpcFlushSig()
-{
-    return QStringLiteral("forceIpcFlush");
-}
-
 QMailStoreImplementationBase::AccountUpdateSignalMap QMailStoreImplementationBase::initAccountUpdateSignals()
 {
     AccountUpdateSignalMap sig;
@@ -772,6 +738,8 @@ QMailStoreImplementationBase::AccountUpdateSignalMap QMailStoreImplementationBas
     sig[QMailStoreImplementationBase::accountContentsModifiedSig()] = &QMailStore::accountContentsModified;
     sig[QMailStoreImplementationBase::messageRemovalRecordsAddedSig()] = &QMailStore::messageRemovalRecordsAdded;
     sig[QMailStoreImplementationBase::messageRemovalRecordsRemovedSig()] = &QMailStore::messageRemovalRecordsRemoved;
+    sig[QMailStoreImplementationBase::retrievalInProgressSig()] = &QMailStore::retrievalInProgress;
+    sig[QMailStoreImplementationBase::transmissionInProgressSig()] = &QMailStore::transmissionInProgress;
     return sig;
 }
 
@@ -813,7 +781,7 @@ QMailStoreImplementationBase::MessageDataPreCacheSignalMap QMailStoreImplementat
     return sig;
 }
 
-void QMailStoreImplementationBase::flushNotifications()
+void QMailStoreImplementationBase::flushIpcNotifications()
 {
     static NotifyFunctionMap sigAccount(initAccountFunctions());
     static NotifyFunctionMap sigFolder(initFolderFunctions());
@@ -863,37 +831,6 @@ void QMailStoreImplementationBase::ipcMessage(const QString& signal, const QByte
         return;
     }
 
-    if (signal == forceIpcFlushSig()) {
-        // We have been told to flush any pending ipc notifications
-        queueTimer.stop();
-        while (emitIpcNotification()) {}
-    } else if ((signal == retrievalInProgressSig()) || (signal == transmissionInProgressSig())) {
-        QDataStream ds(data);
-        // Emit this signal immediately
-        QMailAccountIdList ids;
-        ds >> ids;
-
-        if (signal == retrievalInProgressSig()) {
-            emitIpcNotification(&QMailStore::retrievalInProgress, ids);
-        } else {
-            emitIpcNotification(&QMailStore::transmissionInProgress, ids);
-        }
-    } else {
-        // Queue this signal for batched delivery
-        messageQueue.append(qMakePair(signal, data));
-        queueTimer.start(0);
-    }
-}
-
-bool QMailStoreImplementationBase::emitIpcNotification()
-{
-    if (messageQueue.isEmpty())
-        return false;
-    
-    const QPair<QString, QByteArray> &notification = messageQueue.first();
-    const QString &message = notification.first;
-    const QByteArray &data = notification.second;
-
     QDataStream ds(data);
 
     static AccountUpdateSignalMap accountUpdateSignals(initAccountUpdateSignals());
@@ -908,62 +845,52 @@ bool QMailStoreImplementationBase::emitIpcNotification()
     MessageUpdateSignalMap::const_iterator mit;
     MessageDataPreCacheSignalMap::const_iterator mdit;
 
-    if ((ait = accountUpdateSignals.find(message)) != accountUpdateSignals.end()) {
+    if ((ait = accountUpdateSignals.find(signal)) != accountUpdateSignals.end()) {
         QMailAccountIdList ids;
         ds >> ids;
-        messageQueue.removeFirst(); // messageQueue may be modified by the emitIpcNotification below
 
         emitIpcNotification(ait.value(), ids);
-    } else if ((fit = folderUpdateSignals.find(message)) != folderUpdateSignals.end()) {
+    } else if ((fit = folderUpdateSignals.find(signal)) != folderUpdateSignals.end()) {
         QMailFolderIdList ids;
         ds >> ids;
-        messageQueue.removeFirst();
 
         emitIpcNotification(fit.value(), ids);
-    } else if ((mit = messageUpdateSignals.find(message)) != messageUpdateSignals.end()) {
+    } else if ((mit = messageUpdateSignals.find(signal)) != messageUpdateSignals.end()) {
         QMailMessageIdList ids;
         ds >> ids;
-        messageQueue.removeFirst();
 
         emitIpcNotification(mit.value(), ids);
-    } else if ((mdit = messageDataPreCacheSignals.find(message)) != messageDataPreCacheSignals.end()) {
+    } else if ((mdit = messageDataPreCacheSignals.find(signal)) != messageDataPreCacheSignals.end()) {
         QMailMessageMetaDataList data;
         ds >> data;
-        messageQueue.removeFirst();
 
         emitIpcNotification(mdit.value(), data);
-    } else if (message == messagePropertyUpdatedSig()) {
+    } else if (signal == messagePropertyUpdatedSig()) {
         QMailMessageIdList ids;
         ds >> ids;
         int props = 0;
         ds >> props;
         QMailMessageMetaData data;
         ds >> data;
-        messageQueue.removeFirst();
 
         emitIpcNotification(ids, static_cast<QMailMessageKey::Property>(props), data);
-    } else if (message == messageStatusUpdatedSig()) {
+    } else if (signal == messageStatusUpdatedSig()) {
         QMailMessageIdList ids;
         ds >> ids;
         quint64 status = 0;
         ds >> status;
         bool set = false;
         ds >> set;
-        messageQueue.removeFirst();
 
         emitIpcNotification(ids, status, set);
-    } else if ((tit = threadUpdateSignals.find(message)) != threadUpdateSignals.end()) {
+    } else if ((tit = threadUpdateSignals.find(signal)) != threadUpdateSignals.end()) {
         QMailThreadIdList ids;
         ds >> ids;
-        messageQueue.removeFirst();
 
         emitIpcNotification(tit.value(), ids);
     } else {
-        qWarning() << "No update signal for message:" << message;
-        messageQueue.removeFirst();
+        qWarning() << "No update signal for message:" << signal;
     }
-    
-    return !messageQueue.isEmpty();
 }
 
 void QMailStoreImplementationBase::emitIpcNotification(AccountUpdateSignal signal, const QMailAccountIdList &ids)

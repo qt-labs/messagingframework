@@ -1782,7 +1782,6 @@ void tst_QMailStore::implementationbase()
     QMailStoreNullImplementation impl(QMailStore::instance());
     QVERIFY(!impl.asynchronousEmission());
     impl.flushIpcNotifications();
-    impl.processIpcMessageQueue();
 
     impl.setRetrievalInProgress(QMailAccountIdList()<<account1.id());
     impl.notifyRetrievalInProgress(QMailAccountIdList()<<account1.id());

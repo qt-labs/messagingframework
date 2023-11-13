@@ -1146,8 +1146,7 @@ void QMailStore::setTransmissionInProgress(const QMailAccountIdList &ids)
 }
 
 /*!
-    Forces any queued event notifications to immediately be synchronously emitted, and processed
-    synchronously by recipient processes.
+    Forces any queued event notifications to immediately be synchronously emitted.
 
     Any events occurring before flushIpcNotifications() is invoked will be processed by 
     recipient processes before any IPC packets generated after the invocation.

@@ -128,14 +128,10 @@ public:
     static QString retrievalInProgressSig();
     static QString transmissionInProgressSig();
 
-    static QString forceIpcFlushSig();
-
     static const int maxNotifySegmentSize = 0;
 
 public slots:
-    void processIpcMessageQueue();
     void ipcMessage(const QString& message, const QByteArray& data);
-    void flushNotifications();
     void aboutToQuit();
 
 protected:
@@ -172,8 +168,6 @@ protected:
 
 private:
     virtual bool initStore() = 0;
-
-    bool emitIpcNotification();
 
     QMailStore* q;
     
@@ -223,8 +217,6 @@ private:
     QSet<QMailAccountId> retrievalInProgressIds;
     QSet<QMailAccountId> transmissionInProgressIds;
 
-    QTimer queueTimer;
-    QList<QPair<QString, QByteArray> > messageQueue;
     MailstoreAdaptor *ipcAdaptor;
 };
 
