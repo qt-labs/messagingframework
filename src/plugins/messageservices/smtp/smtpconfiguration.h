@@ -74,6 +74,7 @@ public:
 #endif
     int smtpAuthentication() const;
     int smtpEncryption() const;
+    bool smtpAuthFromCapabilities() const;
 };
 
 class SmtpConfigurationEditor : public SmtpConfiguration
@@ -91,6 +92,7 @@ public:
     void setSmtpAuthentication(int t);
     void setSmtpEncryption(int t);
 #endif
+    void setSmtpAuthFromCapabilities(bool v);
 };
 
 #endif

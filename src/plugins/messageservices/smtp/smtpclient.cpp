@@ -53,6 +53,7 @@
 #include <qmailstore.h>
 #include <qmailtransport.h>
 #include <qmailnamespace.h>
+#include <qmailauthenticator.h>
 
 // The size of the buffer used when sending messages.
 // Only this many bytes is queued to be sent at a time.
@@ -110,6 +111,7 @@ SmtpClient::SmtpClient(QObject* parent)
     , temporaryFile(0)
     , waitingForBytes(0)
     , notUsingAuth(false)
+    , authReset(false)
     , authTimeout(0)
 {
     connect(QMailStore::instance(), SIGNAL(accountsUpdated(const QMailAccountIdList&)), 
@@ -154,6 +156,11 @@ QMailAccountId SmtpClient::account() const
 void SmtpClient::newConnection()
 {
     qMailLog(SMTP) << "newConnection";
+    // Reload the account configuration whenever a new SMTP
+    // connection is created, in order to ensure the changes
+    // in the account settings are being managed properly.
+    config = QMailAccountConfiguration(config.id());
+
     if (sending) {
         operationFailed(QMailServiceAction::Status::ErrConnectionInUse, tr("Cannot send message; transport in use"));
         return;
@@ -184,6 +191,7 @@ void SmtpClient::newConnection()
     sending = true;
     domainName = QByteArray();
     outstandingResponses = 0;
+    authReset = false;
 
     if (!transport) {
         // Set up the transport
@@ -483,6 +491,26 @@ void SmtpClient::nextAction(const QString &response)
                     }
                 }
 
+                // Available authentication mechanisms
+                SmtpConfigurationEditor smtpCfg(&config);
+                if (smtpCfg.smtpAuthentication() == QMail::NoMechanism
+                    && smtpCfg.smtpAuthFromCapabilities()) {
+                    QStringList authCaps;
+                    foreach (QString const& capability, capabilities) {
+                        if (capability.startsWith("AUTH", Qt::CaseInsensitive)) {
+                            authCaps.append(capability.split(" ", Qt::SkipEmptyParts));
+                        }
+                    }
+                    QMail::SaslMechanism authType = QMailAuthenticator::authFromCapabilities(authCaps);
+                    if (authType != QMail::NoMechanism) {
+                        smtpCfg.setSmtpAuthentication(authType);
+                        if (!QMailStore::instance()->updateAccountConfiguration(&config)) {
+                            qWarning() << "Unable to update account" << config.id()
+                                       << "with auth type" << authType;
+                        }
+                    }
+                }
+
                 // Proceed to TLS negotiation
                 status = StartTLS;
                 nextAction(QString());
@@ -550,6 +578,7 @@ void SmtpClient::nextAction(const QString &response)
                     break;
                 }
             }
+
             status = Authenticated;
             nextAction(QString());
         }
@@ -575,6 +604,27 @@ void SmtpClient::nextAction(const QString &response)
             // We are now authenticated
             status = Authenticated;
             nextAction(QString());
+        } else if (responseCode == 504) {
+            SmtpConfiguration smtpCfg(config);
+            // reset method used and try again to authenticated from caps
+            if (smtpCfg.smtpAuthFromCapabilities() && !authReset) {
+                qMailLog(SMTP) << "Resetting AUTH TYPE";
+                authReset = true;
+                QMailAccountConfiguration accountConfig(smtpCfg.id());
+                SmtpConfigurationEditor smtpCfgEditor(&accountConfig);
+                smtpCfgEditor.setSmtpAuthentication(QMail::NoMechanism);
+                if (!QMailStore::instance()->updateAccount(nullptr, &accountConfig)) {
+                    qWarning() << "Unable to update account" << smtpCfg.id()
+                               << "auth type.";
+                    operationFailed(QMailServiceAction::Status::ErrConfiguration, response);
+                }
+                // Restart the authentication process
+                QByteArray ehlo("EHLO " + localName(transport->socket().localAddress()));
+                sendCommand(ehlo);
+                status = Helo;
+            } else {
+                operationFailed(QMailServiceAction::Status::ErrConfiguration, response);
+            }
         } else if (responseCode == 530) {
             operationFailed(QMailServiceAction::Status::ErrConfiguration, response);
         } else {

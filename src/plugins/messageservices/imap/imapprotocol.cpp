@@ -52,6 +52,7 @@
 #include <qmailtransport.h>
 #include <qmaildisconnected.h>
 #include <qmailcodec.h>
+#include <qmailauthenticator.h>
 
 #ifndef QT_NO_SSL
 #include <QSslError>
@@ -576,6 +577,25 @@ void LoginState::setConfiguration(const QMailAccountConfiguration &config, const
 {
     _config = config;
     _capabilities = capabilities;
+
+    // Available authentication mechanisms
+    ImapConfigurationEditor imapCfg(&_config);
+    if (imapCfg.mailAuthentication() == QMail::NoMechanism) {
+        QStringList authCaps;
+        foreach (QString const& capability, capabilities) {
+            if (capability.startsWith("AUTH=", Qt::CaseInsensitive)) {
+                authCaps.append(capability.mid(5));
+            }
+        }
+        QMail::SaslMechanism authType = QMailAuthenticator::authFromCapabilities(authCaps);
+        if (authType != QMail::NoMechanism) {
+            imapCfg.setMailAuthentication(authType);
+            if (!QMailStore::instance()->updateAccountConfiguration(&_config)) {
+                qWarning() << "Unable to update account" << config.id()
+                           << "with auth type" << authType;
+            }
+        }
+    }
 }
 
 void LoginState::init()
@@ -598,6 +618,10 @@ bool LoginState::continuationResponse(ImapContext *c, const QString &received)
 
     if (!response.isEmpty()) {
         c->sendData(response.toBase64(), true);
+    } else {
+        // Challenge response is empty
+        // send a empty response.
+        c->sendData("");
     }
 
     return false;

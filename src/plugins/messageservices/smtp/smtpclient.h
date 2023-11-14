@@ -147,6 +147,7 @@ private:
 
     QString bufferedResponse;
     bool notUsingAuth;
+    bool authReset;
 
     QTimer *authTimeout;
 };

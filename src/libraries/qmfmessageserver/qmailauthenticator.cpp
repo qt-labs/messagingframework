@@ -104,6 +104,24 @@ bool QMailAuthenticator::useEncryption(const QMailAccountConfiguration::ServiceC
     return false;
 }
 
+QMail::SaslMechanism QMailAuthenticator::authFromCapabilities(const QStringList &capabilities)
+{
+    if (capabilities.contains(QString::fromLatin1("CRAM-MD5"), Qt::CaseInsensitive)) {
+        return QMail::CramMd5Mechanism;
+    } else if (capabilities.contains(QString::fromLatin1("PLAIN"), Qt::CaseInsensitive)) {
+        // According to RFC3501, IMAP4 servers MUST implement plain auth
+        return QMail::PlainMechanism;
+    } else if (!capabilities.contains(QString::fromLatin1("PLAIN"), Qt::CaseInsensitive)
+               && !capabilities.contains(QString::fromLatin1("LOGINDISABLED"), Qt::CaseInsensitive)) {
+        // According to RFC3501, LOGIN should be used as last resort(for retro-compatibility)
+        // We should check that plain is not advertised(this can be omitted even if server supports it),
+        // and that LOGINDISABLED capability is not advertised.
+        return QMail::LoginMechanism;
+    } else {
+        return QMail::NoMechanism;
+    }
+}
+
 /*!
     Returns the authentication string that should be used to initiate an authentication
     attempt for the service whose configuration is described by \a svcCfg.  The preferred
