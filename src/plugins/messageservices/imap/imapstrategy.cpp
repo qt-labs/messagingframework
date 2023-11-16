@@ -3603,6 +3603,8 @@ static void processFlagChanges(const QList<FlagChange> &changes, const QMailFold
     IntegerRegion notImportant;
     IntegerRegion deletedElsewhere;
     IntegerRegion undeleted;
+    IntegerRegion replied;
+    IntegerRegion forwarded;
     foreach(FlagChange change, changes) {
         bool ok;
         QString uidStr(stripFolderPrefix(change.first));
@@ -3624,6 +3626,12 @@ static void processFlagChanges(const QList<FlagChange> &changes, const QMailFold
             } else {
                 undeleted.add(uid);
             }
+            if (flags & MFlag_Answered) {
+                replied.add(uid);
+            }
+            if (flags & MFlag_Forwarded) {
+                forwarded.add(uid);
+            }
         }
     }
     markMessages(read, QMailMessage::Read, true, id, _error);
@@ -3636,6 +3644,8 @@ static void processFlagChanges(const QList<FlagChange> &changes, const QMailFold
     markMessages(notImportant, QMailMessage::ImportantElsewhere, false, id, _error);
     markMessages(deletedElsewhere, QMailMessage::Removed, true, id, _error);
     markMessages(undeleted, QMailMessage::Removed, false, id, _error);
+    markMessages(replied, QMailMessage::Replied, true, id, _error);
+    markMessages(forwarded, QMailMessage::Forwarded, true, id, _error);
 }
 
 void ImapRetrieveMessageListStrategy::handleFetchFlags(ImapStrategyContextBase *context)

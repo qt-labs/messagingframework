@@ -3857,6 +3857,9 @@ void ImapProtocol::createMail(const QString &uid, const QDateTime &timeStamp, in
     if (flags & MFlag_Answered) {
         mail.setStatus( QMailMessage::Replied, true );
     }
+    if (flags & MFlag_Forwarded) {
+        mail.setStatus( QMailMessage::Forwarded, true );
+    }
     if (flags & MFlag_Deleted) {
         mail.setStatus( QMailMessage::Removed, true);
     }
