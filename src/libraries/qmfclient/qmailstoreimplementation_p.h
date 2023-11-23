@@ -75,8 +75,6 @@ public:
 
     bool asynchronousEmission() const;
 
-    void flushIpcNotifications();
-
     void notifyAccountsChange(QMailStore::ChangeType changeType, const QMailAccountIdList& ids);
     void notifyMessagesChange(QMailStore::ChangeType changeType, const QMailMessageIdList& ids);
     void notifyMessagesDataChange(QMailStore::ChangeType changeType, const QMailMessageMetaDataList& data);
@@ -131,6 +129,7 @@ public:
     static const int maxNotifySegmentSize = 0;
 
 public slots:
+    void flushIpcNotifications();
     void ipcMessage(const QString& message, const QByteArray& data);
     void aboutToQuit();
 
