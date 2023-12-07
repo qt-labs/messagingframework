@@ -1336,7 +1336,7 @@ static QString decodeModifiedBase64(QString in)
     }
 
     //go through the buffer and extract 16 bit unicode network byte order
-    for (int z = 0; z < out.count(); z += 2) {
+    for (int z = 0; z < out.size(); z += 2) {
         unsigned short outcode = 0x0000;
         outcode = out[z];
         outcode <<= 8;

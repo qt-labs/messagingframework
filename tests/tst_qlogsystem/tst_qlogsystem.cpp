@@ -296,6 +296,6 @@ void tst_QLogSystem::sysLoggerOutput()
     LogSystem::getInstance().log(LlDbg, "Test: '%d' '%s' '%.2f'", 12,  "string", 12.25);
     LogSystem::getInstance().clear();
 
-    QWARN (qPrintable(tr("Now You should see the string") + expected + tr("at syslog output LOG_LOCAL7, LOG_INFO")));
+    qWarning() << "Now You should see the string" << expected << "at syslog output LOG_LOCAL7, LOG_INFO";
 #endif // defined(Q_OS_UNIX)
 }
