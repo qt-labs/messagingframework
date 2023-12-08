@@ -47,6 +47,7 @@
 #include <QPair>
 #include <QString>
 #include <QStringList>
+#include <QDebug>
 
 class QMailMessagePart;
 class QMailMessagePartContainerPrivate;
@@ -831,6 +832,8 @@ private:
 public:
     virtual QString preview() const override;
 };
+
+QMF_EXPORT QDebug operator<<(QDebug dbg, const QMailMessagePart &part);
 
 typedef QmfList<QMailMessage> QMailMessageList;
 typedef QmfList<QMailMessageMetaData> QMailMessageMetaDataList;

@@ -8978,3 +8978,9 @@ void QMailMessage::deserialize(Stream &stream)
 
 template void QMailMessage::deserialize(QDataStream &);
 template void QMailMessage::deserialize(const QDBusArgument &);
+
+QDebug operator<<(QDebug dbg, const QMailMessagePart &part)
+{
+    dbg << "QMailMessagePart" << part.contentID() << "location:" << part.contentLocation();
+    return dbg;
+}
