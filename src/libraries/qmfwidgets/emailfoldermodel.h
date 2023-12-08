@@ -64,13 +64,13 @@ class QMFUTIL_EXPORT EmailFolderMessageSet : public QMailFolderMessageSet
 public:
     EmailFolderMessageSet(QMailMessageSetContainer *container, const QMailFolderId &folderId, bool hierarchical);
 
-    virtual QMailMessageKey messageKey() const;
-    virtual QMailMessageKey descendantsMessageKey() const;
+    QMailMessageKey messageKey() const override;
+    QMailMessageKey descendantsMessageKey() const override;
 
     static QMailMessageKey contentKey(const QMailFolderId &id, bool descendants);
 
 protected:
-    virtual void createChild(const QMailFolderId &childId);
+    void createChild(const QMailFolderId &childId) override;
 };
 
 
@@ -83,13 +83,13 @@ class QMFUTIL_EXPORT EmailAccountMessageSet : public QMailAccountMessageSet
 public:
     EmailAccountMessageSet(QMailMessageSetContainer *container, const QMailAccountId &accountId);
 
-    virtual QMailMessageKey messageKey() const;
-    virtual QMailMessageKey descendantsMessageKey() const;
+    QMailMessageKey messageKey() const override;
+    QMailMessageKey descendantsMessageKey() const override;
 
     static QMailMessageKey contentKey(const QMailAccountId &id);
 
 protected:
-    virtual void createChild(const QMailFolderId &childId);
+    void createChild(const QMailFolderId &childId) override;
 };
 
 
@@ -102,7 +102,7 @@ class QMFUTIL_EXPORT InboxMessageSet : public EmailStandardFolderMessageSet
 public:
     InboxMessageSet(QMailMessageSetContainer *container);
 
-    virtual QMailMessageKey messageKey() const;
+    QMailMessageKey messageKey() const override;
 
     static QMailMessageKey contentKey();
 
@@ -113,9 +113,9 @@ protected Q_SLOTS:
     virtual void accountContentsModified(const QMailAccountIdList &ids);
 
 protected:
-    virtual void init();
+    void init() override;
     virtual void synchronizeAccountChildren();
-    virtual void resyncState();
+    void resyncState() override;
 
     static QMailAccountKey emailAccountKey();
 
@@ -149,13 +149,13 @@ public:
 
     virtual void init();
 
-    virtual QVariant data(QMailMessageSet *item, int role, int column) const;
-    virtual QVariant headerData(int section, Qt::Orientation, int role) const;
+    QVariant data(QMailMessageSet *item, int role, int column) const override;
+    QVariant headerData(int section, Qt::Orientation, int role) const override;
 
 protected:
-    virtual QIcon itemIcon(QMailMessageSet *item) const;
-    virtual QString itemStatusDetail(QMailMessageSet *item) const;
-    virtual FolderModel::StatusText itemStatusText(QMailMessageSet *item) const;
+    QIcon itemIcon(QMailMessageSet *item) const override;
+    QString itemStatusDetail(QMailMessageSet *item) const override;
+    FolderModel::StatusText itemStatusText(QMailMessageSet *item) const override;
 
     virtual QIcon standardFolderIcon(EmailStandardFolderMessageSet *item) const;
     virtual QIcon emailFolderIcon(EmailFolderMessageSet *item) const;
@@ -174,7 +174,7 @@ class QMFUTIL_EXPORT AccountFolderModel : public EmailFolderModel
 public:
     explicit AccountFolderModel(const QMailAccountId &id, QObject *parent = Q_NULLPTR);
 
-    virtual void init();
+    void init() override;
 
 protected:
     QMailAccountId accountId;

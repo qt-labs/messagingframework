@@ -59,7 +59,7 @@ public:
     static QString excessIndicator();
 
     using QMailMessageSetModel::data;
-    virtual QVariant data(QMailMessageSet *item, int role, int column) const;
+    QVariant data(QMailMessageSet *item, int role, int column) const override;
 
 protected Q_SLOTS:
     void processUpdatedItems();
@@ -69,9 +69,9 @@ protected:
 
     void scheduleUpdate(QMailMessageSet *item);
 
-    virtual void appended(QMailMessageSet *item);
-    virtual void updated(QMailMessageSet *item);
-    virtual void removed(QMailMessageSet *item);
+    void appended(QMailMessageSet *item) override;
+    void updated(QMailMessageSet *item) override;
+    void removed(QMailMessageSet *item) override;
 
     virtual QIcon itemIcon(QMailMessageSet *item) const;
     virtual QString itemStatus(QMailMessageSet *item) const;

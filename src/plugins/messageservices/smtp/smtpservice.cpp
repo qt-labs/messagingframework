@@ -67,7 +67,7 @@ public:
     }
 
 public slots:
-    virtual bool transmitMessages(const QMailMessageIdList &ids);
+    bool transmitMessages(const QMailMessageIdList &ids) override;
 
     void messageTransmitted(const QMailMessageId &id);
     void sendCompleted();
@@ -313,11 +313,11 @@ public:
     SmtpConfigurator();
     ~SmtpConfigurator();
 
-    virtual QString service() const;
-    virtual QString displayName() const;
+    QString service() const override;
+    QString displayName() const override;
 
 #ifndef QMF_NO_WIDGETS
-    virtual QMailMessageServiceEditor *createEditor(QMailMessageServiceFactory::ServiceType type);
+    QMailMessageServiceEditor *createEditor(QMailMessageServiceFactory::ServiceType type) override;
 #endif
 };
 

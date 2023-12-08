@@ -44,8 +44,8 @@ class PopSettings : public QMailMessageServiceEditor, private Ui::PopSettings
 public:
     PopSettings();
 
-    void displayConfiguration(const QMailAccount &account, const QMailAccountConfiguration &config);
-    bool updateAccount(QMailAccount *account, QMailAccountConfiguration *config);
+    void displayConfiguration(const QMailAccount &account, const QMailAccountConfiguration &config) override;
+    bool updateAccount(QMailAccount *account, QMailAccountConfiguration *config) override;
 
 private slots:
     void intervalCheckChanged(int enabled);

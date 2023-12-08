@@ -475,7 +475,7 @@ class UnconnectedState : public ImapState
 
 public:
     UnconnectedState() : ImapState(IMAP_Unconnected, "Unconnected") { setStatus(OpOk); }
-    virtual void init() { ImapState::init(); setStatus(OpOk); }
+    void init() override { ImapState::init(); setStatus(OpOk); }
 };
 
 
@@ -486,7 +486,7 @@ class InitState : public ImapState
 public:
     InitState() : ImapState(IMAP_Init, "Init") {}
 
-    virtual void untaggedResponse(ImapContext *c, const QString &line);
+    void untaggedResponse(ImapContext *c, const QString &line) override;
 };
 
 void InitState::untaggedResponse(ImapContext *c, const QString &line)
@@ -506,8 +506,8 @@ class CapabilityState : public ImapState
 public:
     CapabilityState() : ImapState(IMAP_Capability, "Capability") {}
 
-    virtual QString transmit(ImapContext *c);
-    virtual void untaggedResponse(ImapContext *c, const QString &line);
+    QString transmit(ImapContext *c) override;
+    void untaggedResponse(ImapContext *c, const QString &line) override;
 };
 
 QString CapabilityState::transmit(ImapContext *c)
@@ -534,8 +534,8 @@ class StartTlsState : public ImapState
 public:
     StartTlsState() : ImapState(IMAP_StartTLS, "StartTLS") {}
 
-    virtual QString transmit(ImapContext *c);
-    virtual void taggedResponse(ImapContext *c, const QString &line);
+    QString transmit(ImapContext *c) override;
+    void taggedResponse(ImapContext *c, const QString &line) override;
 };
 
 QString StartTlsState::transmit(ImapContext *c)
@@ -563,10 +563,10 @@ public:
 
     void setConfiguration(const QMailAccountConfiguration &config, const QStringList &capabilities);
 
-    virtual void init();
-    virtual QString transmit(ImapContext *c);
-    virtual bool continuationResponse(ImapContext *c, const QString &line);
-    virtual void taggedResponse(ImapContext *c, const QString &line);
+    void init() override;
+    QString transmit(ImapContext *c) override;
+    bool continuationResponse(ImapContext *c, const QString &line) override;
+    void taggedResponse(ImapContext *c, const QString &line) override;
 
 private:
     QMailAccountConfiguration _config;
@@ -648,8 +648,8 @@ class LogoutState : public ImapState
 public:
     LogoutState() : ImapState(IMAP_Logout, "Logout") {}
 
-    virtual QString transmit(ImapContext *c);
-    virtual void taggedResponse(ImapContext *c, const QString &line);
+    QString transmit(ImapContext *c) override;
+    void taggedResponse(ImapContext *c, const QString &line) override;
 };
 
 QString LogoutState::transmit(ImapContext *c)
@@ -677,12 +677,12 @@ public:
 
     void setMailbox(const QMailFolderId &parentFolderId, const QString &name);
 
-    virtual bool permitsPipelining() const { return true; }
-    virtual void init();
-    virtual QString transmit(ImapContext *c);
-    virtual void leave(ImapContext *c);
-    virtual void taggedResponse(ImapContext *c, const QString &line);
-    virtual QString error(const QString &line);
+    bool permitsPipelining() const override { return true; }
+    void init() override;
+    QString transmit(ImapContext *c) override;
+    void leave(ImapContext *c) override;
+    void taggedResponse(ImapContext *c, const QString &line) override;
+    QString error(const QString &line) override;
 signals:
     void folderCreated(const QString &name, bool success);
 
@@ -767,12 +767,12 @@ public:
 
     void setMailbox(QMailFolder mailbox);
 
-    virtual bool permitsPipelining() const { return true; }
-    virtual void init();
-    virtual QString transmit(ImapContext *c);
-    virtual void leave(ImapContext *c);
-    virtual void taggedResponse(ImapContext *c, const QString &line);
-    virtual QString error(const QString &line);
+    bool permitsPipelining() const override { return true; }
+    void init() override;
+    QString transmit(ImapContext *c) override;
+    void leave(ImapContext *c) override;
+    void taggedResponse(ImapContext *c, const QString &line) override;
+    QString error(const QString &line) override;
 signals:
     void folderDeleted(const QMailFolder &name, bool success);
 
@@ -825,12 +825,12 @@ public:
 
     void setNewMailboxName(const QMailFolder &mailbox, const QString &name);
 
-    virtual bool permitsPipelining() const { return true; }
-    virtual void init();
-    virtual QString transmit(ImapContext *c);
-    virtual void leave(ImapContext *c);
-    virtual void taggedResponse(ImapContext *c, const QString &line);
-    virtual QString error(const QString &line);
+    bool permitsPipelining() const override { return true; }
+    void init() override;
+    QString transmit(ImapContext *c) override;
+    void leave(ImapContext *c) override;
+    void taggedResponse(ImapContext *c, const QString &line) override;
+    QString error(const QString &line) override;
 signals:
     void folderRenamed(const QMailFolder &folder, const QString &newPath, bool success);
 
@@ -911,12 +911,12 @@ public:
 
     void setNewMailboxParent(const QMailFolder &mailbox, const QMailFolderId &newParentId);
 
-    virtual bool permitsPipelining() const { return true; }
-    virtual void init();
-    virtual QString transmit(ImapContext *c);
-    virtual void leave(ImapContext *c);
-    virtual void taggedResponse(ImapContext *c, const QString &line);
-    virtual QString error(const QString &line);
+    bool permitsPipelining() const override { return true; }
+    void init() override;
+    QString transmit(ImapContext *c) override;
+    void leave(ImapContext *c) override;
+    void taggedResponse(ImapContext *c, const QString &line) override;
+    QString error(const QString &line) override;
 signals:
     void folderMoved(const QMailFolder &folder, const QString &newPath,
                      const QMailFolderId &newParentId, bool success);
@@ -994,12 +994,12 @@ public:
     void setParameters(const QString &reference, const QString &mailbox, bool xlist = false);
     void setDiscoverDelimiter();
 
-    virtual bool permitsPipelining() const { return true; }
-    virtual void init();
-    virtual QString transmit(ImapContext *c);
-    virtual void leave(ImapContext *c);
-    virtual void untaggedResponse(ImapContext *c, const QString &line);
-    virtual void taggedResponse(ImapContext *c, const QString &line);
+    bool permitsPipelining() const override { return true; }
+    void init() override;
+    QString transmit(ImapContext *c) override;
+    void leave(ImapContext *c) override;
+    void untaggedResponse(ImapContext *c, const QString &line) override;
+    void taggedResponse(ImapContext *c, const QString &line) override;
     
 signals:
     void mailboxListed(const QString &flags, const QString &path);
@@ -1143,11 +1143,11 @@ public:
 
     void setUrl(const QString &url, const QString &mechanism);
 
-    virtual bool permitsPipelining() const { return true; }
-    virtual void init();
-    virtual QString transmit(ImapContext *c);
-    virtual void leave(ImapContext *c);
-    virtual void untaggedResponse(ImapContext *c, const QString &line);
+    bool permitsPipelining() const override { return true; }
+    void init() override;
+    QString transmit(ImapContext *c) override;
+    void leave(ImapContext *c) override;
+    void untaggedResponse(ImapContext *c, const QString &line) override;
 
 signals:
     void urlAuthorized(const QString &url);
@@ -1200,12 +1200,12 @@ public:
 
     void setParameters(const QMailFolder &folder, const QMailMessageId &messageId);
 
-    virtual bool permitsPipelining() const { return true; }
-    virtual void init();
-    virtual QString transmit(ImapContext *c);
-    virtual void leave(ImapContext *c);
-    virtual bool continuationResponse(ImapContext *c, const QString &line);
-    virtual void taggedResponse(ImapContext *c, const QString &line);
+    bool permitsPipelining() const override { return true; }
+    void init() override;
+    QString transmit(ImapContext *c) override;
+    void leave(ImapContext *c) override;
+    bool continuationResponse(ImapContext *c, const QString &line) override;
+    void taggedResponse(ImapContext *c, const QString &line) override;
 
 signals:
     void messageCreated(const QMailMessageId&, const QString&);
@@ -1371,7 +1371,7 @@ class SelectedState : public ImapState
 public:
     SelectedState(ImapCommand c, const QString &name) : ImapState(c, name) {}
 
-    virtual void untaggedResponse(ImapContext *c, const QString &line);
+    void untaggedResponse(ImapContext *c, const QString &line) override;
 };
 
 void SelectedState::untaggedResponse(ImapContext *c, const QString &line)
@@ -1449,11 +1449,11 @@ public:
 
     void setMailbox(const QMailFolder &mailbox);
 
-    virtual bool permitsPipelining() const { return true; }
-    virtual void init();
-    virtual QString transmit(ImapContext *c);
-    virtual void enter(ImapContext *c);
-    virtual void leave(ImapContext *);
+    bool permitsPipelining() const override { return true; }
+    void init() override;
+    QString transmit(ImapContext *c) override;
+    void enter(ImapContext *c) override;
+    void leave(ImapContext *) override;
 
 protected:
     SelectState(ImapCommand c, const QString &name) : SelectedState(c, name) {}
@@ -1503,11 +1503,11 @@ class QResyncState : public SelectState
 public:
     QResyncState() : SelectState(IMAP_QResync, "QResync") { init(); }
 
-    virtual QString transmit(ImapContext *c);
-    virtual void untaggedResponse(ImapContext *c, const QString &line);
-    virtual void taggedResponse(ImapContext *c, const QString &line);
-    virtual void enter(ImapContext *c);
-    virtual void leave(ImapContext *c);
+    QString transmit(ImapContext *c) override;
+    void untaggedResponse(ImapContext *c, const QString &line) override;
+    void taggedResponse(ImapContext *c, const QString &line) override;
+    void enter(ImapContext *c) override;
+    void leave(ImapContext *c) override;
 
 protected:
     QString vanished;
@@ -1586,10 +1586,10 @@ public:
 
     void setProperties(const QString &range, const QString &prefix);
 
-    virtual void init();
-    virtual QString transmit(ImapContext *c);
-    virtual void untaggedResponse(ImapContext *c, const QString &line);
-    virtual void taggedResponse(ImapContext *c, const QString &line);
+    void init() override;
+    QString transmit(ImapContext *c) override;
+    void untaggedResponse(ImapContext *c, const QString &line) override;
+    void taggedResponse(ImapContext *c, const QString &line) override;
 
 protected:
     QList<FlagChange> mChanges;
@@ -1659,8 +1659,8 @@ class ExamineState : public SelectState
 public:
     ExamineState() : SelectState(IMAP_Examine, "Examine") { ExamineState::init(); }
 
-    virtual QString transmit(ImapContext *c);
-    virtual void enter(ImapContext *c);
+    QString transmit(ImapContext *c) override;
+    void enter(ImapContext *c) override;
 };
 
 QString ExamineState::transmit(ImapContext *c)
@@ -1685,12 +1685,12 @@ class SearchMessageState : public SelectedState
     Q_OBJECT
 public:
     SearchMessageState() : SelectedState(IMAP_Search_Message, "Search_Message"), _utf8(false) { }
-    virtual bool permitsPipelining() const { return true; }
+    bool permitsPipelining() const override { return true; }
     void setParameters(const QMailMessageKey &key, const QString &body, const QMailMessageSortKey &sort, bool count);
-    virtual QString transmit(ImapContext *c);
-    virtual void leave(ImapContext *c);
-    virtual bool continuationResponse(ImapContext *c, const QString &line);
-    virtual void untaggedResponse(ImapContext *c, const QString &line);
+    QString transmit(ImapContext *c) override;
+    void leave(ImapContext *c) override;
+    bool continuationResponse(ImapContext *c, const QString &line) override;
+    void untaggedResponse(ImapContext *c, const QString &line) override;
 protected:
     bool isPrintable(const QString &s) const;
     QStringList convertValue(const QVariant &value, const QMailMessageKey::Property &property, const QMailKey::Comparator &comparer);
@@ -2034,12 +2034,12 @@ public:
 
     void setParameters(MessageFlags flags, const QString &range);
 
-    virtual bool permitsPipelining() const { return true; }
-    virtual void init();
-    virtual QString transmit(ImapContext *c);
-    virtual void leave(ImapContext *c);
-    virtual void untaggedResponse(ImapContext *c, const QString &line);
-    virtual QString error(const QString &line);
+    bool permitsPipelining() const override { return true; }
+    void init() override;
+    QString transmit(ImapContext *c) override;
+    void leave(ImapContext *c) override;
+    void untaggedResponse(ImapContext *c, const QString &line) override;
+    QString error(const QString &line) override;
 
 private:
     // The list of flags/range pairs we're listing (via multiple commands), in order
@@ -2116,12 +2116,12 @@ public:
 
     void setParameters(MessageFlags flags, const QString &range);
 
-    virtual bool permitsPipelining() const { return true; }
-    virtual void init();
-    virtual QString transmit(ImapContext *c);
-    virtual void leave(ImapContext *c);
-    virtual void untaggedResponse(ImapContext *c, const QString &line);
-    virtual QString error(const QString &line);
+    bool permitsPipelining() const override { return true; }
+    void init() override;
+    QString transmit(ImapContext *c) override;
+    void leave(ImapContext *c) override;
+    void untaggedResponse(ImapContext *c, const QString &line) override;
+    QString error(const QString &line) override;
 
 private:
     // The list of flags/range pairs we're listing (via multiple commands), in order
@@ -2200,14 +2200,14 @@ public:
     void setUidList(const QString &uidList, FetchItemFlags flags);
     void setSection(const QString &uid, const QString &section, int start, int end, FetchItemFlags flags);
 
-    virtual bool permitsPipelining() const { return true; }
-    virtual void init();
-    virtual QString transmit(ImapContext *c);
-    virtual void leave(ImapContext *);
-    virtual void untaggedResponse(ImapContext *c, const QString &line);
-    virtual void taggedResponse(ImapContext *c, const QString &line);
-    virtual void literalResponse(ImapContext *c, const QString &line);
-    virtual bool appendLiteralData(ImapContext *c, const QString &preceding);
+    bool permitsPipelining() const override { return true; }
+    void init() override;
+    QString transmit(ImapContext *c) override;
+    void leave(ImapContext *) override;
+    void untaggedResponse(ImapContext *c, const QString &line) override;
+    void taggedResponse(ImapContext *c, const QString &line) override;
+    void literalResponse(ImapContext *c, const QString &line) override;
+    bool appendLiteralData(ImapContext *c, const QString &preceding) override;
     
 signals:
     void downloadSize(const QString&, int);
@@ -2539,11 +2539,11 @@ public:
 
     void setParameters(MessageFlags flags, bool set, const QString &range);
 
-    virtual bool permitsPipelining() const { return true; }
-    virtual void init();
-    virtual QString transmit(ImapContext *c);
-    virtual void leave(ImapContext *);
-    virtual void taggedResponse(ImapContext *c, const QString &line);
+    bool permitsPipelining() const override { return true; }
+    void init() override;
+    QString transmit(ImapContext *c) override;
+    void leave(ImapContext *) override;
+    void taggedResponse(ImapContext *c, const QString &line) override;
 
 signals:
     void messageStored(const QString &uid);
@@ -2601,11 +2601,11 @@ public:
 
     void setParameters(const QString &range, const QMailFolder &destination);
 
-    virtual bool permitsPipelining() const { return true; }
-    virtual void init();
-    virtual QString transmit(ImapContext *c);
-    virtual void leave(ImapContext *);
-    virtual void taggedResponse(ImapContext *c, const QString &line);
+    bool permitsPipelining() const override { return true; }
+    void init() override;
+    QString transmit(ImapContext *c) override;
+    void leave(ImapContext *) override;
+    void taggedResponse(ImapContext *c, const QString &line) override;
 
 signals:
     void messageCopied(const QString&, const QString&);
@@ -2683,8 +2683,8 @@ class ExpungeState : public SelectedState
 public:
     ExpungeState() : SelectedState(IMAP_Expunge, "Expunge") {}
 
-    virtual bool permitsPipelining() const { return true; }
-    virtual QString transmit(ImapContext *c);
+    bool permitsPipelining() const override { return true; }
+    QString transmit(ImapContext *c) override;
 };
 
 QString ExpungeState::transmit(ImapContext *c)
@@ -2700,9 +2700,9 @@ class CloseState : public SelectedState
 public:
     CloseState() : SelectedState(IMAP_Close, "Close") {}
 
-    virtual bool permitsPipelining() const { return true; }
-    virtual QString transmit(ImapContext *c);
-    virtual void taggedResponse(ImapContext *c, const QString &line);
+    bool permitsPipelining() const override { return true; }
+    QString transmit(ImapContext *c) override;
+    void taggedResponse(ImapContext *c, const QString &line) override;
 };
 
 QString CloseState::transmit(ImapContext *c)
@@ -2729,11 +2729,11 @@ public:
 
     void setExtensions(const QString &extensions);
 
-    virtual bool permitsPipelining() const { return true; }
-    virtual void init();
-    virtual QString transmit(ImapContext *c);
-    virtual void leave(ImapContext *c);
-    virtual void taggedResponse(ImapContext *c, const QString &line);
+    bool permitsPipelining() const override { return true; }
+    void init() override;
+    QString transmit(ImapContext *c) override;
+    void leave(ImapContext *c) override;
+    void taggedResponse(ImapContext *c, const QString &line) override;
 
 private:
     QStringList _extensionsList;
@@ -2774,8 +2774,8 @@ class NoopState : public SelectedState
 public:
     NoopState() : SelectedState(IMAP_Noop, "Noop") {}
 
-    virtual bool permitsPipelining() const { return true; }
-    virtual QString transmit(ImapContext *c);
+    bool permitsPipelining() const override { return true; }
+    QString transmit(ImapContext *c) override;
 };
 
 QString NoopState::transmit(ImapContext *c)
@@ -2802,9 +2802,9 @@ public:
 
     void done(ImapContext *c);
 
-    virtual QString transmit(ImapContext *c);
-    virtual bool continuationResponse(ImapContext *c, const QString &line);
-    virtual void untaggedResponse(ImapContext *c, const QString &line);
+    QString transmit(ImapContext *c) override;
+    bool continuationResponse(ImapContext *c, const QString &line) override;
+    void untaggedResponse(ImapContext *c, const QString &line) override;
 };
 
 void IdleState::done(ImapContext *c)
@@ -2849,9 +2849,9 @@ class CompressState : public ImapState
 public:
     CompressState() : ImapState(IMAP_Compress, "Compress") {}
 
-    virtual QString transmit(ImapContext *c);
-    virtual void taggedResponse(ImapContext *c, const QString &line);
-    virtual bool permitsPipelining() const { return true; }
+    QString transmit(ImapContext *c) override;
+    void taggedResponse(ImapContext *c, const QString &line) override;
+    bool permitsPipelining() const override { return true; }
 };
 
 QString CompressState::transmit(ImapContext *c)
@@ -2904,7 +2904,7 @@ public:
     IdleState idleState;
     CompressState compressState;
 
-    virtual QString sendCommandLiteral(const QString &cmd, uint length);
+    QString sendCommandLiteral(const QString &cmd, uint length) override;
 
     bool continuationResponse(const QString &line) { return state()->continuationResponse(this, line); }
     void untaggedResponse(const QString &line) { state()->untaggedResponse(this, line); }

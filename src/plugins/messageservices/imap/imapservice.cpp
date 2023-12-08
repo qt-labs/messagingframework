@@ -112,48 +112,62 @@ public:
         }
     }
 
-    virtual QMailStore::MessageRemovalOption messageRemovalOption() const { return QMailStore::CreateRemovalRecord; }
+    QMailStore::MessageRemovalOption messageRemovalOption() const override
+    {
+        return QMailStore::CreateRemovalRecord;
+    }
 
 signals:
     void messageActionCompleted(const QMailMessageIdList &ids);
 
 public slots:
-    virtual bool retrieveFolderList(const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending);
-    virtual bool retrieveMessageLists(const QMailAccountId &accountId, const QMailFolderIdList &folderIds, uint minimum, const QMailMessageSortKey &sort);
-    virtual bool retrieveMessageList(const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort);
-    virtual bool retrieveNewMessages(const QMailAccountId &accountId, const QMailFolderIdList &_folderIds);
-    virtual bool retrieveMessageLists(const QMailAccountId &accountId, const QMailFolderIdList &_folderIds, uint minimum, const QMailMessageSortKey &sort, bool retrieveAll);
+    bool retrieveFolderList(const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending) override;
+    bool retrieveMessageLists(const QMailAccountId &accountId, const QMailFolderIdList &folderIds,
+                              uint minimum, const QMailMessageSortKey &sort) override;
+    bool retrieveMessageList(const QMailAccountId &accountId, const QMailFolderId &folderId,
+                             uint minimum, const QMailMessageSortKey &sort) override;
+    bool retrieveNewMessages(const QMailAccountId &accountId,
+                             const QMailFolderIdList &_folderIds) override;
+    virtual bool retrieveMessageLists(const QMailAccountId &accountId,
+                                      const QMailFolderIdList &_folderIds,
+                                      uint minimum,
+                                      const QMailMessageSortKey &sort,
+                                      bool retrieveAll);
 
-    virtual bool retrieveMessages(const QMailMessageIdList &messageIds, QMailRetrievalAction::RetrievalSpecification spec);
-    virtual bool retrieveMessagePart(const QMailMessagePart::Location &partLocation);
+    bool retrieveMessages(const QMailMessageIdList &messageIds,
+                          QMailRetrievalAction::RetrievalSpecification spec) override;
+    bool retrieveMessagePart(const QMailMessagePart::Location &partLocation) override;
 
-    virtual bool retrieveMessageRange(const QMailMessageId &messageId, uint minimum);
-    virtual bool retrieveMessagePartRange(const QMailMessagePart::Location &partLocation, uint minimum);
+    bool retrieveMessageRange(const QMailMessageId &messageId, uint minimum) override;
+    bool retrieveMessagePartRange(const QMailMessagePart::Location &partLocation, uint minimum) override;
 
-    virtual bool retrieveAll(const QMailAccountId &accountId);
-    virtual bool exportUpdates(const QMailAccountId &accountId);
+    bool retrieveAll(const QMailAccountId &accountId) override;
+    bool exportUpdates(const QMailAccountId &accountId) override;
 
-    virtual bool synchronize(const QMailAccountId &accountId);
+    bool synchronize(const QMailAccountId &accountId) override;
 
-    virtual bool deleteMessages(const QMailMessageIdList &ids);
+    bool deleteMessages(const QMailMessageIdList &ids) override;
 
-    virtual bool copyMessages(const QMailMessageIdList &ids, const QMailFolderId &destinationId);
-    virtual bool moveMessages(const QMailMessageIdList &ids, const QMailFolderId &destinationId);
-    virtual bool flagMessages(const QMailMessageIdList &ids, quint64 setMask, quint64 unsetMask);
+    bool copyMessages(const QMailMessageIdList &ids, const QMailFolderId &destinationId) override;
+    bool moveMessages(const QMailMessageIdList &ids, const QMailFolderId &destinationId) override;
+    bool flagMessages(const QMailMessageIdList &ids, quint64 setMask, quint64 unsetMask) override;
 
-    virtual bool createFolder(const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId);
-    virtual bool createStandardFolders(const QMailAccountId &accountId);
-    virtual bool deleteFolder(const QMailFolderId &folderId);
-    virtual bool renameFolder(const QMailFolderId &folderId, const QString &name);
-    virtual bool moveFolder(const QMailFolderId &folderId, const QMailFolderId &newParentId);
+    bool createFolder(const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId) override;
+    bool createStandardFolders(const QMailAccountId &accountId) override;
+    bool deleteFolder(const QMailFolderId &folderId) override;
+    bool renameFolder(const QMailFolderId &folderId, const QString &name) override;
+    bool moveFolder(const QMailFolderId &folderId, const QMailFolderId &newParentId) override;
 
-    virtual bool searchMessages(const QMailMessageKey &searchCriteria, const QString &bodyText, const QMailMessageSortKey &sort);
-    virtual bool searchMessages(const QMailMessageKey &searchCriteria, const QString &bodyText, quint64 limit, const QMailMessageSortKey &sort);
-    virtual bool searchMessages(const QMailMessageKey &searchCriteria, const QString &bodyText, quint64 limit, const QMailMessageSortKey &sort, bool count);
-    virtual bool countMessages(const QMailMessageKey &searchCriteria, const QString &bodyText);
-    virtual bool cancelSearch();
+    bool searchMessages(const QMailMessageKey &searchCriteria, const QString &bodyText,
+                        const QMailMessageSortKey &sort) override;
+    bool searchMessages(const QMailMessageKey &searchCriteria, const QString &bodyText,
+                        quint64 limit, const QMailMessageSortKey &sort) override;
+    virtual bool searchMessages(const QMailMessageKey &searchCriteria, const QString &bodyText,
+                                quint64 limit, const QMailMessageSortKey &sort, bool count);
+    bool countMessages(const QMailMessageKey &searchCriteria, const QString &bodyText) override;
+    bool cancelSearch() override;
 
-    virtual bool prepareMessages(const QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > &ids);
+    bool prepareMessages(const QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > &ids) override;
 
     void messageCopyCompleted(QMailMessage &message, const QMailMessage &original);
     void messageActionCompleted(const QString &uid);
@@ -1861,11 +1875,11 @@ public:
     ImapConfigurator();
     ~ImapConfigurator();
 
-    virtual QString service() const;
-    virtual QString displayName() const;
+    QString service() const override;
+    QString displayName() const override;
 
 #ifndef QMF_NO_WIDGETS
-    virtual QMailMessageServiceEditor *createEditor(QMailMessageServiceFactory::ServiceType type);
+    QMailMessageServiceEditor *createEditor(QMailMessageServiceFactory::ServiceType type) override;
 #endif
 };
 

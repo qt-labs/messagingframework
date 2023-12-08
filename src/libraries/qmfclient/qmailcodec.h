@@ -87,11 +87,11 @@ public:
 
     QMailBase64Codec(ContentType content, int maximumLineLength = -1);
 
-    virtual QString name() const override;
+    QString name() const override;
 
 protected:
-    virtual void encodeChunk(QDataStream& out, const unsigned char* in, int length, bool finalChunk) override;
-    virtual void decodeChunk(QDataStream& out, const char* in, int length, bool finalChunk) override;
+    void encodeChunk(QDataStream& out, const unsigned char* in, int length, bool finalChunk) override;
+    void decodeChunk(QDataStream& out, const char* in, int length, bool finalChunk) override;
 
 private:
     ContentType _content;
@@ -116,11 +116,11 @@ public:
 
     QMailQuotedPrintableCodec(ContentType content, ConformanceType conformance, int maximumLineLength = -1);
 
-    virtual QString name() const override;
+    QString name() const override;
 
 protected:
-    virtual void encodeChunk(QDataStream& out, const unsigned char* in, int length, bool finalChunk) override;
-    virtual void decodeChunk(QDataStream& out, const char* in, int length, bool finalChunk) override;
+    void encodeChunk(QDataStream& out, const unsigned char* in, int length, bool finalChunk) override;
+    void decodeChunk(QDataStream& out, const char* in, int length, bool finalChunk) override;
 
 private:
     ContentType _content;
@@ -136,23 +136,23 @@ private:
 
 class QMF_EXPORT QMailPassThroughCodec : public QMailCodec
 {
-    virtual QString name() const override;
+    QString name() const override;
 
 protected:
-    virtual void encodeChunk(QDataStream& out, const unsigned char* in, int length, bool finalChunk) override;
-    virtual void decodeChunk(QDataStream& out, const char* in, int length, bool finalChunk) override;
+    void encodeChunk(QDataStream& out, const unsigned char* in, int length, bool finalChunk) override;
+    void decodeChunk(QDataStream& out, const char* in, int length, bool finalChunk) override;
 };
 
 class QMF_EXPORT QMailLineEndingCodec : public QMailCodec
 {
-    virtual QString name() const override;
+    QString name() const override;
 
 public:
     QMailLineEndingCodec();
 
 protected:
-    virtual void encodeChunk(QDataStream& out, const unsigned char* in, int length, bool finalChunk) override;
-    virtual void decodeChunk(QDataStream& out, const char* in, int length, bool finalChunk) override;
+    void encodeChunk(QDataStream& out, const unsigned char* in, int length, bool finalChunk) override;
+    void decodeChunk(QDataStream& out, const char* in, int length, bool finalChunk) override;
 
 private:
     unsigned char _lastChar;

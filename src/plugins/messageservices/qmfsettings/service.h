@@ -44,12 +44,12 @@ class QmfServicePlugin : public QMailMessageServicePlugin
 public:
     QmfServicePlugin();
 
-    virtual QString key() const;
-    virtual bool supports(QMailMessageServiceFactory::ServiceType type) const;
-    virtual bool supports(QMailMessage::MessageType type) const;
+    QString key() const override;
+    bool supports(QMailMessageServiceFactory::ServiceType type) const override;
+    bool supports(QMailMessage::MessageType type) const override;
 
-    virtual QMailMessageService *createService(const QMailAccountId &accountId);
-    virtual QMailMessageServiceConfigurator *createServiceConfigurator();
+    QMailMessageService *createService(const QMailAccountId &accountId) override;
+    QMailMessageServiceConfigurator *createServiceConfigurator() override;
 };
 
 #endif

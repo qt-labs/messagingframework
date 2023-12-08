@@ -51,17 +51,17 @@ public:
     void enable();
     void disable();
 
-    virtual QString service() const;
-    virtual QMailAccountId accountId() const;
+    QString service() const override;
+    QMailAccountId accountId() const override;
 
-    virtual bool hasSource() const;
-    virtual QMailMessageSource &source() const;
+    bool hasSource() const override;
+    QMailMessageSource &source() const override;
 
-    virtual bool available() const;
+    bool available() const override;
     bool pushEmailEstablished();
 
 public slots:
-    virtual bool cancelOperation(QMailServiceAction::Status::ErrorCode code, const QString &text);
+    bool cancelOperation(QMailServiceAction::Status::ErrorCode code, const QString &text) override;
     virtual void restartPushEmail();
     virtual void initiatePushEmail();
 
@@ -117,12 +117,12 @@ class ImapServicePlugin : public QMailMessageServicePlugin
 public:
     ImapServicePlugin();
 
-    virtual QString key() const;
-    virtual bool supports(QMailMessageServiceFactory::ServiceType type) const;
-    virtual bool supports(QMailMessage::MessageType type) const;
+    QString key() const override;
+    bool supports(QMailMessageServiceFactory::ServiceType type) const override;
+    bool supports(QMailMessage::MessageType type) const override;
 
-    virtual QMailMessageService *createService(const QMailAccountId &id);
-    virtual QMailMessageServiceConfigurator *createServiceConfigurator();
+    QMailMessageService *createService(const QMailAccountId &id) override;
+    QMailMessageServiceConfigurator *createServiceConfigurator() override;
 };
 
 

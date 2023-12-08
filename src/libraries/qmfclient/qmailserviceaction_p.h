@@ -230,7 +230,7 @@ signals:
     void messagesFailedTransmission(const QMailMessageIdList &ids, QMailServiceAction::Status::ErrorCode);
 
 protected:
-    virtual void init() override;
+    void init() override;
 
 protected slots:
     void messagesTransmitted(quint64, const QMailMessageIdList &id);
@@ -273,7 +273,7 @@ public:
     void onlineMoveFolder(const QMailFolderId &id, const QMailFolderId &newParentId);
 
 protected:
-    virtual void init() override;
+    void init() override;
 
 protected slots:
     void messagesEffected(quint64, const QMailMessageIdList &id);
@@ -334,7 +334,7 @@ public:
     void cancelOperation();
 
 protected:
-    virtual void init() override;
+    void init() override;
 
 signals:
     void messageIdsMatched(const QMailMessageIdList &ids);

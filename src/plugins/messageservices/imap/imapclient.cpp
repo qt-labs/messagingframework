@@ -67,7 +67,7 @@ public:
     {
     }
 
-    void messageFlushed(QMailMessage *message)
+    void messageFlushed(QMailMessage *message) override
     {
         context->messageFlushed(*message);
         context->client()->removeAllFromBuffer(message);
@@ -87,7 +87,7 @@ public:
     {
     }
 
-    void messageFlushed(QMailMessage *message)
+    void messageFlushed(QMailMessage *message) override
     {
         context->dataFlushed(*message, uid, section);
         context->client()->removeAllFromBuffer(message);
@@ -186,7 +186,7 @@ public:
     virtual ~IdleProtocol() {}
 
     virtual void handleIdling() { _client->idling(_folder.id()); }
-    virtual bool open(const ImapConfiguration& config, qint64 bufferSize = 10*1024);
+    bool open(const ImapConfiguration& config, qint64 bufferSize = 10*1024) override;
 
 signals:
     void idleNewMailNotification(QMailFolderId);

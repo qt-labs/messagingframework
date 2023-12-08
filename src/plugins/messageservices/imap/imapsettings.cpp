@@ -51,7 +51,7 @@ class PortValidator : public QValidator
 public:
     PortValidator(QWidget *parent = Q_NULLPTR, const char *name = Q_NULLPTR);
 
-    QValidator::State validate(QString &str, int &) const;
+    QValidator::State validate(QString &str, int &) const override;
 };
 
 PortValidator::PortValidator(QWidget *parent, const char *name)

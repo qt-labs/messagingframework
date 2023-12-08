@@ -57,17 +57,17 @@ public:
     QmfStorageManager(QObject *parent = Q_NULLPTR);
     ~QmfStorageManager();
 
-    QMailStore::ErrorCode add(QMailMessage *message, QMailContentManager::DurabilityRequirement durability);
-    QMailStore::ErrorCode update(QMailMessage *message, QMailContentManager::DurabilityRequirement durability);
+    QMailStore::ErrorCode add(QMailMessage *message, QMailContentManager::DurabilityRequirement durability) override;
+    QMailStore::ErrorCode update(QMailMessage *message, QMailContentManager::DurabilityRequirement durability) override;
 
-    QMailStore::ErrorCode ensureDurability();
-    QMailStore::ErrorCode ensureDurability(const QList<QString> &identifiers);
+    QMailStore::ErrorCode ensureDurability() override;
+    QMailStore::ErrorCode ensureDurability(const QList<QString> &identifiers) override;
 
-    QMailStore::ErrorCode remove(const QString &identifier);
-    QMailStore::ErrorCode load(const QString &identifier, QMailMessage *message);
+    QMailStore::ErrorCode remove(const QString &identifier) override;
+    QMailStore::ErrorCode load(const QString &identifier, QMailMessage *message) override;
 
-    bool init();
-    void clearContent();
+    bool init() override;
+    void clearContent() override;
 
     static const QString &messagesBodyPath(const QMailAccountId &accountId);
     static QString messageFilePath(const QString &fileName, const QMailAccountId &accountId);
@@ -75,7 +75,7 @@ public:
     static QString messagePartFilePath(const QMailMessagePart &part, const QString &fileName);
     static QString messagePartUndecodedFilePath(const QMailMessagePart &part, const QString &fileName);
 
-    virtual ManagerRole role() const { return StorageRole; }
+    ManagerRole role() const override { return StorageRole; }
 protected slots:
     void clearAccountPath(const QMailAccountIdList&);
 
@@ -99,8 +99,8 @@ class QmfStorageManagerPlugin : public QMailContentManagerPlugin
 public:
     QmfStorageManagerPlugin();
 
-    virtual QString key() const;
-    QMailContentManager *create();
+    QString key() const override;
+    QMailContentManager *create() override;
 };
 
 #endif

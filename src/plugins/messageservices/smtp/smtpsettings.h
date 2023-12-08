@@ -48,8 +48,8 @@ class SmtpSettings : public QMailMessageServiceEditor, private Ui::SmtpSettings
 public:
     SmtpSettings();
 
-    virtual void displayConfiguration(const QMailAccount &account, const QMailAccountConfiguration &config);
-    virtual bool updateAccount(QMailAccount *account, QMailAccountConfiguration *config);
+    void displayConfiguration(const QMailAccount &account, const QMailAccountConfiguration &config) override;
+    bool updateAccount(QMailAccount *account, QMailAccountConfiguration *config) override;
 
 private slots:
     void sigPressed();

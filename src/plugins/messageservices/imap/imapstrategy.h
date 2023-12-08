@@ -169,9 +169,9 @@ public:
     ImapCreateFolderStrategy(): _inProgress(0) { }
     virtual ~ImapCreateFolderStrategy() {}
 
-    virtual void transition(ImapStrategyContextBase *, const ImapCommand, const OperationStatus);
+    void transition(ImapStrategyContextBase *, const ImapCommand, const OperationStatus) override;
     virtual void createFolder(const QMailFolderId &folder, const QString &name, bool matchFoldersRequired);
-    virtual void folderCreated(ImapStrategyContextBase *context, const QString &folder, bool success);
+    void folderCreated(ImapStrategyContextBase *context, const QString &folder, bool success) override;
 protected:
     virtual void handleCreate(ImapStrategyContextBase *context);
     virtual void handleLogin(ImapStrategyContextBase *context);
@@ -191,9 +191,9 @@ public:
     ImapDeleteFolderStrategy() : _inProgress(0) { }
     virtual ~ImapDeleteFolderStrategy() {}
 
-    virtual void transition(ImapStrategyContextBase *, const ImapCommand, const OperationStatus);
+    void transition(ImapStrategyContextBase *, const ImapCommand, const OperationStatus) override;
     virtual void deleteFolder(const QMailFolderId &folderId);
-    virtual void folderDeleted(ImapStrategyContextBase *context, const QMailFolder &folder, bool success);
+    void folderDeleted(ImapStrategyContextBase *context, const QMailFolder &folder, bool success) override;
 protected:
     virtual void handleLogin(ImapStrategyContextBase *context);
     virtual void handleDelete(ImapStrategyContextBase *context);
@@ -209,10 +209,10 @@ public:
     ImapRenameFolderStrategy() : _inProgress(0) { }
     virtual ~ImapRenameFolderStrategy() {}
 
-    virtual void transition(ImapStrategyContextBase *, const ImapCommand, const OperationStatus);
+    void transition(ImapStrategyContextBase *, const ImapCommand, const OperationStatus) override;
     virtual void renameFolder(const QMailFolderId &folderId, const QString &newName);
-    virtual void folderRenamed(ImapStrategyContextBase *context, const QMailFolder &folder,
-                               const QString &name, bool success);
+    void folderRenamed(ImapStrategyContextBase *context, const QMailFolder &folder,
+                       const QString &name, bool success) override;
 protected:
     virtual void handleLogin(ImapStrategyContextBase *context);
     virtual void handleRename(ImapStrategyContextBase *context);
@@ -227,10 +227,10 @@ public:
     ImapMoveFolderStrategy() : _inProgress(0) { }
     virtual ~ImapMoveFolderStrategy() {}
 
-    virtual void transition(ImapStrategyContextBase *, const ImapCommand, const OperationStatus);
+    void transition(ImapStrategyContextBase *, const ImapCommand, const OperationStatus) override;
     virtual void moveFolder(const QMailFolderId &folderId, const QMailFolderId &newParentId);
-    virtual void folderMoved(ImapStrategyContextBase *context, const QMailFolder &folder,
-                             const QString &newPath, const QMailFolderId &newParentId, bool success);
+    void folderMoved(ImapStrategyContextBase *context, const QMailFolder &folder,
+                     const QString &newPath, const QMailFolderId &newParentId, bool success) override;
 protected:
     virtual void handleLogin(ImapStrategyContextBase *context);
     virtual void handleMove(ImapStrategyContextBase *context);
@@ -247,10 +247,10 @@ public:
 
     virtual void setUnresolved(const QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > &ids, bool external);
 
-    virtual void newConnection(ImapStrategyContextBase *context);
-    virtual void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus);
+    void newConnection(ImapStrategyContextBase *context) override;
+    void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus) override;
 
-    virtual void urlAuthorized(ImapStrategyContextBase *context, const QString &url);
+    void urlAuthorized(ImapStrategyContextBase *context, const QString &url) override;
 
 protected:
     virtual void handleLogin(ImapStrategyContextBase *context);
@@ -272,10 +272,10 @@ public:
     virtual void clearSelection();
     virtual void selectedMailsAppend(const QMailMessageIdList &ids);
     virtual void selectedSectionsAppend(const QMailMessagePart::Location &location);
-    virtual void newConnection(ImapStrategyContextBase *context);
-    virtual void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus);
+    void newConnection(ImapStrategyContextBase *context) override;
+    void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus) override;
 
-    virtual void initialAction(ImapStrategyContextBase *context);
+    void initialAction(ImapStrategyContextBase *context) override;
 
 protected:
     enum { DefaultBatchSize = 50 };
@@ -320,8 +320,8 @@ public:
     
     virtual void setOperation(ImapStrategyContextBase *context,
                               QMailRetrievalAction::RetrievalSpecification spec);
-    virtual void clearSelection();
-    virtual void selectedMailsAppend(const QMailMessageIdList &ids);
+    void clearSelection() override;
+    void selectedMailsAppend(const QMailMessageIdList &ids) override;
     virtual void selectedSectionsAppend(const QMailMessagePart::Location &, int = -1);
     virtual void prepareCompletionList(
                                   ImapStrategyContextBase *context,
@@ -329,20 +329,20 @@ public:
                                   QMailMessageIdList &completionList,
                                   QList<QPair<QMailMessagePart::Location, int> > &completionSectionList);
 
-    virtual void newConnection(ImapStrategyContextBase *context);
-    virtual void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus);
+    void newConnection(ImapStrategyContextBase *context) override;
+    void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus) override;
 
-    virtual void downloadSize(ImapStrategyContextBase*, const QString &uid, int length);
-    virtual bool messageFetched(ImapStrategyContextBase *context, QMailMessage &message);
-    virtual void messageFlushed(ImapStrategyContextBase *context, QMailMessage &message);
-    virtual void dataFetched(ImapStrategyContextBase *context, QMailMessage &message, const QString &uid, const QString &section);
-    virtual void dataFlushed(ImapStrategyContextBase *context, QMailMessage &message, const QString &uid, const QString &section);
+    void downloadSize(ImapStrategyContextBase*, const QString &uid, int length) override;
+    bool messageFetched(ImapStrategyContextBase *context, QMailMessage &message) override;
+    void messageFlushed(ImapStrategyContextBase *context, QMailMessage &message) override;
+    void dataFetched(ImapStrategyContextBase *context, QMailMessage &message, const QString &uid, const QString &section) override;
+    void dataFlushed(ImapStrategyContextBase *context, QMailMessage &message, const QString &uid, const QString &section) override;
 
 protected:
-    virtual void handleLogin(ImapStrategyContextBase *context);
+    void handleLogin(ImapStrategyContextBase *context) override;
     virtual void handleUidFetch(ImapStrategyContextBase *context);
 
-    virtual void messageListMessageAction(ImapStrategyContextBase *context);
+    void messageListMessageAction(ImapStrategyContextBase *context) override;
 
     virtual void itemFetched(ImapStrategyContextBase *context, const QString &uid);
 
@@ -376,18 +376,18 @@ public:
     ImapFolderListStrategy() : _processed(0), _processable(0) {}
     virtual ~ImapFolderListStrategy() {}
 
-    virtual void clearSelection();
+    void clearSelection() override;
     virtual void selectedFoldersAppend(const QMailFolderIdList &ids);
 
-    virtual void newConnection(ImapStrategyContextBase *context);
-    virtual void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus);
+    void newConnection(ImapStrategyContextBase *context) override;
+    void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus) override;
 
-    virtual void mailboxListed(ImapStrategyContextBase *context, QMailFolder& folder, const QString &flags);
+    void mailboxListed(ImapStrategyContextBase *context, QMailFolder& folder, const QString &flags) override;
 
 protected:
-    virtual void handleLogin(ImapStrategyContextBase *context);
+    void handleLogin(ImapStrategyContextBase *context) override;
     virtual void handleList(ImapStrategyContextBase *context);
-    virtual void handleSelect(ImapStrategyContextBase *context);
+    void handleSelect(ImapStrategyContextBase *context) override;
     virtual void handleSearch(ImapStrategyContextBase *context);
 
     virtual void folderListFolderAction(ImapStrategyContextBase *context);
@@ -422,21 +422,21 @@ public:
     ImapUpdateMessagesFlagsStrategy() {}
     virtual ~ImapUpdateMessagesFlagsStrategy() {}
 
-    virtual void clearSelection();      
-    virtual void selectedMailsAppend(const QMailMessageIdList &messageIds);
+    void clearSelection() override;
+    void selectedMailsAppend(const QMailMessageIdList &messageIds) override;
     virtual QMailMessageIdList selectedMails();
 
-    virtual void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus);
+    void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus) override;
 
 protected:
-    virtual void handleLogin(ImapStrategyContextBase *context);
+    void handleLogin(ImapStrategyContextBase *context) override;
     virtual void handleUidSearch(ImapStrategyContextBase *context);
 
-    virtual void folderListFolderAction(ImapStrategyContextBase *context);
-    virtual void folderListCompleted(ImapStrategyContextBase *context);
+    void folderListFolderAction(ImapStrategyContextBase *context) override;
+    void folderListCompleted(ImapStrategyContextBase *context) override;
 
-    virtual bool nextFolder();
-    virtual void processFolder(ImapStrategyContextBase *context);
+    bool nextFolder() override;
+    void processFolder(ImapStrategyContextBase *context) override;
 
     virtual void processUidSearchResults(ImapStrategyContextBase *context);
 
@@ -459,18 +459,18 @@ public:
     ImapSynchronizeBaseStrategy() : _ignoreSyncFlag(false) {}
     virtual ~ImapSynchronizeBaseStrategy() {}
 
-    virtual void newConnection(ImapStrategyContextBase *context);
-    
-    virtual bool messageFetched(ImapStrategyContextBase *context, QMailMessage &message);
-    virtual void messageFlushed(ImapStrategyContextBase *context, QMailMessage &message);
+    void newConnection(ImapStrategyContextBase *context) override;
+
+    bool messageFetched(ImapStrategyContextBase *context, QMailMessage &message) override;
+    void messageFlushed(ImapStrategyContextBase *context, QMailMessage &message) override;
     virtual void setIgnoreSyncFlag(bool ignoreSyncFlag);
 
 protected:
-    virtual void handleLogin(ImapStrategyContextBase *context);
-    virtual void handleSelect(ImapStrategyContextBase *context);
-    virtual void handleUidFetch(ImapStrategyContextBase *context);
+    void handleLogin(ImapStrategyContextBase *context) override;
+    void handleSelect(ImapStrategyContextBase *context) override;
+    void handleUidFetch(ImapStrategyContextBase *context) override;
 
-    virtual bool nextFolder();
+    bool nextFolder() override;
     virtual bool synchronizationEnabled(const QMailFolder &folder) const;
 
     virtual void previewDiscoveredMessages(ImapStrategyContextBase *context);
@@ -504,16 +504,16 @@ public:
     virtual void setQuickList(bool quickList);
     virtual void setDescending(bool descending);
 
-    virtual void newConnection(ImapStrategyContextBase *context);
+    void newConnection(ImapStrategyContextBase *context) override;
 
-    virtual void mailboxListed(ImapStrategyContextBase *context, QMailFolder& folder, const QString &flags);
+    void mailboxListed(ImapStrategyContextBase *context, QMailFolder& folder, const QString &flags) override;
 
 protected:
-    virtual void handleLogin(ImapStrategyContextBase *context);
-    virtual void handleSearch(ImapStrategyContextBase *context);
-    virtual void handleList(ImapStrategyContextBase *context);
+    void handleLogin(ImapStrategyContextBase *context) override;
+    void handleSearch(ImapStrategyContextBase *context) override;
+    void handleList(ImapStrategyContextBase *context) override;
 
-    virtual void folderListCompleted(ImapStrategyContextBase *context);
+    void folderListCompleted(ImapStrategyContextBase *context) override;
 
     void removeDeletedMailboxes(ImapStrategyContextBase *context);
 
@@ -535,23 +535,23 @@ public:
     virtual void setMinimum(uint minimum);
     virtual void setAccountCheck(bool accountCheck);
 
-    virtual void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus);
-    virtual void selectFolder(ImapStrategyContextBase *context, const QMailFolder &folder);
+    void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus) override;
+    void selectFolder(ImapStrategyContextBase *context, const QMailFolder &folder) override;
 
 protected:
-    virtual void handleLogin(ImapStrategyContextBase *context);
+    void handleLogin(ImapStrategyContextBase *context) override;
     virtual void handleUidSearch(ImapStrategyContextBase *context);
     virtual void handleFetchFlags(ImapStrategyContextBase *context);
     virtual void qresyncHandleUidSearch(ImapStrategyContextBase *context);
 
-    virtual void messageListCompleted(ImapStrategyContextBase *context);
-    virtual void folderListCompleted(ImapStrategyContextBase *context);
-    virtual void processUidSearchResults(ImapStrategyContextBase *context);
+    void messageListCompleted(ImapStrategyContextBase *context) override;
+    void folderListCompleted(ImapStrategyContextBase *context) override;
+    void processUidSearchResults(ImapStrategyContextBase *context) override;
 
-    virtual void folderListFolderAction(ImapStrategyContextBase *context);
+    void folderListFolderAction(ImapStrategyContextBase *context) override;
     virtual void qresyncFolderListFolderAction(ImapStrategyContextBase *context);
 
-    virtual bool synchronizationEnabled(const QMailFolder &folder) const;
+    bool synchronizationEnabled(const QMailFolder &folder) const override;
 
     uint _minimum;
     bool _accountCheck;
@@ -579,19 +579,19 @@ public:
     
     void setOptions(Options options);
 
-    virtual void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus);
+    void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus) override;
 
 protected:
     virtual void handleUidSearch(ImapStrategyContextBase *context);
     virtual void handleUidStore(ImapStrategyContextBase *context);
     virtual void handleExpunge(ImapStrategyContextBase *context);
 
-    virtual void folderListFolderAction(ImapStrategyContextBase *context);
+    void folderListFolderAction(ImapStrategyContextBase *context) override;
 
-    virtual void processUidSearchResults(ImapStrategyContextBase *context);
+    void processUidSearchResults(ImapStrategyContextBase *context) override;
     virtual void searchInconclusive(ImapStrategyContextBase *context);
 
-    virtual void folderListCompleted(ImapStrategyContextBase *context);
+    void folderListCompleted(ImapStrategyContextBase *context) override;
 
     virtual bool setNextSeen(ImapStrategyContextBase *context);
     virtual bool setNextNotSeen(ImapStrategyContextBase *context);
@@ -599,7 +599,7 @@ protected:
     virtual bool setNextNotImportant(ImapStrategyContextBase *context);
     virtual bool setNextDeleted(ImapStrategyContextBase *context);
 
-    virtual void folderPreviewCompleted(ImapStrategyContextBase *context);
+    void folderPreviewCompleted(ImapStrategyContextBase *context) override;
 
 protected:
     QStringList _readUids;
@@ -641,16 +641,16 @@ public:
 
     virtual void cancelSearch();
     virtual void searchArguments(const QMailMessageKey &searchCriteria, const QString &bodyText, quint64 limit, const QMailMessageSortKey &sort, bool count);
-    virtual void transition(ImapStrategyContextBase *, const ImapCommand, const OperationStatus);
+    void transition(ImapStrategyContextBase *, const ImapCommand, const OperationStatus) override;
 protected:
-    virtual void folderListCompleted(ImapStrategyContextBase *context);
+    void folderListCompleted(ImapStrategyContextBase *context) override;
     virtual void handleSearchMessage(ImapStrategyContextBase *context);
-    virtual void handleUidFetch(ImapStrategyContextBase *context);
-    virtual void folderListFolderAction(ImapStrategyContextBase *context);
+    void handleUidFetch(ImapStrategyContextBase *context) override;
+    void folderListFolderAction(ImapStrategyContextBase *context) override;
 
-    virtual bool messageFetched(ImapStrategyContextBase *context, QMailMessage &message);
-    virtual void messageFlushed(ImapStrategyContextBase *context, QMailMessage &message);
-    virtual void messageListCompleted(ImapStrategyContextBase *context);
+    bool messageFetched(ImapStrategyContextBase *context, QMailMessage &message) override;
+    void messageFlushed(ImapStrategyContextBase *context, QMailMessage &message) override;
+    void messageListCompleted(ImapStrategyContextBase *context) override;
 
     struct SearchData {
         QMailMessageKey criteria;
@@ -673,14 +673,14 @@ public:
     virtual ~ImapExportUpdatesStrategy() {}
 
 protected:
-    virtual void handleLogin(ImapStrategyContextBase *context);
-    virtual void handleUidSearch(ImapStrategyContextBase *context);
-    virtual void handleSelect(ImapStrategyContextBase *context);
+    void handleLogin(ImapStrategyContextBase *context) override;
+    void handleUidSearch(ImapStrategyContextBase *context) override;
+    void handleSelect(ImapStrategyContextBase *context) override;
 
-    virtual void folderListFolderAction(ImapStrategyContextBase *context);
-    virtual bool nextFolder();
+    void folderListFolderAction(ImapStrategyContextBase *context) override;
+    bool nextFolder() override;
 
-    virtual void processUidSearchResults(ImapStrategyContextBase *context);
+    void processUidSearchResults(ImapStrategyContextBase *context) override;
 
     QStringList _serverReportedUids;
     QStringList _clientDeletedUids;
@@ -698,29 +698,29 @@ public:
     ImapCopyMessagesStrategy() {}
     virtual ~ImapCopyMessagesStrategy() {}
 
-    virtual void clearSelection();
+    void clearSelection() override;
     virtual void appendMessageSet(const QMailMessageIdList &ids, const QMailFolderId &destinationId);
 
-    virtual void newConnection(ImapStrategyContextBase *context);
-    virtual void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus);
+    void newConnection(ImapStrategyContextBase *context) override;
+    void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus) override;
     
-    virtual void messageCopied(ImapStrategyContextBase *context, const QString &copiedUid, const QString &createdUid);
-    virtual void messageCreated(ImapStrategyContextBase *context, const QMailMessageId &id, const QString &createdUid);
-    virtual bool messageFetched(ImapStrategyContextBase *context, QMailMessage &message);
-    virtual void messageFlushed(ImapStrategyContextBase *context, QMailMessage &message);
+    void messageCopied(ImapStrategyContextBase *context, const QString &copiedUid, const QString &createdUid) override;
+    void messageCreated(ImapStrategyContextBase *context, const QMailMessageId &id, const QString &createdUid) override;
+    bool messageFetched(ImapStrategyContextBase *context, QMailMessage &message) override;
+    void messageFlushed(ImapStrategyContextBase *context, QMailMessage &message) override;
 
 protected:
-    virtual void handleLogin(ImapStrategyContextBase *context);
-    virtual void handleSelect(ImapStrategyContextBase *context);
+    void handleLogin(ImapStrategyContextBase *context) override;
+    void handleSelect(ImapStrategyContextBase *context) override;
     virtual void handleUidCopy(ImapStrategyContextBase *context);
     virtual void handleAppend(ImapStrategyContextBase *context);
     virtual void handleUidSearch(ImapStrategyContextBase *context);
     virtual void handleUidStore(ImapStrategyContextBase *context);
-    virtual void handleUidFetch(ImapStrategyContextBase *context);
+    void handleUidFetch(ImapStrategyContextBase *context) override;
 
-    virtual void messageListFolderAction(ImapStrategyContextBase *context);
-    virtual void messageListMessageAction(ImapStrategyContextBase *context);
-    virtual void messageListCompleted(ImapStrategyContextBase *context);
+    void messageListFolderAction(ImapStrategyContextBase *context) override;
+    void messageListMessageAction(ImapStrategyContextBase *context) override;
+    void messageListCompleted(ImapStrategyContextBase *context) override;
 
     virtual QString copiedMessageFetched(ImapStrategyContextBase *context, QMailMessage &message);
     virtual void updateCopiedMessage(ImapStrategyContextBase *context, QMailMessage &message, const QMailMessage &source);
@@ -749,20 +749,20 @@ public:
     ImapMoveMessagesStrategy() {}
     virtual ~ImapMoveMessagesStrategy() {}
 
-    virtual void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus);
-    virtual void messageFlushed(ImapStrategyContextBase *context, QMailMessage &message);
+    void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus) override;
+    void messageFlushed(ImapStrategyContextBase *context, QMailMessage &message) override;
 
 protected:
-    virtual void handleUidCopy(ImapStrategyContextBase *context);
-    virtual void handleUidStore(ImapStrategyContextBase *context);
-    virtual void handleClose(ImapStrategyContextBase *context);
-    virtual void handleUidFetch(ImapStrategyContextBase *context);
+    void handleUidCopy(ImapStrategyContextBase *context) override;
+    void handleUidStore(ImapStrategyContextBase *context) override;
+    void handleClose(ImapStrategyContextBase *context) override;
+    void handleUidFetch(ImapStrategyContextBase *context) override;
     virtual void handleExamine(ImapStrategyContextBase *context);
 
-    virtual void messageListFolderAction(ImapStrategyContextBase *context);
-    virtual void messageListMessageAction(ImapStrategyContextBase *context);
+    void messageListFolderAction(ImapStrategyContextBase *context) override;
+    void messageListMessageAction(ImapStrategyContextBase *context) override;
 
-    virtual void updateCopiedMessage(ImapStrategyContextBase *context, QMailMessage &message, const QMailMessage &source);
+    void updateCopiedMessage(ImapStrategyContextBase *context, QMailMessage &message, const QMailMessage &source) override;
 
     QMailFolder _lastMailbox;
     QMap<QString, QMailMessageId> _messagesToRemove;
@@ -774,21 +774,21 @@ public:
     ImapExternalizeMessagesStrategy() {}
     virtual ~ImapExternalizeMessagesStrategy() {}
 
-    virtual void appendMessageSet(const QMailMessageIdList &ids, const QMailFolderId &destinationId);
+    void appendMessageSet(const QMailMessageIdList &ids, const QMailFolderId &destinationId) override;
 
-    virtual void newConnection(ImapStrategyContextBase *context);
-    virtual void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus);
+    void newConnection(ImapStrategyContextBase *context) override;
+    void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus) override;
 
-    virtual bool messageFetched(ImapStrategyContextBase *context, QMailMessage &message);
-    virtual void messageFlushed(ImapStrategyContextBase *context, QMailMessage &message);
-    virtual void urlAuthorized(ImapStrategyContextBase *context, const QString &url);
+    bool messageFetched(ImapStrategyContextBase *context, QMailMessage &message) override;
+    void messageFlushed(ImapStrategyContextBase *context, QMailMessage &message) override;
+    void urlAuthorized(ImapStrategyContextBase *context, const QString &url) override;
 
 protected:
     virtual void handleGenUrlAuth(ImapStrategyContextBase *context);
 
-    virtual void messageListCompleted(ImapStrategyContextBase *context);
+    void messageListCompleted(ImapStrategyContextBase *context) override;
 
-    virtual void updateCopiedMessage(ImapStrategyContextBase *context, QMailMessage &message, const QMailMessage &source);
+    void updateCopiedMessage(ImapStrategyContextBase *context, QMailMessage &message, const QMailMessage &source) override;
 
     virtual void resolveNextMessage(ImapStrategyContextBase *context);
 
@@ -801,16 +801,16 @@ public:
     ImapFlagMessagesStrategy() {}
     virtual ~ImapFlagMessagesStrategy() {}
 
-    virtual void newConnection(ImapStrategyContextBase *context);
-    virtual void clearSelection();
+    void newConnection(ImapStrategyContextBase *context) override;
+    void clearSelection() override;
     virtual void setMessageFlags(MessageFlags flags, bool set);
 
-    virtual void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus);
+    void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus) override;
     
 protected:
     virtual void handleUidStore(ImapStrategyContextBase *context);
 
-    virtual void messageListMessageAction(ImapStrategyContextBase *context);
+    void messageListMessageAction(ImapStrategyContextBase *context) override;
 
     MessageFlags _setMask;
     MessageFlags _unsetMask;
@@ -824,17 +824,17 @@ public:
     virtual ~ImapDeleteMessagesStrategy() {}
 
     void setLocalMessageRemoval(bool removal);
-    virtual void clearSelection();
+    void clearSelection() override;
 
-    virtual void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus);
+    void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus) override;
     
 protected:
-    virtual void handleUidStore(ImapStrategyContextBase *context);
-    virtual void handleClose(ImapStrategyContextBase *context);
+    void handleUidStore(ImapStrategyContextBase *context) override;
+    void handleClose(ImapStrategyContextBase *context) override;
     virtual void handleExamine(ImapStrategyContextBase *context);
 
-    virtual void messageListFolderAction(ImapStrategyContextBase *context);
-    virtual void messageListCompleted(ImapStrategyContextBase *context);
+    void messageListFolderAction(ImapStrategyContextBase *context) override;
+    void messageListCompleted(ImapStrategyContextBase *context) override;
 
     bool _removal;
     QStringList _storedList;

@@ -70,8 +70,8 @@ private:
     friend class QMailStoreAccountFilterPrivate;
     friend class QMailStoreEvents;
 
-    void connectNotify(const QMetaMethod &signal);
-    void disconnectNotify(const QMetaMethod &signal);
+    void connectNotify(const QMetaMethod &signal) override;
+    void disconnectNotify(const QMetaMethod &signal) override;
 
     QMailStoreAccountFilterPrivate* d;
 };

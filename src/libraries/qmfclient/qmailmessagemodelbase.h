@@ -105,8 +105,8 @@ public:
 
     bool isEmpty() const;
 
-    virtual QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
-    virtual bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole) override;
+    QVariant data(const QModelIndex& index, int role = Qt::DisplayRole) const override;
+    bool setData(const QModelIndex& index, const QVariant& value, int role = Qt::EditRole) override;
 
     QMailMessageKey key() const;
     void setKey(const QMailMessageKey& key);

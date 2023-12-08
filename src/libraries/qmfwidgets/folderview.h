@@ -61,7 +61,7 @@ public:
     bool ignoreMailStoreUpdates() const;
     void setIgnoreMailStoreUpdates(bool ignore);
 
-    virtual void setModel(QAbstractItemModel *model);
+    void setModel(QAbstractItemModel *model) override;
 
 Q_SIGNALS:
     void selected(QMailMessageSet *);
@@ -74,14 +74,14 @@ protected Q_SLOTS:
     virtual void itemActivated(const QModelIndex &index);
     virtual void itemExpanded(const QModelIndex &index);
     virtual void itemCollapsed(const QModelIndex &index);
-    virtual void currentChanged(const QModelIndex &currentIndex, const QModelIndex &previousIndex);
-    virtual void dataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int> &roles = QVector<int>());
+    void currentChanged(const QModelIndex &currentIndex, const QModelIndex &previousIndex) override;
+    void dataChanged(const QModelIndex& topLeft, const QModelIndex& bottomRight, const QVector<int> &roles = QVector<int>()) override;
     virtual void modelReset();
 
 protected:
-    virtual void keyPressEvent(QKeyEvent *e);
-    virtual void showEvent(QShowEvent *e);
-    virtual void hideEvent(QHideEvent *e);
+    void keyPressEvent(QKeyEvent *e) override;
+    void showEvent(QShowEvent *e) override;
+    void hideEvent(QHideEvent *e) override;
 
 private:
     template<typename SetType>

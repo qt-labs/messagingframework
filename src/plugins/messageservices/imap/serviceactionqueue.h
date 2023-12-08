@@ -72,7 +72,7 @@ class ExportUpdatesCommand : public ServiceActionCommand
 {
 public:
     ExportUpdatesCommand(const QMailAccountId &accountId);
-    void execute();
+    void execute() override;
 
 private:
     QMailAccountId _accountId;
@@ -82,7 +82,7 @@ class RetrieveFolderListCommand : public ServiceActionCommand
 {
 public:
     RetrieveFolderListCommand(const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending = true);
-    void execute();
+    void execute() override;
 
 private:
     QMailAccountId _accountId;
@@ -94,7 +94,7 @@ class RetrieveMessageListCommand : public ServiceActionCommand
 {
 public:
     RetrieveMessageListCommand(const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum = 0, const QMailMessageSortKey &sort = QMailMessageSortKey());
-    void execute();
+    void execute() override;
 
 private:
     QMailAccountId _accountId;
@@ -107,7 +107,7 @@ class RetrieveMessageListsCommand : public ServiceActionCommand
 {
 public:
     RetrieveMessageListsCommand(const QMailAccountId &accountId, const QMailFolderIdList &folderIds, uint minimum = 0, const QMailMessageSortKey &sort = QMailMessageSortKey());
-    void execute();
+    void execute() override;
 
 private:
     QMailAccountId _accountId;
@@ -120,7 +120,7 @@ class RetrieveNewMessagesCommand : public ServiceActionCommand
 {
 public:
     RetrieveNewMessagesCommand(const QMailAccountId &accountId, const QMailFolderIdList &folderIds);
-    void execute();
+    void execute() override;
 
 private:
     QMailAccountId _accountId;

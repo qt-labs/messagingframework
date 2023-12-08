@@ -100,7 +100,7 @@ public:
     QMailMessageServicePlugin();
     ~QMailMessageServicePlugin();
 
-    virtual QStringList keys() const;
+    QStringList keys() const override;
 };
 
 

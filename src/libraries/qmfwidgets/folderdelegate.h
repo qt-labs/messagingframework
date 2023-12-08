@@ -52,10 +52,11 @@ public:
     FolderDelegate(QAbstractItemView *parent = Q_NULLPTR);
     FolderDelegate(QWidget *parent);
 
-    virtual void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
-    virtual void drawDisplay(QPainter *painter, const QStyleOptionViewItem &option, const QRect &rect, const QString &text) const;
+    void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
+    void drawDisplay(QPainter *painter, const QStyleOptionViewItem &option,
+                     const QRect &rect, const QString &text) const override;
 
-    virtual QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const;
+    QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const override;
 
     bool showStatus() const;
     void setShowStatus(bool val);

@@ -47,11 +47,11 @@ class QMFUTIL_EXPORT EmailFolderView : public FolderView
 public:
     EmailFolderView(QWidget *parent);
 
-    virtual EmailFolderModel *model() const;
+    EmailFolderModel *model() const override;
     void setModel(EmailFolderModel *model);
 
 private:
-    virtual void setModel(QAbstractItemModel *model);
+    void setModel(QAbstractItemModel *model) override;
 
     EmailFolderModel *mModel;
     EmailFolderDelegate* mDelegate;
@@ -65,10 +65,11 @@ class EmailFolderDelegate : public FolderDelegate
 public:
     EmailFolderDelegate(EmailFolderView *parent = Q_NULLPTR);
 
-    virtual void drawDisplay(QPainter *painter, const QStyleOptionViewItem &option, const QRect &rect, const QString &text) const;
+    void drawDisplay(QPainter *painter, const QStyleOptionViewItem &option,
+                     const QRect &rect, const QString &text) const override;
 
 private:
-    virtual void init(const QStyleOptionViewItem &option, const QModelIndex &index);
+    void init(const QStyleOptionViewItem &option, const QModelIndex &index) override;
 
     bool _unsynchronized;
 };

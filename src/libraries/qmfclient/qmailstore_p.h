@@ -125,104 +125,142 @@ public:
     QMailStorePrivate(QMailStore *parent);
     virtual ~QMailStorePrivate();
 
-    virtual bool initStore() override;
+    bool initStore() override;
 
-    virtual void clearContent() override;
+    void clearContent() override;
 
-    virtual bool addAccount(QMailAccount *account, QMailAccountConfiguration *config,
-                            QMailAccountIdList *addedAccountIds) override;
+    bool addAccount(QMailAccount *account, QMailAccountConfiguration *config,
+                    QMailAccountIdList *addedAccountIds) override;
 
-    virtual bool addFolder(QMailFolder *f,
+    bool addFolder(QMailFolder *f,
                    QMailFolderIdList *addedFolderIds, QMailAccountIdList *modifiedAccountIds) override;
 
-    virtual bool addMessages(const QList<QMailMessage *> &m,
-                     QMailMessageIdList *addedMessageIds, QMailThreadIdList *addedThreadIds, QMailMessageIdList *updatedMessageIds, QMailThreadIdList *updatedThreadIds, QMailFolderIdList *modifiedFolderIds, QMailThreadIdList *modifiedThreadIds, QMailAccountIdList *modifiedAccountIds) override;
+    bool addMessages(const QList<QMailMessage *> &m,
+                     QMailMessageIdList *addedMessageIds, QMailThreadIdList *addedThreadIds,
+                     QMailMessageIdList *updatedMessageIds, QMailThreadIdList *updatedThreadIds,
+                     QMailFolderIdList *modifiedFolderIds, QMailThreadIdList *modifiedThreadIds,
+                     QMailAccountIdList *modifiedAccountIds) override;
 
-    virtual bool addMessages(const QList<QMailMessageMetaData *> &m,
-                     QMailMessageIdList *addedMessageIds, QMailThreadIdList *addedThreadIds, QMailMessageIdList *updatedMessageIds, QMailThreadIdList *updatedThreadIds, QMailFolderIdList *modifiedFolderIds, QMailThreadIdList *modifiedThreadIds, QMailAccountIdList *modifiedAccountIds) override;
+    bool addMessages(const QList<QMailMessageMetaData *> &m,
+                     QMailMessageIdList *addedMessageIds, QMailThreadIdList *addedThreadIds,
+                     QMailMessageIdList *updatedMessageIds, QMailThreadIdList *updatedThreadIds,
+                     QMailFolderIdList *modifiedFolderIds, QMailThreadIdList *modifiedThreadIds,
+                     QMailAccountIdList *modifiedAccountIds) override;
 
-    virtual bool addThread(QMailThread *t,
-                           QMailThreadIdList *addedThreadIds) override;
+    bool addThread(QMailThread *t,
+                   QMailThreadIdList *addedThreadIds) override;
 
-    virtual bool removeAccounts(const QMailAccountKey &key,
-                        QMailAccountIdList *deletedAccounts, QMailFolderIdList *deletedFolders, QMailThreadIdList *deletedThreadIds, QMailMessageIdList *deletedMessages, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailThreadIdList *modifiedThreadIds, QMailAccountIdList *modifiedAccountIds) override;
+    bool removeAccounts(const QMailAccountKey &key,
+                        QMailAccountIdList *deletedAccounts, QMailFolderIdList *deletedFolders,
+                        QMailThreadIdList *deletedThreadIds, QMailMessageIdList *deletedMessages,
+                        QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds,
+                        QMailThreadIdList *modifiedThreadIds, QMailAccountIdList *modifiedAccountIds) override;
 
-    virtual bool removeFolders(const QMailFolderKey &key, QMailStore::MessageRemovalOption option,
-                       QMailFolderIdList *deletedFolders, QMailMessageIdList *deletedMessages, QMailThreadIdList *deletedThreadIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailThreadIdList *modifiedThreadIds, QMailAccountIdList *modifiedAccountIds) override;
+    bool removeFolders(const QMailFolderKey &key, QMailStore::MessageRemovalOption option,
+                       QMailFolderIdList *deletedFolders, QMailMessageIdList *deletedMessages,
+                       QMailThreadIdList *deletedThreadIds, QMailMessageIdList *updatedMessageIds,
+                       QMailFolderIdList *modifiedFolderIds, QMailThreadIdList *modifiedThreadIds,
+                       QMailAccountIdList *modifiedAccountIds) override;
 
-    virtual bool removeMessages(const QMailMessageKey &key, QMailStore::MessageRemovalOption option,
-                        QMailMessageIdList *deletedMessages, QMailThreadIdList* deletedThreadIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailThreadIdList *modifiedThreadIds, QMailAccountIdList *modifiedAccountIds) override;
+    bool removeMessages(const QMailMessageKey &key, QMailStore::MessageRemovalOption option,
+                        QMailMessageIdList *deletedMessages, QMailThreadIdList* deletedThreadIds,
+                        QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds,
+                        QMailThreadIdList *modifiedThreadIds, QMailAccountIdList *modifiedAccountIds) override;
 
-    virtual bool removeThreads(const QMailThreadKey &key, QMailStore::MessageRemovalOption option,
-                               QMailThreadIdList *deletedThreads, QMailMessageIdList *deletedMessages, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailThreadIdList *modifiedThreadIdList, QMailAccountIdList *modifiedAccountIds) override;
+    bool removeThreads(const QMailThreadKey &key, QMailStore::MessageRemovalOption option,
+                       QMailThreadIdList *deletedThreads, QMailMessageIdList *deletedMessages,
+                       QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds,
+                       QMailThreadIdList *modifiedThreadIdList, QMailAccountIdList *modifiedAccountIds) override;
 
 
-    virtual bool updateAccount(QMailAccount *account, QMailAccountConfiguration* config,
+    bool updateAccount(QMailAccount *account, QMailAccountConfiguration* config,
                        QMailAccountIdList *updatedAccountIds) override;
 
-    virtual bool updateAccountConfiguration(QMailAccountConfiguration* config,
+    bool updateAccountConfiguration(QMailAccountConfiguration* config,
                                     QMailAccountIdList *updatedAccountIds) override;
 
-    virtual bool updateFolder(QMailFolder* f,
+    bool updateFolder(QMailFolder* f,
                       QMailFolderIdList *updatedFolderIds, QMailAccountIdList *modifiedAccountIds) override;
 
-    virtual bool updateThread(QMailThread *t, QMailThreadIdList *updatedThreadIds) override;
+    bool updateThread(QMailThread *t, QMailThreadIdList *updatedThreadIds) override;
 
-    virtual bool updateMessages(const QList<QPair<QMailMessageMetaData *, QMailMessage *> > &m,
-                        QMailMessageIdList *updatedMessageIds, QMailThreadIdList *modifiedThreads,  QMailMessageIdList *modifiedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds) override;
+    bool updateMessages(const QList<QPair<QMailMessageMetaData *, QMailMessage *> > &m,
+                        QMailMessageIdList *updatedMessageIds, QMailThreadIdList *modifiedThreads,
+                        QMailMessageIdList *modifiedMessageIds, QMailFolderIdList *modifiedFolderIds,
+                        QMailAccountIdList *modifiedAccountIds) override;
 
-    virtual bool updateMessagesMetaData(const QMailMessageKey &key, const QMailMessageKey::Properties &properties, const QMailMessageMetaData &data,
-                                QMailMessageIdList *updatedMessageIds, QMailThreadIdList *deletedThreads, QMailThreadIdList *modifiedThreads,  QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds) override;
+    bool updateMessagesMetaData(const QMailMessageKey &key,
+                                const QMailMessageKey::Properties &properties,
+                                const QMailMessageMetaData &data,
+                                QMailMessageIdList *updatedMessageIds,
+                                QMailThreadIdList *deletedThreads,
+                                QMailThreadIdList *modifiedThreads,
+                                QMailFolderIdList *modifiedFolderIds,
+                                QMailAccountIdList *modifiedAccountIds) override;
 
-    virtual bool updateMessagesMetaData(const QMailMessageKey &key, quint64 messageStatus, bool set,
-                                QMailMessageIdList *updatedMessageIds, QMailThreadIdList *modifiedThreads, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds) override;
+    bool updateMessagesMetaData(const QMailMessageKey &key, quint64 messageStatus, bool set,
+                                QMailMessageIdList *updatedMessageIds,
+                                QMailThreadIdList *modifiedThreads,
+                                QMailFolderIdList *modifiedFolderIds,
+                                QMailAccountIdList *modifiedAccountIds) override;
 
-    virtual bool ensureDurability() override;
+    bool ensureDurability() override;
     virtual bool shrinkMemory();
 
-    virtual void lock() override;
-    virtual void unlock() override;
+    void lock() override;
+    void unlock() override;
 
-    virtual bool purgeMessageRemovalRecords(const QMailAccountId &accountId, const QStringList &serverUids) override;
+    bool purgeMessageRemovalRecords(const QMailAccountId &accountId, const QStringList &serverUids) override;
 
-    virtual int countAccounts(const QMailAccountKey &key) const override;
-    virtual int countFolders(const QMailFolderKey &key) const override;
-    virtual int countMessages(const QMailMessageKey &key) const override;
-    virtual int countThreads(const QMailThreadKey &key) const override;
+    int countAccounts(const QMailAccountKey &key) const override;
+    int countFolders(const QMailFolderKey &key) const override;
+    int countMessages(const QMailMessageKey &key) const override;
+    int countThreads(const QMailThreadKey &key) const override;
 
-    virtual int sizeOfMessages(const QMailMessageKey &key) const override;
+    int sizeOfMessages(const QMailMessageKey &key) const override;
 
-    virtual QMailAccountIdList queryAccounts(const QMailAccountKey &key, const QMailAccountSortKey &sortKey, uint limit, uint offset) const override;
-    virtual QMailFolderIdList queryFolders(const QMailFolderKey &key, const QMailFolderSortKey &sortKey, uint limit, uint offset) const override;
-    virtual QMailMessageIdList queryMessages(const QMailMessageKey &key, const QMailMessageSortKey &sortKey, uint limit, uint offset) const override;
-    virtual QMailThreadIdList queryThreads(const QMailThreadKey &key, const QMailThreadSortKey &sortKey, uint limit, uint offset) const override;
+    QMailAccountIdList queryAccounts(const QMailAccountKey &key,
+                                     const QMailAccountSortKey &sortKey,
+                                     uint limit, uint offset) const override;
+    QMailFolderIdList queryFolders(const QMailFolderKey &key,
+                                   const QMailFolderSortKey &sortKey,
+                                   uint limit, uint offset) const override;
+    QMailMessageIdList queryMessages(const QMailMessageKey &key,
+                                     const QMailMessageSortKey &sortKey,
+                                     uint limit, uint offset) const override;
+    QMailThreadIdList queryThreads(const QMailThreadKey &key,
+                                   const QMailThreadSortKey &sortKey,
+                                   uint limit, uint offset) const override;
 
-    virtual QMailAccount account(const QMailAccountId &id) const override;
-    virtual QMailAccountConfiguration accountConfiguration(const QMailAccountId &id) const override;
+    QMailAccount account(const QMailAccountId &id) const override;
+    QMailAccountConfiguration accountConfiguration(const QMailAccountId &id) const override;
 
-    virtual QMailFolder folder(const QMailFolderId &id) const override;
+    QMailFolder folder(const QMailFolderId &id) const override;
 
-    virtual QMailMessage message(const QMailMessageId &id) const override;
-    virtual QMailMessage message(const QString &uid, const QMailAccountId &accountId) const override;
+    QMailMessage message(const QMailMessageId &id) const override;
+    QMailMessage message(const QString &uid, const QMailAccountId &accountId) const override;
 
-    virtual QMailThread thread(const QMailThreadId &id) const override;
+    QMailThread thread(const QMailThreadId &id) const override;
 
-    virtual QMailMessageMetaData messageMetaData(const QMailMessageId &id) const override;
-    virtual QMailMessageMetaData messageMetaData(const QString &uid, const QMailAccountId &accountId) const override;
-    virtual QMailMessageMetaDataList messagesMetaData(const QMailMessageKey &key, const QMailMessageKey::Properties &properties, QMailStore::ReturnOption option) const override;
+    QMailMessageMetaData messageMetaData(const QMailMessageId &id) const override;
+    QMailMessageMetaData messageMetaData(const QString &uid, const QMailAccountId &accountId) const override;
+    QMailMessageMetaDataList messagesMetaData(const QMailMessageKey &key,
+                                              const QMailMessageKey::Properties &properties,
+                                              QMailStore::ReturnOption option) const override;
 
-    virtual QMailThreadList threads(const QMailThreadKey &key, QMailStore::ReturnOption option) const override;
+    QMailThreadList threads(const QMailThreadKey &key, QMailStore::ReturnOption option) const override;
 
-    virtual QMailMessageRemovalRecordList messageRemovalRecords(const QMailAccountId &parentAccountId, const QMailFolderId &parentFolderId) const override;
+    QMailMessageRemovalRecordList messageRemovalRecords(const QMailAccountId &parentAccountId,
+                                                        const QMailFolderId &parentFolderId) const override;
 
-    virtual bool registerAccountStatusFlag(const QString &name) override;
-    virtual quint64 accountStatusMask(const QString &name) const override;
+    bool registerAccountStatusFlag(const QString &name) override;
+    quint64 accountStatusMask(const QString &name) const override;
 
-    virtual bool registerFolderStatusFlag(const QString &name) override;
-    virtual quint64 folderStatusMask(const QString &name) const override;
+    bool registerFolderStatusFlag(const QString &name) override;
+    quint64 folderStatusMask(const QString &name) const override;
 
-    virtual bool registerMessageStatusFlag(const QString &name) override;
-    virtual quint64 messageStatusMask(const QString &name) const override;
+    bool registerMessageStatusFlag(const QString &name) override;
+    quint64 messageStatusMask(const QString &name) const override;
 
     QString buildOrderClause(const Key& key) const;
 
@@ -234,10 +272,10 @@ public:
 
     static QString temporaryTableName(const QMailMessageKey::ArgumentType &arg);
 
-    virtual QMap<QString, QString> messageCustomFields(const QMailMessageId &id) override;
+    QMap<QString, QString> messageCustomFields(const QMailMessageId &id) override;
 
-    virtual void disconnectIpc() override;
-    virtual void reconnectIpc() override;
+    void disconnectIpc() override;
+    void reconnectIpc() override;
 
     template<typename ValueType>
     static ValueType extractValue(const QVariant& var, const ValueType &defaultValue = ValueType());
@@ -718,14 +756,19 @@ private:
     QMailMessage extractMessage(const QSqlRecord& r, const QMap<QString, QString> &customFields, const QMailMessageKey::Properties& properties = allMessageProperties());
     QMailMessageRemovalRecord extractMessageRemovalRecord(const QSqlRecord& r);
 
-    virtual void emitIpcNotification(QMailStoreImplementation::AccountUpdateSignal signal, const QMailAccountIdList &ids) override;
-    virtual void emitIpcNotification(QMailStoreImplementation::FolderUpdateSignal signal, const QMailFolderIdList &ids) override;
-    virtual void emitIpcNotification(QMailStoreImplementation::ThreadUpdateSignal signal, const QMailThreadIdList &ids) override;
-    virtual void emitIpcNotification(QMailStoreImplementation::MessageUpdateSignal signal, const QMailMessageIdList &ids) override;
-    virtual void emitIpcNotification(QMailStoreImplementation::MessageDataPreCacheSignal signal, const QMailMessageMetaDataList &data) override;
-    virtual void emitIpcNotification(const QMailMessageIdList& ids,  const QMailMessageKey::Properties& properties,
-                                     const QMailMessageMetaData& data) override;
-    virtual void emitIpcNotification(const QMailMessageIdList& ids, quint64 status, bool set) override;
+    void emitIpcNotification(QMailStoreImplementation::AccountUpdateSignal signal,
+                             const QMailAccountIdList &ids) override;
+    void emitIpcNotification(QMailStoreImplementation::FolderUpdateSignal signal,
+                             const QMailFolderIdList &ids) override;
+    void emitIpcNotification(QMailStoreImplementation::ThreadUpdateSignal signal,
+                             const QMailThreadIdList &ids) override;
+    void emitIpcNotification(QMailStoreImplementation::MessageUpdateSignal signal,
+                             const QMailMessageIdList &ids) override;
+    void emitIpcNotification(QMailStoreImplementation::MessageDataPreCacheSignal signal,
+                             const QMailMessageMetaDataList &data) override;
+    void emitIpcNotification(const QMailMessageIdList& ids,  const QMailMessageKey::Properties& properties,
+                             const QMailMessageMetaData& data) override;
+    void emitIpcNotification(const QMailMessageIdList& ids, quint64 status, bool set) override;
 
     static const int messageCacheSize = 100;
     static const int threadCacheSize = 300;

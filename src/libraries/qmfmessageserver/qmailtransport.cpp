@@ -66,7 +66,7 @@ public:
     qint64 bytesSinceMark() const;
 
 protected:
-    qint64 writeData(const char *data, qint64 maxSize) 
+    qint64 writeData(const char *data, qint64 maxSize) override
     {
         qint64 rv = BaseSocketType::writeData(data, maxSize);
         if (rv > 0)

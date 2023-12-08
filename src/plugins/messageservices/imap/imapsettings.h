@@ -46,8 +46,8 @@ class ImapSettings : public QMailMessageServiceEditor, private Ui::ImapSettings
 public:
     ImapSettings();
 
-    void displayConfiguration(const QMailAccount &account, const QMailAccountConfiguration &config);
-    bool updateAccount(QMailAccount *account, QMailAccountConfiguration *config);
+    void displayConfiguration(const QMailAccount &account, const QMailAccountConfiguration &config) override;
+    bool updateAccount(QMailAccount *account, QMailAccountConfiguration *config) override;
 
 private slots:
     void intervalCheckChanged(int enabled);

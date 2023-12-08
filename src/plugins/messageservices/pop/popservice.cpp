@@ -69,21 +69,28 @@ public:
             _intervalTimer.start(interval*1000*60); // interval minutes
     }
 
-    virtual QMailStore::MessageRemovalOption messageRemovalOption() const { return QMailStore::CreateRemovalRecord; }
+    QMailStore::MessageRemovalOption messageRemovalOption() const override
+    {
+        return QMailStore::CreateRemovalRecord;
+    }
 
 public slots:
-    virtual bool retrieveFolderList(const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending);
-    virtual bool retrieveMessageList(const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort);
-    virtual bool retrieveMessageLists(const QMailAccountId &accountId, const QMailFolderIdList &folderIds, uint minimum, const QMailMessageSortKey &sort);
+    bool retrieveFolderList(const QMailAccountId &accountId, const QMailFolderId &folderId,
+                            bool descending) override;
+    bool retrieveMessageList(const QMailAccountId &accountId, const QMailFolderId &folderId,
+                             uint minimum, const QMailMessageSortKey &sort) override;
+    bool retrieveMessageLists(const QMailAccountId &accountId, const QMailFolderIdList &folderIds,
+                              uint minimum, const QMailMessageSortKey &sort) override;
 
-    virtual bool retrieveMessages(const QMailMessageIdList &messageIds, QMailRetrievalAction::RetrievalSpecification spec);
+    bool retrieveMessages(const QMailMessageIdList &messageIds,
+                          QMailRetrievalAction::RetrievalSpecification spec) override;
 
-    virtual bool retrieveAll(const QMailAccountId &accountId);
-    virtual bool exportUpdates(const QMailAccountId &accountId);
+    bool retrieveAll(const QMailAccountId &accountId) override;
+    bool exportUpdates(const QMailAccountId &accountId) override;
 
-    virtual bool synchronize(const QMailAccountId &accountId);
+    bool synchronize(const QMailAccountId &accountId) override;
 
-    virtual bool deleteMessages(const QMailMessageIdList &ids);
+    bool deleteMessages(const QMailMessageIdList &ids) override;
 
     void messageActionCompleted(const QString &uid);
     void retrievalCompleted();
@@ -405,11 +412,11 @@ public:
     PopConfigurator();
     ~PopConfigurator();
 
-    virtual QString service() const;
-    virtual QString displayName() const;
+    QString service() const override;
+    QString displayName() const override;
 
 #ifndef QMF_NO_WIDGETS
-    virtual QMailMessageServiceEditor *createEditor(QMailMessageServiceFactory::ServiceType type);
+    QMailMessageServiceEditor *createEditor(QMailMessageServiceFactory::ServiceType type) override;
 #endif
 };
 

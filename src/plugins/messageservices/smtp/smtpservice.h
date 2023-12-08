@@ -51,16 +51,16 @@ public:
     SmtpService(const QMailAccountId &accountId);
     ~SmtpService();
 
-    virtual QString service() const;
-    virtual QMailAccountId accountId() const;
+    QString service() const override;
+    QMailAccountId accountId() const override;
 
-    virtual bool hasSink() const;
-    virtual QMailMessageSink &sink() const;
+    bool hasSink() const override;
+    QMailMessageSink &sink() const override;
 
-    virtual bool available() const;
+    bool available() const override;
 
 public slots:
-    virtual bool cancelOperation(QMailServiceAction::Status::ErrorCode code, const QString &text);
+    bool cancelOperation(QMailServiceAction::Status::ErrorCode code, const QString &text) override;
 
 protected slots:
     void errorOccurred(int code, const QString &text);
@@ -93,12 +93,12 @@ class SmtpServicePlugin : public QMailMessageServicePlugin
 public:
     SmtpServicePlugin();
 
-    virtual QString key() const;
-    virtual bool supports(QMailMessageServiceFactory::ServiceType type) const;
-    virtual bool supports(QMailMessage::MessageType type) const;
+    QString key() const override;
+    bool supports(QMailMessageServiceFactory::ServiceType type) const override;
+    bool supports(QMailMessage::MessageType type) const override;
 
-    virtual QMailMessageService *createService(const QMailAccountId &id);
-    virtual QMailMessageServiceConfigurator *createServiceConfigurator();
+    QMailMessageService *createService(const QMailAccountId &id) override;
+    QMailMessageServiceConfigurator *createServiceConfigurator() override;
 };
 
 
