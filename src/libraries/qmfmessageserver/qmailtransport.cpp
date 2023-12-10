@@ -212,8 +212,8 @@ void QMailTransport::createSocket(EncryptType encryptType)
     mSocket = new Socket(this);
 #ifndef QT_NO_SSL
     encryption = encryptType;
-    connect(mSocket, SIGNAL(encrypted()), this, SLOT(encryptionEstablished()));
-    connect(mSocket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(connectionFailed(QList<QSslError>)));
+    connect(mSocket, &QSslSocket::encrypted, this, &QMailTransport::encryptionEstablished);
+    connect(mSocket, &QSslSocket::sslErrors, this, &QMailTransport::connectionFailed);
 #else
     Q_UNUSED(encryptType);
 #endif
@@ -221,10 +221,10 @@ void QMailTransport::createSocket(EncryptType encryptType)
     const int bufferLimit = 101*1024; // Limit memory used when downloading
     mSocket->setReadBufferSize( bufferLimit );
     mSocket->setObjectName(QString::fromUtf8(mName) + QString::fromLatin1("-socket"));
-    connect(mSocket, SIGNAL(connected()), this, SLOT(connectionEstablished()));
-    connect(mSocket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(socketError(QAbstractSocket::SocketError)));
-    connect(mSocket, SIGNAL(readyRead()), this, SIGNAL(readyRead()));
-    connect(mSocket, SIGNAL(bytesWritten(qint64)), this, SIGNAL(bytesWritten(qint64)));
+    connect(mSocket, &QAbstractSocket::connected, this, &QMailTransport::connectionEstablished);
+    connect(mSocket, &QAbstractSocket::errorOccurred, this, &QMailTransport::socketError);
+    connect(mSocket, &QAbstractSocket::readyRead, this, &QMailTransport::readyRead);
+    connect(mSocket, &QAbstractSocket::bytesWritten, this, &QMailTransport::bytesWritten);
 
     mStream = new QDataStream(mSocket);
 }
