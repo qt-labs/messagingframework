@@ -1194,11 +1194,6 @@ namespace findAttachments
                                  || contentType.matches("text", "html")
                                  || contentType.matches("text", "calendar"));
 
-            // Excluded application content-types even when
-            // explicitly marked as attachment.
-            bool excludedApp = (contentType.matches("application", "pgp-signature")
-                                || contentType.matches("application", "pkcs7-signature"));
-
             bool isInLine = (!part.contentDisposition().isNull()) &&
                 (part.contentDisposition().type() == QMailMessageContentDisposition::Inline);
 
@@ -1212,9 +1207,10 @@ namespace findAttachments
 
             // Attached messages are considered as attachments even if content disposition
             // is inline instead of attachment, but only if they aren't text/plain nor text/html
-            if (isRFC822 || (isAttachment && !excludedApp)
-                || (isInLine && !excludedText && !excludedApp)
-                || (isNone && !excludedText && !excludedApp)) {
+            if (isRFC822
+                || isAttachment
+                || (isInLine && !excludedText)
+                || (isNone && !excludedText)) {
                 if (found) {
                     *found << part.location();
                 }
@@ -1254,8 +1250,11 @@ namespace findAttachments
                                Locations* found,
                                bool* hasAttachments) const
         {
-            for (uint i = 0; i < container.partCount(); i++) {
-                const QMailMessagePart &part = container.partAt(i);
+            // As defined in RFC1847/2.1, the multipart/signed content type
+            // contains exactly two body parts. Only the first body part may
+            // contain any valid MIME content type.
+            if (container.partCount() > 0) {
+                const QMailMessagePart &part = container.partAt(0);
                 switch (part.multipartType()) {
                 case QMailMessagePart::MultipartNone:
                     inMultipartNone(part, found, hasAttachments);

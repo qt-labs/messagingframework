@@ -1521,6 +1521,16 @@ void tst_QMailMessage::attachments_data()
                               QMailMessageContentDisposition::Attachment))
         << (QStringList() << "2");
 
+    QTest::newRow("multipart/mixed with signature data as an attachment")
+        << (QList<PartDefinition>()
+            << PartDefinition("multipart/mixed",
+                              QMailMessageContentDisposition::None)
+            << PartDefinition("text/plain; charset=UTF-8",
+                              QMailMessageContentDisposition::Inline)
+            << PartDefinition("application/pgp-signature",
+                              QMailMessageContentDisposition::Attachment))
+        << (QStringList() << "2");
+
     QTest::newRow("multipart/alternative recursive")
         << (QList<PartDefinition>()
             << PartDefinition("multipart/alternative",
