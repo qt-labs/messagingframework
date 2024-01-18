@@ -86,6 +86,8 @@ private slots:
     void appendHeaderField();
     void removeHeaderField();
 
+    void testBody();
+
     void testToRfc2822();
     void testSerialization();
 };
@@ -462,3 +464,33 @@ CRLF
     QCOMPARE( serialized, repeat );
 }
 
+void tst_QMailMessagePart::testBody()
+{
+    QMailMessagePart part;
+
+    QVERIFY(!part.hasBody());
+    QCOMPARE(part.partCount(), 0);
+
+    // Set a simple body.
+    part.setBody(QMailMessageBody::fromData("some text", QMailMessageContentType("text/plain; charset=us-ascii"),
+                                            QMailMessageBody::SevenBit, QMailMessageBody::RequiresEncoding));
+    QVERIFY(part.hasBody());
+    QVERIFY(part.contentType().matches("text", "plain"));
+    QCOMPARE(part.multipartType(), QMailMessagePart::MultipartNone);
+    QCOMPARE(part.partCount(), 0);
+
+    // Add attachments to a simple body.
+    part.addAttachments(QStringList() << QString::fromLatin1("/etc/hosts"));
+    QVERIFY(!part.hasBody());
+    QVERIFY(part.contentType().matches("multipart", "mixed"));
+    QCOMPARE(part.multipartType(), QMailMessagePart::MultipartMixed);
+    QCOMPARE(part.partCount(), 2);
+
+    // Reset to a simple body, deleting attachments.
+    part.setBody(QMailMessageBody::fromData("more text", QMailMessageContentType("text/plain; charset=us-ascii"),
+                                            QMailMessageBody::SevenBit, QMailMessageBody::RequiresEncoding));
+    QVERIFY(part.hasBody());
+    QVERIFY(part.contentType().matches("text", "plain"));
+    QCOMPARE(part.multipartType(), QMailMessagePart::MultipartNone);
+    QCOMPARE(part.partCount(), 0);
+}

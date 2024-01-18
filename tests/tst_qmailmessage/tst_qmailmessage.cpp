@@ -37,6 +37,7 @@
 #include <qmailcodec.h>
 #include <qmailmessage.h>
 #include <qmailtimestamp.h>
+#include <qmailstore.h>
 
 /*
 Note: Any email addresses appearing in this test data must be example addresses,
@@ -129,6 +130,7 @@ private slots:
 
     void attachments_data();
     void attachments();
+    void attachmentFlag();
 
     void copyAndAssign();
 
@@ -967,14 +969,6 @@ void tst_QMailMessage::id()
     // Tested by: setId
 }
 
-// The real QMailStore (which we don't need here) has friend access to the QMailMessageId ctor
-class QMailStore 
-{
-public:
-    static QMailMessageId getId(quint64 value) { return QMailMessageId(value); }
-    static QMailFolderId getFolderId(quint64 value) { return QMailFolderId(value); }
-};
-
 void tst_QMailMessage::setId()
 {
     QMailMessageId id;
@@ -982,7 +976,7 @@ void tst_QMailMessage::setId()
     QCOMPARE( message.id(), id );
     QCOMPARE( message.dataModified(), false );
 
-    id = QMailStore::getId(100);
+    id = QMailMessageId(100);
     message.setId(id);
     QCOMPARE( message.id(), id );
     QCOMPARE( message.dataModified(), true );
@@ -1000,7 +994,7 @@ void tst_QMailMessage::setParentFolderId()
     QCOMPARE( message.parentFolderId(), id );
     QCOMPARE( message.dataModified(), false );
 
-    id = QMailStore::getFolderId(200);
+    id = QMailFolderId(200);
     message.setParentFolderId(id);
     QCOMPARE( message.parentFolderId(), id );
     QCOMPARE( message.dataModified(), true );
@@ -1612,6 +1606,28 @@ void tst_QMailMessage::attachments()
     for (int i = 0; i < attachments.size(); i++) {
         QCOMPARE(indices.at(i).toString(false), attachments[i]);
     }
+}
+
+void tst_QMailMessage::attachmentFlag()
+{
+    // Need to initial the mail store, so flags are properly set.
+    QMailStore::instance();
+    QMailMessage message;
+
+    QVERIFY(!(message.status() & QMailMessage::HasAttachments));
+
+    message.setBody(QMailMessageBody::fromData("some text", QMailMessageContentType("text/plain; charset=us-ascii"),
+                                               QMailMessageBody::SevenBit, QMailMessageBody::RequiresEncoding));
+    QVERIFY(!(message.status() & QMailMessage::HasAttachments));
+
+    message.addAttachments(QStringList() << QString::fromLatin1("/etc/hosts"));
+    QVERIFY(!!(message.status() & QMailMessage::HasAttachments));
+
+    // Reset to a simple text message.
+    message.setBody(QMailMessageBody::fromData("another text", QMailMessageContentType("text/plain; charset=us-ascii"),
+                                               QMailMessageBody::SevenBit, QMailMessageBody::RequiresEncoding));
+    QVERIFY(!(message.status() & QMailMessage::HasAttachments));
+
 }
 
 void tst_QMailMessage::copyAndAssign()

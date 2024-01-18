@@ -4269,6 +4269,8 @@ void QMailMessagePartContainerPrivate::setBody(const QMailMessageBody& body, QMa
     if (!body.contentType().matches("multipart")) {
         _body = body;
         _hasBody = !_body.isEmpty();
+        // In case the part container was already containing something, clean it.
+        clear();
     }
 
     if (encodingStatus == QMailMessageBody::Encoded) {
@@ -4884,13 +4886,20 @@ void QMailMessagePartContainer::setContentDisposition(const QMailMessageContentD
 }
 
 /*!
-    Sets the part to contain the body element \a body, \a encodingStatus describes the current status of \a body regarding encoding.
+    Sets the part to contain the body element \a body, \a encodingStatus describes the current status of \a body regarding encoding. Any previous content of this part is deleted by the call.
     Note: No encoding/decoding operation will be performed in the body element, only the encoding status flag
     will be set if provided.
 */
 void QMailMessagePartContainer::setBody(const QMailMessageBody& body, QMailMessageBody::EncodingFormat encodingStatus)
 {
     impl(this)->setBody(body, encodingStatus);
+
+    QMailMessage* message = dynamic_cast<QMailMessage*>(this);
+    if (message) {
+        // A message with a simple body don't have attachment.
+        // Any previously attached parts have been removed by the above setBody() call.
+        message->setStatus(QMailMessage::HasAttachments, false);
+    }
 }
 
 /*!
