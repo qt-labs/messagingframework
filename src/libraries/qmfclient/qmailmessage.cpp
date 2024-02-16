@@ -6342,30 +6342,6 @@ void QMailMessagePart::setReferenceResolution(const QString &uri)
     impl(this)->setReferenceResolution(uri);
 }
 
-static int randomNumber()
-{
-    return QRandomGenerator::global()->generate();
-}
-
-static QString randomString(int length)
-{
-    if (length <= 0) 
-        return QString();
-
-    QString str;
-    str.resize( length );
-
-    int i = 0;
-    while (length--){
-        int r=randomNumber() % 62;
-        r+=48;
-        if (r>57) r+=7;
-        if (r>90) r+=6;
-        str[i++] = QChar(r);
-    }
-    return str;
-}
-
 static QString partFileName(const QMailMessagePart &part)
 {
     QString fileName(part.displayName());
@@ -6405,35 +6381,35 @@ static QString partFileName(const QMailMessagePart &part)
 /*!
     Writes the decoded body of the part to a file under the directory specified by \a path.
     The name of the resulting file is taken from the part. If that file name already exists 
-    in the path a new unique name of the format <random chars>.<filename> is saved.
+    in the path a new unique name is created from that file name.
 
     Returns the path of the file written on success, or an empty string otherwise.
 */
 
 QString QMailMessagePart::writeBodyTo(const QString &path) const
 {
-    QString directory(path);
-    if (directory.endsWith(QChar::fromLatin1('/')))
-        directory.chop(1);
-
-    if (!QDir(directory).exists()) {
-        QDir base;
-        if (QDir::isAbsolutePath(directory))
-            base = QDir::root();
-        else
-            base = QDir::current();
-
-        if (!base.mkpath(directory)) {
-            qWarning() << "Could not create directory to save file " << directory;
+    const QDir directory(path);
+    if (!directory.exists()) {
+        if ((directory.isAbsolute() && !QDir::root().mkpath(path))
+            || (!directory.isAbsolute() && !QDir::current().mkpath(path))) {
+            qWarning() << "Could not create directory to save file " << path;
             return QString();
         }
     }
 
     QString fileName(partFileName(*this));
+    QString filepath = directory.filePath(fileName);
 
-    QString filepath = directory + QChar::fromLatin1('/') + fileName;
-    while (QFile::exists(filepath))
-        filepath = directory + QChar::fromLatin1('/') + randomString(5) + QChar::fromLatin1('.') + fileName;
+    const QFileInfo fileInfo(fileName);
+    QString ext;
+    if (!fileInfo.isHidden()) {
+        ext = QString::fromLatin1(".%1").arg(fileInfo.completeSuffix());
+        fileName = fileInfo.baseName();
+    }
+
+    int id = 1;
+    while (directory.exists(filepath))
+        filepath = directory.filePath(QString::fromLatin1("%1(%2)%3").arg(fileName).arg(id++).arg(ext));
 
     if (!body().toFile(filepath, QMailMessageBody::Decoded)) {
         qWarning() << "Could not write part data to file " << filepath;
@@ -8012,7 +7988,7 @@ static QByteArray boundaryString(const QByteArray &hash)
         return gBoundaryString;
 
     // Formulate a boundary that is very unlikely to clash with the content
-    return boundaryLeader + "qmf:" + QByteArray::number(randomNumber()) + hash.toBase64() + boundaryTrailer;
+    return boundaryLeader + "qmf:" + QByteArray::number(QRandomGenerator::global()->generate()) + hash.toBase64() + boundaryTrailer;
 }
 
 template <typename F>
