@@ -469,7 +469,7 @@ void tst_QMailMessagePart::testBody()
     QMailMessagePart part;
 
     QVERIFY(!part.hasBody());
-    QCOMPARE(part.partCount(), 0);
+    QCOMPARE(part.partCount(), static_cast<uint>(0));
 
     // Set a simple body.
     part.setBody(QMailMessageBody::fromData("some text", QMailMessageContentType("text/plain; charset=us-ascii"),
@@ -477,14 +477,14 @@ void tst_QMailMessagePart::testBody()
     QVERIFY(part.hasBody());
     QVERIFY(part.contentType().matches("text", "plain"));
     QCOMPARE(part.multipartType(), QMailMessagePart::MultipartNone);
-    QCOMPARE(part.partCount(), 0);
+    QCOMPARE(part.partCount(), static_cast<uint>(0));
 
     // Add attachments to a simple body.
     part.addAttachments(QStringList() << QString::fromLatin1("/etc/hosts"));
     QVERIFY(!part.hasBody());
     QVERIFY(part.contentType().matches("multipart", "mixed"));
     QCOMPARE(part.multipartType(), QMailMessagePart::MultipartMixed);
-    QCOMPARE(part.partCount(), 2);
+    QCOMPARE(part.partCount(), static_cast<uint>(2));
 
     // Reset to a simple body, deleting attachments.
     part.setBody(QMailMessageBody::fromData("more text", QMailMessageContentType("text/plain; charset=us-ascii"),
@@ -492,5 +492,5 @@ void tst_QMailMessagePart::testBody()
     QVERIFY(part.hasBody());
     QVERIFY(part.contentType().matches("text", "plain"));
     QCOMPARE(part.multipartType(), QMailMessagePart::MultipartNone);
-    QCOMPARE(part.partCount(), 0);
+    QCOMPARE(part.partCount(), static_cast<uint>(0));
 }
