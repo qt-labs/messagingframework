@@ -175,7 +175,10 @@ QMailStoreImplementationBase::QMailStoreImplementationBase(QMailStore* parent)
 {
     Q_ASSERT(q);
 
-    ENFORCE (isIpcConnectionEstablished());
+    if (!isIpcConnectionEstablished()) {
+        qCritical() << "Failed to connect D-Bus, notifications to/from other clients will not work.";
+    }
+
     if (!QDBusConnection::sessionBus().registerObject(QString::fromLatin1("/mailstore/client"), this)) {
         qCritical() << "Failed to register to D-Bus, notifications to other clients will not work.";
     }

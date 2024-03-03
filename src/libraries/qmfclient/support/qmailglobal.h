@@ -36,50 +36,22 @@
 
 #include <qglobal.h>
 
-#ifdef SINGLE_MODULE_QTOPIAMAIL
-#define QMF_DECL_EXPORT
-#define QMF_DECL_IMPORT
-#define QMF_VISIBILITY
-#else
-#if defined(Q_OS_WIN)
-#define QMF_DECL_EXPORT Q_DECL_EXPORT
-#define QMF_DECL_IMPORT Q_DECL_IMPORT
-#define QMF_VISIBILITY
-#elif defined(QT_VISIBILITY_AVAILABLE)
-#define QMF_DECL_EXPORT Q_DECL_EXPORT
-#define QMF_DECL_IMPORT Q_DECL_IMPORT
-#define QMF_VISIBILITY __attribute__((visibility("default")))
-#else
-#define QMF_DECL_EXPORT
-#define QMF_DECL_IMPORT
-#define QMF_VISIBILITY
-#endif
-#endif
-
 #ifdef QMF_INTERNAL
-#define QMF_EXPORT QMF_DECL_EXPORT
+#define QMF_EXPORT Q_DECL_EXPORT
 #else
-#define QMF_EXPORT QMF_DECL_IMPORT
+#define QMF_EXPORT Q_DECL_IMPORT
 #endif
 
 #ifdef QMFUTIL_INTERNAL
-#define QMFUTIL_EXPORT QMF_DECL_EXPORT
+#define QMFUTIL_EXPORT Q_DECL_EXPORT
 #else
-#define QMFUTIL_EXPORT QMF_DECL_IMPORT
+#define QMFUTIL_EXPORT Q_DECL_IMPORT
 #endif
 
 #ifdef MESSAGESERVER_INTERNAL
-#define MESSAGESERVER_EXPORT QMF_DECL_EXPORT
+#define MESSAGESERVER_EXPORT Q_DECL_EXPORT
 #else
-#define MESSAGESERVER_EXPORT QMF_DECL_IMPORT
-#endif
-
-#ifndef ENFORCE
-#ifdef QT_NO_DEBUG
-#define ENFORCE(expr) expr
-#else
-#define ENFORCE(expr) { bool res = (expr); Q_ASSERT(res); }
-#endif
+#define MESSAGESERVER_EXPORT Q_DECL_IMPORT
 #endif
 
 #endif
