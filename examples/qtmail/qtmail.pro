@@ -53,6 +53,5 @@ SOURCES += emailclient.cpp \
 FORMS += searchviewbasephone.ui
 
 RESOURCES += qtmail.qrc
-
-include(../../common.pri)
+INSTALLS += target
 CONFIG += install_ok

@@ -51,4 +51,4 @@ TRANSLATIONS += messageserver-ar.ts \
                 messageserver-zh_CN.ts \
                 messageserver-zh_TW.ts
 
-include(../../../common.pri)
+INSTALLS += target

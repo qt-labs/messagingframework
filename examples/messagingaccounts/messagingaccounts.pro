@@ -19,5 +19,6 @@ SOURCES += $$QTMAIL_EXAMPLE/accountsettings.cpp \
 
 RESOURCES += messagingaccounts.qrc
 
-include(../../common.pri)
+INSTALLS += target
+
 CONFIG += install_ok

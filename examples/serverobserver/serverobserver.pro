@@ -8,5 +8,6 @@ HEADERS += serverobserver.h
 SOURCES += serverobserver.cpp \
 	   main.cpp
 
-include(../../common.pri)
+INSTALLS += target
+
 CONFIG += install_ok

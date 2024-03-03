@@ -4,13 +4,7 @@ QT += testlib widgets qmfclient qmfclient-private qmfmessageserver
 TARGET = tst_messageserver
 target.path += $$QMF_INSTALL_ROOT/tests5
 
-BASE=../../
-include($$BASE/common.pri)
-
-
 DEPENDPATH += . 3rdparty
-
-DEFINES += PLUGIN_STATIC_LINK
 
 !win32 {
 	DEFINES += HAVE_VALGRIND
@@ -48,4 +42,4 @@ linux {
 	SOURCES += testmalloc.cpp
 }
 
-
+INSTALLS += target

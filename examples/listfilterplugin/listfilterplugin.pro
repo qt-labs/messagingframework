@@ -5,8 +5,6 @@ QT = core
 
 target.path += $$QMF_INSTALL_ROOT/lib/qmf/plugins/contentmanagers
 
-DEFINES += PLUGIN_INTERNAL
-
 DEPENDPATH += .
 
 INCLUDEPATH += . ../../src/libraries/qmfclient \
@@ -19,4 +17,4 @@ HEADERS += listfilterplugin.h
 
 SOURCES += listfilterplugin.cpp
 
-include(../../common.pri)
+INSTALLS += target
