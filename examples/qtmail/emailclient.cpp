@@ -73,9 +73,6 @@
 #include "statusmonitor.h"
 #include <qtmailnamespace.h>
 #include <qmaildisconnected.h>
-#if defined(SERVER_AS_DLL)
-#include "messageserver.h"
-#endif
 
 static const unsigned int StatusBarHeight = 20;
 #ifdef LOAD_DEBUG_VERSION
@@ -467,11 +464,7 @@ EmailClient::EmailClient(QWidget *parent, Qt::WindowFlags f)
       autoGetMail(false),
       initialAction(None),
       preSearchWidgetId(-1),
-#if defined(SERVER_AS_DLL)
-      m_messageServerThread(0),
-#else
       m_messageServerProcess(0),
-#endif
       m_contextMenu(0),
       m_transmitAction(0),
       m_retrievalAction(0),
@@ -560,14 +553,6 @@ void EmailClient::resumeInterruptedComposition()
 
 bool EmailClient::startMessageServer()
 {
-#if defined(SERVER_AS_DLL)
-    m_messageServerThread = new MessageServerThread();
-    m_messageServerThread->start();
-    QEventLoop loop;
-    QObject::connect(m_messageServerThread, SIGNAL(messageServerStarted()), &loop, SLOT(quit()));
-    loop.exec();
-    return true;
-#else
     qMailLog(Messaging) << "Starting messageserver child process...";
     if(m_messageServerProcess) delete m_messageServerProcess;
     m_messageServerProcess = new QProcess(this);
@@ -582,17 +567,10 @@ bool EmailClient::startMessageServer()
 
 	m_messageServerProcess->start(QMail::messageServerPath() + binary);
     return m_messageServerProcess->waitForStarted();
-#endif
 }
 
 bool EmailClient::waitForMessageServer()
 {
-#if defined(SERVER_AS_DLL)
-    if (m_messageServerThread) {
-        delete m_messageServerThread;
-        m_messageServerThread = 0;
-    }
-#else
     if(m_messageServerProcess)
     {
         qMailLog(Messaging) << "Shutting down messageserver child process..";
@@ -600,7 +578,6 @@ bool EmailClient::waitForMessageServer()
         delete m_messageServerProcess; m_messageServerProcess = 0;
         return result;
     }
-#endif
     return true;
 }
 
@@ -2375,12 +2352,6 @@ void EmailClient::quit()
         }
     }
     
-#if defined(SERVER_AS_DLL)
-    if (m_messageServerThread) {
-        m_messageServerThread->quit();
-        QTimer::singleShot(0,qApp,SLOT(quit()));
-    }
-#else
     if(m_messageServerProcess)
     {
         //we started the messageserver, direct it to shut down
@@ -2389,7 +2360,6 @@ void EmailClient::quit()
         server.shutdown();
         QTimer::singleShot(0,qApp,SLOT(quit()));
     }
-#endif
     else QApplication::quit();
 }
 
@@ -3014,34 +2984,6 @@ void NotificationTray::messagesAdded(const QMailMessageIdList &ids)
     }
 }
 #endif // QT_NO_SYSTEMTRAYICON
-
-#if defined(SERVER_AS_DLL)
-MessageServerThread::MessageServerThread()
-{
-}
-
-MessageServerThread::~MessageServerThread()
-{
-    // Tell the thread's event loop to exit
-    // => thread returns from the call to exec()
-    exit();
-
-    // Wait until this thread has finished execution
-    // <=> waits until thread returns from run()
-    wait();
-}
-
-void MessageServerThread::run()
-{
-    // Start messageserver
-    MessageServer server;
-
-    emit messageServerStarted();
-
-    // Enter the thread event loop
-    (void) exec();
-}
-#endif
 
 #include <emailclient.moc>
 

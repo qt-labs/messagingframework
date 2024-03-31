@@ -1,10 +1,4 @@
-SERVER_AS_DLL: {
-    DEFINES += SERVER_AS_DLL
-    DEFINES += QMFUTIL_INTERNAL
-    TEMPLATE = lib
-} else {
-    TEMPLATE = app
-}
+TEMPLATE = app
 
 TARGET = messageserver5
 QT = core dbus qmfclient qmfclient-private qmfmessageserver
@@ -33,9 +27,7 @@ mailservice.files = ../../libraries/qmfclient/qmailservice.xml
 mailservice.header_flags = -i qmailid.h -i qmailaction.h -i qmailserviceaction.h -i qmailstore.h
 DBUS_ADAPTORS += mailservice
 
-!SERVER_AS_DLL: {
-    SOURCES += main.cpp
-}
+SOURCES += main.cpp
 
 TRANSLATIONS += messageserver-ar.ts \
                 messageserver-de.ts \
