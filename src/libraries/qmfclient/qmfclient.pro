@@ -10,7 +10,6 @@ load(qt_module)
 CONFIG -= create_cmake
 
 DEFINES += QMF_INTERNAL
-DEFINES += QMF_INSTALL_ROOT=\\\"$$QMF_INSTALL_ROOT\\\"
 
 #DEPENDPATH += .
 INCLUDEPATH += support
