@@ -6,10 +6,6 @@ load(qt_plugin)
 
 QT = core network qmfclient qmfclient-private qmfmessageserver
 
-contains(DEFINES,QT_QMF_USE_ALIGNEDTIMER) {
-    QT += alignedtimer
-}
-
 HEADERS += imapclient.h \
            imapconfiguration.h \
            imapmailboxproperties.h \
