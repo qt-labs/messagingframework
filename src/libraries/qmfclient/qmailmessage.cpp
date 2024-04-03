@@ -8897,7 +8897,7 @@ QMailMessage QMailMessage::fromRfc2822(LongString& ls)
 bool QMailMessage::extractUndecodedData(const LongString &ls)
 {
     QMailMessagePartContainer *signedContainer =
-        QMailCryptographicServiceFactory::findSignedContainer(this);
+        QMailCryptographicService::findSignedContainer(this);
     if (signedContainer) {
         const QByteArray CRLFterminator((QByteArray(QMailMessage::CRLF) + QMailMessage::CRLF));
         const QByteArray LFterminator(2, QMailMessage::LineFeed);

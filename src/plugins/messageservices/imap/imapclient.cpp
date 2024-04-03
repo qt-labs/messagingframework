@@ -900,7 +900,7 @@ void ImapClient::messageFetched(QMailMessage& mail, const QString &detachedFilen
             mail.setStatus(QMailMessage::Junk, true); 
         }
         mail.setStatus(QMailMessage::CalendarInvitation, mail.hasCalendarInvitation());
-        mail.setStatus(QMailMessage::HasSignature, (QMailCryptographicServiceFactory::findSignedContainer(&mail) != 0));
+        mail.setStatus(QMailMessage::HasSignature, (QMailCryptographicService::findSignedContainer(&mail) != 0));
         mail.setStatus(QMailMessage::CalendarCancellation, mail.hasCalendarCancellation());
 
         // Disable Notification when getting older message

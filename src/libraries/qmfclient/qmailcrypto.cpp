@@ -89,34 +89,34 @@ const QMailMessagePartContainer* QMailCryptographicServiceInterface::findSignedC
     return finder.m_signedConstContainer;
 }
 
-QMailCryptographicServiceFactory* QMailCryptographicServiceFactory::m_pInstance = 0;
+QMailCryptographicService* QMailCryptographicService::m_pInstance = 0;
 
-QMailCryptographicServiceFactory::QMailCryptographicServiceFactory(QObject* parent)
+QMailCryptographicService::QMailCryptographicService(QObject* parent)
         : QMailPluginManager(QString::fromLatin1("crypto"), parent)
 {
 }
 
-QMailCryptographicServiceFactory::~QMailCryptographicServiceFactory()
+QMailCryptographicService::~QMailCryptographicService()
 {
 }
 
-QMailCryptographicServiceFactory* QMailCryptographicServiceFactory::instance()
+QMailCryptographicService* QMailCryptographicService::instance()
 {
     if (!m_pInstance)
-        m_pInstance = new QMailCryptographicServiceFactory(QCoreApplication::instance());
+        m_pInstance = new QMailCryptographicService(QCoreApplication::instance());
 
     return m_pInstance;
 }
 
-QMailCryptographicServiceInterface* QMailCryptographicServiceFactory::instance(const QString &engine)
+QMailCryptographicServiceInterface* QMailCryptographicService::instance(const QString &engine)
 {
     return qobject_cast<QMailCryptographicServiceInterface*>(QMailPluginManager::instance(engine));
 }
 
-QMailMessagePartContainer* QMailCryptographicServiceFactory::findSignedContainer(QMailMessagePartContainer *part, QMailCryptographicServiceInterface **engine)
+QMailMessagePartContainer* QMailCryptographicService::findSignedContainer(QMailMessagePartContainer *part, QMailCryptographicServiceInterface **engine)
 {
-    QMailCryptographicServiceFactory *plugins =
-        QMailCryptographicServiceFactory::instance();
+    QMailCryptographicService *plugins =
+        QMailCryptographicService::instance();
     QStringList engines = plugins->list();
 
     if (engine)
@@ -136,10 +136,10 @@ QMailMessagePartContainer* QMailCryptographicServiceFactory::findSignedContainer
 
     return 0;
 }
-const QMailMessagePartContainer* QMailCryptographicServiceFactory::findSignedContainer(const QMailMessagePartContainer *part, QMailCryptographicServiceInterface **engine)
+const QMailMessagePartContainer* QMailCryptographicService::findSignedContainer(const QMailMessagePartContainer *part, QMailCryptographicServiceInterface **engine)
 {
-    QMailCryptographicServiceFactory *plugins =
-        QMailCryptographicServiceFactory::instance();
+    QMailCryptographicService *plugins =
+        QMailCryptographicService::instance();
     QStringList engines = plugins->list();
 
     if (engine)
@@ -160,10 +160,10 @@ const QMailMessagePartContainer* QMailCryptographicServiceFactory::findSignedCon
     return 0;
 }
 
-QMailCryptoFwd::VerificationResult QMailCryptographicServiceFactory::verifySignature(const QMailMessagePartContainer &part)
+QMailCryptoFwd::VerificationResult QMailCryptographicService::verifySignature(const QMailMessagePartContainer &part)
 {
-    QMailCryptographicServiceFactory *plugins =
-        QMailCryptographicServiceFactory::instance();
+    QMailCryptographicService *plugins =
+        QMailCryptographicService::instance();
     QStringList engines = plugins->list();
 
     for (QStringList::iterator it = engines.begin(); it != engines.end(); it++) {
@@ -175,12 +175,12 @@ QMailCryptoFwd::VerificationResult QMailCryptographicServiceFactory::verifySigna
     return QMailCryptoFwd::VerificationResult(QMailCryptoFwd::MissingSignature);
 }
 
-QMailCryptoFwd::SignatureResult QMailCryptographicServiceFactory::sign(QMailMessagePartContainer *part,
-                                                                       const QString &crypto,
-                                                                       const QStringList &keys,
-                                                                       QMailCryptoFwd::PassphraseCallback cb)
+QMailCryptoFwd::SignatureResult QMailCryptographicService::sign(QMailMessagePartContainer *part,
+                                                                const QString &crypto,
+                                                                const QStringList &keys,
+                                                                QMailCryptoFwd::PassphraseCallback cb)
 {
-    QMailCryptographicServiceFactory *plugins = QMailCryptographicServiceFactory::instance();
+    QMailCryptographicService *plugins = QMailCryptographicService::instance();
 
     QMailCryptographicServiceInterface *engine = plugins->instance(crypto);
     if (engine) {

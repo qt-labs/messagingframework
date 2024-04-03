@@ -1643,7 +1643,7 @@ void ImapFetchSelectedMessagesStrategy::prepareCompletionList(
             QMailMessagePartContainer::Location signedPartLocation;
             if (message.status() & QMailMessage::HasSignature) {
                 const QMailMessagePartContainer *signedContainer =
-                    QMailCryptographicServiceFactory::findSignedContainer(&message);
+                    QMailCryptographicService::findSignedContainer(&message);
                 if (signedContainer && signedContainer->partCount() > 0) {
                     signedPartLocation = signedContainer->partAt(0).location();
                 }

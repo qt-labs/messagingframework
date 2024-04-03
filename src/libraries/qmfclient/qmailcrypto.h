@@ -61,12 +61,12 @@ QT_BEGIN_NAMESPACE
 Q_DECLARE_INTERFACE(QMailCryptographicServiceInterface, "org.qt-project.Qt.QMailCryptographicServiceInterface")
 QT_END_NAMESPACE
 
-class QMF_EXPORT QMailCryptographicServiceFactory : public QMailPluginManager
+class QMF_EXPORT QMailCryptographicService : public QMailPluginManager
 {
     Q_OBJECT
 
 public:
-    static QMailCryptographicServiceFactory* instance();
+    static QMailCryptographicService* instance();
     static QMailMessagePartContainer* findSignedContainer(QMailMessagePartContainer *part, QMailCryptographicServiceInterface **engine = Q_NULLPTR);
     static const QMailMessagePartContainer* findSignedContainer(const QMailMessagePartContainer *part, QMailCryptographicServiceInterface **engine = Q_NULLPTR);
 
@@ -79,10 +79,10 @@ public:
                                                 QMailCryptoFwd::PassphraseCallback cb = Q_NULLPTR);
 
 private:
-    QMailCryptographicServiceFactory(QObject *parent = Q_NULLPTR);
-    ~QMailCryptographicServiceFactory();
+    QMailCryptographicService(QObject *parent = Q_NULLPTR);
+    ~QMailCryptographicService();
 
-    static QMailCryptographicServiceFactory* m_pInstance;
+    static QMailCryptographicService* m_pInstance;
 };
 
 #endif

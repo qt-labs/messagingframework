@@ -334,7 +334,7 @@ void tst_Crypto::verify()
     QMailMessage msg = QMailMessage::fromRfc2822File(QStringLiteral("%1/%2").arg(QCoreApplication::applicationDirPath(),
                                         rfc2822Filename));
 
-    QMailCryptoFwd::VerificationResult result = QMailCryptographicServiceFactory::verifySignature(msg);
+    QMailCryptoFwd::VerificationResult result = QMailCryptographicService::verifySignature(msg);
     QCOMPARE(result.summary, expectedStatus);
     if (expectedStatus == QMailCryptoFwd::MissingSignature
         || expectedStatus == QMailCryptoFwd::UnknownError)
@@ -384,7 +384,7 @@ void tst_Crypto::sign()
     // Check message signing.
     QMailMessage msg = QMailMessage::fromRfc2822File(QStringLiteral("%1/%2").arg(QCoreApplication::applicationDirPath(),
                                                                                  rfc2822Filename));
-    QCOMPARE(QMailCryptographicServiceFactory::sign(&msg, plugin, QStringList(fingerprint), passphrase), expectedStatus);
+    QCOMPARE(QMailCryptographicService::sign(&msg, plugin, QStringList(fingerprint), passphrase), expectedStatus);
 
     // Check signed message output.
     // Replace the random boundary strings with a fixed one for comparison.
@@ -401,7 +401,7 @@ void tst_Crypto::sign()
     // Check that signature is valid.
     // To be activated later when the passphrase callback will be working
     // with gnupg >= 2.1
-    // QCOMPARE(QMailCryptographicServiceFactory::verifySignature(msg), expectedStatus);
+    // QCOMPARE(QMailCryptographicService::verifySignature(msg), expectedStatus);
 }
 
 void tst_Crypto::signVerify()
@@ -413,14 +413,14 @@ void tst_Crypto::signVerify()
     message.setBody(QMailMessageBody::fromData("test", type, QMailMessageBody::Base64));
 
     // Sign it with the PGP key (no password).
-    QMailCryptoFwd::SignatureResult r = QMailCryptographicServiceFactory::sign(&message, "libgpgme.so", QStringList() << m_pgpKey);
+    QMailCryptoFwd::SignatureResult r = QMailCryptographicService::sign(&message, "libgpgme.so", QStringList() << m_pgpKey);
     QCOMPARE(r, QMailCryptoFwd::SignatureValid);
     QCOMPARE(message.partCount(), uint(2));
     QCOMPARE(message.contentType().type(), QByteArray("multipart"));
     QCOMPARE(message.contentType().subType(), QByteArray("signed"));
 
     // And verify it.
-    QMailCryptoFwd::VerificationResult v = QMailCryptographicServiceFactory::verifySignature(message);
+    QMailCryptoFwd::VerificationResult v = QMailCryptographicService::verifySignature(message);
     QCOMPARE(v.summary, QMailCryptoFwd::SignatureValid);
     QCOMPARE(v.engine, QStringLiteral("libgpgme.so"));
     QCOMPARE(v.keyResults.length(), 1);
