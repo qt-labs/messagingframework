@@ -210,9 +210,9 @@ struct GPGmeData {
     {
         return data;
     }
-    bool operator!()
+    bool isValid()
     {
-        return (data == 0);
+        return (data != 0);
     }
     QByteArray errorMessage() const
     {
@@ -241,7 +241,7 @@ QMailCryptoFwd::SignatureResult QMailCryptoGPGME::getSignature(const QByteArray 
     micalg.clear();
 
     GPGmeData sig;
-    if (!sig) {
+    if (!sig.isValid()) {
         qWarning() << "cannot create signature data:" << sig.errorMessage();
         return toSignatureResult(sig.err);
     }
@@ -254,7 +254,7 @@ QMailCryptoFwd::SignatureResult QMailCryptoGPGME::getSignature(const QByteArray 
 
     QByteArray mess(canonicalizeStr(message));
     GPGmeData data(mess);
-    if (!data) {
+    if (!data.isValid()) {
         qWarning() << "cannot create message data:" << data.errorMessage();
         return toSignatureResult(data.err);
     }
@@ -378,14 +378,14 @@ QMailCryptoFwd::SignatureResult QMailCryptoGPGME::verify(const QByteArray &sigDa
     keyResults.clear();
 
     GPGmeData sig(sigData);
-    if (!sig) {
+    if (!sig.isValid()) {
         qWarning() << "cannot create message data:" << sig.errorMessage();
         return toSignatureResult(sig.err);
     }
 
     QByteArray mess(canonicalizeStr(messageData.constData()));
     GPGmeData signed_text(mess);
-    if (!signed_text) {
+    if (!signed_text.isValid()) {
         qWarning() << "cannot create signature data:" << signed_text.errorMessage();
         return toSignatureResult(signed_text.err);
     }

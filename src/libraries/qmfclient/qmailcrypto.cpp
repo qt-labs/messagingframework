@@ -175,7 +175,7 @@ QMailCryptoFwd::VerificationResult QMailCryptographicServiceFactory::verifySigna
     return QMailCryptoFwd::VerificationResult(QMailCryptoFwd::MissingSignature);
 }
 
-QMailCryptoFwd::SignatureResult QMailCryptographicServiceFactory::sign(QMailMessagePartContainer &part,
+QMailCryptoFwd::SignatureResult QMailCryptographicServiceFactory::sign(QMailMessagePartContainer *part,
                                                                        const QString &crypto,
                                                                        const QStringList &keys,
                                                                        QMailCryptoFwd::PassphraseCallback cb)

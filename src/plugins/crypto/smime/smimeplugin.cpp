@@ -74,12 +74,17 @@ QMailCryptoFwd::VerificationResult QMailCryptoSMIME::verifySignature(const QMail
     return result;
 }
 
-QMailCryptoFwd::SignatureResult QMailCryptoSMIME::sign(QMailMessagePartContainer &part,
+QMailCryptoFwd::SignatureResult QMailCryptoSMIME::sign(QMailMessagePartContainer *part,
                                                        const QStringList &keys) const
 {
+    if (!part) {
+        qWarning() << "unable to sign a NULL part.";
+        return QMailCryptoFwd::UnknownError;
+    }
+
     QByteArray signedData, micalg;
     QMailCryptoFwd::SignatureResult result;
-    result = computeSignature(part, keys, signedData, micalg);
+    result = computeSignature(*part, keys, signedData, micalg);
     if (result != QMailCryptoFwd::SignatureValid)
         return result;
 
@@ -87,10 +92,10 @@ QMailCryptoFwd::SignatureResult QMailCryptoSMIME::sign(QMailMessagePartContainer
     QList<QMailMessageHeaderField::ParameterType> parameters;
     parameters << QMailMessageHeaderField::ParameterType("micalg", micalg);
     parameters << QMailMessageHeaderField::ParameterType("protocol", "application/pkcs7-signature");
-    part.setMultipartType(QMailMessagePartContainerFwd::MultipartSigned, parameters);
+    part->setMultipartType(QMailMessagePartContainerFwd::MultipartSigned, parameters);
 
     // Write the signature data in the second part.
-    QMailMessagePart &signature = part.partAt(1);
+    QMailMessagePart &signature = part->partAt(1);
     QMailMessageContentDisposition disposition;
     disposition.setType(QMailMessageContentDispositionFwd::Attachment);
     disposition.setFilename("smime.p7s");

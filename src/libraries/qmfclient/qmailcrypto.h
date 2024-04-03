@@ -48,7 +48,7 @@ public:
 
     virtual bool partHasSignature(const QMailMessagePartContainer &part) const = 0;
     virtual QMailCryptoFwd::VerificationResult verifySignature(const QMailMessagePartContainer &part) const = 0;
-    virtual QMailCryptoFwd::SignatureResult sign(QMailMessagePartContainer &part,
+    virtual QMailCryptoFwd::SignatureResult sign(QMailMessagePartContainer *part,
                                                  const QStringList &keys) const = 0;
 
     virtual void setPassphraseCallback(QMailCryptoFwd::PassphraseCallback cb) = 0;
@@ -73,7 +73,7 @@ public:
     QMailCryptographicServiceInterface* instance(const QString &engine);
 
     static QMailCryptoFwd::VerificationResult verifySignature(const QMailMessagePartContainer &part);
-    static QMailCryptoFwd::SignatureResult sign(QMailMessagePartContainer &part,
+    static QMailCryptoFwd::SignatureResult sign(QMailMessagePartContainer *part,
                                                 const QString &crypto,
                                                 const QStringList &keys,
                                                 QMailCryptoFwd::PassphraseCallback cb = Q_NULLPTR);
