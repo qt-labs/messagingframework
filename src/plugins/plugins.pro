@@ -3,7 +3,6 @@ SUBDIRS = \
     messageservices/imap \
     messageservices/pop \
     messageservices/smtp \
-    messageservices/qmfsettings \
     contentmanagers/qmfstoragemanager
 
 exists(/usr/bin/gpgme-config) {
