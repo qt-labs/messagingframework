@@ -38,8 +38,8 @@
 #include <qmailauthenticator.h>
 #include <qmailtransport.h>
 
-
-bool PopAuthenticator::useEncryption(const PopConfiguration &svcCfg, const QStringList &capabilities)
+bool PopAuthenticator::useEncryption(const PopConfiguration &svcCfg,
+                                     const QStringList &capabilities)
 {
 #ifdef QT_NO_SSL
     Q_UNUSED(svcCfg)
@@ -67,24 +67,27 @@ bool PopAuthenticator::useEncryption(const PopConfiguration &svcCfg, const QStri
 #endif
 }
 
-QList<QByteArray> PopAuthenticator::getAuthentication(const PopConfiguration &svcCfg, const QStringList &capabilities)
+QList<QByteArray> PopAuthenticator::getAuthentication(const PopConfiguration &svcCfg,
+                                                      const QMailCredentialsInterface &credentials)
 {
     QList<QByteArray> result;
 
-    QByteArray auth(QMailAuthenticator::getAuthentication(svcCfg, capabilities));
+    QByteArray auth(QMailAuthenticator::getAuthentication(svcCfg, credentials));
     if (!auth.isEmpty()) {
         result.append(QByteArray("AUTH ") + auth);
     } else {
         // If not handled by the authenticator, fall back to user/pass
-        result.append(QByteArray("USER ") + svcCfg.mailUserName().toLatin1());
-        result.append(QByteArray("PASS ") + svcCfg.mailPassword().toLatin1());
+        result.append(QByteArray("USER ") + credentials.username().toLatin1());
+        result.append(QByteArray("PASS ") + credentials.password().toLatin1());
     }
 
     return result;
 }
 
-QByteArray PopAuthenticator::getResponse(const PopConfiguration &svcCfg, const QByteArray &challenge)
+QByteArray PopAuthenticator::getResponse(const PopConfiguration &svcCfg,
+                                         const QByteArray &challenge,
+                                         const QMailCredentialsInterface &credentials)
 {
-    return QMailAuthenticator::getResponse(svcCfg, challenge);
+    return QMailAuthenticator::getResponse(svcCfg, challenge, credentials);
 }
 

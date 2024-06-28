@@ -35,16 +35,21 @@
 #define IMAPAUTHENTICATOR_H
 
 #include "imapconfiguration.h"
+#include <qmailcredentials.h>
 
 #include <QByteArray>
-#include <QStringList>
+#include <QList>
 
 class ImapAuthenticator
 {
 public:
-    static bool useEncryption(const ImapConfiguration &svcCfg, const QStringList &capabilities);
-    static QByteArray getAuthentication(const ImapConfiguration &svcCfg, const QStringList &capabilities);
-    static QByteArray getResponse(const ImapConfiguration &svcCfg, const QByteArray &challenge);
+    static bool useEncryption(const ImapConfiguration &svcCfg,
+                              const QStringList &capabilities);
+    static QList<QByteArray> getAuthentication(const ImapConfiguration &svcCfg,
+                                               const QMailCredentialsInterface &credentials);
+    static QByteArray getResponse(const ImapConfiguration &svcCfg,
+                                  const QByteArray &challenge,
+                                  const QMailCredentialsInterface &credentials);
 };
 
 #endif

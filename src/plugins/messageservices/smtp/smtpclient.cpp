@@ -113,6 +113,7 @@ SmtpClient::SmtpClient(QObject* parent)
     , notUsingAuth(false)
     , authReset(false)
     , authTimeout(0)
+    , credentials(nullptr)
 {
     connect(QMailStore::instance(), SIGNAL(accountsUpdated(const QMailAccountIdList&)), 
             this, SLOT(accountsUpdated(const QMailAccountIdList&)));
@@ -123,6 +124,7 @@ SmtpClient::~SmtpClient()
     delete transport;
     delete temporaryFile;
     delete authTimeout;
+    delete credentials;
 }
 
 void SmtpClient::accountsUpdated(const QMailAccountIdList &ids)
@@ -146,6 +148,9 @@ void SmtpClient::setAccount(const QMailAccountId &id)
 {
     // Load the current configuration for this account
     config = QMailAccountConfiguration(id);
+    if (!credentials) {
+        credentials = QMailCredentialsFactory::getCredentialsHandlerForAccount(config);
+    }
 }
 
 QMailAccountId SmtpClient::account() const
@@ -177,6 +182,10 @@ void SmtpClient::newConnection()
         status = Done;
         operationFailed(QMailServiceAction::Status::ErrConfiguration, tr("Cannot send message without SMTP server configuration"));
         return;
+    }
+
+    if (credentials) {
+        credentials->init(smtpCfg);
     }
 
     // Calculate the total indicative size of the messages we're sending
@@ -335,7 +344,7 @@ void SmtpClient::sendCommand(const char *data, int len, bool maskDebug)
             logCmd = logCmd.left(loginExp.matchedLength()) + "<login hidden>";
         }
 
-        qMailLog(SMTP) << "SEND:" << data;
+        qMailLog(SMTP) << "SEND:" << logCmd;
     }
 }
 
@@ -571,30 +580,46 @@ void SmtpClient::nextAction(const QString &response)
         }
         addressComponent = localAddress.toIPv4Address();
 
+        status = Authenticate;
+        nextAction(QString());
+        break;
+    }
+    case Authenticate:
+    {
         // Find the authentication mode to use
-        QByteArray authCmd(SmtpAuthenticator::getAuthentication(SmtpConfiguration(config), capabilities));
-        if (!authCmd.isEmpty()) {
-            sendCommand(authCmd);
-            status = Authenticating;
-        } else {
+        authCommands = SmtpAuthenticator::getAuthentication(SmtpConfiguration(config), *credentials);
+        if (authCommands.isEmpty()) {
+            // No auth in use.
             foreach (QString const& capability, capabilities) {
                 if (capability.startsWith("AUTH", Qt::CaseInsensitive)) {
                     notUsingAuth = true;
                     break;
                 }
             }
-
             status = Authenticated;
             nextAction(QString());
+        } else if (credentials->status() == QMailCredentialsInterface::Fetching) {
+            connect(credentials, &QMailCredentialsInterface::statusChanged,
+                    this, &SmtpClient::onCredentialsStatusChanged);
+        } else if (credentials->status() == QMailCredentialsInterface::Failed) {
+            operationFailed(QMailServiceAction::Status::ErrConfiguration,
+                            credentials->lastError());
+        } else {
+            // Send auth commands one by one.
+            sendCommand(authCommands.takeFirst());
+            status = Authenticating;
         }
         break;
     }
     case Authenticating:
     {
-        if (responseCode == 334) {
+        if (responseCode == 334 && !authCommands.isEmpty()) {
+            // Continue to send auth commands one by one.
+            sendCommand(authCommands.takeFirst(), true);
+        } else if (responseCode == 334) {
             // This is a continuation containing a challenge string (in Base64)
             QByteArray challenge = QByteArray::fromBase64(response.mid(4).toLatin1());
-            QByteArray response(SmtpAuthenticator::getResponse(SmtpConfiguration(config), challenge));
+            QByteArray response(SmtpAuthenticator::getResponse(SmtpConfiguration(config), challenge, *credentials));
 
             if (!response.isEmpty()) {
                 // Send the response as Base64 encoded, mask the debug output
@@ -602,8 +627,9 @@ void SmtpClient::nextAction(const QString &response)
                 bufferedResponse.clear();
                 return;
             } else {
-                // No username/password defined
-                operationFailed(QMailServiceAction::Status::ErrLoginFailed, response);
+                // Challenge response is empty
+                // send a empty response.
+                sendCommand("");
             }
         } else if (responseCode == 235) {
             // We are now authenticated
@@ -632,6 +658,21 @@ void SmtpClient::nextAction(const QString &response)
             }
         } else if (responseCode == 530) {
             operationFailed(QMailServiceAction::Status::ErrConfiguration, response);
+        } else if (responseCode == 535) {
+            if (!authReset) {
+                authReset = true;
+                // Credentials may have changed, fetch them again.
+                if (credentials->init(SmtpConfiguration(config))) {
+                    status = Connected;
+                    nextAction(QString());
+                } else {
+                    operationFailed(QMailServiceAction::Status::ErrConfiguration,
+                                    credentials->lastError());
+                }
+            } else {
+                credentials->invalidate(QStringLiteral("messageserver5"));
+                operationFailed(QMailServiceAction::Status::ErrLoginFailed, response);
+            }
         } else {
             operationFailed(QMailServiceAction::Status::ErrLoginFailed, response);
         }
@@ -1047,4 +1088,12 @@ void SmtpClient::stopTransferring()
         temporaryFile = 0;
         status = Sent;
     }
+}
+
+void SmtpClient::onCredentialsStatusChanged()
+{
+    qMailLog(SMTP)  << "Got credentials status changed:" << credentials->status();
+    disconnect(credentials, &QMailCredentialsInterface::statusChanged,
+               this, &SmtpClient::onCredentialsStatusChanged);
+    nextAction(QString());
 }

@@ -148,7 +148,8 @@ namespace QMail
         NoMechanism = 0,
         LoginMechanism = 1,
         PlainMechanism = 2,
-        CramMd5Mechanism = 3
+        CramMd5Mechanism = 3,
+        XOAuth2Mechanism = 4
     };
 }
 

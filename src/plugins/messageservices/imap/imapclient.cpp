@@ -177,7 +177,7 @@ class IdleProtocol : public ImapProtocol {
     Q_OBJECT
 
 public:
-    IdleProtocol(ImapClient *client, const QMailFolder &folder);
+    IdleProtocol(ImapClient *client, const QMailFolder &folder, QMailCredentialsInterface *credentials);
     virtual ~IdleProtocol() {}
 
     virtual void handleIdling() { _client->idling(_folder.id()); }
@@ -202,12 +202,14 @@ protected:
 private:
     QTimer _idleTimer; // Send a DONE command every 29 minutes
     QTimer _idleRecoveryTimer; // Check command hasn't hung
+    QMailCredentialsInterface *_credentials;
 };
 
-IdleProtocol::IdleProtocol(ImapClient *client, const QMailFolder &folder)
+IdleProtocol::IdleProtocol(ImapClient *client, const QMailFolder &folder, QMailCredentialsInterface *credentials)
+    : _client(client)
+    , _folder(folder)
+    , _credentials(credentials)
 {
-    _client = client;
-    _folder = folder;
     connect(this, SIGNAL(continuationRequired(ImapCommand, QString)),
             this, SLOT(idleContinuation(ImapCommand, QString)) );
     connect(this, SIGNAL(completed(ImapCommand, OperationStatus)),
@@ -293,14 +295,13 @@ void IdleProtocol::idleCommandTransition(const ImapCommand command, const Operat
                     break;
                 }
             }
-
             // We are now connected
-            sendLogin(config);
+            sendLogin(config, _credentials);
             return;
         }
         case IMAP_StartTLS:
         {
-            sendLogin(config);
+            sendLogin(config, _credentials);
             break;
         }
         case IMAP_Login: // Fall through
@@ -382,7 +383,9 @@ ImapClient::ImapClient(QObject* parent)
       _requestRapidClose(false),
       _rapidClosing(false),
       _idleRetryDelay(InitialIdleRetryDelay),
-      _pushConnectionsReserved(0)
+      _pushConnectionsReserved(0),
+      _credentials(nullptr),
+      _loginFailed(false)
 {
     static int count(0);
     ++count;
@@ -449,6 +452,7 @@ ImapClient::~ImapClient()
         QMailMessageBuffer::instance()->removeCallback(callback);
     }
     delete _strategyContext;
+    delete _credentials;
 }
 
 // Called to begin executing a strategy
@@ -469,6 +473,12 @@ void ImapClient::newConnection()
     ImapConfiguration imapCfg(_config);
     if ( imapCfg.mailServer().isEmpty() ) {
         operationFailed(QMailServiceAction::Status::ErrConfiguration, tr("Cannot open connection without IMAP server configuration"));
+        return;
+    }
+
+    if (!_credentials || (!_protocol.inUse() && !_credentials->init(imapCfg))) {
+        operationFailed(QMailServiceAction::Status::ErrConfiguration,
+                        _credentials->lastError());
         return;
     }
 
@@ -522,7 +532,14 @@ void ImapClient::checkCommandResponse(ImapCommand command, OperationStatus statu
 
             case IMAP_Login:
             {
-                operationFailed(QMailServiceAction::Status::ErrLoginFailed, _protocol.lastError());
+                if (!_loginFailed) {
+                    _loginFailed = true;
+                    _protocol.close();
+                    newConnection();
+                } else {
+                    _credentials->invalidate(QStringLiteral("messageserver5"));
+                    operationFailed(QMailServiceAction::Status::ErrLoginFailed, _protocol.lastError());
+                }
                 return;
             }
 
@@ -554,6 +571,9 @@ void ImapClient::checkCommandResponse(ImapCommand command, OperationStatus statu
         case IMAP_Unconnected:
             operationFailed(QMailServiceAction::Status::ErrNoConnection, _protocol.lastError());
             return;
+        case IMAP_Login:
+            _loginFailed = (status != OpOk);
+            break;
         default:
             break;
     }
@@ -614,7 +634,16 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
                     }
                 }
                 emit updateStatus( tr("Logging in" ) );
-                _protocol.sendLogin(_config);
+                if (_credentials->status() == QMailCredentialsInterface::Ready) {
+                    _protocol.sendLogin(_config, _credentials);
+                } else if (_credentials->status() == QMailCredentialsInterface::Fetching) {
+                    connect(_credentials, &QMailCredentialsInterface::statusChanged,
+                            this, &ImapClient::onCredentialsStatusChanged);
+                } else {
+                    qMailLog(IMAP) << "credential retrieval failed with:" << _credentials->lastError();
+                    operationFailed(QMailServiceAction::Status::ErrConfiguration,
+                                    _credentials->lastError());
+                }
             }
             break;
         }
@@ -622,7 +651,16 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
         case IMAP_Idle_Continuation:
         {
             emit updateStatus( tr("Logging in" ) );
-            _protocol.sendLogin(_config);
+            if (_credentials->status() == QMailCredentialsInterface::Ready) {
+                _protocol.sendLogin(_config, _credentials);
+            } else if (_credentials->status() == QMailCredentialsInterface::Fetching) {
+                connect(_credentials, &QMailCredentialsInterface::statusChanged,
+                        this, &ImapClient::onCredentialsStatusChanged);
+            } else {
+                qMailLog(IMAP) << "credential retrieval failed with:" << _credentials->lastError();
+                operationFailed(QMailServiceAction::Status::ErrConfiguration,
+                                _credentials->lastError());
+            }
             break;
         }
         
@@ -1472,6 +1510,10 @@ void ImapClient::setAccount(const QMailAccountId &id)
             qMailLog(Messaging) << "Disable HasPersistentConnection for account" << account.id();
         }
     }
+
+    if (!_credentials) {
+        _credentials = QMailCredentialsFactory::getCredentialsHandlerForAccount(_config);
+    }
 }
 
 QMailAccountId ImapClient::account() const
@@ -1691,7 +1733,7 @@ void ImapClient::monitor(const QMailFolderIdList &mailboxIds)
     foreach(QMailFolderId id, mailboxIds) {
         if (!_monitored.contains(id)) {
             ++count;
-            IdleProtocol *protocol = new IdleProtocol(this, QMailFolder(id));
+            IdleProtocol *protocol = new IdleProtocol(this, QMailFolder(id), _credentials);
             protocol->setObjectName(QString("I:%1").arg(count));
             _monitored.insert(id, protocol);
             connect(protocol, SIGNAL(idleNewMailNotification(QMailFolderId)),
@@ -1749,6 +1791,26 @@ void ImapClient::removeAllFromBuffer(QMailMessage *message)
     while ((i = _bufferedMessages.indexOf(message, i)) != -1) {
         delete _bufferedMessages.at(i);
         _bufferedMessages.remove(i);
+    }
+}
+
+void ImapClient::onCredentialsStatusChanged()
+{
+    qMailLog(IMAP)  << "Got credential status changed" << _credentials->status();
+
+    disconnect(_credentials, &QMailCredentialsInterface::statusChanged,
+               this, &ImapClient::onCredentialsStatusChanged);
+    switch (_credentials->status()) {
+    case (QMailCredentialsInterface::Ready):
+        _protocol.sendLogin(_config, _credentials);
+        break;
+    case (QMailCredentialsInterface::Failed):
+        if (_protocol.inUse()) {
+            operationFailed(QMailServiceAction::Status::ErrLoginFailed, _credentials->lastError());
+        }
+        break;
+    default:
+        break;
     }
 }
 

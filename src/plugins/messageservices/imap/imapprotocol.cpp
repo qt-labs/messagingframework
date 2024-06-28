@@ -560,7 +560,7 @@ class LoginState : public ImapState
 public:
     LoginState() : ImapState(IMAP_Login, "Login") { LoginState::init(); }
 
-    void setConfiguration(const QMailAccountConfiguration &config, const QStringList &capabilities);
+    void setConfiguration(const QMailAccountConfiguration &config, const QStringList &capabilities, const QMailCredentialsInterface *credentials);
 
     void init() override;
     QString transmit(ImapContext *c) override;
@@ -569,13 +569,14 @@ public:
 
 private:
     QMailAccountConfiguration _config;
-    QStringList _capabilities;
+    QList<QByteArray> _commands;
+    const QMailCredentialsInterface *_credentials;
 };
 
-void LoginState::setConfiguration(const QMailAccountConfiguration &config, const QStringList &capabilities)
+void LoginState::setConfiguration(const QMailAccountConfiguration &config, const QStringList &capabilities, const QMailCredentialsInterface *credentials)
 {
     _config = config;
-    _capabilities = capabilities;
+    _credentials = credentials;
 
     // Available authentication mechanisms
     ImapConfigurationEditor imapCfg(&_config);
@@ -595,32 +596,48 @@ void LoginState::setConfiguration(const QMailAccountConfiguration &config, const
             }
         }
     }
+
+    _commands = ImapAuthenticator::getAuthentication(ImapConfiguration(_config),
+                                                     *credentials);
+    if (capabilities.contains(QStringLiteral("SASL-IR"))) {
+        QByteArray cmd;
+        for (const QByteArray &line : _commands) {
+            cmd += line;
+            cmd += " ";
+        }
+        cmd.chop(1);
+        _commands = QList<QByteArray>() << cmd;
+    }
 }
 
 void LoginState::init()
 {
     ImapState::init();
     _config = QMailAccountConfiguration();
-    _capabilities = QStringList();
+    _commands.clear();
 }
 
 QString LoginState::transmit(ImapContext *c)
 {
-    return c->sendCommand(ImapAuthenticator::getAuthentication(ImapConfiguration(_config), _capabilities));
+    return c->sendCommand(_commands.takeFirst());
 }
 
 bool LoginState::continuationResponse(ImapContext *c, const QString &received)
 {
-    // The server input is Base64 encoded
-    QByteArray challenge = QByteArray::fromBase64(received.toLatin1());
-    QByteArray response(ImapAuthenticator::getResponse(ImapConfiguration(_config), challenge));
-
-    if (!response.isEmpty()) {
-        c->sendData(response.toBase64(), true);
+    if (!_commands.isEmpty()) {
+        c->sendData(_commands.takeFirst(), true);
     } else {
-        // Challenge response is empty
-        // send a empty response.
-        c->sendData("");
+        // The server input is Base64 encoded
+        QByteArray challenge = QByteArray::fromBase64(received.toLatin1());
+        QByteArray response(ImapAuthenticator::getResponse(ImapConfiguration(_config), challenge, *_credentials));
+
+        if (!response.isEmpty()) {
+            c->sendData(response.toBase64(), true);
+        } else {
+            // Challenge response is empty
+            // send a empty response.
+            c->sendData("");
+        }
     }
 
     return false;
@@ -3220,9 +3237,10 @@ void ImapProtocol::sendStartTLS()
     _fsm->setState(&_fsm->startTlsState);
 }
 
-void ImapProtocol::sendLogin( const QMailAccountConfiguration &config )
+void ImapProtocol::sendLogin(const QMailAccountConfiguration &config,
+                             const QMailCredentialsInterface *credentials)
 {
-    _fsm->loginState.setConfiguration(config, _capabilities);
+    _fsm->loginState.setConfiguration(config, _capabilities, credentials);
     _fsm->setState(&_fsm->loginState);
 }
 

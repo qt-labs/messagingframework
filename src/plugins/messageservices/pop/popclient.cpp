@@ -76,7 +76,9 @@ PopClient::PopClient(QObject* parent)
       dataStream(new LongStream),
       transport(0),
       testing(false),
-      pendingDeletes(false)
+      pendingDeletes(false),
+      credentials(nullptr),
+      loginFailed(false)
 {
     inactiveTimer.setSingleShot(true);
     connect(&inactiveTimer, SIGNAL(timeout()), this, SLOT(connectionInactive()));
@@ -91,6 +93,7 @@ PopClient::~PopClient()
 
     delete dataStream;
     delete transport;
+    delete credentials;
 }
 
 void PopClient::messageBufferFlushed()
@@ -185,6 +188,10 @@ void PopClient::newConnection()
         return;
     }
 
+    if (credentials) {
+        credentials->init(popCfg);
+    }
+
     if (!selected) {
         serverUidNumber.clear();
         serverUid.clear();
@@ -251,6 +258,10 @@ void PopClient::setAccount(const QMailAccountId &id)
         } else {
             qMailLog(POP) <<  "Flags for POP folder" << folder.id() << folder.path() << "updated";
         }
+    }
+
+    if (!credentials) {
+        credentials = QMailCredentialsFactory::getCredentialsHandlerForAccount(config);
     }
 }
 
@@ -524,12 +535,19 @@ void PopClient::processResponse(const QString &response)
     {
         if (response[0] != '+') {
             // Authentication failed
-            operationFailed(QMailServiceAction::Status::ErrLoginFailed, "");
+            if (!loginFailed) {
+                loginFailed = true;
+                newConnection();
+                return;
+            } else {
+                credentials->invalidate(QStringLiteral("messageserver5"));
+                operationFailed(QMailServiceAction::Status::ErrLoginFailed, "");
+            }
         } else {
             if ((response.length() > 2) && (response[1] == ' ')) {
                 // This is a continuation containing a challenge string (in Base64)
                 QByteArray challenge = QByteArray::fromBase64(response.mid(2).toLatin1());
-                QByteArray response(PopAuthenticator::getResponse(PopConfiguration(config), challenge));
+                QByteArray response(PopAuthenticator::getResponse(PopConfiguration(config), challenge, *credentials));
 
                 if (!response.isEmpty()) {
                     // Send the response as Base64 encoded
@@ -721,7 +739,8 @@ void PopClient::nextAction()
     case StartTLS:
     {
         if (!transport->isEncrypted()) {
-            if (PopAuthenticator::useEncryption(PopConfiguration(config), capabilities)) {
+            if (PopAuthenticator::useEncryption(PopConfiguration(config),
+                                                capabilities)) {
                 // Switch to TLS mode
                 nextStatus = TLS;
                 nextCommand = "STLS";
@@ -735,17 +754,29 @@ void PopClient::nextAction()
     }
     case Connected:
     {
-        emit updateStatus(tr("Logging in"));
+        if (credentials->status() == QMailCredentialsInterface::Ready) {
+            emit updateStatus(tr("Logging in"));
 
-        // Get the login command sequence to use
-        authCommands = PopAuthenticator::getAuthentication(PopConfiguration(config), capabilities);
+            // Get the login command sequence to use
+            authCommands = PopAuthenticator::getAuthentication(PopConfiguration(config),
+                                                               *credentials);
 
-        nextStatus = Auth;
-        nextCommand = authCommands.takeFirst();
+            nextStatus = Auth;
+            nextCommand = authCommands.takeFirst();
+        } else if (credentials->status() == QMailCredentialsInterface::Fetching) {
+            connect(credentials, &QMailCredentialsInterface::statusChanged,
+                    this, &PopClient::onCredentialsStatusChanged);
+            waitForInput = true;
+        } else {
+            operationFailed(QMailServiceAction::Status::ErrConfiguration,
+                            credentials->lastError());
+            return;
+        }
         break;
     }
     case Auth:
     {
+        loginFailed = false;
         if (testing) {
             nextStatus = Done;
         } else {
@@ -1257,7 +1288,7 @@ void PopClient::retrieveOperationCompleted()
         if (!QMailStore::instance()->updateAccount(&account))
             qWarning() << "Unable to update account" << account.id() << "to set lastSynchronized";
     }
-        
+
     // This retrieval may have been asynchronous
     emit allMessagesReceived();
 
@@ -1332,4 +1363,12 @@ void PopClient::removeAllFromBuffer(QMailMessage *message)
         delete _bufferedMessages.at(i);
         _bufferedMessages.remove(i);
     }
+}
+
+void PopClient::onCredentialsStatusChanged()
+{
+    qMailLog(POP)  << "Got credentials status changed:" << credentials->status();
+    disconnect(credentials, &QMailCredentialsInterface::statusChanged,
+               this, &PopClient::onCredentialsStatusChanged);
+    nextAction();
 }

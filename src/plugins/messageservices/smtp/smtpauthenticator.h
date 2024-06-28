@@ -35,15 +35,19 @@
 #define SMTPAUTHENTICATOR_H
 
 #include "smtpconfiguration.h"
+#include <qmailcredentials.h>
 
 #include <QByteArray>
-#include <QStringList>
+#include <QList>
 
 class SmtpAuthenticator
 {
 public:
-    static QByteArray getAuthentication(const SmtpConfiguration &svcCfg, const QStringList &capabilities);
-    static QByteArray getResponse(const SmtpConfiguration &svcCfg, const QByteArray &challenge);
+    static QList<QByteArray> getAuthentication(const SmtpConfiguration &svcCfg,
+                                               const QMailCredentialsInterface &credentials);
+    static QByteArray getResponse(const SmtpConfiguration &svcCfg,
+                                  const QByteArray &challenge,
+                                  const QMailCredentialsInterface &credentials);
 };
 
 #endif

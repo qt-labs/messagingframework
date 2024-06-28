@@ -42,6 +42,7 @@
 #include <qtimer.h>
 #include <qmailserviceaction.h>
 #include <qmailtransport.h>
+#include <qmailcredentials.h>
 
 #ifdef Q_OS_WIN
 // Pipe is not a legal filename char in Windows
@@ -175,7 +176,8 @@ public:
     /*  Valid in non-authenticated state only    */
     void sendCapability();
     void sendStartTLS();
-    void sendLogin(const QMailAccountConfiguration &config);
+    void sendLogin(const QMailAccountConfiguration &config,
+                   const QMailCredentialsInterface *credentials);
 
     /* Valid in authenticated state only    */
     void sendList(const QMailFolder &reference, const QString &mailbox);

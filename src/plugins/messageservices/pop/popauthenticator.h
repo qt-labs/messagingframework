@@ -35,16 +35,21 @@
 #define POPAUTHENTICATOR_H
 
 #include "popconfiguration.h"
+#include <qmailcredentials.h>
 
 #include <QByteArray>
-#include <QStringList>
+#include <QList>
 
 class PopAuthenticator
 {
 public:
-    static bool useEncryption(const PopConfiguration &svcCfg, const QStringList &capabilities);
-    static QList<QByteArray> getAuthentication(const PopConfiguration &svcCfg, const QStringList &capabilities);
-    static QByteArray getResponse(const PopConfiguration &svcCfg, const QByteArray &challenge);
+    static bool useEncryption(const PopConfiguration &svcCfg,
+                              const QStringList &capabilities);
+    static QList<QByteArray> getAuthentication(const PopConfiguration &svcCfg,
+                                               const QMailCredentialsInterface &credentials);
+    static QByteArray getResponse(const PopConfiguration &svcCfg,
+                                  const QByteArray &challenge,
+                                  const QMailCredentialsInterface &credentials);
 };
 
 #endif

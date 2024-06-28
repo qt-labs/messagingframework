@@ -23,6 +23,8 @@ add_subdirectory(tst_qmailthread)
 add_subdirectory(tst_qmflist)
 add_subdirectory(tst_qprivateimplementation)
 add_subdirectory(tst_smtp)
+add_subdirectory(tst_pop)
+add_subdirectory(tst_imap)
 add_subdirectory(tst_storagemanager)
 
 find_program(GPGME_CONFIG gpgme-config)

@@ -33,6 +33,7 @@
 
 #include "qmailauthenticator.h"
 #include "qmailnamespace.h"
+#include "qmaillog.h"
 #include <qmailserviceconfiguration.h>
 #include <qcryptographichash.h>
 #include <qbytearray.h>
@@ -106,13 +107,16 @@ bool QMailAuthenticator::useEncryption(const QMailServiceConfiguration &svcCfg, 
 
 QMail::SaslMechanism QMailAuthenticator::authFromCapabilities(const QStringList &capabilities)
 {
-    if (capabilities.contains(QString::fromLatin1("CRAM-MD5"), Qt::CaseInsensitive)) {
+    if (capabilities.contains(QLatin1String("CRAM-MD5"), Qt::CaseInsensitive)) {
         return QMail::CramMd5Mechanism;
-    } else if (capabilities.contains(QString::fromLatin1("PLAIN"), Qt::CaseInsensitive)) {
+    } else if (capabilities.contains(QLatin1String("XOAUTH2"), Qt::CaseInsensitive)) {
+        // https://developers.google.com/gmail/imap/xoauth2-protocol
+        return QMail::XOAuth2Mechanism;
+    } else if (capabilities.contains(QLatin1String("PLAIN"), Qt::CaseInsensitive)) {
         // According to RFC3501, IMAP4 servers MUST implement plain auth
         return QMail::PlainMechanism;
-    } else if (!capabilities.contains(QString::fromLatin1("PLAIN"), Qt::CaseInsensitive)
-               && !capabilities.contains(QString::fromLatin1("LOGINDISABLED"), Qt::CaseInsensitive)) {
+    } else if (!capabilities.contains(QLatin1String("PLAIN"), Qt::CaseInsensitive)
+               && !capabilities.contains(QLatin1String("LOGINDISABLED"), Qt::CaseInsensitive)) {
         // According to RFC3501, LOGIN should be used as last resort(for retro-compatibility)
         // We should check that plain is not advertised(this can be omitted even if server supports it),
         // and that LOGINDISABLED capability is not advertised.
@@ -124,15 +128,18 @@ QMail::SaslMechanism QMailAuthenticator::authFromCapabilities(const QStringList 
 
 /*!
     Returns the authentication string that should be used to initiate an authentication
-    attempt for the service whose configuration is described by \a svcCfg.  The preferred
-    authentication method may depend upon the service's reported \a capabilities.
+    attempt for the service whose configuration is described by \a svcCfg.  The
+    authentication method is the one chosen in the service configuration.
 */
-QByteArray QMailAuthenticator::getAuthentication(const QMailServiceConfiguration &svcCfg, const QStringList &capabilities)
+QByteArray QMailAuthenticator::getAuthentication(const QMailServiceConfiguration &svcCfg,
+                                                 const QMailCredentialsInterface &credentials)
 {
-    Q_UNUSED(capabilities)
+    Q_UNUSED(credentials);
 
-    if (svcCfg.value(QLatin1String("authentication")) == QString::number(QMail::CramMd5Mechanism))
+    const QString auth = svcCfg.value(QLatin1String("authentication"));
+    if (auth == QString::number(QMail::CramMd5Mechanism)) {
         return "CRAM-MD5";
+    }
 
     // Unknown service type and/or authentication type
     return QByteArray();
@@ -147,20 +154,16 @@ QByteArray QMailAuthenticator::getAuthentication(const QMailServiceConfiguration
     should be decoded before invocation, and the result should be encoded for
     transmission.
 */
-QByteArray QMailAuthenticator::getResponse(const QMailServiceConfiguration &svcCfg, const QByteArray &challenge)
+QByteArray QMailAuthenticator::getResponse(const QMailServiceConfiguration &svcCfg,
+                                           const QByteArray &challenge,
+                                           const QMailCredentialsInterface &credentials)
 {
-    if (!svcCfg.value(QLatin1String("smtpusername")).isEmpty()
-        && (svcCfg.value(QLatin1String("authentication")) == QString::number(QMail::CramMd5Mechanism))) {
-        // SMTP server CRAM-MD5 authentication
-        return cramMd5Response(challenge, svcCfg.value(QLatin1String("smtpusername")).toUtf8(),
-                               QByteArray::fromBase64(svcCfg.value(QLatin1String("smtppassword")).toUtf8()));
-    } else if (svcCfg.value(QLatin1String("authentication")) == QString::number(QMail::CramMd5Mechanism)) {
-        // IMAP/POP server CRAM-MD5 authentication
-        return cramMd5Response(challenge, svcCfg.value(QLatin1String("username")).toUtf8(),
-                               QByteArray::fromBase64(svcCfg.value(QLatin1String("password")).toUtf8()));
+    const QString auth = svcCfg.value(QLatin1String("authentication"));
+    if (auth == QString::number(QMail::CramMd5Mechanism)) {
+        return cramMd5Response(challenge, credentials.username().toUtf8(),
+                               credentials.password().toUtf8());
     }
 
     // Unknown service type and/or authentication type
     return QByteArray();
 }
-

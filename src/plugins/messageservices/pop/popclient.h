@@ -46,6 +46,7 @@
 #include <qmailmessageserver.h>
 #include <qmailtransport.h>
 #include <qmailmessagebuffer.h>
+#include <qmailcredentials.h>
 
 class LongStream;
 class QMailTransport;
@@ -100,6 +101,8 @@ protected slots:
     void messageBufferFlushed();
     void connected(QMailTransport::EncryptType encryptType);
     void transportError(int, QString msg);
+
+    void onCredentialsStatusChanged();
 
     void connectionInactive();
     void incomingData();
@@ -183,6 +186,9 @@ private:
     QVector<QMailMessageBufferFlushCallback*> callbacks;
     bool testing;
     bool pendingDeletes;
+
+    QMailCredentialsInterface *credentials;
+    bool loginFailed;
 };
 
 #endif

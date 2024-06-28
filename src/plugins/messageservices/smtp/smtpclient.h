@@ -43,6 +43,7 @@
 #include <qmailmessage.h>
 #include <qmailmessageserver.h>
 #include <qmailtransport.h>
+#include <qmailcredentials.h>
 
 QT_BEGIN_NAMESPACE
 
@@ -95,6 +96,7 @@ protected slots:
 private slots:
     void sendMoreData(qint64);
     void authExpired();
+    void onCredentialsStatusChanged();
 
 private:
     void sendCommand(const char *data, int len = -1, bool maskDebug = false);
@@ -113,7 +115,7 @@ private:
 private:
     enum TransferStatus
     {
-        Init, Helo, Extension, StartTLS, TLS, Connected, Authenticating, Authenticated,
+        Init, Helo, Extension, StartTLS, TLS, Connected, Authenticate, Authenticating, Authenticated,
         MetaData, From, Recv, MRcv, PrepareData, Data, Body, Chunk, ChunkSent, Sent, Quit, Done
     };
 
@@ -150,6 +152,9 @@ private:
     bool authReset;
 
     QTimer *authTimeout;
+
+    QMailCredentialsInterface *credentials;
+    QList<QByteArray> authCommands;
 };
 
 #endif

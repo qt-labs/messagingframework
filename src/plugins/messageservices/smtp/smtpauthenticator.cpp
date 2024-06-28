@@ -37,56 +37,37 @@
 
 #include <qmailauthenticator.h>
 
-
-namespace {
-
-QMap<QMailAccountId, QList<QByteArray> > gResponses;
-
-}
-
-QByteArray SmtpAuthenticator::getAuthentication(const SmtpConfiguration &svcCfg, const QStringList &capabilities)
+QList<QByteArray> SmtpAuthenticator::getAuthentication(const SmtpConfiguration &svcCfg,
+                                                       const QMailCredentialsInterface &credentials)
 {
-    QByteArray result(QMailAuthenticator::getAuthentication(svcCfg, capabilities));
-    if (!result.isEmpty())
-        return result.prepend("AUTH ");
+    QByteArray generic(QMailAuthenticator::getAuthentication(svcCfg, credentials));
+    if (!generic.isEmpty())
+        return QList<QByteArray>() << generic.prepend("AUTH ");
 
+    QList<QByteArray> result;
+    if (svcCfg.smtpAuthentication() == SmtpConfiguration::Auth_XOAUTH2) {
+        result << QByteArray("AUTH XOAUTH2");
+        result << QString::fromLatin1("user=%1\001auth=Bearer %2\001\001").arg(svcCfg.smtpUsername()).arg(credentials.accessToken()).toUtf8().toBase64();
+    }
 #ifndef QT_NO_SSL
-    if (svcCfg.smtpAuthentication() != SmtpConfiguration::Auth_NONE) {
-        QMailAccountId id(svcCfg.id());
-        QByteArray username(svcCfg.smtpUsername().toUtf8());
-        QByteArray password(svcCfg.smtpPassword().toUtf8());
-
-        if (svcCfg.smtpAuthentication() == SmtpConfiguration::Auth_LOGIN) {
-            result = QByteArray("LOGIN");
-            gResponses[id] = (QList<QByteArray>() << username << password);
-        } else if (svcCfg.smtpAuthentication() == SmtpConfiguration::Auth_PLAIN) {
-            result = QByteArray("PLAIN ") + QByteArray(username + '\0' + username + '\0' + password).toBase64();
-            gResponses[id] = (QList<QByteArray>() << QByteArray(username + '\0' + username + '\0' + password));
-        }
+    else if (svcCfg.smtpAuthentication() == SmtpConfiguration::Auth_LOGIN) {
+        result << QByteArray("AUTH LOGIN");
+        result << credentials.username().toUtf8().toBase64();
+        result << credentials.password().toUtf8().toBase64();
+    } else if (svcCfg.smtpAuthentication() == SmtpConfiguration::Auth_PLAIN) {
+        QByteArray username(credentials.username().toUtf8());
+        QByteArray password(credentials.password().toUtf8());
+        result << QByteArray("AUTH PLAIN ") + QByteArray(username + '\0' + username + '\0' + password).toBase64();
+        result << QByteArray(username + '\0' + username + '\0' + password).toBase64();
     }
 #endif
 
-    if (!result.isEmpty()) {
-        result.prepend("AUTH ");
-    }
     return result;
 }
 
-QByteArray SmtpAuthenticator::getResponse(const SmtpConfiguration &svcCfg, const QByteArray &challenge)
+QByteArray SmtpAuthenticator::getResponse(const SmtpConfiguration &svcCfg,
+                                          const QByteArray &challenge,
+                                          const QMailCredentialsInterface &credentials)
 {
-    QByteArray result;
-
-    QMap<QMailAccountId, QList<QByteArray> >::iterator it = gResponses.find(svcCfg.id());
-    if (it != gResponses.end()) {
-        QList<QByteArray> &responses = it.value();
-        result = responses.takeFirst();
-
-        if (responses.isEmpty())
-            gResponses.erase(it);
-    } else {
-        result = QMailAuthenticator::getResponse(svcCfg, challenge);
-    }
-
-    return result;
+    return QMailAuthenticator::getResponse(svcCfg, challenge, credentials);
 }
-

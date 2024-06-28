@@ -23,6 +23,8 @@ SUBDIRS = \
       tst_locks \
       tst_qmailthread \
       tst_qmflist \
+      tst_pop \
+      tst_imap \
       tst_smtp
 
 exists(/usr/bin/gpgme-config) {

@@ -58,7 +58,8 @@ public:
         Auth_PLAIN = QMail::PlainMechanism,
 #endif
         Auth_CRAMMD5 = QMail::CramMd5Mechanism,
-        Auth_INCOMING = 4
+        Auth_XOAUTH2 = QMail::XOAuth2Mechanism,
+        Auth_INCOMING = 5
     };
 
     explicit SmtpConfiguration(const QMailAccountConfiguration &config);

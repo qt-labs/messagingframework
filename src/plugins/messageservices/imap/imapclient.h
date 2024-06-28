@@ -143,6 +143,7 @@ protected slots:
     void transportStatus(const QString& status);
     void idleOpenRequested();
     void messageBufferFlushed();
+    void onCredentialsStatusChanged();
 
 private:
     friend class ImapStrategyContextBase;
@@ -180,6 +181,9 @@ private:
     int _pushConnectionsReserved;
 
     QMultiMap<QMailMessageId,QString> detachedTempFiles;
+
+    QMailCredentialsInterface *_credentials;
+    bool _loginFailed;
 };
 
 #endif

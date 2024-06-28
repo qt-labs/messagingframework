@@ -3,7 +3,8 @@ QT         = core network qmfclient qmfclient-private
 CONFIG    += warn_on
 
 MODULE_PLUGIN_TYPES = \
-    messageservices
+    messageservices \
+    messagecredentials
 
 contains(DEFINES,MESSAGESERVER_PLUGINS) {
     MODULE_PLUGIN_TYPES += messageserverplugins
@@ -22,6 +23,7 @@ DEFINES += MESSAGESERVER_INTERNAL
 
 HEADERS += \
     qmailauthenticator.h \
+    qmailcredentials.h \
     qmailmessagebuffer.h \
     qmailmessageclassifier.h \
     qmailmessageservice.h \
@@ -31,6 +33,7 @@ HEADERS += \
     qmailheartbeattimer.h
 
 SOURCES += qmailauthenticator.cpp \
+           qmailcredentials.cpp \
            qmailmessagebuffer.cpp \
            qmailmessageclassifier.cpp \
            qmailmessageservice.cpp \
