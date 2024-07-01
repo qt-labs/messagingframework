@@ -10,3 +10,6 @@ exists(/usr/bin/gpgme-config) {
     SUBDIRS += crypto/smime
 }
 
+packagesExist(libsignon-qt5) {
+    SUBDIRS += credentials/sso
+}
