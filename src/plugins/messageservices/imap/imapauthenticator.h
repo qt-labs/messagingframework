@@ -34,7 +34,7 @@
 #ifndef IMAPAUTHENTICATOR_H
 #define IMAPAUTHENTICATOR_H
 
-#include <qmailaccountconfiguration.h>
+#include "imapconfiguration.h"
 
 #include <QByteArray>
 #include <QStringList>
@@ -42,9 +42,9 @@
 class ImapAuthenticator
 {
 public:
-    static bool useEncryption(const QMailAccountConfiguration::ServiceConfiguration &svcCfg, const QStringList &capabilities);
-    static QByteArray getAuthentication(const QMailAccountConfiguration::ServiceConfiguration &svcCfg, const QStringList &capabilities);
-    static QByteArray getResponse(const QMailAccountConfiguration::ServiceConfiguration &svcCfg, const QByteArray &challenge);
+    static bool useEncryption(const ImapConfiguration &svcCfg, const QStringList &capabilities);
+    static QByteArray getAuthentication(const ImapConfiguration &svcCfg, const QStringList &capabilities);
+    static QByteArray getResponse(const ImapConfiguration &svcCfg, const QByteArray &challenge);
 };
 
 #endif

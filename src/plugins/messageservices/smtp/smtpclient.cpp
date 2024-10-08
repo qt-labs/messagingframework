@@ -572,7 +572,7 @@ void SmtpClient::nextAction(const QString &response)
         addressComponent = localAddress.toIPv4Address();
 
         // Find the authentication mode to use
-        QByteArray authCmd(SmtpAuthenticator::getAuthentication(config.serviceConfiguration("smtp"), capabilities));
+        QByteArray authCmd(SmtpAuthenticator::getAuthentication(SmtpConfiguration(config), capabilities));
         if (!authCmd.isEmpty()) {
             sendCommand(authCmd);
             status = Authenticating;
@@ -594,7 +594,7 @@ void SmtpClient::nextAction(const QString &response)
         if (responseCode == 334) {
             // This is a continuation containing a challenge string (in Base64)
             QByteArray challenge = QByteArray::fromBase64(response.mid(4).toLatin1());
-            QByteArray response(SmtpAuthenticator::getResponse(config.serviceConfiguration("smtp"), challenge));
+            QByteArray response(SmtpAuthenticator::getResponse(SmtpConfiguration(config), challenge));
 
             if (!response.isEmpty()) {
                 // Send the response as Base64 encoded, mask the debug output

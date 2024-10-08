@@ -287,7 +287,7 @@ void IdleProtocol::idleCommandTransition(const ImapCommand command, const Operat
         case IMAP_Capability:
         {
             if (!encrypted()) {
-                if (ImapAuthenticator::useEncryption(config.serviceConfiguration("imap4"), capabilities())) {
+                if (ImapAuthenticator::useEncryption(ImapConfiguration(config), capabilities())) {
                     // Switch to encrypted mode
                     sendStartTLS();
                     break;
@@ -586,7 +586,7 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
             }
 
             if (!_protocol.encrypted()) {
-                if (ImapAuthenticator::useEncryption(_config.serviceConfiguration("imap4"), _protocol.capabilities())) {
+                if (ImapAuthenticator::useEncryption(ImapConfiguration(_config), _protocol.capabilities())) {
                     // Switch to encrypted mode
                     emit updateStatus( tr("Starting TLS" ) );
                     _protocol.sendStartTLS();

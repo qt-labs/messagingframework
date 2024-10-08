@@ -44,23 +44,22 @@ QMap<QMailAccountId, QList<QByteArray> > gResponses;
 
 }
 
-QByteArray SmtpAuthenticator::getAuthentication(const QMailAccountConfiguration::ServiceConfiguration &svcCfg, const QStringList &capabilities)
+QByteArray SmtpAuthenticator::getAuthentication(const SmtpConfiguration &svcCfg, const QStringList &capabilities)
 {
     QByteArray result(QMailAuthenticator::getAuthentication(svcCfg, capabilities));
     if (!result.isEmpty())
         return result.prepend("AUTH ");
 
 #ifndef QT_NO_SSL
-    SmtpConfiguration smtpCfg(svcCfg);
-    if (smtpCfg.smtpAuthentication() != SmtpConfiguration::Auth_NONE) {
-        QMailAccountId id(smtpCfg.id());
-        QByteArray username(smtpCfg.smtpUsername().toUtf8());
-        QByteArray password(smtpCfg.smtpPassword().toUtf8());
+    if (svcCfg.smtpAuthentication() != SmtpConfiguration::Auth_NONE) {
+        QMailAccountId id(svcCfg.id());
+        QByteArray username(svcCfg.smtpUsername().toUtf8());
+        QByteArray password(svcCfg.smtpPassword().toUtf8());
 
-        if (smtpCfg.smtpAuthentication() == SmtpConfiguration::Auth_LOGIN) {
+        if (svcCfg.smtpAuthentication() == SmtpConfiguration::Auth_LOGIN) {
             result = QByteArray("LOGIN");
             gResponses[id] = (QList<QByteArray>() << username << password);
-        } else if (smtpCfg.smtpAuthentication() == SmtpConfiguration::Auth_PLAIN) {
+        } else if (svcCfg.smtpAuthentication() == SmtpConfiguration::Auth_PLAIN) {
             result = QByteArray("PLAIN ") + QByteArray(username + '\0' + username + '\0' + password).toBase64();
             gResponses[id] = (QList<QByteArray>() << QByteArray(username + '\0' + username + '\0' + password));
         }
@@ -73,7 +72,7 @@ QByteArray SmtpAuthenticator::getAuthentication(const QMailAccountConfiguration:
     return result;
 }
 
-QByteArray SmtpAuthenticator::getResponse(const QMailAccountConfiguration::ServiceConfiguration &svcCfg, const QByteArray &challenge)
+QByteArray SmtpAuthenticator::getResponse(const SmtpConfiguration &svcCfg, const QByteArray &challenge)
 {
     QByteArray result;
 

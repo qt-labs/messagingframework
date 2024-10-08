@@ -529,7 +529,7 @@ void PopClient::processResponse(const QString &response)
             if ((response.length() > 2) && (response[1] == ' ')) {
                 // This is a continuation containing a challenge string (in Base64)
                 QByteArray challenge = QByteArray::fromBase64(response.mid(2).toLatin1());
-                QByteArray response(PopAuthenticator::getResponse(config.serviceConfiguration("pop3"), challenge));
+                QByteArray response(PopAuthenticator::getResponse(PopConfiguration(config), challenge));
 
                 if (!response.isEmpty()) {
                     // Send the response as Base64 encoded
@@ -721,7 +721,7 @@ void PopClient::nextAction()
     case StartTLS:
     {
         if (!transport->isEncrypted()) {
-            if (PopAuthenticator::useEncryption(config.serviceConfiguration("pop3"), capabilities)) {
+            if (PopAuthenticator::useEncryption(PopConfiguration(config), capabilities)) {
                 // Switch to TLS mode
                 nextStatus = TLS;
                 nextCommand = "STLS";
@@ -738,7 +738,7 @@ void PopClient::nextAction()
         emit updateStatus(tr("Logging in"));
 
         // Get the login command sequence to use
-        authCommands = PopAuthenticator::getAuthentication(config.serviceConfiguration("pop3"), capabilities);
+        authCommands = PopAuthenticator::getAuthentication(PopConfiguration(config), capabilities);
 
         nextStatus = Auth;
         nextCommand = authCommands.takeFirst();

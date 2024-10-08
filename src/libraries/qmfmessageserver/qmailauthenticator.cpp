@@ -96,7 +96,7 @@ static QByteArray cramMd5Response(const QByteArray &nonce, const QByteArray &nam
     The use of encryption may be preferred depending on the service whose configuration 
     is described by \a svcCfg, and the service's reported \a capabilities.
 */
-bool QMailAuthenticator::useEncryption(const QMailAccountConfiguration::ServiceConfiguration &svcCfg, const QStringList &capabilities)
+bool QMailAuthenticator::useEncryption(const QMailServiceConfiguration &svcCfg, const QStringList &capabilities)
 {
     Q_UNUSED(svcCfg)
     Q_UNUSED(capabilities)
@@ -127,12 +127,11 @@ QMail::SaslMechanism QMailAuthenticator::authFromCapabilities(const QStringList 
     attempt for the service whose configuration is described by \a svcCfg.  The preferred
     authentication method may depend upon the service's reported \a capabilities.
 */
-QByteArray QMailAuthenticator::getAuthentication(const QMailAccountConfiguration::ServiceConfiguration &svcCfg, const QStringList &capabilities)
+QByteArray QMailAuthenticator::getAuthentication(const QMailServiceConfiguration &svcCfg, const QStringList &capabilities)
 {
     Q_UNUSED(capabilities)
 
-    QMailServiceConfiguration configuration(svcCfg);
-    if (configuration.value(QLatin1String("authentication")) == QString::number(QMail::CramMd5Mechanism))
+    if (svcCfg.value(QLatin1String("authentication")) == QString::number(QMail::CramMd5Mechanism))
         return "CRAM-MD5";
 
     // Unknown service type and/or authentication type
@@ -148,18 +147,17 @@ QByteArray QMailAuthenticator::getAuthentication(const QMailAccountConfiguration
     should be decoded before invocation, and the result should be encoded for
     transmission.
 */
-QByteArray QMailAuthenticator::getResponse(const QMailAccountConfiguration::ServiceConfiguration &svcCfg, const QByteArray &challenge)
+QByteArray QMailAuthenticator::getResponse(const QMailServiceConfiguration &svcCfg, const QByteArray &challenge)
 {
-    QMailServiceConfiguration configuration(svcCfg);
-    if (!configuration.value(QLatin1String("smtpusername")).isEmpty()
-        && (configuration.value(QLatin1String("authentication")) == QString::number(QMail::CramMd5Mechanism))) {
+    if (!svcCfg.value(QLatin1String("smtpusername")).isEmpty()
+        && (svcCfg.value(QLatin1String("authentication")) == QString::number(QMail::CramMd5Mechanism))) {
         // SMTP server CRAM-MD5 authentication
-        return cramMd5Response(challenge, configuration.value(QLatin1String("smtpusername")).toUtf8(),
-                               QByteArray::fromBase64(configuration.value(QLatin1String("smtppassword")).toUtf8()));
-    } else if (configuration.value(QLatin1String("authentication")) == QString::number(QMail::CramMd5Mechanism)) {
+        return cramMd5Response(challenge, svcCfg.value(QLatin1String("smtpusername")).toUtf8(),
+                               QByteArray::fromBase64(svcCfg.value(QLatin1String("smtppassword")).toUtf8()));
+    } else if (svcCfg.value(QLatin1String("authentication")) == QString::number(QMail::CramMd5Mechanism)) {
         // IMAP/POP server CRAM-MD5 authentication
-        return cramMd5Response(challenge, configuration.value(QLatin1String("username")).toUtf8(),
-                               QByteArray::fromBase64(configuration.value(QLatin1String("password")).toUtf8()));
+        return cramMd5Response(challenge, svcCfg.value(QLatin1String("username")).toUtf8(),
+                               QByteArray::fromBase64(svcCfg.value(QLatin1String("password")).toUtf8()));
     }
 
     // Unknown service type and/or authentication type

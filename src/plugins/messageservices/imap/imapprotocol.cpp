@@ -606,14 +606,14 @@ void LoginState::init()
 
 QString LoginState::transmit(ImapContext *c)
 {
-    return c->sendCommand(ImapAuthenticator::getAuthentication(_config.serviceConfiguration("imap4"), _capabilities));
+    return c->sendCommand(ImapAuthenticator::getAuthentication(ImapConfiguration(_config), _capabilities));
 }
 
 bool LoginState::continuationResponse(ImapContext *c, const QString &received)
 {
     // The server input is Base64 encoded
     QByteArray challenge = QByteArray::fromBase64(received.toLatin1());
-    QByteArray response(ImapAuthenticator::getResponse(_config.serviceConfiguration("imap4"), challenge));
+    QByteArray response(ImapAuthenticator::getResponse(ImapConfiguration(_config), challenge));
 
     if (!response.isEmpty()) {
         c->sendData(response.toBase64(), true);

@@ -39,15 +39,14 @@
 #include <qmailtransport.h>
 
 
-bool PopAuthenticator::useEncryption(const QMailAccountConfiguration::ServiceConfiguration &svcCfg, const QStringList &capabilities)
+bool PopAuthenticator::useEncryption(const PopConfiguration &svcCfg, const QStringList &capabilities)
 {
 #ifdef QT_NO_SSL
     Q_UNUSED(svcCfg)
     Q_UNUSED(capabilities)
     return false;
 #else
-    PopConfiguration popCfg(svcCfg);
-    bool useTLS(popCfg.mailEncryption() == QMailTransport::Encrypt_TLS);
+    bool useTLS(svcCfg.mailEncryption() == QMailTransport::Encrypt_TLS);
 
     if (!capabilities.contains("STLS")) {
         if (useTLS) {
@@ -68,7 +67,7 @@ bool PopAuthenticator::useEncryption(const QMailAccountConfiguration::ServiceCon
 #endif
 }
 
-QList<QByteArray> PopAuthenticator::getAuthentication(const QMailAccountConfiguration::ServiceConfiguration &svcCfg, const QStringList &capabilities)
+QList<QByteArray> PopAuthenticator::getAuthentication(const PopConfiguration &svcCfg, const QStringList &capabilities)
 {
     QList<QByteArray> result;
 
@@ -77,16 +76,14 @@ QList<QByteArray> PopAuthenticator::getAuthentication(const QMailAccountConfigur
         result.append(QByteArray("AUTH ") + auth);
     } else {
         // If not handled by the authenticator, fall back to user/pass
-        PopConfiguration popCfg(svcCfg);
-
-        result.append(QByteArray("USER ") + popCfg.mailUserName().toLatin1());
-        result.append(QByteArray("PASS ") + popCfg.mailPassword().toLatin1());
+        result.append(QByteArray("USER ") + svcCfg.mailUserName().toLatin1());
+        result.append(QByteArray("PASS ") + svcCfg.mailPassword().toLatin1());
     }
 
     return result;
 }
 
-QByteArray PopAuthenticator::getResponse(const QMailAccountConfiguration::ServiceConfiguration &svcCfg, const QByteArray &challenge)
+QByteArray PopAuthenticator::getResponse(const PopConfiguration &svcCfg, const QByteArray &challenge)
 {
     return QMailAuthenticator::getResponse(svcCfg, challenge);
 }
