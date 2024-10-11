@@ -767,7 +767,7 @@ int main(int argc, char** argv)
         This is because we intend to fork() later on and we don't want to
         have to process events for the sake of the child process.
     */
-    QApplication app(argc, argv);
+    QCoreApplication app(argc, argv);
 
     int iters = 1;
     bool verbose = false;

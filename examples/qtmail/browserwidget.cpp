@@ -1034,14 +1034,14 @@ QString appendLine(const QString& preceding, const QString& suffix)
 
     QString result(preceding);
 
-    int nwsIndex = QRegExp("[^\\s]").indexIn(suffix);
+    int nwsIndex = suffix.indexOf(QRegularExpression("[^\\s]"));
     if (nwsIndex > 0) {
         // This line starts with whitespace, which we'll have to protect to keep
 
         // We can't afford to make huge tracts of whitespace; ASCII art will be broken!
         // Convert any run of up to 4 spaces to a tab; convert all tabs to two spaces each
         QString leader(suffix.left(nwsIndex));
-        leader.replace(QRegExp(" {1,4}"), "\t");
+        leader.replace(QRegularExpression(" {1,4}"), "\t");
 
         // Convert the spaces to non-breaking
         leader.replace("\t", "&nbsp;&nbsp;");
@@ -1055,7 +1055,7 @@ QString appendLine(const QString& preceding, const QString& suffix)
 
 QString unwrap(const QString& txt, const QString& prepend)
 {
-    QStringList lines = txt.split('\n', QString::KeepEmptyParts);
+    QStringList lines = txt.split('\n', Qt::KeepEmptyParts);
 
     QString result;
     result.reserve(txt.length());
@@ -1071,7 +1071,7 @@ QString unwrap(const QString& txt, const QString& prepend)
                 if (prev == lines.begin())
                     continue;
             } else {
-                int wsIndex = (*it).indexOf(QRegExp("\\s"));
+                int wsIndex = (*it).indexOf(QRegularExpression("\\s"));
                 if (wsIndex == 0) {
                     // This was probably an intentional newline
                 } else {
@@ -1208,7 +1208,7 @@ QString BrowserWidget::buildParagraph(const QString& txt, const QString& prepend
     if (preserveWs)
         return input.replace('\n', "<br>");
 
-    QStringList p = input.split( ' ', QString::SkipEmptyParts );
+    QStringList p = input.split( ' ', Qt::SkipEmptyParts );
     return p.join(QString(' '));
 }
 
@@ -1223,7 +1223,7 @@ QString BrowserWidget::encodeUrlAndMail(const QString& txt)
 
     // We should be optimistic in our URL matching - the link resolution can
     // always fail, but if we don't match it, then we can't make it into a link
-    QRegExp urlPattern("("
+    QRegularExpression urlPattern("("
                             "(?:http|https|ftp)://"
                        "|"
                             "mailto:"
@@ -1251,21 +1251,24 @@ QString BrowserWidget::encodeUrlAndMail(const QString& txt)
                              "\\*\\+\\-\\/\\=\\?\\^\\_\\`"
                              "\\{\\|\\}\\~\\&\\(\\)]*"       
                        ")?");
+    QRegularExpressionMatch urlMatch;
 
     // Find and encode file:// links
-    QRegExp filePattern("(file://\\S+)");
+    QRegularExpression filePattern("(file://\\S+)");
+    QRegularExpressionMatch fileMatch;
 
     // Find and encode email addresses
-    QRegExp addressPattern(QMailAddress::emailAddressPattern());
+    QRegularExpression addressPattern(QMailAddress::emailAddressPattern());
+    QRegularExpressionMatch addressMatch;
 
-    int urlPos = urlPattern.indexIn(txt);
-    int addressPos = addressPattern.indexIn(txt);
-    int filePos = filePattern.indexIn(txt);
+    int urlPos = txt.indexOf(urlPattern, 0, &urlMatch);
+    int addressPos = txt.indexOf(addressPattern, 0, &fileMatch);
+    int filePos = txt.indexOf(filePattern, 0, &addressMatch);
 
-    int lastPos = 0;
+    int lastPos = 0, matchLength = 0;
     while ((urlPos != -1) || (addressPos != -1) || (filePos != -1)) {
         int *matchPos = 0;
-        QRegExp *matchPattern = 0;
+        QRegularExpression *matchPattern = 0;
 
         // Which pattern has the first match?
         if ((urlPos != -1) && 
@@ -1273,16 +1276,19 @@ QString BrowserWidget::encodeUrlAndMail(const QString& txt)
             ((filePos == -1) || (filePos >= urlPos))) {
             matchPos = &urlPos;
             matchPattern = &urlPattern;
+            matchLength = urlMatch.capturedLength(0);
         } else if ((addressPos != -1) &&
                    ((urlPos == -1) || (urlPos >= addressPos)) &&
                    ((filePos == -1) || (filePos >= addressPos))) {
             matchPos = &addressPos;
             matchPattern = &addressPattern;
+            matchLength = addressMatch.capturedLength(0);
         } else if ((filePos != -1) &&
                    ((urlPos == -1) || (urlPos >= filePos)) &&
                    ((addressPos == -1) || (addressPos >= filePos))) {
             matchPos = &filePos;
             matchPattern = &filePattern;
+            matchLength = fileMatch.capturedLength(0);
         } else {
             Q_ASSERT(false);
             return QString();
@@ -1292,23 +1298,23 @@ QString BrowserWidget::encodeUrlAndMail(const QString& txt)
 
         if (matchPattern == &urlPattern) {
             // Is this a valid URL?
-            QString scheme = urlPattern.cap(1);
-            QString credentials = urlPattern.cap(2);
-            QString host(urlPattern.cap(3));
+            QString scheme = urlMatch.captured(1);
+            QString credentials = urlMatch.captured(2);
+            QString host(urlMatch.captured(3));
 
             // Ensure that the host is not purely a number
             // Also ignore credentials with no scheme
             if (scheme.isEmpty() && 
-                ((host.indexOf(QRegExp("[^\\d\\.]")) == -1) || (!credentials.isEmpty()))) {
+                ((host.indexOf(QRegularExpression("[^\\d\\.]")) == -1) || (!credentials.isEmpty()))) {
                 // Ignore this match
-                urlPos = urlPattern.indexIn(txt, urlPos + 1);
+                urlPos = txt.indexOf(urlPattern, urlPos + 1);
                 continue;
             } else {
                 char parenTypes[] = { '(', ')', '[', ']', '{', '}', '<', '>', '\0' };
 
                 QString leading;
                 QString trailing;
-                QString url = urlPattern.cap(0);
+                QString url = urlMatch.captured(0);
 
                 QChar firstChar(url.at(0));
                 QChar lastChar(url.at(url.length() - 1));
@@ -1342,11 +1348,11 @@ QString BrowserWidget::encodeUrlAndMail(const QString& txt)
                 replacement = refUrl(url, scheme, leading, trailing);
             }
         } else if (matchPattern == &addressPattern) {
-            QString address = addressPattern.cap(0);
+            QString address = addressMatch.captured(0);
 
             replacement = refMailTo(QMailAddress(address));
         } else if (matchPattern == &filePattern) {
-            QString file = filePattern.cap(0);
+            QString file = fileMatch.captured(0);
 
             replacement = refUrl(file, "file://", QString(), QString());
         }
@@ -1357,18 +1363,18 @@ QString BrowserWidget::encodeUrlAndMail(const QString& txt)
         result.append(replacement);
 
         // Find the following pattern match for this pattern
-        lastPos = *matchPos + matchPattern->cap(0).length();
-        *matchPos = matchPattern->indexIn(txt, lastPos);
+        lastPos = *matchPos + matchLength;
+        *matchPos = txt.indexOf(*matchPattern, lastPos);
 
         // Bypass any other matches contained within the matched text
         if ((urlPos != -1) && (urlPos < lastPos)) {
-            urlPos = urlPattern.indexIn(txt, lastPos);
+            urlPos = txt.indexOf(urlPattern, lastPos);
         }
         if ((addressPos != -1) && (addressPos < lastPos)) {
-            addressPos = addressPattern.indexIn(txt, lastPos);
+            addressPos = txt.indexOf(addressPattern, lastPos);
         }
         if ((filePos != -1) && (filePos < lastPos)) {
-            filePos = filePattern.indexIn(txt, lastPos);
+            filePos = txt.indexOf(filePattern, lastPos);
         }
     }
 

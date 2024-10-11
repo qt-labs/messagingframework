@@ -51,6 +51,7 @@
 #include <QCoreApplication>
 #include <qmaillog.h>
 #include <QDir>
+#include <QElapsedTimer>
 #include <QTest>
 
 #undef HAVE_TICK_COUNTER // not useful for this test
@@ -60,7 +61,7 @@ class BenchmarkContextPrivate
 public:
     bool xml;
     qint64 qmfUsage;
-    QTime time;
+    QElapsedTimer time;
 #ifdef HAVE_TICK_COUNTER
     CycleCounterTicks ticks;
 #endif

@@ -42,6 +42,7 @@
 #include "qmailmessage.h"
 #include "qmailfolder.h"
 #include "qmailaction.h"
+#include "qmailstore.h"
 #include <QString>
 #include <QStringList>
 

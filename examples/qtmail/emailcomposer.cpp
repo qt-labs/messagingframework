@@ -63,6 +63,7 @@
 #include <QUrl>
 #include <QSyntaxHighlighter>
 #include <QCompleter>
+#include <QRegularExpression>
 
 static int minimumLeftWidth = 65;
 static const QString placeholder("(no subject)");
@@ -74,7 +75,7 @@ typedef QList<Recipient> RecipientList;
 static QCompleter* sentFolderCompleter()
 {
     const int completionAddressLimit(1000);
-    QSet<QString> addressSet;
+    QStringList addressList;
     QMailMessageKey::Properties props(QMailMessageKey::Recipients);
     QMailMessageKey key(QMailMessageKey::status(QMailMessage::Sent));
     QMailMessageMetaDataList metaDataList(QMailStore::instance()->messagesMetaData(key, props, QMailStore::ReturnDistinct));
@@ -82,14 +83,14 @@ static QCompleter* sentFolderCompleter()
         foreach(QMailAddress address, metaData.recipients()) {
             QString s(address.toString());
             if (!s.simplified().isEmpty()) {
-                addressSet.insert(s);
+                addressList.append(s);
             }
         }
-        if (addressSet.count() >= completionAddressLimit)
+        if (addressList.count() >= completionAddressLimit)
             break;
     }
 
-    QCompleter *completer(new QCompleter(addressSet.toList()));
+    QCompleter *completer(new QCompleter(addressList));
     completer->setCaseSensitivity(Qt::CaseInsensitive);
     return completer;
 }
@@ -469,10 +470,11 @@ void SpellingHighlighter::highlightBlock(const QString &text)
     spellingFormat.setUnderlineStyle(QTextCharFormat::SpellCheckUnderline);
     spellingFormat.setUnderlineColor(Qt::red);
 
-    QRegExp wordExpression("\\b\\w+\\b");
-    int index = text.indexOf(wordExpression);
+    QRegularExpression wordExpression("(\\b\\w+\\b)");
+    QRegularExpressionMatch match;
+    int index = text.indexOf(wordExpression, 0, &match);
     while (index >= 0) {
-        int length = wordExpression.matchedLength();
+        int length = match.capturedLength();
         if (!dictionary->contains(text.mid(index, length)))
             setFormat(index, length, spellingFormat);
         index = text.indexOf(wordExpression, index + length);
@@ -930,7 +932,7 @@ void EmailComposerInterface::create(const QMailMessage& sourceMail)
             QString contentLocation = sourceMail.customField(name);
             if (contentLocation.isEmpty()) {
                 // See if we can use the value in the message (remove any folded whitespace)
-                contentLocation = QUrl(part.contentLocation().remove(QRegExp("\\s"))).toLocalFile();
+                contentLocation = QUrl(part.contentLocation().remove(QRegularExpression("\\s"))).toLocalFile();
             }
 
             if (part.referenceType() != QMailMessagePart::None) {

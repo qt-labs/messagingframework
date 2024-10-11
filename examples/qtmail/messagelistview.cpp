@@ -363,8 +363,8 @@ void MessageList::keyPressEvent(QKeyEvent* e)
                 if (unread) {
                     setCurrentIndex(index);
                     scrollTo(index);
-                    QApplication::postEvent(this, new QKeyEvent(QEvent::KeyPress, Qt::Key_Enter, 0));
-                    QApplication::postEvent(this, new QKeyEvent(QEvent::KeyRelease, Qt::Key_Enter, 0));
+                    QApplication::postEvent(this, new QKeyEvent(QEvent::KeyPress, Qt::Key_Enter, Qt::NoModifier));
+                    QApplication::postEvent(this, new QKeyEvent(QEvent::KeyRelease, Qt::Key_Enter, Qt::NoModifier));
                     break;
                 }
                 if (e->key() == Qt::Key_Plus) {

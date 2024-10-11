@@ -1,0 +1,5 @@
+add_subdirectory(qmfclient)
+add_subdirectory(qmfmessageserver)
+if(BUILD_WIDGETS)
+  add_subdirectory(qmfwidgets)
+endif()

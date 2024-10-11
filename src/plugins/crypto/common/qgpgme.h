@@ -50,6 +50,7 @@ class QMailCryptoGPGME: public QObject,
     public QMailCryptographicServiceInterface
 {
     Q_OBJECT
+    Q_INTERFACES(QMailCryptographicServiceInterface)
 
  public:
     ~QMailCryptoGPGME() {};

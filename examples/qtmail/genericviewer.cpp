@@ -178,10 +178,11 @@ void GenericViewer::linkClicked(const QUrl& link)
     QString command = link.toString();
 
     if (command.startsWith(QLatin1String("attachment"))) {
-        QRegExp splitter("attachment;([^;]+)(?:;([\\d\\.]*))?");
-        if (splitter.exactMatch(command)) {
-            QString cmd = splitter.cap(1);
-            QString location = splitter.cap(2);
+        QRegularExpression splitter("attachment;([^;]+)(?:;([\\d\\.]*))?");
+        QRegularExpressionMatch match;
+        if (command.indexOf(splitter, 0, &match) >= 0) {
+            QString cmd = match.captured(1);
+            QString location = match.captured(2);
             if (!location.isEmpty()) {
                 QMailMessagePart::Location partLocation(location);
 
@@ -200,9 +201,10 @@ void GenericViewer::linkClicked(const QUrl& link)
             }
         }
     } else if (command.startsWith(QLatin1String("download"))) {
-        QRegExp splitter("download(?:;(\\d+))?");
-        if (splitter.exactMatch(command)) {
-            QString bytes = splitter.cap(1);
+        QRegularExpression splitter("download(?:;(\\d+))?");
+        QRegularExpressionMatch match;
+        if (command.indexOf(splitter, 0, &match) >= 0) {
+            QString bytes = match.captured(1);
             if (!bytes.isEmpty()) {
                 emit retrieveMessagePortion(bytes.toUInt());
             } else {

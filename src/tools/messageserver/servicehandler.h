@@ -46,6 +46,7 @@
 #include <QString>
 #include <QStringList>
 #include <QPointer>
+#include <QDBusVariant>
 
 class QMailServiceConfiguration;
 
@@ -98,6 +99,7 @@ public slots:
     void shutdown();
     void listActions();
     void protocolRequest(quint64 action, const QMailAccountId &accountId, const QString &request, const QVariant &data);
+    void protocolRequest(quint64 action, const QMailAccountId &accountId, const QString &request, const QDBusVariant &data);
 
 signals:
     void actionStarted(QMailActionData action);

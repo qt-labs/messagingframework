@@ -33,7 +33,7 @@
 
 #include <QObject>
 #include <QTest>
-#include <private/longstream_p.h>
+#include <longstream_p.h>
 #include <ctype.h>
 #include <QDir>
 #include <QRegularExpression>

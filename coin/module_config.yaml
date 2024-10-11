@@ -10,14 +10,5 @@ machine_type:
 
 instructions:
   Build:
-    - type: EnvironmentVariable
-      variableName: SOURCE_DIR
-      variableValue: "{{.SourceDir}}"
-    - type: SetBuildDirectory
-      directory: "{{.AgentWorkingDir}}/build"
-    - type: MakeDirectory
-      directory: "{{.BuildDir}}"
-    - type: ChangeDirectory
-      directory: "{{.BuildDir}}"
-    #- !include "{{qt/qtbase}}/coin_module_build_template_v2.yaml"
+    - !include "{{qt/qtbase}}/coin_module_build_template_v2.yaml"
   Test: []

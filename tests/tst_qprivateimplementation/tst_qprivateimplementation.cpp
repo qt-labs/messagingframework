@@ -33,7 +33,7 @@
 
 // We're effectively part of the QMF library for this test:
 #define QMF_INTERNAL
-#include "private/qprivateimplementationdef_p.h"
+#include <qprivateimplementationdef_p.h>
 
 #include <QObject>
 #include <QString>

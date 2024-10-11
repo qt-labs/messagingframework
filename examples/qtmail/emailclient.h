@@ -66,7 +66,6 @@ QT_BEGIN_NAMESPACE
 
 class QAction;
 class QStackedWidget;
-class QStringList;
 class QToolBar;
 
 QT_END_NAMESPACE
@@ -76,7 +75,7 @@ class MessageUiBase : public QMainWindow
     Q_OBJECT
 
 public:
-    MessageUiBase(QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = 0);
+    MessageUiBase(QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::Widget);
     virtual ~MessageUiBase() {}
 
 signals:
@@ -145,7 +144,7 @@ class EmailClient : public MessageUiBase
     Q_OBJECT
 
 public:
-    EmailClient(QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = 0);
+    EmailClient(QWidget *parent = Q_NULLPTR, Qt::WindowFlags f = Qt::Widget);
     ~EmailClient();
 
     bool cleanExit(bool force);

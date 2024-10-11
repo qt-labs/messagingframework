@@ -266,13 +266,13 @@
     </method>
     <method name="addMessages">
       <arg name="actionId" type="t" direction="in"/>
-      <arg name="messages" type="a((i)t(i)(t)su(t)(t)(t)ssssss(t)ssss(t)(i)mssbbs(t))" direction="in"/>
+      <arg name="messages" type="a((i)t(i)(t)su(t)(t)(t)ssssss(t)ssss(t)(i)a{ss}bbs(t))" direction="in"/>
       <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
       <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="QMailMessageMetaDataList"/>
     </method>
     <method name="updateMessages">
       <arg name="actionId" type="t" direction="in"/>
-      <arg name="messages" type="a((i)t(i)(t)su(t)(t)(t)ssssss(t)ssss(t)(i)mssbbs(t))" direction="in"/>
+      <arg name="messages" type="a((i)t(i)(t)su(t)(t)(t)ssssss(t)ssss(t)(i)a{ss}bbs(t))" direction="in"/>
       <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
       <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="QMailMessageMetaDataList"/>
     </method>

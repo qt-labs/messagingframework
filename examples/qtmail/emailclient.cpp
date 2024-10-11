@@ -48,7 +48,7 @@
 #include <qmailstore.h>
 #include <qmailtimestamp.h>
 #include <QApplication>
-#include <QDesktopWidget>
+#include <QGuiApplication>
 #include <QFile>
 #include <QGridLayout>
 #include <QHBoxLayout>
@@ -638,14 +638,10 @@ void EmailClient::setVisible(bool visible)
     if(visible)
     {
         QPoint p(0, 0);
-        int extraw = 0, extrah = 0, scrn = 0;
+        const QScreen *scrn = QGuiApplication::primaryScreen();
+        int extraw = 0, extrah = 0;
         QRect desk;
-        if (QApplication::desktop()->isVirtualDesktop()) {
-            scrn = QApplication::desktop()->screenNumber(QCursor::pos());
-        } else {
-            scrn = QApplication::desktop()->screenNumber(this);
-        }
-        desk = QApplication::desktop()->availableGeometry(scrn);
+        desk = scrn->availableGeometry();
 
         QWidgetList list = QApplication::topLevelWidgets();
         for (int i = 0; (extraw == 0 || extrah == 0) && i < list.size(); ++i) {
@@ -1720,7 +1716,9 @@ void EmailClient::deleteSelectedMessages()
         if(!localOnlyIds.isEmpty())
         {
             QMailStore::instance()->removeMessages(QMailMessageKey::id(localOnlyIds));
-            deleteList = (deleteList.toSet().subtract(localOnlyIds.toSet())).toList();
+            for (const QMailMessageId &id : localOnlyIds) {
+                deleteList.removeAll(id);
+            }
         }
         if(!deleteList.isEmpty())
             storageAction("Deleting messages..")->deleteMessages(deleteList);
@@ -2008,7 +2006,7 @@ void EmailClient::flagRetrievalActivityChanged(QMailServiceAction::Activity acti
 
         // Are there pending message IDS to be checked?
         if (!flagMessageIds.isEmpty()) {
-            m_flagRetrievalAction->retrieveMessages(flagMessageIds.toList(), QMailRetrievalAction::Flags);
+            m_flagRetrievalAction->retrieveMessages(QList<QMailMessageId>(flagMessageIds.begin(), flagMessageIds.end()), QMailRetrievalAction::Flags);
             flagMessageIds.clear();
         }
     }
@@ -2304,7 +2302,7 @@ void EmailClient::retrieveVisibleMessagesFlags()
 
     if (m_flagRetrievalAction->isRunning()) {
         // There is a flag retrieval already ocurring; save these IDs to be checked afterwards
-        flagMessageIds += ids.toSet();
+        flagMessageIds += QSet<QMailMessageId>(ids.begin(), ids.end());
     } else {
         m_flagRetrievalAction->retrieveMessages(ids, QMailRetrievalAction::Flags);
     }
@@ -2879,10 +2877,10 @@ void EmailClient::nextMessage()
 {
     QWidget *list = messageListView()->findChild<QWidget*>("messagelistview");
     if (list) {
-        QApplication::postEvent(list, new QKeyEvent(QEvent::KeyPress, Qt::Key_Down, 0));
-        QApplication::postEvent(list, new QKeyEvent(QEvent::KeyRelease, Qt::Key_Down, 0));
-        QApplication::postEvent(list, new QKeyEvent(QEvent::KeyPress, Qt::Key_Enter, 0));
-        QApplication::postEvent(list, new QKeyEvent(QEvent::KeyRelease, Qt::Key_Enter, 0));
+        QApplication::postEvent(list, new QKeyEvent(QEvent::KeyPress, Qt::Key_Down, Qt::NoModifier));
+        QApplication::postEvent(list, new QKeyEvent(QEvent::KeyRelease, Qt::Key_Down, Qt::NoModifier));
+        QApplication::postEvent(list, new QKeyEvent(QEvent::KeyPress, Qt::Key_Enter, Qt::NoModifier));
+        QApplication::postEvent(list, new QKeyEvent(QEvent::KeyRelease, Qt::Key_Enter, Qt::NoModifier));
     }
 }
 
@@ -2890,10 +2888,10 @@ void EmailClient::previousMessage()
 {
     QWidget *list = messageListView()->findChild<QWidget*>("messagelistview");
     if (list) {
-        QApplication::postEvent(list, new QKeyEvent(QEvent::KeyPress, Qt::Key_Up, 0));
-        QApplication::postEvent(list, new QKeyEvent(QEvent::KeyRelease, Qt::Key_Up, 0));
-        QApplication::postEvent(list, new QKeyEvent(QEvent::KeyPress, Qt::Key_Enter, 0));
-        QApplication::postEvent(list, new QKeyEvent(QEvent::KeyRelease, Qt::Key_Enter, 0));
+        QApplication::postEvent(list, new QKeyEvent(QEvent::KeyPress, Qt::Key_Up, Qt::NoModifier));
+        QApplication::postEvent(list, new QKeyEvent(QEvent::KeyRelease, Qt::Key_Up, Qt::NoModifier));
+        QApplication::postEvent(list, new QKeyEvent(QEvent::KeyPress, Qt::Key_Enter, Qt::NoModifier));
+        QApplication::postEvent(list, new QKeyEvent(QEvent::KeyRelease, Qt::Key_Enter, Qt::NoModifier));
     }
 }
    
@@ -2901,8 +2899,8 @@ void EmailClient::nextUnreadMessage()
 {
     QWidget *list = messageListView()->findChild<QWidget*>("messagelistview");
     if (list) {
-        QApplication::postEvent(list, new QKeyEvent(QEvent::KeyPress, Qt::Key_Plus, 0, "+"));
-        QApplication::postEvent(list, new QKeyEvent(QEvent::KeyRelease, Qt::Key_Plus, 0, "+"));
+        QApplication::postEvent(list, new QKeyEvent(QEvent::KeyPress, Qt::Key_Plus, Qt::NoModifier, "+"));
+        QApplication::postEvent(list, new QKeyEvent(QEvent::KeyRelease, Qt::Key_Plus, Qt::NoModifier, "+"));
     }
 }
 
@@ -2910,10 +2908,10 @@ void EmailClient::previousUnreadMessage()
 {
     QWidget *list = messageListView()->findChild<QWidget*>("messagelistview");
     if (list) {
-        QApplication::postEvent(list, new QKeyEvent(QEvent::KeyPress, Qt::Key_Minus, 0, "-"));
-        QApplication::postEvent(list, new QKeyEvent(QEvent::KeyRelease, Qt::Key_Minus, 0, "-"));
-        QApplication::postEvent(list, new QKeyEvent(QEvent::KeyPress, Qt::Key_Enter, 0));
-        QApplication::postEvent(list, new QKeyEvent(QEvent::KeyRelease, Qt::Key_Enter, 0));
+        QApplication::postEvent(list, new QKeyEvent(QEvent::KeyPress, Qt::Key_Minus, Qt::NoModifier, "-"));
+        QApplication::postEvent(list, new QKeyEvent(QEvent::KeyRelease, Qt::Key_Minus, Qt::NoModifier, "-"));
+        QApplication::postEvent(list, new QKeyEvent(QEvent::KeyPress, Qt::Key_Enter, Qt::NoModifier));
+        QApplication::postEvent(list, new QKeyEvent(QEvent::KeyRelease, Qt::Key_Enter, Qt::NoModifier));
     }
 }
 
@@ -2922,8 +2920,8 @@ void EmailClient::scrollReaderDown()
     QWidget *renderer = readMailWidget()->findChild<QWidget*>("renderer");
 
     if (renderer) {
-        QApplication::postEvent(renderer, new QKeyEvent(QEvent::KeyPress, Qt::Key_Down, 0));
-        QApplication::postEvent(renderer, new QKeyEvent(QEvent::KeyRelease, Qt::Key_Down, 0));
+        QApplication::postEvent(renderer, new QKeyEvent(QEvent::KeyPress, Qt::Key_Down, Qt::NoModifier));
+        QApplication::postEvent(renderer, new QKeyEvent(QEvent::KeyRelease, Qt::Key_Down, Qt::NoModifier));
     }
 }
 
@@ -2931,8 +2929,8 @@ void EmailClient::scrollReaderUp()
 {
     QWidget *renderer = readMailWidget()->findChild<QWidget*>("renderer");
     if (renderer) {
-        QApplication::postEvent(renderer, new QKeyEvent(QEvent::KeyPress, Qt::Key_Up, 0));
-        QApplication::postEvent(renderer, new QKeyEvent(QEvent::KeyRelease, Qt::Key_Up, 0));
+        QApplication::postEvent(renderer, new QKeyEvent(QEvent::KeyPress, Qt::Key_Up, Qt::NoModifier));
+        QApplication::postEvent(renderer, new QKeyEvent(QEvent::KeyRelease, Qt::Key_Up, Qt::NoModifier));
     }
 }
 

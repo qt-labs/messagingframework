@@ -34,7 +34,7 @@
 #include "imapstrategy.h"
 #include "imapclient.h"
 #include "imapconfiguration.h"
-#include <private/longstream_p.h>
+#include <longstream_p.h>
 #include <qobject.h>
 #include <qmaillog.h>
 #include <qmailaccount.h>

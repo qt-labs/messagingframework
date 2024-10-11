@@ -448,10 +448,14 @@ void AttachmentListWidget::addAttachment(const QString& attachment)
 
 void AttachmentListWidget::addAttachments(const QStringList& attachments)
 {
-    QSet<QString> newAttachments = attachments.toSet() - m_attachments.toSet();
-
+    QStringList newAttachments;
+    for (const QString &attachment : attachments) {
+        if (!m_attachments.contains(attachment)) {
+            newAttachments << attachment;
+        }
+    }
     if (!newAttachments.isEmpty()) {
-        m_attachments += newAttachments.toList();
+        m_attachments += newAttachments;
 
         m_model->setAttachments(m_attachments);
         setVisible(!m_model->isEmpty());

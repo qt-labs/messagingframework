@@ -38,7 +38,7 @@
 #include <qmailstore.h>
 #include <QSettings>
 #include <qmailnamespace.h>
-#include <private/locks_p.h>
+#include <locks_p.h>
 
 class tst_QMailStoreKeys : public QObject
 {

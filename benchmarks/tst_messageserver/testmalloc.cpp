@@ -110,7 +110,7 @@ int TestMalloc::peakUsable()
 {
     if (!D) TestMallocPrivate::init();
     if (D->valid)
-        return D->peak_usable.load();
+        return D->peak_usable.loadRelaxed();
     else
         return -1;
 }
@@ -119,7 +119,7 @@ int TestMalloc::peakTotal()
 {
     if (!D) TestMallocPrivate::init();
     if (D->valid)
-        return D->peak_total.load();
+        return D->peak_total.loadRelaxed();
     else
         return -1;
 }
@@ -128,7 +128,7 @@ int TestMalloc::nowUsable()
 {
     if (!D) TestMallocPrivate::init();
     if (D->valid)
-        return D->now_usable.load();
+        return D->now_usable.loadRelaxed();
     else
         return -1;
 }
@@ -137,7 +137,7 @@ int TestMalloc::nowTotal()
 {
     if (!D) TestMallocPrivate::init();
     if (D->valid)
-        return D->now_usable.load() + D->now_overhead.load();
+        return D->now_usable.loadRelaxed() + D->now_overhead.loadRelaxed();
     else
         return -1;
 }
@@ -145,15 +145,15 @@ int TestMalloc::nowTotal()
 void TestMalloc::resetPeak()
 {
     if (!D) TestMallocPrivate::init();
-    D->peak_usable.fetchAndStoreOrdered(D->now_usable.load());
-    D->peak_total.fetchAndStoreOrdered(D->now_usable.load() + D->now_overhead.load());
+    D->peak_usable.fetchAndStoreOrdered(D->now_usable.loadRelaxed());
+    D->peak_total.fetchAndStoreOrdered(D->now_usable.loadRelaxed() + D->now_overhead.loadRelaxed());
 }
 
 void TestMalloc::resetNow()
 {
     if (!D) TestMallocPrivate::init();
-    D->now_usable.store(0);
-    D->now_overhead.store(0);
+    D->now_usable.storeRelaxed(0);
+    D->now_overhead.storeRelaxed(0);
 }
 
 #ifndef __MALLOC_HOOK_VOLATILE
@@ -171,8 +171,8 @@ void TestMallocPrivate::init()
     */
     struct mallinfo info = mallinfo();
     static TestMallocPrivate testmalloc;
-    testmalloc.now_usable.store(info.uordblks);
-    testmalloc.now_overhead.store(0); /* cannot get this figure, but should be close to 0. */
+    testmalloc.now_usable.storeRelaxed(info.uordblks);
+    testmalloc.now_overhead.storeRelaxed(0); /* cannot get this figure, but should be close to 0. */
     TestMalloc::resetPeak();
     testmalloc.selftest();
 
@@ -200,7 +200,7 @@ void TestMallocPrivate::afterMorecore()
 
 void TestMallocPrivate::selftest()
 {
-    int before = this->now_usable.load();
+    int before = this->now_usable.loadRelaxed();
     int during;
     int after;
     char* array = 0;
@@ -209,10 +209,10 @@ void TestMallocPrivate::selftest()
         ba.resize(512);
         array = new char[512];
 
-        during = this->now_usable.load();
+        during = this->now_usable.loadRelaxed();
     }
     delete [] array;
-    after = this->now_usable.load();
+    after = this->now_usable.loadRelaxed();
 
     if (!(during >= before+1024)) {
         qWarning("Heap usage measurement fail: heap before byte array was %d, during was %d (expected at least %d).  Heap usage will not be measured.", before, during, before + 1024);
@@ -233,11 +233,11 @@ void TestMallocPrivate::selftest()
 
 void TestMallocPrivate::updatePeak()
 {
-    if (now_usable.load() > peak_usable.load()) {
-        peak_usable.fetchAndStoreOrdered(now_usable.load());
+    if (now_usable.loadRelaxed() > peak_usable.loadRelaxed()) {
+        peak_usable.fetchAndStoreOrdered(now_usable.loadRelaxed());
     }
-    if (now_usable.load() + now_overhead.load() > peak_total.load()) {
-        peak_total.fetchAndStoreOrdered(now_usable.load() + now_overhead.load());
+    if (now_usable.loadRelaxed() + now_overhead.loadRelaxed() > peak_total.loadRelaxed()) {
+        peak_total.fetchAndStoreOrdered(now_usable.loadRelaxed() + now_overhead.loadRelaxed());
     }
 }
 
@@ -316,8 +316,8 @@ extern "C" void free(void* in)
     REF;
     __libc_free(in);
     if (D && oldsize) {
-        D->now_usable.fetchAndAddOrdered(-oldsize);
-        D->now_overhead.fetchAndAddOrdered(-CHUNK_OVERHEAD);
+        D->now_usable.fetchAndSubOrdered(oldsize);
+        D->now_overhead.fetchAndSubOrdered(CHUNK_OVERHEAD);
         D->updatePeak();
     }
     DEREF;

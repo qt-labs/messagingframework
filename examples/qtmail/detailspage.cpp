@@ -41,7 +41,6 @@
 #include <qpixmap.h>
 #include <qtoolbutton.h>
 #include <qmenu.h>
-#include <qdesktopwidget.h>
 #include <qevent.h>
 #include <qpushbutton.h>
 #include <QScrollArea>
@@ -49,6 +48,7 @@
 #include <qmailstore.h>
 #include <qmailaccount.h>
 #include <QApplication>
+#include <QGuiApplication>
 
 static const QString placeholder("(no subject)");
 
@@ -121,7 +121,7 @@ DetailsPage::DetailsPage( QWidget *parent, const char *name )
 //    }
 
     const int margin = 2;
-    setMaximumWidth( qApp->desktop()->width() - 2 * margin );
+    setMaximumWidth( QGuiApplication::primaryScreen()->geometry().width() - 2 * margin );
     QGridLayout *l = new QGridLayout( this );
     int rowCount = 0;
 

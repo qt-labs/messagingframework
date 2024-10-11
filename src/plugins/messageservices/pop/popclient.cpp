@@ -36,7 +36,7 @@
 #include "popconfiguration.h"
 #include <QFileInfo>
 #include <QRegExp>
-#include <private/longstream_p.h>
+#include <longstream_p.h>
 #include <qmailstore.h>
 #include <qmailmessagebuffer.h>
 #include <qmailtransport.h>

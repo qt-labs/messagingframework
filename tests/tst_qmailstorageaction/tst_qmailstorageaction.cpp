@@ -34,7 +34,7 @@
 #include <QObject>
 #include <QTest>
 #include <qmailserviceaction.h>
-#include <private/qmailserviceaction_p.h>
+#include <qmailserviceaction_p.h>
 #include <qmailaccount.h>
 #include <qmaildisconnected.h>
 #include <qmailnamespace.h>

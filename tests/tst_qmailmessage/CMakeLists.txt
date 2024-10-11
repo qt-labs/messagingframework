@@ -1,0 +1,8 @@
+add_executable(tst_qmailmessage tst_qmailmessage.cpp)
+target_include_directories(tst_qmailmessage
+  PRIVATE ../../src/libraries/qmfclient ../../src/libraries/qmfclient/support)
+target_link_libraries(tst_qmailmessage
+  PRIVATE Qt6::Core Qt6::Core5Compat Qt6::Test QmfClient)
+
+install(TARGETS tst_qmailmessage
+  RUNTIME DESTINATION /opt/tests/qmf)

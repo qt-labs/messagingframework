@@ -57,7 +57,7 @@ class AccountSettings : public QDialog
 {
     Q_OBJECT
 public:
-    AccountSettings(QWidget *parent = Q_NULLPTR, Qt::WindowFlags flags = 0);
+    AccountSettings(QWidget *parent = Q_NULLPTR, Qt::WindowFlags flags = Qt::Widget);
 
 signals:
     void deleteAccount(const QMailAccountId &id);

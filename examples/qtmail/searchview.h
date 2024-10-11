@@ -61,7 +61,7 @@ class SearchView : public QMainWindow
     Q_OBJECT
 
 public:
-    SearchView(QWidget * parent = Q_NULLPTR, Qt::WindowFlags flags = 0);
+    SearchView(QWidget * parent = Q_NULLPTR, Qt::WindowFlags flags = Qt::Widget);
     void setVisible(bool visible);
 
 signals:

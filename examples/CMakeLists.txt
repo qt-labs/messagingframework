@@ -1,0 +1,5 @@
+if(BUILD_WIDGETS)
+  add_subdirectory(serverobserver)
+  add_subdirectory(qtmail)
+  add_subdirectory(messagingaccounts)
+endif()

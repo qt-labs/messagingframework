@@ -81,13 +81,13 @@ EditAccount::EditAccount(QWidget* parent, const char* name, Qt::WindowFlags fl)
     separator->setFrameStyle(QFrame::HLine);
 
     QFormLayout* formLayout = new QFormLayout;
-    formLayout->setMargin(6);
+    formLayout->setContentsMargins(6, 6, 6, 6);
     formLayout->setSpacing(4);
     formLayout->addRow(tr("Name"), accountNameInput);
     formLayout->addWidget(enabledCheckbox);
 
     QVBoxLayout* mainlayout = new QVBoxLayout(this);
-    mainlayout->setMargin(0);
+    mainlayout->setContentsMargins(0, 0, 0, 0);
     mainlayout->setSpacing(4);
     mainlayout->addLayout(formLayout);
     mainlayout->addWidget(separator);
@@ -125,7 +125,7 @@ EditAccount::EditAccount(QWidget* parent, const char* name, Qt::WindowFlags fl)
     bottomLayout->addWidget(okButton);
     bottomLayout->addWidget(cancelButton);
     bottomLayout->setSpacing(4);
-    bottomLayout->setMargin(6);
+    bottomLayout->setContentsMargins(6, 6, 6, 6);
     mainlayout->addLayout(bottomLayout);
 }
 

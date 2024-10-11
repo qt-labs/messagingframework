@@ -163,7 +163,7 @@ ImageDisplay::ImageDisplay(QWidget* parent)
 
     QVBoxLayout* vb = new QVBoxLayout(this);
     vb->addWidget(_area);
-    vb->setMargin(0);
+    vb->setContentsMargins(0, 0, 0, 0);
     vb->setSpacing(0);
 
     connect(_sizeToFit, SIGNAL(triggered()), this, SLOT(sizeToFit()));

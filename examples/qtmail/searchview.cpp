@@ -507,8 +507,8 @@ QMailMessageKey()
 
             if(ct == Equality)
             {
-                QMailMessageKey startRange = receptionTimeStamp(QDateTime(value.value<QDate>()),QMailDataComparator::GreaterThanEqual);
-                QMailMessageKey endRange = receptionTimeStamp(QDateTime(value.value<QDate>().addDays(1)),QMailDataComparator::LessThan);
+                QMailMessageKey startRange = receptionTimeStamp(value.value<QDate>().startOfDay(),QMailDataComparator::GreaterThanEqual);
+                QMailMessageKey endRange = receptionTimeStamp(value.value<QDate>().addDays(1).startOfDay(),QMailDataComparator::LessThan);
 
                 if(ec == QMailDataComparator::Equal)
                    QMailMessageKey::operator=(startRange & endRange);
@@ -518,11 +518,11 @@ QMailMessageKey()
             else
             {
                 if(rc == QMailDataComparator::GreaterThan)
-                    QMailMessageKey::operator=(receptionTimeStamp(QDateTime(value.value<QDate>().addDays(1)),QMailDataComparator::GreaterThanEqual));
+                    QMailMessageKey::operator=(receptionTimeStamp(value.value<QDate>().addDays(1).startOfDay(),QMailDataComparator::GreaterThanEqual));
                 else if(rc == QMailDataComparator::LessThanEqual)
-                    QMailMessageKey::operator=(receptionTimeStamp(QDateTime(value.value<QDate>()).addDays(1),QMailDataComparator::LessThan));
+                    QMailMessageKey::operator=(receptionTimeStamp(value.value<QDate>().startOfDay().addDays(1),QMailDataComparator::LessThan));
                 else
-                    QMailMessageKey::operator=(receptionTimeStamp(QDateTime(value.value<QDate>()),rc));
+                    QMailMessageKey::operator=(receptionTimeStamp(value.value<QDate>().startOfDay(),rc));
             }
         }break;
     }

@@ -8968,3 +8968,9 @@ QDebug operator<<(QDebug dbg, const QMailMessagePart &part)
     dbg << "QMailMessagePart" << part.contentID() << "location:" << part.contentLocation();
     return dbg;
 }
+
+QDebug operator<<(QDebug dbg, const QMailMessageHeaderField &field)
+{
+    dbg << "QMailMessageHeaderField" << field.toString();
+    return dbg;
+}

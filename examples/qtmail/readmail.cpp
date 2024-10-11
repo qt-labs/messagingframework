@@ -541,3 +541,4 @@ void ReadMail::updateReadStatus()
     }
 }
 
+#include "readmail.moc"

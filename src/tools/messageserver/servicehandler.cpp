@@ -33,7 +33,7 @@
 
 
 #include "servicehandler.h"
-#include <private/longstream_p.h>
+#include <longstream_p.h>
 #include <qmflist.h>
 #include <qmailmessageserver.h>
 #include <qmailserviceconfiguration.h>
@@ -2883,6 +2883,11 @@ void ServiceHandler::protocolResponse(const QString &response, const QVariant &d
 }
 
 // end concurrent actions
+
+void ServiceHandler::protocolRequest(quint64 action, const QMailAccountId &accountId, const QString &request, const QDBusVariant &data)
+{
+    protocolRequest(action, accountId, request, data.variant());
+}
 
 void ServiceHandler::protocolRequest(quint64 action, const QMailAccountId &accountId, const QString &request, const QVariant &data)
 {

@@ -834,6 +834,7 @@ public:
 };
 
 QMF_EXPORT QDebug operator<<(QDebug dbg, const QMailMessagePart &part);
+QMF_EXPORT QDebug operator<<(QDebug dbg, const QMailMessageHeaderField &field);
 
 typedef QmfList<QMailMessage> QMailMessageList;
 typedef QmfList<QMailMessageMetaData> QMailMessageMetaDataList;

@@ -34,7 +34,7 @@
 #include <QObject>
 #include <QTest>
 #include <qmailmessage.h>
-#include <private/longstring_p.h>
+#include <longstring_p.h>
 #include <qmailnamespace.h>
 #include <ctype.h>
 
