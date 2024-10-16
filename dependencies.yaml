@@ -1,0 +1,7 @@
+dependencies:
+  ../../qt/qtbase:
+    ref: 92b685784960eea6eb353688cf0edeb94d69c6cd
+    required: true
+  ../../qt/qt5compat:
+    ref: 78401a5a3b16495c288bd913d0e2e4faa98f007a
+    required: true

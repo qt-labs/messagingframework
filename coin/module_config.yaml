@@ -1,0 +1,23 @@
+version: 2
+accept_configuration:
+  condition: property
+  property: host.osVersion
+  in_values: [Ubuntu_22_04]
+
+machine_type:
+  Build:
+    cores: 4
+
+instructions:
+  Build:
+    - type: EnvironmentVariable
+      variableName: SOURCE_DIR
+      variableValue: "{{.SourceDir}}"
+    - type: SetBuildDirectory
+      directory: "{{.AgentWorkingDir}}/build"
+    - type: MakeDirectory
+      directory: "{{.BuildDir}}"
+    - type: ChangeDirectory
+      directory: "{{.BuildDir}}"
+    #- !include "{{qt/qtbase}}/coin_module_build_template_v2.yaml"
+  Test: []
