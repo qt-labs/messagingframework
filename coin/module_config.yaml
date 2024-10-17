@@ -4,11 +4,13 @@ accept_configuration:
   property: host.osVersion
   in_values: [Ubuntu_22_04]
 
-machine_type:
-  Build:
-    cores: 4
+Configurations:
+  - Template: 'qtci-linux-Ubuntu-22.04-x86_64-51'
+    Compiler: 'GCC'
+    Features: ['DisableTests']
 
 instructions:
   Build:
     - !include "{{qt/qtbase}}/coin_module_build_template_v2.yaml"
+
   Test: []
