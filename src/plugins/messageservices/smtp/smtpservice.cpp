@@ -115,9 +115,8 @@ SmtpService::SmtpService(const QMailAccountId &accountId)
     : QMailMessageService(),
       _client(this),
       _sink(new Sink(this)),
-      _capabilityFetchAction(0),
-      _capabilityFetchTimeout(0),
-      _networkMonitor(0)
+      _capabilityFetcher(nullptr),
+      _capabilityFetchTimeout(0)
 {
     connect(&_client, SIGNAL(progressChanged(uint, uint)), this, SIGNAL(progressChanged(uint, uint)));
 
@@ -134,123 +133,43 @@ void SmtpService::fetchCapabilities()
 {
     QMailAccount account(_client.account());
     if (account.customField("qmf-smtp-capabilities-listed") != "true") {
-        // This will fetch the account capabilities from the server.
-        QMailMessageKey accountKey(QMailMessageKey::parentAccountId(_client.account()));
-        QMailMessageKey outboxKey(QMailMessageKey::status(QMailMessage::Outbox) & ~QMailMessageKey::status(QMailMessage::Trash));
-        QMailMessageKey sendKey(QMailMessageKey::customField("dontSend", "true", QMailDataComparator::NotEqual));
-        QMailMessageKey noSendKey(QMailMessageKey::customField("dontSend", QMailDataComparator::Absent));
-        QMailMessageIdList toTransmit(
-                    QMailStore::instance()->queryMessages(
-                        accountKey & outboxKey & (noSendKey | sendKey)));
-        if (toTransmit.isEmpty()) {
-            // Only if there are no messages in Outbox!
-            // Create a new action. It is deleted in the slot.
-            qMailLog(SMTP) << "Fetching capabilities from the server...";
-            if (!_capabilityFetchAction) {
-                _capabilityFetchAction = new QMailTransmitAction(this);
-                connect(_capabilityFetchAction, SIGNAL(activityChanged(QMailServiceAction::Activity)),
-                        this, SLOT(onCapabilityFetchingActivityChanged(QMailServiceAction::Activity)));
-            }
-            _capabilityFetchAction->transmitMessages(_client.account());
+        if (!_capabilityFetcher) {
+            _capabilityFetcher = new SmtpClient(this);
+            _capabilityFetcher->setAccount(account.id());
+            connect(_capabilityFetcher, &SmtpClient::fetchCapabilitiesFinished,
+                    this, &SmtpService::onCapabilitiesFetched);
         }
+        _capabilityFetcher->fetchCapabilities();
     }
 }
 
-void SmtpService::onCapabilityFetchingActivityChanged(QMailServiceAction::Activity activity)
+void SmtpService::onCapabilitiesFetched()
 {
-    Q_ASSERT(_capabilityFetchAction);
-
-    if (activity != QMailServiceAction::Successful
-        && activity != QMailServiceAction::Failed) {
-        return;
-    }
-
-    // Check for success.
     QMailAccount account(_client.account());
-    if (account.customField("qmf-smtp-capabilities-listed") == "true") {
-        if (_capabilityFetchTimeout) {
-            delete _capabilityFetchTimeout;
-            _capabilityFetchTimeout = 0;
-        }
-        if (_networkMonitor) {
-            delete _networkMonitor;
-            _networkMonitor = 0;
-        }
-        _capabilityFetchAction->deleteLater();
-        _capabilityFetchAction = 0;
-        return;
-    }
-
-    // The capabilities are not fetched yet. We
-    // have to schedule another request.
-    if (!_networkMonitor) {
-        _networkMonitor = new NetworkStatusMonitor(this);
-        connect(_networkMonitor, &NetworkStatusMonitor::onlineStateChanged,
-                this, &SmtpService::onOnlineStateChanged);
-    }
-    if (_networkMonitor->isOnline()) {
-        // We are online. It makes sense to try again.
-        uint capabilityCheckTimeoutLimit = 5 * 60 * 1000; // 5 minutes
+    if (account.customField("qmf-smtp-capabilities-listed") != "true") {
         uint timeout = 1000;
         if (!_capabilityFetchTimeout) {
             _capabilityFetchTimeout = new QTimer(this);
             _capabilityFetchTimeout->setSingleShot(true);
-            connect(_capabilityFetchTimeout, SIGNAL(timeout()),
-                    this, SLOT(fetchCapabilities()));
-        }
-        else {
+            connect(_capabilityFetchTimeout, &QTimer::timeout,
+                    this, &SmtpService::fetchCapabilities);
+        } else {
             timeout = _capabilityFetchTimeout->interval() << 2; // * 4
         }
+        const uint capabilityCheckTimeoutLimit = 5 * 60 * 1000; // 5 minutes
         if (timeout <= capabilityCheckTimeoutLimit) {
-            qMailLog(SMTP) << "Could not fetch capabilities...trying again after " << (timeout / 1000) << "seconds";
             _capabilityFetchTimeout->setInterval(timeout);
             _capabilityFetchTimeout->start();
+            qMailLog(SMTP) << "Could not fetch capabilities...trying again after " << (timeout / 1000) << "seconds";
+        } else {
+            qMailLog(SMTP) << "Could not fetch capabilities, giving up";
         }
-        else {
-            qMailLog(SMTP) << "Could not fetch capabilities."
-                           << "Disconnect and reconnect the network connection or"
-                           << "update the account to try again";
-            connect(QMailStore::instance(), SIGNAL(accountsUpdated(QMailAccountIdList)),
-                    this, SLOT(onAccountsUpdated(QMailAccountIdList)));
-        }
+    } else {
+        _capabilityFetcher->deleteLater();
+        _capabilityFetcher = nullptr;
+        delete _capabilityFetchTimeout;
+        _capabilityFetchTimeout = nullptr;
     }
-}
-
-void SmtpService::onOnlineStateChanged(bool isOnline)
-{
-    Q_ASSERT(_capabilityFetchAction);
-    if (!isOnline
-        || _capabilityFetchAction->activity() == QMailServiceAction::InProgress) {
-        return;
-    }
-    if (_capabilityFetchTimeout) {
-        if (_capabilityFetchTimeout->isActive()) {
-            _capabilityFetchTimeout->stop();
-        }
-        _capabilityFetchTimeout->setInterval(1000);
-    }
-    fetchCapabilities();
-}
-
-void SmtpService::onAccountsUpdated(const QMailAccountIdList &accountIds)
-{
-    Q_ASSERT(_capabilityFetchAction);
-    Q_ASSERT(_networkMonitor);
-    Q_ASSERT(_capabilityFetchTimeout);
-    if (!accountIds.contains(_client.account())
-        || !_networkMonitor->isOnline()
-        || _capabilityFetchAction->activity() == QMailServiceAction::InProgress) {
-        return;
-    }
-    disconnect(QMailStore::instance(), SIGNAL(accountsUpdated(QMailAccountIdList)),
-               this, SLOT(onAccountsUpdated(QMailAccountIdList)));
-    if (_capabilityFetchTimeout) {
-        if (_capabilityFetchTimeout->isActive()) {
-            _capabilityFetchTimeout->stop();
-        }
-        _capabilityFetchTimeout->setInterval(1000);
-    }
-    fetchCapabilities();
 }
 
 SmtpService::~SmtpService()

@@ -71,6 +71,8 @@ public:
     void setAccount(const QMailAccountId &accountId);
     QMailAccountId account() const;
 
+    void fetchCapabilities();
+
     void newConnection();
     void cancelTransfer(QMailServiceAction::Status::ErrorCode code, const QString &text);
 
@@ -85,6 +87,7 @@ signals:
     void progressChanged(uint, uint);
     void messageTransmitted(const QMailMessageId&);
     void sendCompleted();
+    void fetchCapabilitiesFinished();
 
 protected slots:
     void connected(QMailTransport::EncryptType encryptType);
@@ -98,6 +101,7 @@ private slots:
     void onCredentialsStatusChanged();
 
 private:
+    void openTransport();
     void sendCommand(const char *data, int len = -1, bool maskDebug = false);
     void sendCommand(const QString &cmd, bool maskDebug = false);
     void sendCommand(const QByteArray &cmd, bool maskDebug = false);
@@ -126,6 +130,7 @@ private:
     QMailMessageId sendingId;
     uint messageLength;
     uint sentLength;
+    bool fetchingCapabilities;
     int outstandingResponses;
     QStringList::Iterator it;
     QMailTransport *transport;

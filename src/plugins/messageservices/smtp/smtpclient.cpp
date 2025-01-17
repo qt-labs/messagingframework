@@ -106,6 +106,7 @@ SmtpClient::SmtpClient(QObject* parent)
     : QObject(parent)
     , mailItr(mailList.end())
     , messageLength(0)
+    , fetchingCapabilities(false)
     , transport(0)
     , temporaryFile(0)
     , waitingForBytes(0)
@@ -143,49 +144,40 @@ QMailAccountId SmtpClient::account() const
     return config.id();
 }
 
-void SmtpClient::newConnection()
+void SmtpClient::fetchCapabilities()
 {
-    qMailLog(SMTP) << "newConnection";
+    qMailLog(SMTP) << "fetchCapabilities";
+    capabilities.clear();
+
+    if (transport && transport->inUse()) {
+        qWarning() << "Cannot fetch capabilities; transport in use";
+        emit fetchCapabilitiesFinished();
+        return;
+    }
+
+    if (!account().isValid()) {
+        qWarning() << "Cannot fetch capabilities; invalid account";
+        emit fetchCapabilitiesFinished();
+        return;
+    }
+
     // Reload the account configuration whenever a new SMTP
     // connection is created, in order to ensure the changes
     // in the account settings are being managed properly.
-    config = QMailAccountConfiguration(config.id());
-
-    if (transport && transport->inUse()) {
-        operationFailed(QMailServiceAction::Status::ErrConnectionInUse, tr("Cannot send message; transport in use"));
+    config = QMailAccountConfiguration(account());
+    SmtpConfiguration smtpConfig(config);
+    if (smtpConfig.smtpServer().isEmpty()) {
+        qWarning() << "Cannot fetch capabilities without SMTP server configuration";
+        emit fetchCapabilitiesFinished();
         return;
     }
 
-    if (!config.id().isValid()) {
-        status = Done;
-        operationFailed(QMailServiceAction::Status::ErrConfiguration, tr("Cannot send message without account configuration"));
-        return;
-    }
+    fetchingCapabilities = true;
+    openTransport();
+}
 
-    SmtpConfiguration smtpCfg(config);
-    if ( smtpCfg.smtpServer().isEmpty() ) {
-        status = Done;
-        operationFailed(QMailServiceAction::Status::ErrConfiguration, tr("Cannot send message without SMTP server configuration"));
-        return;
-    }
-
-    if (credentials) {
-        credentials->init(smtpCfg);
-    }
-
-    // Calculate the total indicative size of the messages we're sending
-    totalSendSize = 0;
-    foreach (uint size, sendSize.values())
-        totalSendSize += size;
-
-    progressSendSize = 0;
-    emit progressChanged(progressSendSize, totalSendSize);
-
-    status = Init;
-    domainName = QByteArray();
-    outstandingResponses = 0;
-    authReset = false;
-
+void SmtpClient::openTransport()
+{
     if (!transport) {
         // Set up the transport
         transport = new QMailTransport("SMTP");
@@ -206,9 +198,59 @@ void SmtpClient::newConnection()
 #endif
     }
 
+    status = Init;
+    outstandingResponses = 0;
+
     qMailLog(SMTP) << "Open SMTP connection";
-    transport->setAcceptUntrustedCertificates(smtpCfg.acceptUntrustedCertificates());
-    transport->open(smtpCfg.smtpServer(), smtpCfg.smtpPort(), static_cast<QMailTransport::EncryptType>(smtpCfg.smtpEncryption()));
+    SmtpConfiguration smtpConfig(config);
+    transport->setAcceptUntrustedCertificates(smtpConfig.acceptUntrustedCertificates());
+    transport->open(smtpConfig.smtpServer(), smtpConfig.smtpPort(),
+                    static_cast<QMailTransport::EncryptType>(smtpConfig.smtpEncryption()));
+}
+
+void SmtpClient::newConnection()
+{
+    qMailLog(SMTP) << "newConnection";
+
+    if (transport && transport->inUse()) {
+        operationFailed(QMailServiceAction::Status::ErrConnectionInUse, tr("Cannot send message; transport in use"));
+        return;
+    }
+
+    if (!account().isValid()) {
+        status = Done;
+        operationFailed(QMailServiceAction::Status::ErrConfiguration, tr("Cannot send message without account configuration"));
+        return;
+    }
+
+    // Reload the account configuration whenever a new SMTP
+    // connection is created, in order to ensure the changes
+    // in the account settings are being managed properly.
+    config = QMailAccountConfiguration(account());
+    SmtpConfiguration smtpConfig(config);
+    if (smtpConfig.smtpServer().isEmpty()) {
+        status = Done;
+        operationFailed(QMailServiceAction::Status::ErrConfiguration, tr("Cannot send message without SMTP server configuration"));
+        return;
+    }
+
+    if (credentials) {
+        credentials->init(smtpConfig);
+    }
+
+    // Calculate the total indicative size of the messages we're sending
+    totalSendSize = 0;
+    foreach (uint size, sendSize.values())
+        totalSendSize += size;
+
+    progressSendSize = 0;
+    emit progressChanged(progressSendSize, totalSendSize);
+
+    fetchingCapabilities = false;
+    domainName = QByteArray();
+    authReset = false;
+
+    openTransport();
 }
 
 QMailServiceAction::Status::ErrorCode SmtpClient::addMail(const QMailMessage& mail)
@@ -509,9 +551,16 @@ void SmtpClient::nextAction(const QString &response)
                     }
                 }
 
-                // Proceed to TLS negotiation
-                status = StartTLS;
-                nextAction(QString());
+                if (fetchingCapabilities) {
+                    status = Done;
+                    transport->close();
+                    qMailLog(SMTP) << "Closed connection";
+                    emit fetchCapabilitiesFinished();
+                } else {
+                    // Proceed to TLS negotiation
+                    status = StartTLS;
+                    nextAction(QString());
+                }
             }
         } else {
             operationFailed(QMailServiceAction::Status::ErrUnknownResponse, response);
@@ -943,26 +992,21 @@ void SmtpClient::operationFailed(int code, const QString &text)
         stopTransferring();
         transport->close();
         qMailLog(SMTP) << "Closed connection:" << text;
-        
+    }
+
+    if (fetchingCapabilities) {
+        emit fetchCapabilitiesFinished();
+    } else {
         sendingId = QMailMessageId();
         mailList.clear();
         mailItr = mailList.end();
         sendSize.clear();
+        emit errorOccurred(code, bufferedResponse + text);
     }
-
-    emit errorOccurred(code, bufferedResponse + text);
 }
 
 void SmtpClient::operationFailed(QMailServiceAction::Status::ErrorCode code, const QString &text)
 {
-    QMailServiceAction::Status actionStatus;
-    if (sendingId != QMailMessageId()) {
-    actionStatus.messageId = sendingId;
-    } else if (mailItr != mailList.end()) {
-        actionStatus.messageId = mailItr->mail.id();
-    }
-    actionStatus.errorCode = code;
-
     if (code != QMailServiceAction::Status::ErrNoError) {
         delete authTimeout;
         authTimeout = 0;
@@ -972,24 +1016,35 @@ void SmtpClient::operationFailed(QMailServiceAction::Status::ErrorCode code, con
         stopTransferring();
         transport->close();
         qMailLog(SMTP) << "Closed connection:" << text;
-        
+    }
+
+    if (fetchingCapabilities) {
+        emit fetchCapabilitiesFinished();
+    } else {
+        QMailServiceAction::Status actionStatus;
+        if (sendingId != QMailMessageId()) {
+            actionStatus.messageId = sendingId;
+        } else if (mailItr != mailList.end()) {
+            actionStatus.messageId = mailItr->mail.id();
+        }
+        actionStatus.errorCode = code;
+
         sendingId = QMailMessageId();
         mailList.clear();
         mailItr = mailList.end();
         sendSize.clear();
-    }
 
-    QString msg;
-    if (code == QMailServiceAction::Status::ErrUnknownResponse) {
-        if (config.id().isValid()) {
-            SmtpConfiguration smtpCfg(config);
-            msg = smtpCfg.smtpServer() + ": ";
+        QString msg;
+        if (code == QMailServiceAction::Status::ErrUnknownResponse) {
+            if (config.id().isValid()) {
+                SmtpConfiguration smtpCfg(config);
+                msg = smtpCfg.smtpServer() + ": ";
+            }
         }
+        msg.append(bufferedResponse);
+        msg.append(text);
+        emit errorOccurred(actionStatus, msg);
     }
-    msg.append(bufferedResponse);
-    msg.append(text);
-
-    emit errorOccurred(actionStatus, msg);
 }
 
 void SmtpClient::sendMoreData(qint64 bytesWritten)

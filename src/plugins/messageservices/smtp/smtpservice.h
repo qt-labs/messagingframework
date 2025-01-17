@@ -39,8 +39,6 @@
 
 #include <QPointer>
 
-class NetworkStatusMonitor;
-
 class SmtpService : public QMailMessageService
 {
     Q_OBJECT
@@ -70,9 +68,7 @@ protected slots:
 
 private slots:
     void fetchCapabilities();
-    void onCapabilityFetchingActivityChanged(QMailServiceAction::Activity activity);
-    void onOnlineStateChanged(bool isOnline);
-    void onAccountsUpdated(const QMailAccountIdList & accountIds);
+    void onCapabilitiesFetched();
 
 private:
     class Sink;
@@ -80,9 +76,8 @@ private:
 
     SmtpClient _client;
     Sink *_sink;
-    QMailTransmitAction *_capabilityFetchAction;
+    SmtpClient *_capabilityFetcher;
     QTimer *_capabilityFetchTimeout;
-    NetworkStatusMonitor *_networkMonitor;
 };
 
 class SmtpServicePlugin : public QMailMessageServicePlugin
