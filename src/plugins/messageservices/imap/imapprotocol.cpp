@@ -3863,11 +3863,6 @@ QString ImapProtocol::quoteString(const QString& input)
     return QMail::quoteString(result);
 }
 
-QByteArray ImapProtocol::quoteString(const QByteArray& input)
-{
-    return quoteString(QString(input)).toLatin1();
-}
-
 void ImapProtocol::createMail(const QString &uid, const QDateTime &timeStamp, int size, uint flags, const QString &detachedFile, const QStringList& structure)
 {
     QMailMessage mail;

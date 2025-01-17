@@ -218,7 +218,6 @@ public:
     static QString url(const QMailMessagePart::Location &location, bool absolute, bool bodyOnly);
 
     static QString quoteString(const QString& input);
-    static QByteArray quoteString(const QByteArray& input);
     static QString unescapeFolderPath(const QString &path);
 
 signals:
