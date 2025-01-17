@@ -106,7 +106,6 @@ SmtpClient::SmtpClient(QObject* parent)
     : QObject(parent)
     , mailItr(mailList.end())
     , messageLength(0)
-    , sending(false)
     , transport(0)
     , temporaryFile(0)
     , waitingForBytes(0)
@@ -166,7 +165,7 @@ void SmtpClient::newConnection()
     // in the account settings are being managed properly.
     config = QMailAccountConfiguration(config.id());
 
-    if (sending) {
+    if (transport && transport->inUse()) {
         operationFailed(QMailServiceAction::Status::ErrConnectionInUse, tr("Cannot send message; transport in use"));
         return;
     }
@@ -197,7 +196,6 @@ void SmtpClient::newConnection()
     emit progressChanged(progressSendSize, totalSendSize);
 
     status = Init;
-    sending = true;
     domainName = QByteArray();
     outstandingResponses = 0;
     authReset = false;
@@ -906,7 +904,6 @@ void SmtpClient::nextAction(const QString &response)
         // Completed successfully
         sendCommand("QUIT");
 
-        sending = false;
         status = Done;
         transport->close();
         qMailLog(SMTP) << "Closed connection";
@@ -956,13 +953,12 @@ void SmtpClient::operationFailed(int code, const QString &text)
         authTimeout = 0;
     }
 
-    if (sending) {
+    if (transport && transport->inUse()) {
         stopTransferring();
         transport->close();
         qMailLog(SMTP) << "Closed connection:" << text;
         
         sendingId = QMailMessageId();
-        sending = false;
         mailList.clear();
         mailItr = mailList.end();
         sendSize.clear();
@@ -986,13 +982,12 @@ void SmtpClient::operationFailed(QMailServiceAction::Status::ErrorCode code, con
         authTimeout = 0;
     }
 
-    if (sending) {
+    if (transport && transport->inUse()) {
         stopTransferring();
         transport->close();
         qMailLog(SMTP) << "Closed connection:" << text;
         
         sendingId = QMailMessageId();
-        sending = false;
         mailList.clear();
         mailItr = mailList.end();
         sendSize.clear();

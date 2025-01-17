@@ -127,7 +127,6 @@ private:
     QMailMessageId sendingId;
     uint messageLength;
     uint sentLength;
-    bool sending, success;
     int outstandingResponses;
     QStringList::Iterator it;
     QMailTransport *transport;
