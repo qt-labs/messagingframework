@@ -114,8 +114,6 @@ SmtpClient::SmtpClient(QObject* parent)
     , authTimeout(0)
     , credentials(nullptr)
 {
-    connect(QMailStore::instance(), SIGNAL(accountsUpdated(const QMailAccountIdList&)), 
-            this, SLOT(accountsUpdated(const QMailAccountIdList&)));
 }
 
 SmtpClient::~SmtpClient()
@@ -124,18 +122,6 @@ SmtpClient::~SmtpClient()
     delete temporaryFile;
     delete authTimeout;
     delete credentials;
-}
-
-void SmtpClient::accountsUpdated(const QMailAccountIdList &ids)
-{
-    if (!ids.contains(account()))
-        return;
-
-    QMailAccount acc(account());
-    bool isEnabled(acc.status() & QMailAccount::Enabled);
-    if (!isEnabled)
-        return;
-    setAccount(account());
 }
 
 QMailMessage::MessageType SmtpClient::messageType() const

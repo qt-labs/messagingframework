@@ -91,7 +91,6 @@ protected slots:
     void transportError(int, QString msg);
     void readyRead();
     void sent(qint64);
-    void accountsUpdated(const QMailAccountIdList&);
 
 private slots:
     void sendMoreData(qint64);
