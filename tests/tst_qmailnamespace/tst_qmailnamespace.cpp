@@ -56,11 +56,6 @@ QTEST_MAIN(tst_QMailnamespace)
 
 void tst_QMailnamespace::test_qmailnamespace()
 {
-    QString file("locktestfile");
-    int id = fileLock(file);
-    QVERIFY(id != -1);
-    QVERIFY(fileUnlock(id));
-
     messageServerPath();
     messageSettingsPath();
 

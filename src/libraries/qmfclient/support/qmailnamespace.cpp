@@ -37,6 +37,8 @@
 #include "qmaillog.h"
 #include <QCoreApplication>
 #include <QDir>
+#include <QDBusConnection>
+#include <QDBusConnectionInterface>
 #include <QMutex>
 #include <QRegularExpression>
 #include <QThreadStorage>
@@ -77,72 +79,6 @@ static const char* QMF_SETTINGS_ENV="QMF_SETTINGS";
     If \a src has double-quote as the first and last characters, return the string between those characters;
     otherwise, return the original string.
 */
-
-/*!
-    \fn StringType QMail::quoteString(const StringType& src)
-
-    Returns \a src surrounded by double-quotes, which are added if not already present.
-*/
-
-static QMap<int, QLockFile*> lockedFiles;
-
-// Return where to store lock files
-static QString lockFileDir()
-{
-    QString path(QDir::tempPath());
-    //check unix path
-#ifdef Q_OS_UNIX
-    //Store the file in /var/lock instead system's temporary directory
-    QFileInfo lock(QString::fromLatin1("/var/lock"));
-    if (lock.exists() && lock.isWritable())
-        path = lock.absoluteFilePath();
-#endif
-    return path;
-}
-
-/*!
-    Convenience function that attempts to obtain a lock on a file with name \a lockFile.
-    It is not necessary to create \a lockFile as this file is created temporarily.
-
-    Returns the id of the lockFile if successful or \c -1 for failure.
-
-    \sa QMail::fileUnlock()
-*/
-int QMail::fileLock(const QString& lockFile)
-{
-    static int lockedCount = 0;
-
-    QLockFile *fl = new QLockFile(lockFileDir() + QDir::separator() + lockFile);
-    fl->setStaleLockTime(0); // we are long running
-    if (!fl->tryLock()) {
-        delete fl;
-        return -1;
-    }
-
-    lockedCount++;
-    lockedFiles.insert(lockedCount, fl);
-    return lockedCount;
-}
-
-/*!
-    Convenience function that attempts to unlock the file with identifier \a id that was locked by \c QMail::fileLock.
-
-    Returns \c true for success or \c false otherwise.
-
-    \sa QMail::fileLock()
-*/
-bool QMail::fileUnlock(int id)
-{
-    QMap<int, QLockFile*>::iterator it = lockedFiles.find(id);
-    if (it == lockedFiles.end())
-        return false;
-
-    QLockFile *fl = it.value();
-    fl->unlock();
-    delete fl;
-    lockedFiles.erase(it);
-    return true;
-}
 
 /*!
     Returns the path to where the Messaging framework will store its data files.
@@ -217,16 +153,6 @@ QString QMail::messageSettingsPath()
         return settingsEnv + QChar::fromLatin1('/');
     return QCoreApplication::applicationDirPath() + QChar::fromLatin1('/');
 }
-
-/*!
-  Returns the full path to the file used to ensure that only one instance of the 
-  messageserver is running.
-*/
-QString QMail::messageServerLockFilePath()
-{
-    return lockFileDir() + QString::fromLatin1("/messageserver-instance.lock");
-}
-
 
 #if !defined(Q_OS_WIN) || !defined(_WIN32_WCE) // Not supported on windows mobile
 /*!
@@ -783,6 +709,15 @@ int QMail::maximumPushConnections()
 int QMail::databaseAutoCloseTimeout()
 {
     return 600*1000;
+}
+
+/*
+  Returns whether the message server is running or not.
+*/
+bool QMail::isMessageServerRunning()
+{
+    QDBusConnection sessionBus = QDBusConnection::sessionBus();
+    return sessionBus.isConnected() && sessionBus.interface()->isServiceRegistered("org.qt.messageserver");
 }
 
 /*!

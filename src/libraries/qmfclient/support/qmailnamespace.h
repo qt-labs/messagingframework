@@ -69,14 +69,10 @@ namespace QMail
     QMF_EXPORT QString tempPath();
     QMF_EXPORT QString messageServerPath();
     QMF_EXPORT QString messageSettingsPath();
-    QMF_EXPORT QString messageServerLockFilePath();    
     QMF_EXPORT QString mimeTypeFromFileName(const QString& filename);
     QMF_EXPORT QStringList extensionsForMimeType(const QString& mimeType);
 
 #if !defined(Q_OS_WIN) || !defined(_WIN32_WCE)
-    QMF_EXPORT int fileLock(const QString& filePath);
-    QMF_EXPORT bool fileUnlock(int id);
-
     void closeDatabase();
     QMF_EXPORT QSqlDatabase createDatabase();
 #endif
@@ -88,6 +84,7 @@ namespace QMail
     QMF_EXPORT int maximumConcurrentServiceActionsPerProcess();
     QMF_EXPORT int maximumPushConnections();
     QMF_EXPORT int databaseAutoCloseTimeout();
+    QMF_EXPORT bool isMessageServerRunning();
 
     template<typename StringType> struct qchar_conversion;
     template<> struct qchar_conversion<QString> { static QChar fn(const QChar c) { return c; } };

@@ -40,17 +40,6 @@
 #include <qmailnamespace.h>
 #include <qsignalspy.h>
 
-static bool isMessageServerRunning()
-{
-    QString lockfile = "messageserver-instance.lock";
-    int lockid = QMail::fileLock(lockfile);
-    if (lockid == -1)
-        return true;
-
-    QMail::fileUnlock(lockid);
-    return false;
-}
-
 class tst_QMailStorageAction : public QObject
 {
     Q_OBJECT
@@ -90,11 +79,7 @@ QTEST_MAIN(tst_QMailStorageAction)
 
 void tst_QMailStorageAction::initTestCase()
 {
-    if (!isMessageServerRunning()) {
-        qWarning() << "tst_QMailStorageAction requires messageserver to be running";
-        QVERIFY(isMessageServerRunning());
-        exit(1);
-    }
+    QVERIFY2(QMail::isMessageServerRunning(), "tst_QMailStorageAction requires messageserver to be running");
     
     // Instantiate the store to initialise the values of the status flags and create the standard folders
     QMailStore::instance();
