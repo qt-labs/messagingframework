@@ -66,7 +66,23 @@ MessageServer::MessageServer(QObject *parent)
       newMessageTotal(0),
       completionAttempted(false)
 {
-    qMailLog(Messaging) << "MessageServer ctor begin";
+}
+
+MessageServer::~MessageServer()
+{
+    // Unregister from D-Bus.
+    QDBusConnection dbus = QDBusConnection::sessionBus();
+    dbus.unregisterObject("/messageserver");
+    if (!dbus.unregisterService("org.qt.messageserver")) {
+        qWarning() << "Failed to unregister messageserver from D-Bus";
+    } else {
+        qMailLog(Messaging) << "Unregistered messageserver from D-Bus";
+    }
+}
+
+bool MessageServer::init()
+{
+    qMailLog(Messaging) << "MessageServer init begin";
 
 #if defined(Q_OS_UNIX)
     // Unix signal handlers. We use the trick described here: http://doc.qt.io/qt-5/unix-signals.html
@@ -106,14 +122,11 @@ MessageServer::MessageServer(QObject *parent)
 
 #endif // defined(Q_OS_UNIX)
 
-    QMailMessageCountMap::iterator it = messageCounts.begin(), end = messageCounts.end();
-    for ( ; it != end; ++it)
-        it.value() = 0;
-
     QMailStore *store = QMailStore::instance();
     if (store->initializationState() != QMailStore::Initialized) {
-        qFatal("Messaging DB Invalid: Messaging cannot operate due to database incompatibilty!");
+        qWarning("Messaging DB Invalid: Messaging cannot operate due to database incompatibilty!");
         // Do not close, however, or QPE will start another instance.
+        return false;
     } else {
         connect(store, SIGNAL(messagesAdded(QMailMessageIdList)),
                 this, SLOT(messagesAdded(QMailMessageIdList)));
@@ -130,10 +143,10 @@ MessageServer::MessageServer(QObject *parent)
     QDBusConnection dbus = QDBusConnection::sessionBus();
     if (!dbus.registerObject("/messageserver", handler) ||
         !dbus.registerService("org.qt.messageserver")) {
-        qFatal("Failed to register to D-Bus, aborting start");
-    } else {
-        qMailLog(Messaging) << "Registered messageserver to D-Bus";
+        qWarning() << "Failed to register to D-Bus, aborting start";
+        return false;
     }
+    qMailLog(Messaging) << "Registered messageserver to D-Bus";
 
     connect(handler, &ServiceHandler::transmissionReady,
             this, &MessageServer::transmissionCompleted);
@@ -160,18 +173,8 @@ MessageServer::MessageServer(QObject *parent)
         plugin->exec();
     }
 #endif
-}
 
-MessageServer::~MessageServer()
-{
-    // Unregister from D-Bus.
-    QDBusConnection dbus = QDBusConnection::sessionBus();
-    dbus.unregisterObject("/messageserver");
-    if (!dbus.unregisterService("org.qt.messageserver")) {
-        qWarning() << "Failed to unregister messageserver from D-Bus";
-    } else {
-        qMailLog(Messaging) << "Unregistered messageserver from D-Bus";
-    }
+    return true;
 }
 
 void MessageServer::retrievalCompleted(quint64 action)

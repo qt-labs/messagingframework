@@ -54,6 +54,8 @@ public:
     MessageServer(QObject *parent = Q_NULLPTR);
     ~MessageServer();
 
+    bool init();
+
 #if defined(Q_OS_UNIX)
     static void hupSignalHandler(int unused); // Unix SIGHUP signal handler
     static void termSignalHandler(int unused);

@@ -54,10 +54,11 @@ int main(int argc, char** argv)
     // This is ~/.config/QtProject/Messageserver.conf
     qMailLoggersRecreate("QtProject", "Messageserver", "Msgsrv");
 
-    if(QMail::fileLock("messageserver-instance.lock") == -1)
-        qFatal("Could not get messageserver lock. Messageserver might already be running!");
-
     MessageServer server;
+    if (!server.init()) {
+        qWarning() << "Failed to initialize message server";
+        return 1;
+    }
 
     int exitCode = app.exec();
 
