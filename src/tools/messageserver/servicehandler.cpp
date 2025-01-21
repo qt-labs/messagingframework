@@ -399,7 +399,7 @@ bool messageBodyContainsText(const QMailMessage &message, const QString& text)
 
 QString requestsFileName()
 {
-    return QDir::tempPath() + "/qmf-messageserver-requests";
+    return QMail::tempPath() + "/qmf-messageserver-requests";
 }
 
 QList<QString> obsoleteContentIdentifiers(QList<QMailMessageMetaData*> list)
