@@ -66,6 +66,20 @@ static const char* QMF_DATA_ENV="QMF_DATA";
 static const char* QMF_SERVER_ENV="QMF_SERVER";
 static const char* QMF_SETTINGS_ENV="QMF_SETTINGS";
 
+struct StandardFolderInfo
+{
+    StandardFolderInfo(const QString &flagName, quint64 flag, QMailFolder::StandardFolder standardFolder,
+                       quint64 messageFlag, const QStringList &paths)
+        : _flagName(flagName), _flag(flag), _standardFolder(standardFolder), _messageFlag(messageFlag), _paths(paths)
+    {}
+
+    QString _flagName;
+    quint64 _flag;
+    QMailFolder::StandardFolder _standardFolder;
+    quint64 _messageFlag;
+    QStringList _paths;
+};
+
 /*!
     \namespace QMail
     \ingroup messaginglibrary
