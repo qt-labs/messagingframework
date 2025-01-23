@@ -1,5 +1,6 @@
 set(SRC
   qmailauthenticator.cpp
+  qmailcredentials.cpp
   qmailmessagebuffer.cpp
   qmailmessageclassifier.cpp
   qmailmessageservice.cpp
@@ -10,6 +11,7 @@ set(SRC
 
 set(HEADERS
   qmailauthenticator.h
+  qmailcredentials.h
   qmailmessagebuffer.h
   qmailmessageclassifier.h
   qmailmessageservice.h
