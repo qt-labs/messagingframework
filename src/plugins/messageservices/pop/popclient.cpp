@@ -66,8 +66,9 @@ public:
     }
 };
 
-PopClient::PopClient(QObject* parent)
+PopClient::PopClient(const QMailAccountId &id, QObject* parent)
     : QObject(parent),
+      config(QMailAccountConfiguration(id)),
       selected(false),
       deleting(false),
       headerLimit(0),
@@ -77,12 +78,15 @@ PopClient::PopClient(QObject* parent)
       transport(0),
       testing(false),
       pendingDeletes(false),
-      credentials(nullptr),
+      credentials(QMailCredentialsFactory::getCredentialsHandlerForAccount(config)),
       loginFailed(false)
 {
     inactiveTimer.setSingleShot(true);
     connect(&inactiveTimer, SIGNAL(timeout()), this, SLOT(connectionInactive()));
     connect(QMailMessageBuffer::instance(), SIGNAL(flushed()), this, SLOT(messageBufferFlushed()));
+
+    setupAccount();
+    setupFolders();
 }
 
 PopClient::~PopClient()
@@ -99,11 +103,6 @@ PopClient::~PopClient()
 void PopClient::messageBufferFlushed()
 {
     callbacks.clear();
-}
-
-QMailMessage::MessageType PopClient::messageType() const
-{
-    return QMailMessage::Email;
 }
 
 void PopClient::createTransport()
@@ -219,16 +218,9 @@ void PopClient::newConnection()
     }
 }
 
-void PopClient::setAccount(const QMailAccountId &id)
+void PopClient::setupAccount() const
 {
-    if ((transport && transport->inUse()) && (id != config.id())) {
-        QString msg("Cannot open account; transport in use");
-        emit errorOccurred(QMailServiceAction::Status::ErrConnectionInUse, msg);
-        return;
-    }
-
-    config = QMailAccountConfiguration(id);
-    QMailAccount account(id);
+    QMailAccount account(config.id());
     if (account.status() & QMailAccount::CanCreateFolders) {
         account.setStatus(QMailAccount::CanCreateFolders, false);
         if (!QMailStore::instance()->updateAccount(&account)) {
@@ -237,8 +229,12 @@ void PopClient::setAccount(const QMailAccountId &id)
             qMailLog(POP) << "CanCreateFolders for " << account.id() << "changed to" << false;
         }
     }
+}
+
+void PopClient::setupFolders() const
+{
     // Update non-local folders which have 'RenamePermitted=true'/'DeletionPermitted=true'/'ChildCreationPermitted=true'/'MessagesPermitted=false'
-    QMailFolderKey popKey = QMailFolderKey::parentAccountId(id);
+    QMailFolderKey popKey = QMailFolderKey::parentAccountId(config.id());
     popKey &= QMailFolderKey::id(QMailFolder::LocalStorageFolderId, QMailDataComparator::NotEqual);
     popKey &= QMailFolderKey::ancestorFolderIds(QMailFolderId(QMailFolder::LocalStorageFolderId), QMailDataComparator::Excludes);
     popKey &= QMailFolderKey::status(QMailFolder::DeletionPermitted, QMailDataComparator::Includes)
@@ -258,10 +254,6 @@ void PopClient::setAccount(const QMailAccountId &id)
         } else {
             qMailLog(POP) <<  "Flags for POP folder" << folder.id() << folder.path() << "updated";
         }
-    }
-
-    if (!credentials) {
-        credentials = QMailCredentialsFactory::getCredentialsHandlerForAccount(config);
     }
 }
 

@@ -81,8 +81,7 @@ void tst_PopClient::initTestCase()
 
     QVERIFY(QMailStore::instance()->addAccount(&account, &config));
 
-    mClient = new PopClient(this);
-    mClient->setAccount(account.id());
+    mClient = new PopClient(account.id(), this);
 }
 
 void tst_PopClient::cleanupTestCase()

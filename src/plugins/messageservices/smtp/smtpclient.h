@@ -63,12 +63,9 @@ class SmtpClient : public QObject
     Q_OBJECT
 
 public:
-    SmtpClient(QObject* parent);
+    SmtpClient(const QMailAccountId &accountId, QObject* parent);
     ~SmtpClient();
 
-    QMailMessage::MessageType messageType() const;
-
-    void setAccount(const QMailAccountId &accountId);
     QMailAccountId account() const;
 
     void fetchCapabilities();

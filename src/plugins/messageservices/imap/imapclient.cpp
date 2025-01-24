@@ -374,8 +374,9 @@ void IdleProtocol::idleErrorRecovery()
     emit openRequest();
 }
 
-ImapClient::ImapClient(QObject* parent)
+ImapClient::ImapClient(const QMailAccountId &id, QObject* parent)
     : QObject(parent),
+      _config(QMailAccountConfiguration(id)),
       _closeCount(0),
       _waitingForIdle(false),
       _idlesEstablished(false),
@@ -384,7 +385,7 @@ ImapClient::ImapClient(QObject* parent)
       _rapidClosing(false),
       _idleRetryDelay(InitialIdleRetryDelay),
       _pushConnectionsReserved(0),
-      _credentials(nullptr),
+      _credentials(QMailCredentialsFactory::getCredentialsHandlerForAccount(_config)),
       _loginFailed(false)
 {
     static int count(0);
@@ -435,6 +436,8 @@ ImapClient::ImapClient(QObject* parent)
             this, SLOT(connectionInactive()));
 
     connect(QMailMessageBuffer::instance(), SIGNAL(flushed()), this, SLOT(messageBufferFlushed()));
+
+    setupAccount();
 }
 
 ImapClient::~ImapClient()
@@ -1482,15 +1485,9 @@ void ImapClient::urlAuthorized(const QString &url)
     _strategyContext->urlAuthorized(url);
 }
 
-void ImapClient::setAccount(const QMailAccountId &id)
+void ImapClient::setupAccount() const
 {
-    if (_protocol.inUse() && (id != _config.id())) {
-        operationFailed(QMailServiceAction::Status::ErrConnectionInUse, tr("Cannot send message; socket in use"));
-        return;
-    }
-
-    _config = QMailAccountConfiguration(id);
-    QMailAccount account(id);
+    QMailAccount account(_config.id());
     if (!(account.status() & QMailAccount::CanCreateFolders)) {
         account.setStatus(QMailAccount::CanCreateFolders, true);
         if (!QMailStore::instance()->updateAccount(&account)) {
@@ -1509,10 +1506,6 @@ void ImapClient::setAccount(const QMailAccountId &id)
         } else {
             qMailLog(Messaging) << "Disable HasPersistentConnection for account" << account.id();
         }
-    }
-
-    if (!_credentials) {
-        _credentials = QMailCredentialsFactory::getCredentialsHandlerForAccount(_config);
     }
 }
 

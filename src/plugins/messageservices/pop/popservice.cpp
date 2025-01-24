@@ -312,7 +312,7 @@ void PopService::Source::retrievalTerminated()
 
 PopService::PopService(const QMailAccountId &accountId)
     : QMailMessageService(),
-      _client(this),
+      _client(accountId, this),
       _source(new Source(this))
 {
     connect(&_client, SIGNAL(progressChanged(uint, uint)), this, SIGNAL(progressChanged(uint, uint)));
@@ -323,7 +323,6 @@ PopService::PopService(const QMailAccountId &accountId)
     connect(QMailStore::instance(), SIGNAL(accountsUpdated(const QMailAccountIdList&)), 
             this, SLOT(accountsUpdated(const QMailAccountIdList&)));
 
-    _client.setAccount(accountId);
     QMailAccountConfiguration accountCfg(accountId);
     PopConfiguration popCfg(accountCfg);
     _source->setIntervalTimer(popCfg.checkInterval());

@@ -113,7 +113,7 @@ void SmtpService::Sink::sendCompleted()
 
 SmtpService::SmtpService(const QMailAccountId &accountId)
     : QMailMessageService(),
-      _client(this),
+      _client(accountId, this),
       _sink(new Sink(this)),
       _capabilityFetcher(nullptr),
       _capabilityFetchTimeout(0)
@@ -124,8 +124,6 @@ SmtpService::SmtpService(const QMailAccountId &accountId)
     connect(&_client, SIGNAL(errorOccurred(QMailServiceAction::Status, QString)), this, SLOT(errorOccurred(QMailServiceAction::Status, QString)));
     connect(&_client, SIGNAL(updateStatus(QString)), this, SLOT(updateStatus(QString)));
 
-    _client.setAccount(accountId);
-
     fetchCapabilities();
 }
 
@@ -134,8 +132,7 @@ void SmtpService::fetchCapabilities()
     QMailAccount account(_client.account());
     if (account.customField("qmf-smtp-capabilities-listed") != "true") {
         if (!_capabilityFetcher) {
-            _capabilityFetcher = new SmtpClient(this);
-            _capabilityFetcher->setAccount(account.id());
+            _capabilityFetcher = new SmtpClient(account.id(), this);
             connect(_capabilityFetcher, &SmtpClient::fetchCapabilitiesFinished,
                     this, &SmtpService::onCapabilitiesFetched);
         }

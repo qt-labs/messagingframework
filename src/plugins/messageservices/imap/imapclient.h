@@ -58,10 +58,9 @@ class ImapClient : public QObject
     Q_OBJECT
 
 public:
-    ImapClient(QObject* parent);
+    ImapClient(const QMailAccountId& accountId, QObject* parent);
     ~ImapClient();
 
-    void setAccount(const QMailAccountId& accountId);
     QMailAccountId account() const;
     void requestRapidClose() { _requestRapidClose = true; } // Close connection ASAP, unless interactive checking occurred recently
 
@@ -148,6 +147,7 @@ protected slots:
 private:
     friend class ImapStrategyContextBase;
 
+    void setupAccount() const;
     void deactivateConnection();
     void retrieveOperationCompleted();
 

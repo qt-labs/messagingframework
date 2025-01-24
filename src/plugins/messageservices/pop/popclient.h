@@ -59,12 +59,9 @@ class PopClient : public QObject
     Q_OBJECT
 
 public:
-    PopClient(QObject* parent);
+    PopClient(const QMailAccountId &accountId, QObject* parent);
     ~PopClient();
 
-    QMailMessage::MessageType messageType() const;
-
-    void setAccount(const QMailAccountId &accountId);
     QMailAccountId accountId() const;
     bool synchronizationEnabled(const QMailFolderId &id) const;
 
@@ -108,6 +105,8 @@ protected slots:
     void incomingData();
 
 private:
+    void setupAccount() const;
+    void setupFolders() const;
     void deactivateConnection();
     int nextMsgServerPos();
     int msgPosFromUidl(QString uidl);

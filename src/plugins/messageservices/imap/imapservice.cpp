@@ -1491,10 +1491,9 @@ ImapService::ImapService(const QMailAccountId &accountId)
 
 void ImapService::enable()
 {
-     _accountWasEnabled = true;
-    _client = new ImapClient(this);
+    _accountWasEnabled = true;
+    _client = new ImapClient(_accountId, this);
     _source->initClientConnections();
-    _client->setAccount(_accountId);
     _establishingPushEmail = false;
     _pushRetry = ThirtySeconds;
     connect(_client, SIGNAL(progressChanged(uint, uint)), this, SIGNAL(progressChanged(uint, uint)));

@@ -79,8 +79,7 @@ void tst_SmtpClient::initTestCase()
 
     QVERIFY(QMailStore::instance()->addAccount(&account, &config));
 
-    mClient = new SmtpClient(this);
-    mClient->setAccount(account.id());
+    mClient = new SmtpClient(account.id(), this);
 }
 
 void tst_SmtpClient::cleanupTestCase()

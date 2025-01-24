@@ -102,8 +102,9 @@ static QByteArray localName(const QHostAddress &hostAddress)
     return "[" + addr.toString().toLatin1() + "]";
 }
 
-SmtpClient::SmtpClient(QObject* parent)
+SmtpClient::SmtpClient(const QMailAccountId &id, QObject* parent)
     : QObject(parent)
+    , config(QMailAccountConfiguration(id))
     , mailItr(mailList.end())
     , messageLength(0)
     , fetchingCapabilities(false)
@@ -113,7 +114,7 @@ SmtpClient::SmtpClient(QObject* parent)
     , notUsingAuth(false)
     , authReset(false)
     , authTimeout(0)
-    , credentials(nullptr)
+    , credentials(QMailCredentialsFactory::getCredentialsHandlerForAccount(config))
 {
 }
 
@@ -123,20 +124,6 @@ SmtpClient::~SmtpClient()
     delete temporaryFile;
     delete authTimeout;
     delete credentials;
-}
-
-QMailMessage::MessageType SmtpClient::messageType() const
-{
-    return QMailMessage::Email;
-}
-
-void SmtpClient::setAccount(const QMailAccountId &id)
-{
-    // Load the current configuration for this account
-    config = QMailAccountConfiguration(id);
-    if (!credentials) {
-        credentials = QMailCredentialsFactory::getCredentialsHandlerForAccount(config);
-    }
 }
 
 QMailAccountId SmtpClient::account() const

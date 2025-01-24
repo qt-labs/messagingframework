@@ -82,8 +82,7 @@ void tst_ImapClient::initTestCase()
 
     QVERIFY(QMailStore::instance()->addAccount(&account, &config));
 
-    mClient = new ImapClient(this);
-    mClient->setAccount(account.id());
+    mClient = new ImapClient(account.id(), this);
 }
 
 void tst_ImapClient::cleanupTestCase()
