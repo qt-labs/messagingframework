@@ -194,6 +194,8 @@ protected slots:
     virtual void idleTimeOut();
     virtual void idleTransportError();
     virtual void idleErrorRecovery();
+    void logIn();
+    void onCredentialsStatusChanged();
 
 protected:
     ImapClient *_client;
@@ -233,6 +235,39 @@ bool IdleProtocol::open(const ImapConfiguration& config, qint64 bufferSize)
 {
     _idleRecoveryTimer.start(_client->idleRetryDelay()*1000);
     return ImapProtocol::open(config, bufferSize);
+}
+
+void IdleProtocol::logIn()
+{
+    if (_credentials->status() == QMailCredentialsInterface::Ready) {
+        sendLogin(QMailAccountConfiguration(_client->account()), _credentials);
+    } else if (_credentials->status() == QMailCredentialsInterface::Fetching) {
+        connect(_credentials, &QMailCredentialsInterface::statusChanged,
+                this, &IdleProtocol::onCredentialsStatusChanged);
+    } else {
+        qMailLog(IMAP) << objectName() << "credential retrieval failed with:" << _credentials->lastError();
+        idleTransportError();
+    }
+}
+
+void IdleProtocol::onCredentialsStatusChanged()
+{
+    qMailLog(IMAP) << objectName() << "Got credential status changed" << _credentials->status();
+
+    disconnect(_credentials, &QMailCredentialsInterface::statusChanged,
+               this, &IdleProtocol::onCredentialsStatusChanged);
+    switch (_credentials->status()) {
+    case (QMailCredentialsInterface::Ready):
+        sendLogin(QMailAccountConfiguration(_client->account()), _credentials);
+        break;
+    case (QMailCredentialsInterface::Failed):
+        if (inUse()) {
+            idleTransportError();
+        }
+        break;
+    default:
+        break;
+    }
 }
 
 void IdleProtocol::idleContinuation(ImapCommand command, const QString &type)
@@ -296,12 +331,12 @@ void IdleProtocol::idleCommandTransition(const ImapCommand command, const Operat
                 }
             }
             // We are now connected
-            sendLogin(config, _credentials);
+            logIn();
             return;
         }
         case IMAP_StartTLS:
         {
-            sendLogin(config, _credentials);
+            logIn();
             break;
         }
         case IMAP_Login: // Fall through
@@ -636,34 +671,14 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
                         delete protocol;
                     }
                 }
-                emit updateStatus( tr("Logging in" ) );
-                if (_credentials->status() == QMailCredentialsInterface::Ready) {
-                    _protocol.sendLogin(_config, _credentials);
-                } else if (_credentials->status() == QMailCredentialsInterface::Fetching) {
-                    connect(_credentials, &QMailCredentialsInterface::statusChanged,
-                            this, &ImapClient::onCredentialsStatusChanged);
-                } else {
-                    qMailLog(IMAP) << "credential retrieval failed with:" << _credentials->lastError();
-                    operationFailed(QMailServiceAction::Status::ErrConfiguration,
-                                    _credentials->lastError());
-                }
+                logIn();
             }
             break;
         }
         
         case IMAP_Idle_Continuation:
         {
-            emit updateStatus( tr("Logging in" ) );
-            if (_credentials->status() == QMailCredentialsInterface::Ready) {
-                _protocol.sendLogin(_config, _credentials);
-            } else if (_credentials->status() == QMailCredentialsInterface::Fetching) {
-                connect(_credentials, &QMailCredentialsInterface::statusChanged,
-                        this, &ImapClient::onCredentialsStatusChanged);
-            } else {
-                qMailLog(IMAP) << "credential retrieval failed with:" << _credentials->lastError();
-                operationFailed(QMailServiceAction::Status::ErrConfiguration,
-                                _credentials->lastError());
-            }
+            logIn();
             break;
         }
         
@@ -1784,6 +1799,21 @@ void ImapClient::removeAllFromBuffer(QMailMessage *message)
     while ((i = _bufferedMessages.indexOf(message, i)) != -1) {
         delete _bufferedMessages.at(i);
         _bufferedMessages.remove(i);
+    }
+}
+
+void ImapClient::logIn()
+{
+    emit updateStatus( tr("Logging in" ) );
+    if (_credentials->status() == QMailCredentialsInterface::Ready) {
+        _protocol.sendLogin(_config, _credentials);
+    } else if (_credentials->status() == QMailCredentialsInterface::Fetching) {
+        connect(_credentials, &QMailCredentialsInterface::statusChanged,
+                this, &ImapClient::onCredentialsStatusChanged);
+    } else {
+        qMailLog(IMAP) << "credential retrieval failed with:" << _credentials->lastError();
+        operationFailed(QMailServiceAction::Status::ErrConfiguration,
+                        _credentials->lastError());
     }
 }
 
