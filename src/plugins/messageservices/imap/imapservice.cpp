@@ -1474,12 +1474,6 @@ ImapService::ImapService(const QMailAccountId &accountId)
       _networkSessionTimer(new QTimer(this))
 {
     QMailAccount account(accountId);
-    if (!(account.status() & QMailAccount::CanSearchOnServer)) {
-        account.setStatus(QMailAccount::CanSearchOnServer, true);
-        if (!QMailStore::instance()->updateAccount(&account)) {
-            qWarning() << "Unable to update account" << account.id() << "to set imap CanSearchOnServer";
-        }
-    }
     if (account.status() & QMailAccount::Enabled) {
         enable();
     }

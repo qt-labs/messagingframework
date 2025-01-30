@@ -1503,24 +1503,28 @@ void ImapClient::urlAuthorized(const QString &url)
 void ImapClient::setupAccount() const
 {
     QMailAccount account(_config.id());
+    bool updated = false;
+
     if (!(account.status() & QMailAccount::CanCreateFolders)) {
         account.setStatus(QMailAccount::CanCreateFolders, true);
-        if (!QMailStore::instance()->updateAccount(&account)) {
-            qWarning() << "Unable to update account" << account.id() << "CanCreateFolders" << true;
-        } else {
-            qMailLog(Messaging) << "CanCreateFolders for " << account.id() << "changed to" << true;
-        }
+        updated = true;
     }
 
-    // At this point account can't have a persistent connection to the server, if for some reason the status is wrong(crash/abort) we will
+    if (!(account.status() & QMailAccount::CanSearchOnServer)) {
+        account.setStatus(QMailAccount::CanSearchOnServer, true);
+        updated = true;
+    }
+
+    // At this point account can't have a persistent connection to the server,
+    // if for some reason the status is wrong(crash/abort) we will
     // reset correct status here.
     if (account.status() & QMailAccount::HasPersistentConnection) {
+        updated = true;
         account.setStatus(QMailAccount::HasPersistentConnection, false);
-        if (!QMailStore::instance()->updateAccount(&account)) {
-            qWarning() << "Unable to disable HasPersistentConnection for account" << account.id();
-        } else {
-            qMailLog(Messaging) << "Disable HasPersistentConnection for account" << account.id();
-        }
+    }
+
+    if (updated && !QMailStore::instance()->updateAccount(&account)) {
+        qWarning() << "Unable to setup account status" << account.id();
     }
 }
 
