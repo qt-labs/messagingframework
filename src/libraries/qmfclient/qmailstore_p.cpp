@@ -2543,12 +2543,12 @@ QMailStorePrivate::~QMailStorePrivate()
     delete databaseptr;
 }
 
-ProcessMutex& QMailStorePrivate::databaseMutex(void) const
+ProcessMutex& QMailStorePrivate::databaseMutex() const
 {
     return *mutex;
 }
 
-ProcessMutex& QMailStorePrivate::contentManagerMutex(void)
+ProcessMutex& QMailStorePrivate::contentManagerMutex()
 {
     return *contentMutex;
 }
@@ -2833,7 +2833,7 @@ void QMailStorePrivate::clearContent()
     QMailContentManagerFactory::clearContent();
 }
 
-bool QMailStorePrivate::transaction(void)
+bool QMailStorePrivate::transaction()
 {
     if (inTransaction) {
         qWarning() << "(" << pid << ")" << "Transaction already exists at begin!";
@@ -3005,7 +3005,7 @@ bool QMailStorePrivate::execute(QSqlQuery& query, bool batch)
     return true;
 }
 
-bool QMailStorePrivate::commit(void)
+bool QMailStorePrivate::commit()
 {
     if (!inTransaction) {
         qWarning() << "(" << pid << ")" << "Transaction does not exist at commit!";
@@ -3026,7 +3026,7 @@ bool QMailStorePrivate::commit(void)
     return true;
 }
 
-void QMailStorePrivate::rollback(void)
+void QMailStorePrivate::rollback()
 {
     if (!inTransaction) {
         qWarning() << "(" << pid << ")" << "Transaction does not exist at rollback!";
@@ -3063,7 +3063,7 @@ void QMailStorePrivate::setQueryError(const QSqlError &error, const QString &des
     qWarning() << qPrintable(s);
 }
 
-void QMailStorePrivate::clearQueryError(void) 
+void QMailStorePrivate::clearQueryError()
 {
     lastQueryError = QSqlError::NoError;
 }
@@ -4449,7 +4449,7 @@ bool QMailStorePrivate::purgeObsoleteFiles()
     return true;
 }
 
-bool QMailStorePrivate::performMaintenanceTask(const QString &task, uint secondsFrequency, bool (QMailStorePrivate::*func)(void))
+bool QMailStorePrivate::performMaintenanceTask(const QString &task, uint secondsFrequency, bool (QMailStorePrivate::*func)())
 {
     QDateTime lastPerformed(QDateTime::fromMSecsSinceEpoch(0));
 

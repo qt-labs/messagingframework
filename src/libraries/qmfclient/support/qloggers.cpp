@@ -55,7 +55,7 @@ void BaseLoggerFoundation::setUnReady(const QString& _err)
     err_msg = _err;
 };
 
-void BaseLoggerFoundation::setReady(void)
+void BaseLoggerFoundation::setReady()
 {
     is_ready = true;
     err_msg.clear();

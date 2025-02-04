@@ -288,9 +288,9 @@ private:
     friend class Transaction;
     friend struct ReadLock;
 
-    static ProcessMutex& contentManagerMutex(void);
+    static ProcessMutex& contentManagerMutex();
 
-    ProcessMutex& databaseMutex(void) const;
+    ProcessMutex& databaseMutex() const;
 
     static const MessagePropertyMap& messagePropertyMap();
     static const MessagePropertyList& messagePropertyList();
@@ -339,23 +339,23 @@ private:
     bool purgeMissingAncestors();
     bool purgeObsoleteFiles();
 
-    bool performMaintenanceTask(const QString &task, uint secondsFrequency, bool (QMailStorePrivate::*func)(void));
+    bool performMaintenanceTask(const QString &task, uint secondsFrequency, bool (QMailStorePrivate::*func)());
 
     bool performMaintenance();
 
     void createTemporaryTable(const QMailMessageKey::ArgumentType &arg, const QString &dataType) const;
-    void destroyTemporaryTables(void);
+    void destroyTemporaryTables();
 
-    bool transaction(void);
-    bool commit(void);
-    void rollback(void);
+    bool transaction();
+    bool commit();
+    void rollback();
 
     void setQueryError(const QSqlError&, const QString& description = QString(), const QString& statement = QString());
-    void clearQueryError(void);
+    void clearQueryError();
 
     QSqlQuery prepare(const QString& sql);
     bool execute(QSqlQuery& q, bool batch = false);
-    int queryError(void) const;
+    int queryError() const;
 
     QSqlQuery performQuery(const QString& statement, bool batch, const QVariantList& bindValues, const QList<Key>& keys, const QPair<uint, uint> &constraint, const QString& descriptor);
 

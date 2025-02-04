@@ -93,7 +93,7 @@ protected:
           \brief Set "ready for the logging" status to true
 
         */
-        void setReady(void);
+        void setReady();
 
 private:
         /// Minimal log level.
