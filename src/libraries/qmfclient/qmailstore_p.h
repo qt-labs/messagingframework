@@ -52,11 +52,8 @@
 #include <QTimer>
 
 //#define QMAILSTORE_LOG_SQL //define to enable SQL query logging
-//#define QMAILSTORE_USE_RTTI //define if RTTI is available to assist debugging
 
-#ifdef QMAILSTORE_USE_RTTI
 #include <typeinfo>
-#endif
 
 class ProcessMutex;
 
@@ -858,11 +855,7 @@ ValueType QMailStorePrivate::extractValue(const QVariant &var, const ValueType &
 {
     if (!var.canConvert<ValueType>()) {
         qWarning() << "QMailStorePrivate::extractValue - Cannot convert variant to:"
-#ifdef QMAILSTORE_USE_RTTI
                    << typeid(ValueType).name();
-#else
-                   << "requested type";
-#endif
         return defaultValue;
     }
 

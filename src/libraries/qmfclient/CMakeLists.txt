@@ -96,7 +96,6 @@ set(PUBLIC_HEADERS
 
 set(PRIVATE_HEADERS
   qprivateimplementationdef_p.h
-  bind_p.h
   locks_p.h
   mailkeyimpl_p.h
   mailsortkeyimpl_p.h

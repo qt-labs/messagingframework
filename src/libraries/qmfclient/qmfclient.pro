@@ -66,7 +66,6 @@ HEADERS += \
     support/qmailnamespace.h \
     support/qmailpluginmanager.h \
     support/qmailipc.h \
-    bind_p.h \
     locks_p.h \
     mailkeyimpl_p.h \
     mailsortkeyimpl_p.h \
