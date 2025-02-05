@@ -3579,7 +3579,7 @@ void ImapProtocol::setPrecedingLiteral(const QString &line)
 bool ImapProtocol::checkSpace()
 {
     if (_stream.status() == LongStream::OutOfSpace) {
-        _lastError += LongStream::errorMessage( QString('\n') );
+        _lastError += QChar('\n') + LongStream::outOfSpaceMessage();
         clearResponse();
         return false;
     }

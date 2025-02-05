@@ -1,5 +1,4 @@
 set(SRC
-  longstream.cpp
   longstring.cpp
   locks.cpp
   qmailaccount.cpp
@@ -115,8 +114,7 @@ set(PRIVATE_HEADERS
   qmailthread_p.h
   qmailthreadkey_p.h
   qmailthreadsortkey_p.h
-  longstring_p.h
-  longstream_p.h)
+  longstring_p.h)
 
 if (ICU_FOUND)
   set(SRC ${SRC}

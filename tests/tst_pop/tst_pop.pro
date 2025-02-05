@@ -4,7 +4,7 @@ TARGET = tst_pop
 
 SRCDIR = $$PWD/../../src/plugins/messageservices/pop
 INCLUDEPATH += $$SRCDIR
-QT += qmfclient qmfmessageserver
+QT += qmfclient qmfmessageserver qmfmessageserver-private
 HEADERS += $$SRCDIR/popauthenticator.h \
            $$SRCDIR/popclient.h \
            $$SRCDIR/popconfiguration.h

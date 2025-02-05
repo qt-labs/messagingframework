@@ -4,7 +4,7 @@ TARGET = tst_imap
 
 SRCDIR = $$PWD/../../src/plugins/messageservices/imap
 INCLUDEPATH += $$SRCDIR
-QT += qmfclient qmfmessageserver
+QT += qmfclient qmfmessageserver qmfmessageserver-private
 HEADERS += $$SRCDIR/imapauthenticator.h \
            $$SRCDIR/imapclient.h \
            $$SRCDIR/imapprotocol.h \

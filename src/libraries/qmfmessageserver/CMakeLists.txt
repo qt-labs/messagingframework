@@ -1,4 +1,5 @@
 set(SRC
+  longstream.cpp
   qmailauthenticator.cpp
   qmailcredentials.cpp
   qmailmessagebuffer.cpp
@@ -10,6 +11,7 @@ set(SRC
   qmailheartbeattimer_qtimer.cpp) # NB: There are multiple implementations
 
 set(HEADERS
+  longstream_p.h
   qmailauthenticator.h
   qmailcredentials.h
   qmailmessagebuffer.h

@@ -1,7 +1,7 @@
 TEMPLATE = app
 
 TARGET = messageserver5
-QT = core dbus qmfclient qmfclient-private qmfmessageserver
+QT = core dbus qmfclient qmfclient-private qmfmessageserver qmfmessageserver-private
 
 contains(DEFINES, USE_HTML_PARSER) {
     QT += gui

@@ -22,6 +22,7 @@ CONFIG -= create_cmake
 DEFINES += MESSAGESERVER_INTERNAL
 
 HEADERS += \
+    longstream_p.h \
     qmailauthenticator.h \
     qmailcredentials.h \
     qmailmessagebuffer.h \
@@ -32,7 +33,9 @@ HEADERS += \
     qmailtransport.h \
     qmailheartbeattimer.h
 
-SOURCES += qmailauthenticator.cpp \
+SOURCES += \
+           longstream.cpp \
+           qmailauthenticator.cpp \
            qmailcredentials.cpp \
            qmailmessagebuffer.cpp \
            qmailmessageclassifier.cpp \

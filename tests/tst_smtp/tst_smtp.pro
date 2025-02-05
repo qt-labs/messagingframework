@@ -4,7 +4,7 @@ TARGET = tst_smtp
 
 SRCDIR = $$PWD/../../src/plugins/messageservices/smtp
 INCLUDEPATH += $$SRCDIR
-QT += qmfclient qmfmessageserver
+QT += qmfclient qmfmessageserver qmfmessageserver-private
 HEADERS += $$SRCDIR/smtpauthenticator.h \
            $$SRCDIR/smtpclient.h \
            $$SRCDIR/smtpconfiguration.h

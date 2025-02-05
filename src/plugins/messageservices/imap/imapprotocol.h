@@ -35,11 +35,12 @@
 #define IMAPPROTOCOL_H
 
 #include "imapmailboxproperties.h"
-#include <longstream_p.h>
 #include <qobject.h>
 #include <qstring.h>
 #include <qstringlist.h>
 #include <qtimer.h>
+
+#include <longstream_p.h>
 #include <qmailserviceaction.h>
 #include <qmailtransport.h>
 #include <qmailcredentials.h>
@@ -125,7 +126,6 @@ enum OperationStatus
     OpBad,
 };
 
-class LongStream;
 class Email;
 class ImapConfiguration;
 class ImapTransport;

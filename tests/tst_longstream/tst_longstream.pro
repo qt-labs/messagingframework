@@ -1,6 +1,6 @@
 TEMPLATE = app
 TARGET = tst_longstream
-CONFIG += qmfclient
+QT += qmfmessageserver qmfmessageserver-private
 
 SOURCES += tst_longstream.cpp
 

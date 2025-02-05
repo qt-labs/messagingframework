@@ -142,7 +142,19 @@ QDateTime QMail::lastDbUpdated()
 */
 QString QMail::tempPath()
 {
-    return (dataPath() + QLatin1String("tmp/"));
+    static bool pathChecked = false;
+    QString path = dataPath() + QLatin1String("tmp/");
+    if (!pathChecked) {
+        QDir dir;
+        if (!dir.exists(path)) {
+            if (!dir.mkpath(path)) {
+                qCritical() << "Cannot create temp path";
+            }
+        }
+        pathChecked = true;
+    }
+
+    return path;
 }
 
 /*!
@@ -246,11 +258,6 @@ QSqlDatabase QMail::createDatabase()
             QSqlError dbError = db.lastError();
             qCritical() << "Cannot open database: " << dbError.text();
         }
-
-        QDir tp(tempPath());
-        if(!tp.exists())
-            if(!tp.mkpath(tempPath()))
-                qCritical() << "Cannot create temp path";
 
         instance->init = true;
     }

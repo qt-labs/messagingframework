@@ -33,28 +33,20 @@
 
 #include "longstream_p.h"
 #include "qmaillog.h"
-#include <QCoreApplication>
 #include "qmailnamespace.h"
+
+#include <QCoreApplication>
 #include <QIODevice>
 #include <QTextStream>
 #include <QTemporaryFile>
 #include <QDir>
-
-#if defined(Q_OS_WIN)
-#include <windows.h>
-#elif defined (Q_OS_MAC)
-#include <sys/statvfs.h>
-#include <sys/mount.h>
-#else
-#include <sys/vfs.h>
-#include <errno.h>
-#endif
+#include <QStorageInfo>
 
 /*  Helper class to reduce memory usage while downloading large mails */
 LongStream::LongStream()
     : mStatus(Ok)
 {
-    QString tmpName( LongStream::tempDir() + QLatin1String( "longstream" ) );
+    QString tmpName(QMail::tempPath() + QLatin1String("longstream"));
 
     len = 0;
     appendedBytes = minCheck;
@@ -103,7 +95,7 @@ QString LongStream::detach()
     tmpFile->close();
     delete tmpFile;
 
-    QString tmpName( LongStream::tempDir() + QLatin1String( "longstream" ) );
+    QString tmpName(QMail::tempPath() + QLatin1String("longstream"));
 
     tmpFile = new QTemporaryFile( tmpName + QLatin1String( ".XXXXXX" ));
     tmpFile->open();
@@ -185,74 +177,27 @@ void LongStream::setStatus( Status status )
 
 bool LongStream::freeSpace( const QString &path, int min)
 {
-    unsigned long long boundary = minFree;
+    long long boundary = minFree;
     if (min >= 0)
         boundary = min;
 
-    QString partitionPath = tempDir();
-    if (!path.isEmpty())
-        partitionPath = path;
-    
-#if !defined(Q_OS_WIN)
-    struct statfs stats;
+    QString partitionPath = path.isEmpty() ? QMail::tempPath() : path;
 
-    while (statfs(partitionPath.toLocal8Bit(), &stats) == -1) {
-        if (errno != EINTR) {
-            qWarning() << "Could not stat filesystem";
-            return true;
-        }
-    }
-    unsigned long long bavail = ((unsigned long long)stats.f_bavail);
-    unsigned long long bsize = ((unsigned long long)stats.f_bsize);
-
-    return ((bavail * bsize) > boundary);
-#else
-    // MS recommend the use of GetDiskFreeSpaceEx, but this is not available on early versions
-    // of windows 95.  GetDiskFreeSpace is unable to report free space larger than 2GB, but we're 
-    // only concerned with much smaller amounts of free space, so this is not a hindrance.
-    DWORD bytesPerSector(0);
-    DWORD sectorsPerCluster(0);
-    DWORD freeClusters(0);
-    DWORD totalClusters(0);
-
-    if (::GetDiskFreeSpace(reinterpret_cast<const wchar_t*>(partitionPath.utf16()), &bytesPerSector, &sectorsPerCluster, &freeClusters, &totalClusters) == FALSE) {
-        qWarning() << "Unable to get free disk space:" << partitionPath;
-    }
-
-    return ((bytesPerSector * sectorsPerCluster * freeClusters) > boundary);
-#endif
+    QStorageInfo storageInfo(partitionPath);
+    return storageInfo.bytesAvailable() > boundary;
 }
 
-QString LongStream::errorMessage( const QString &prefix )
+QString LongStream::outOfSpaceMessage()
 {
-    QString str = QCoreApplication::tr( "Storage for messages is full. Some new "
-                                    "messages could not be retrieved." );
-    if (!prefix.isEmpty())
-        return prefix + str;
-    return str;
-}
-
-static QString tempDirPath()
-{
-    QString path = QMail::tempPath();
-    QDir dir;
-    if (!dir.exists( path ))
-        dir.mkpath( path );
-    return path;
-}
-
-QString LongStream::tempDir()
-{
-    static QString path(tempDirPath());
-    return path;
+    return QCoreApplication::tr("Storage for messages is full. Some new messages could not be retrieved.");
 }
 
 void LongStream::cleanupTempFiles()
 {
-    QDir dir(LongStream::tempDir(), QLatin1String("longstream.*"));
+    QDir dir(QMail::tempPath(), QLatin1String("longstream.*"));
     QStringList list = dir.entryList();
     for (int i = 0; i < list.size(); ++i) {
-        QFile file( LongStream::tempDir() + list.at(i) );
+        QFile file(QMail::tempPath() + list.at(i));
         if (file.exists())
             file.remove();
     }

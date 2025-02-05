@@ -4,7 +4,7 @@ PLUGIN_TYPE = messageservices
 PLUGIN_CLASS_NAME = QmfImapPlugin
 load(qt_plugin)
 
-QT = core network qmfclient qmfclient-private qmfmessageserver
+QT = core network qmfclient qmfclient-private qmfmessageserver qmfmessageserver-private
 
 HEADERS += imapclient.h \
            imapconfiguration.h \

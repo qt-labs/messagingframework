@@ -4,7 +4,7 @@ PLUGIN_TYPE = messageservices
 PLUGIN_CLASS_NAME = QmfPopPlugin
 load(qt_plugin)
 
-QT = core core5compat network qmfclient qmfclient-private qmfmessageserver
+QT = core core5compat network qmfclient qmfclient-private qmfmessageserver qmfmessageserver-private
 
 HEADERS += popclient.h \
            popconfiguration.h \

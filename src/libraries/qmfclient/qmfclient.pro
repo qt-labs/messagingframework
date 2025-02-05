@@ -84,10 +84,9 @@ HEADERS += \
     qmailthread_p.h \
     qmailthreadkey_p.h \
     qmailthreadsortkey_p.h \
-    longstring_p.h \
-    longstream_p.h
+    longstring_p.h
 
-SOURCES += longstream.cpp \
+SOURCES += \
            longstring.cpp \
            locks.cpp \
            qmailaccount.cpp \

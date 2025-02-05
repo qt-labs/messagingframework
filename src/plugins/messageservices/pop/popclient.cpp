@@ -30,12 +30,12 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+#include <QFileInfo>
+#include <QRegExp>
 
 #include "popclient.h"
 #include "popauthenticator.h"
 #include "popconfiguration.h"
-#include <QFileInfo>
-#include <QRegExp>
 #include <longstream_p.h>
 #include <qmailstore.h>
 #include <qmailmessagebuffer.h>
@@ -634,7 +634,7 @@ void PopClient::processResponse(const QString &response)
 
             if (dataStream->status() == LongStream::OutOfSpace) {
                 operationFailed(QMailServiceAction::Status::ErrFileSystemFull,
-                                LongStream::errorMessage(QString('\n')));
+                                LongStream::outOfSpaceMessage());
             } else {
                 // More message data remains
                 waitForInput = true;

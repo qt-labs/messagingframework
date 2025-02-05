@@ -33,10 +33,11 @@
 
 #include <QObject>
 #include <QTest>
-#include <longstream_p.h>
-#include <ctype.h>
 #include <QDir>
 #include <QRegularExpression>
+
+#include <qmailnamespace.h>
+#include <longstream_p.h>
 
 /*
     This class primarily tests that LongStream class correctly stores messages.
@@ -58,8 +59,6 @@ private slots:
 };
 
 QTEST_MAIN(tst_LongStream)
-
-#include "tst_longstream.moc"
 
 void tst_LongStream::test_new_stream()
 {
@@ -129,11 +128,8 @@ void tst_LongStream::test_errorMessage()
 {
     LongStream ls;
 
-    QString err = ls.errorMessage();
+    QString err = ls.outOfSpaceMessage();
     QCOMPARE(err.isEmpty(), false);
-
-    QString prefix("error prefix: ");
-    QCOMPARE(ls.errorMessage(prefix), prefix+err);
 }
 
 void tst_LongStream::test_temp_files()
@@ -147,7 +143,9 @@ void tst_LongStream::test_temp_files()
 
     LongStream::cleanupTempFiles();
 
-    QDir dir (LongStream::tempDir(), "longstream.*");
+    QDir dir(QMail::tempPath(), "longstream.*");
     QCOMPARE(dir.exists(), true);
     QVERIFY2(dir.entryList().isEmpty(), qPrintable(dir.entryList().join(" ")));
 }
+
+#include "tst_longstream.moc"
