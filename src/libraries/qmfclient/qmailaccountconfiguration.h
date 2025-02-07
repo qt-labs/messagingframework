@@ -61,7 +61,9 @@ public:
         QMailAccountId id() const;
 
         QString value(const QString &name) const;
+        QStringList listValue(const QString &name) const;
         void setValue(const QString &name, const QString &value);
+        void setValue(const QString &name, const QStringList &list);
 
         void removeValue(const QString &name);
 

@@ -203,11 +203,30 @@ QString QMailAccountConfiguration::ServiceConfiguration::value(const QString &na
 }
 
 /*!
+    Returns the value of the parameter named \a name in the service configuration.
+*/
+QStringList QMailAccountConfiguration::ServiceConfiguration::listValue(const QString &name) const
+{
+    const QString value = d->_configuration->_values.value(name);
+    return value.startsWith(QStringLiteral("list:\x1F")) && value.length() > 6
+        ? value.mid(6).split('\x1F') : QStringList();
+}
+
+/*!
     Sets the parameter named \a name to contain the value \a value in the service configuration.
 */
 void QMailAccountConfiguration::ServiceConfiguration::setValue(const QString &name, const QString &value)
 {
     d->_configuration->_values[name] = value;
+    d->_parent->_modified = true;
+}
+
+/*!
+    Sets the parameter named \a name to contain the list \a list in the service configuration.
+*/
+void QMailAccountConfiguration::ServiceConfiguration::setValue(const QString &name, const QStringList &list)
+{
+    d->_configuration->_values[name] = QStringLiteral("list:\x1F") + list.join('\x1F');
     d->_parent->_modified = true;
 }
 

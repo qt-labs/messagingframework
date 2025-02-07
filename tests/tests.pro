@@ -9,6 +9,7 @@ SUBDIRS = \
       tst_qmailmessagepart \
       tst_qmailstore \
       tst_qmailstorekeys \
+      tst_qmailaccountconfiguration \
       tst_qprivateimplementation \
       tst_longstring \
       tst_longstream \
