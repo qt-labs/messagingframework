@@ -41,6 +41,28 @@
 #include "qmailcryptofwd.h"
 #include <qmailpluginmanager.h>
 
+class QMailAccountConfiguration;
+
+class QMailCryptographicServiceConfiguration
+{
+public:
+    QMailCryptographicServiceConfiguration(QMailAccountConfiguration *config);
+    ~QMailCryptographicServiceConfiguration();
+
+    QStringList signatureKeys() const;
+    void setSignatureKeys(const QStringList &keys);
+
+    QString signatureType() const;
+    void setSignatureType(const QString &str);
+
+    bool useSignatureByDefault() const;
+    void setUseSignatureByDefault(bool status);
+
+private:
+    class Private;
+    Private *d;
+};
+
 class QMailCryptographicServiceInterface
 {
 public:

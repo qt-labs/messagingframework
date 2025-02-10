@@ -38,6 +38,8 @@
 
 #include <QCoreApplication>
 
+#include "qmailaccountconfiguration.h"
+
 struct SignedContainerFinder
 {
     QMailCryptographicServiceInterface *m_engine;
@@ -232,5 +234,114 @@ QMailCryptoFwd::DecryptionResult QMailCryptographicService::decrypt(QMailMessage
         return result;
     } else {
         return QMailCryptoFwd::DecryptionResult(QMailCryptoFwd::UnsupportedProtocol);
+    }
+}
+
+/*!
+    \class QMailCryptographicServiceConfiguration
+
+    This class allow to handle settings related to cryptographic operations.
+*/
+
+class QMailCryptographicServiceConfiguration::Private
+{
+public:
+    Private(QMailAccountConfiguration *config)
+    {
+        if (config) {
+            // No-op if it already exists, and not saved to db if left empty.
+            config->addServiceConfiguration(QStringLiteral("crypto"));
+            m_cryptoConfig = config->serviceConfiguration(QStringLiteral("crypto"));
+        }
+    }
+
+    QMailAccountConfiguration::ServiceConfiguration m_cryptoConfig;
+};
+
+/*!
+    Creates a configuration service which contains the cryptographic details
+    of the account configuration \a config.
+*/
+QMailCryptographicServiceConfiguration::QMailCryptographicServiceConfiguration(QMailAccountConfiguration *config)
+    : d(new Private(config))
+{
+}
+
+QMailCryptographicServiceConfiguration::~QMailCryptographicServiceConfiguration()
+{
+    delete d;
+}
+
+/*!
+    Returns the keys to be used when creating a cryptographic
+    signature for an e-mail of this account.
+
+    \sa QMailCryptographicService::sign().
+*/
+QStringList QMailCryptographicServiceConfiguration::signatureKeys() const
+{
+    return d->m_cryptoConfig.listValue(QStringLiteral("keyNames"));
+}
+
+/*!
+    Stores the keys to be used when creating a cryptographic
+    signature for an e-mail of this account.
+
+    \sa QMailCryptographicService::sign().
+*/
+void QMailCryptographicServiceConfiguration::setSignatureKeys(const QStringList &keys)
+{
+    if (keys.isEmpty()) {
+        d->m_cryptoConfig.removeValue(QStringLiteral("keyNames"));
+    } else {
+        d->m_cryptoConfig.setValue(QStringLiteral("keyNames"), keys);
+    }
+}
+
+/*!
+    Returns the method to be used when creating a cryptographic
+    signature for an e-mail of this account.
+
+    \sa QMailCryptographicService::sign().
+*/
+QString QMailCryptographicServiceConfiguration::signatureType() const
+{
+    return d->m_cryptoConfig.value(QStringLiteral("pluginName"));
+}
+
+/*!
+    Sets up the method to be used when creating a cryptographic
+    signature for an e-mail of this account.
+
+    \sa QMailCryptographicService::sign().
+*/
+void QMailCryptographicServiceConfiguration::setSignatureType(const QString &str)
+{
+    if (str.isEmpty()) {
+        d->m_cryptoConfig.removeValue(QStringLiteral("pluginName"));
+    } else {
+        d->m_cryptoConfig.setValue(QStringLiteral("pluginName"), str);
+    }
+}
+
+/*!
+    Returns if a cryptographic signature should be generated for
+    every e-mail of this account.
+*/
+bool QMailCryptographicServiceConfiguration::useSignatureByDefault() const
+{
+    return d->m_cryptoConfig.value(QStringLiteral("signByDefault")).compare(QStringLiteral("true"), Qt::CaseInsensitive) == 0;
+}
+
+/*!
+    Sets up if a cryptographic signature should be generated for
+    every e-mail of this account.
+*/
+void QMailCryptographicServiceConfiguration::setUseSignatureByDefault(bool status)
+{
+    if (!status) {
+        d->m_cryptoConfig.removeValue(QStringLiteral("signByDefault"));
+    } else {
+        d->m_cryptoConfig.setValue(QStringLiteral("signByDefault"), QStringLiteral("true"));
     }
 }
