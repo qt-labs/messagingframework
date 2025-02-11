@@ -44,7 +44,7 @@
 class QMailCryptographicServiceInterface
 {
 public:
-    virtual ~QMailCryptographicServiceInterface() {};
+    virtual ~QMailCryptographicServiceInterface() {}
 
     virtual bool partHasSignature(const QMailMessagePartContainer &part) const = 0;
     virtual QMailCryptoFwd::VerificationResult verifySignature(const QMailMessagePartContainer &part) const = 0;

@@ -36,7 +36,7 @@
 class QMailMessageRemovalRecordPrivate : public QSharedData
 {
 public:
-    QMailMessageRemovalRecordPrivate():QSharedData(){};
+    QMailMessageRemovalRecordPrivate() : QSharedData() {}
     QMailMessageRemovalRecordPrivate(const QMailAccountId& parentAccountId, 
                                      const QString& serverUid,
                                      const QMailFolderId& parentFolderId)
@@ -45,9 +45,9 @@ public:
           serverUid(serverUid), 
           parentFolderId(parentFolderId)
     {
-    };
+    }
 
-    ~QMailMessageRemovalRecordPrivate(){};
+    ~QMailMessageRemovalRecordPrivate() {}
 
     QMailAccountId parentAccountId;
     QString serverUid;

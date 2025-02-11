@@ -36,27 +36,27 @@
 BaseLoggerFoundation::BaseLoggerFoundation(const LogLevel min_lvl_)
                      : min_lvl(min_lvl_), is_ready(true)
 {
-};
+}
 
 void BaseLoggerFoundation::setMinLogLvl(const LogLevel _min_lvl)
 {
     min_lvl = _min_lvl;
-};
+}
 
 bool BaseLoggerFoundation::isReady(QString& _err) const
 {
     if(!is_ready) _err = err_msg;
     return is_ready;
-};
+}
 
 void BaseLoggerFoundation::setUnReady(const QString& _err)
 {
     is_ready = false;
     err_msg = _err;
-};
+}
 
 void BaseLoggerFoundation::setReady()
 {
     is_ready = true;
     err_msg.clear();
-};
+}

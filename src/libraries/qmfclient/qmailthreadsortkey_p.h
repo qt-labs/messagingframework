@@ -31,8 +31,8 @@
 **
 ****************************************************************************/
 
-#ifndef QMAILFOLDERSORTKEY_P_H
-#define QMAILFOLDERSORTKEY_P_H
+#ifndef QMAILTHREADSORTKEY_P_H
+#define QMAILTHREADSORTKEY_P_H
 
 //
 //  W A R N I N G
@@ -45,15 +45,18 @@
 // We mean it.
 //
 
-#include "qmailfoldersortkey.h"
+#include "qmailthreadsortkey.h"
 #include "mailsortkeyimpl_p.h"
 
 class QMailThreadSortKeyPrivate : public MailSortKeyImpl<QMailThreadSortKey>
 {
 public:
-    QMailThreadSortKeyPrivate() : MailSortKeyImpl<QMailThreadSortKey>() {};
-    QMailThreadSortKeyPrivate(QMailThreadSortKey::Property p, Qt::SortOrder o, quint64 m) : MailSortKeyImpl<QMailThreadSortKey>(p, o, m) {};
-    QMailThreadSortKeyPrivate(const QmfList<QMailThreadSortKey::ArgumentType> args) : MailSortKeyImpl<QMailThreadSortKey>(args) {};
+    QMailThreadSortKeyPrivate()
+        : MailSortKeyImpl<QMailThreadSortKey>() {}
+    QMailThreadSortKeyPrivate(QMailThreadSortKey::Property p, Qt::SortOrder o, quint64 m)
+        : MailSortKeyImpl<QMailThreadSortKey>(p, o, m) {}
+    QMailThreadSortKeyPrivate(const QmfList<QMailThreadSortKey::ArgumentType> args)
+        : MailSortKeyImpl<QMailThreadSortKey>(args) {}
 };
 
 #endif

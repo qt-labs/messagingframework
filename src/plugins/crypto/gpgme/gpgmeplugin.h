@@ -46,7 +46,7 @@ class QMailCryptoGPG : public QMailCryptoGPGME
 
 public:
     QMailCryptoGPG();
-    ~QMailCryptoGPG() {};
+    ~QMailCryptoGPG() {}
 
     bool partHasSignature(const QMailMessagePartContainer &part) const Q_DECL_OVERRIDE;
     QMailCryptoFwd::VerificationResult verifySignature(const QMailMessagePartContainer &part) const Q_DECL_OVERRIDE;

@@ -165,7 +165,7 @@ public:
     bool receivedCapabilities() const;
     void setReceivedCapabilities(bool received);
 
-    QString lastError() const { return _lastError; };
+    QString lastError() const { return _lastError; }
 
     const QStringList &capabilities() const;
     void setCapabilities(const QStringList &);

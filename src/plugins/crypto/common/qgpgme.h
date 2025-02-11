@@ -53,7 +53,7 @@ class QMailCryptoGPGME: public QObject,
     Q_INTERFACES(QMailCryptographicServiceInterface)
 
  public:
-    ~QMailCryptoGPGME() {};
+    ~QMailCryptoGPGME() {}
 
     void setPassphraseCallback(QMailCryptoFwd::PassphraseCallback cb) Q_DECL_OVERRIDE;
     QString passphraseCallback(const QString &info) const Q_DECL_OVERRIDE;

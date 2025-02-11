@@ -46,7 +46,7 @@ class QMailCryptoSMIME : public QMailCryptoGPGME
 
 public:
     QMailCryptoSMIME();
-    ~QMailCryptoSMIME() {};
+    ~QMailCryptoSMIME() {}
 
     bool partHasSignature(const QMailMessagePartContainer &part) const Q_DECL_OVERRIDE;
     QMailCryptoFwd::VerificationResult verifySignature(const QMailMessagePartContainer &part) const Q_DECL_OVERRIDE;

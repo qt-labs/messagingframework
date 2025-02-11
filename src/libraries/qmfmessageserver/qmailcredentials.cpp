@@ -196,7 +196,7 @@ QMailCredentialsPlugin::~QMailCredentialsPlugin()
 class QMailCredentialsInterfacePrivate
 {
 public:
-    QMailCredentialsInterfacePrivate() {};
+    QMailCredentialsInterfacePrivate() {}
 
     QMailAccountId m_id;
     QString m_service;

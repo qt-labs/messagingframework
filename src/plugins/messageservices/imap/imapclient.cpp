@@ -94,7 +94,7 @@ namespace {
     struct FlagInfo
     {
         FlagInfo(const QStringList &flagNames, quint64 flag, QMailFolder::StandardFolder standardFolder, quint64 messageFlag)
-            :_flagNames(flagNames), _flag(flag), _standardFolder(standardFolder), _messageFlag(messageFlag) {};
+            : _flagNames(flagNames), _flag(flag), _standardFolder(standardFolder), _messageFlag(messageFlag) {}
         
         QStringList _flagNames;
         quint64 _flag;

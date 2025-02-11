@@ -66,7 +66,7 @@ public:
     QmfList<T> &operator+(const QmfList<T> &other) { this->append(other); return *this; }
 
     qsizetype count() const { return this->size(); }
-    bool isEmpty() const { return this->count() == 0; };
+    bool isEmpty() const { return this->count() == 0; }
     void append(const T &t) { this->push_back(t); }
     void append(const QmfList<T> &list) { for (const T &t : list) this->push_back(t); }
     const T& last() const { return this->back(); }
