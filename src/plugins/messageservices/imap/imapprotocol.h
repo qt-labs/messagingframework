@@ -35,10 +35,11 @@
 #define IMAPPROTOCOL_H
 
 #include "imapmailboxproperties.h"
-#include <qobject.h>
-#include <qstring.h>
-#include <qstringlist.h>
-#include <qtimer.h>
+
+#include <QObject>
+#include <QString>
+#include <QStringList>
+#include <QTimer>
 
 #include <longstream_p.h>
 #include <qmailserviceaction.h>

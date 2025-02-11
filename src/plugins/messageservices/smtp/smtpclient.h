@@ -34,10 +34,11 @@
 #ifndef SMTPCLIENT_H
 #define SMTPCLIENT_H
 
-#include <qstring.h>
-#include <qobject.h>
-#include <qstringlist.h>
-#include <qlist.h>
+#include <QString>
+#include <QObject>
+#include <QStringList>
+#include <QList>
+
 #include <qmflist.h>
 #include <qmailaccountconfiguration.h>
 #include <qmailmessage.h>

@@ -35,7 +35,7 @@
 #include "imapclient.h"
 #include "imapconfiguration.h"
 #include <longstream_p.h>
-#include <qobject.h>
+
 #include <qmaillog.h>
 #include <qmailaccount.h>
 #include <qmailcrypto.h>
@@ -45,9 +45,11 @@
 #include <qmailnamespace.h>
 #include <qmaildisconnected.h>
 #include <qmailcodec.h>
-#include <limits.h>
+
+#include <QObject>
 #include <QDir>
 
+#include <limits.h>
 
 namespace {
 const int MetaDataFetchFlags = F_Uid | F_Date | F_Rfc822_Size | F_Rfc822_Header | F_BodyStructure;

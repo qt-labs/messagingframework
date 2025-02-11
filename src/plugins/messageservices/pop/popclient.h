@@ -34,12 +34,13 @@
 #ifndef PopClient_H
 #define PopClient_H
 
-#include <qstring.h>
-#include <qstringlist.h>
-#include <qobject.h>
-#include <qlist.h>
-#include <qtimer.h>
-#include <qelapsedtimer.h>
+#include <QString>
+#include <QStringList>
+#include <QObject>
+#include <QList>
+#include <QTimer>
+#include <QElapsedTimer>
+
 #include <qmailaccountconfiguration.h>
 #include <qmailmessage.h>
 #include <qmailmessageclassifier.h>

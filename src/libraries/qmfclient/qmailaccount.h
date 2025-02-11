@@ -34,12 +34,13 @@
 #ifndef QMAILACCOUNT_H
 #define QMAILACCOUNT_H
 
-#include <qobject.h>
-#include <qstring.h>
-#include <qstringlist.h>
-#include <qlist.h>
-#include "qmailglobal.h"
+#include <QObject>
+#include <QString>
+#include <QStringList>
+#include <QList>
 #include <QSharedData>
+
+#include "qmailglobal.h"
 #include "qmailaddress.h"
 #include "qmailfolder.h"
 #include "qmailmessagefwd.h"

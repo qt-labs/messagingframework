@@ -34,8 +34,8 @@
 #ifndef IMAPSTRUCTURE_H
 #define IMAPSTRUCTURE_H
 
-#include <qstring.h>
-#include <qstringlist.h>
+#include <QString>
+#include <QStringList>
 
 class QMailMessage;
 

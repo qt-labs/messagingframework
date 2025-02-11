@@ -34,13 +34,14 @@
 #ifndef IMAPCLIENT_H
 #define IMAPCLIENT_H
 
+#include <QObject>
+#include <QString>
+#include <QStringList>
+#include <QList>
+#include <QTimer>
+
 #include "imapprotocol.h"
-#include "qtimer.h"
-#include <qstring.h>
-#include <qstringlist.h>
-#include <qobject.h>
-#include <qlist.h>
-#include <qtimer.h>
+
 #include <qmailaccountconfiguration.h>
 #include <qmailfolder.h>
 #include <qmailmessage.h>

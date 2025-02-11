@@ -41,8 +41,8 @@
 #include "qmailtimestamp.h"
 
 #include <QDir>
-#include <qtimer.h>
-#include <qsettings.h>
+#include <QTimer>
+#include <QSettings>
 
 static quint64 synchronizationEnabledFlag = 0;
 static quint64 synchronizedFlag = 0;

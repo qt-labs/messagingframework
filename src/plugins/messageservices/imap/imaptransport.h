@@ -34,7 +34,8 @@
 #ifndef IMAPTRANSPORT_H
 #define IMAPTRANSPORT_H
 
-#include <qstring.h>
+#include <QString>
+
 #include <qmailtransport.h>
 
 #ifndef QT_NO_SSL

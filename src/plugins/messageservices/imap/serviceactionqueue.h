@@ -35,8 +35,9 @@
 #define SERVICEACTIONQUEUE_H
 
 #include <qmailserviceaction.h>
-#include <qpointer.h>
-#include <qtimer.h>
+
+#include <QPointer>
+#include <QTimer>
 
 class ServiceActionCommand
 {

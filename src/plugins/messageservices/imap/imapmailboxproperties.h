@@ -35,7 +35,7 @@
 #define IMAPMAILBOXPROPERTIES_H
 
 #include <qmailfolder.h>
-#include <qstringlist.h>
+#include <QStringList>
 #include "integerregion.h"
 
 typedef uint MessageFlags;

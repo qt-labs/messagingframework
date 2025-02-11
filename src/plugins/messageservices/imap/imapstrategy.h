@@ -36,10 +36,12 @@
 
 #include "imapprotocol.h"
 #include "integerregion.h"
-#include <qstring.h>
-#include <qstringlist.h>
-#include <qlist.h>
-#include <qmap.h>
+
+#include <QString>
+#include <QStringList>
+#include <QList>
+#include <QMap>
+
 #include <qmailfolder.h>
 #include <qmailmessagebuffer.h>
 
