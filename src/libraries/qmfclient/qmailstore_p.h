@@ -753,15 +753,15 @@ private:
     QMailMessage extractMessage(const QSqlRecord& r, const QMap<QString, QString> &customFields, const QMailMessageKey::Properties& properties = allMessageProperties());
     QMailMessageRemovalRecord extractMessageRemovalRecord(const QSqlRecord& r);
 
-    void emitIpcNotification(QMailStoreImplementation::AccountUpdateSignal signal,
+    void emitIpcNotification(QMailStoreNotifier::AccountUpdateSignal signal,
                              const QMailAccountIdList &ids) override;
-    void emitIpcNotification(QMailStoreImplementation::FolderUpdateSignal signal,
+    void emitIpcNotification(QMailStoreNotifier::FolderUpdateSignal signal,
                              const QMailFolderIdList &ids) override;
-    void emitIpcNotification(QMailStoreImplementation::ThreadUpdateSignal signal,
+    void emitIpcNotification(QMailStoreNotifier::ThreadUpdateSignal signal,
                              const QMailThreadIdList &ids) override;
-    void emitIpcNotification(QMailStoreImplementation::MessageUpdateSignal signal,
+    void emitIpcNotification(QMailStoreNotifier::MessageUpdateSignal signal,
                              const QMailMessageIdList &ids) override;
-    void emitIpcNotification(QMailStoreImplementation::MessageDataPreCacheSignal signal,
+    void emitIpcNotification(QMailStoreNotifier::MessageDataPreCacheSignal signal,
                              const QMailMessageMetaDataList &data) override;
     void emitIpcNotification(const QMailMessageIdList& ids,  const QMailMessageKey::Properties& properties,
                              const QMailMessageMetaData& data) override;

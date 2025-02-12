@@ -230,6 +230,7 @@ Q_SIGNALS:
     void ipcConnectionEstablished();
 
 private:
+    friend class QMailStoreNotifier;
     friend class QMailStoreImplementationBase;
     friend class QMailStorePrivate;
     friend class QMailMessageMetaDataPrivate; // for ensureCustomFields

@@ -34,6 +34,7 @@ set(SRC
   qmailstore.cpp
   qmailstore_p.cpp
   qmailstoreimplementation_p.cpp
+  qmailstorenotifier_p.cpp
   qmailtimestamp.cpp
   qmailthread.cpp
   qmailthreadkey.cpp
@@ -110,6 +111,7 @@ set(PRIVATE_HEADERS
   qmailserviceaction_p.h
   qmailstore_p.h
   qmailstoreimplementation_p.h
+  qmailstorenotifier_p.h
   qmailthread_p.h
   qmailthreadkey_p.h
   qmailthreadsortkey_p.h
@@ -128,7 +130,7 @@ qt_add_resources(SRC qmf.qrc qmf_qt.qrc)
 set_source_files_properties(qmailservice.xml PROPERTIES
   INCLUDE qmailserviceaction.h)
 qt_add_dbus_interface(GENERATED_SOURCES qmailservice.xml qmailservice_interface)
-qt_add_dbus_adaptor(GENERATED_SOURCES qmailstore.xml qmailstoreimplementation_p.h QMailStoreImplementationBase qmailstore_adaptor)
+qt_add_dbus_adaptor(GENERATED_SOURCES qmailstore.xml qmailstorenotifier_p.h QMailStoreNotifier qmailstore_adaptor)
 
 add_library(QmfClient SHARED ${SRC} ${GENERATED_SOURCES} ${PUBLIC_HEADERS} ${PRIVATE_HEADERS})
 
