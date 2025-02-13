@@ -1671,6 +1671,8 @@ bool ImapService::pushEmailEstablished()
 {
     if (!_establishingPushEmail)
         return true;
+    if (!_client)
+        return false;
     if (_client->idlesEstablished())
         return true;
 

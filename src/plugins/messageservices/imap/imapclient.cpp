@@ -516,7 +516,7 @@ void ImapClient::newConnection()
 
     if (!_credentials || (!_protocol.inUse() && !_credentials->init(imapCfg))) {
         operationFailed(QMailServiceAction::Status::ErrConfiguration,
-                        _credentials->lastError());
+                        _credentials ? _credentials->lastError() : QLatin1String("No credentials available"));
         return;
     }
 
