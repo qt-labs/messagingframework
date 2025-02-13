@@ -42,13 +42,9 @@
 #include <QString>
 #include <QTime>
 
-#if !defined(Q_OS_WIN) || !defined(_WIN32_WCE)
 QT_BEGIN_NAMESPACE
-
 class QSqlDatabase;
-
 QT_END_NAMESPACE
-#endif
 
 namespace QMail
 {
@@ -60,10 +56,8 @@ namespace QMail
     QMF_EXPORT QString mimeTypeFromFileName(const QString& filename);
     QMF_EXPORT QStringList extensionsForMimeType(const QString& mimeType);
 
-#if !defined(Q_OS_WIN) || !defined(_WIN32_WCE)
     void closeDatabase();
     QMF_EXPORT QSqlDatabase createDatabase();
-#endif
 
     QMF_EXPORT QString baseSubject(const QString& subject, bool *replyOrForward);
     QMF_EXPORT QStringList messageIdentifiers(const QString& str);

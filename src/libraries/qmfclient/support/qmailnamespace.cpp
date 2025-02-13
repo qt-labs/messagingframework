@@ -43,11 +43,8 @@
 #include <QRegularExpression>
 #include <QThreadStorage>
 #include <stdio.h>
-#if !defined(Q_OS_WIN) || !defined(_WIN32_WCE)
-// Not available for windows mobile?
 #include <QSqlDatabase>
 #include <QSqlError>
-#endif
 
 #ifdef Q_OS_WIN
 #include <windows.h>
@@ -180,7 +177,6 @@ QString QMail::messageSettingsPath()
     return QCoreApplication::applicationDirPath() + QChar::fromLatin1('/');
 }
 
-#if !defined(Q_OS_WIN) || !defined(_WIN32_WCE) // Not supported on windows mobile
 /*!
     Returns the database where the Messaging framework will store its message meta-data. 
     If the database does not exist, it is created.
@@ -252,7 +248,6 @@ QSqlDatabase QMail::createDatabase()
         }
 
         db.setDatabaseName(dataPath() + QLatin1String("database/qmailstore.db"));
-#endif
 
         if(!db.open()) {
             QSqlError dbError = db.lastError();

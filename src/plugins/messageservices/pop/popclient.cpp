@@ -42,11 +42,8 @@
 #include <qmailtransport.h>
 #include <qmaillog.h>
 #include <qmaildisconnected.h>
-#include <limits.h>
-#if !defined(Q_OS_WIN)
-#include <unistd.h>
-#endif
 
+#include <limits.h>
 
 class MessageFlushedWrapper : public QMailMessageBufferFlushCallback
 {

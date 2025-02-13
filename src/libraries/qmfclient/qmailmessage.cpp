@@ -63,11 +63,7 @@
 
 #include <stdlib.h>
 #include <limits.h>
-#if defined(Q_OS_WIN) && defined(_WIN32_WCE)
-#include <cctype>
-#else
 #include <ctype.h>
-#endif
 
 static const QByteArray internalPrefix()
 {
