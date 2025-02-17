@@ -411,7 +411,7 @@ void IdleProtocol::idleErrorRecovery()
 
 ImapClient::ImapClient(const QMailAccountId &id, QObject* parent)
     : QObject(parent),
-      _config(QMailAccountConfiguration(id)),
+      _accountId(id),
       _closeCount(0),
       _waitingForIdle(false),
       _idlesEstablished(false),
@@ -420,7 +420,7 @@ ImapClient::ImapClient(const QMailAccountId &id, QObject* parent)
       _rapidClosing(false),
       _idleRetryDelay(InitialIdleRetryDelay),
       _pushConnectionsReserved(0),
-      _credentials(QMailCredentialsFactory::getCredentialsHandlerForAccount(_config)),
+      _credentials(QMailCredentialsFactory::getCredentialsHandlerForAccount(QMailAccountConfiguration(id))),
       _loginFailed(false)
 {
     static int count(0);
@@ -496,8 +496,6 @@ ImapClient::~ImapClient()
 // Called to begin executing a strategy
 void ImapClient::newConnection()
 {
-    // Reload the account configuration
-    _config = QMailAccountConfiguration(_config.id());
     if (_protocol.loggingOut())
         _protocol.close();
     if (!_protocol.inUse()) {
@@ -508,7 +506,8 @@ void ImapClient::newConnection()
     _requestRapidClose = false;
     _inactiveTimer.stop();
 
-    ImapConfiguration imapCfg(_config);
+    QMailAccountConfiguration config(_accountId);
+    ImapConfiguration imapCfg(config);
     if ( imapCfg.mailServer().isEmpty() ) {
         operationFailed(QMailServiceAction::Status::ErrConfiguration, tr("Cannot open connection without IMAP server configuration"));
         return;
@@ -590,8 +589,9 @@ void ImapClient::checkCommandResponse(ImapCommand command, OperationStatus statu
             default:        //default = all critical messages
             {
                 QString msg;
-                if (_config.id().isValid()) {
-                    ImapConfiguration imapCfg(_config);
+                if (_accountId.isValid()) {
+                    QMailAccountConfiguration config(_accountId);
+                    ImapConfiguration imapCfg(config);
                     msg = imapCfg.mailServer() + ": ";
                 }
                 msg.append(_protocol.lastError());
@@ -643,8 +643,10 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
                 return;
             }
 
+            QMailAccountConfiguration config(_accountId);
             if (!_protocol.encrypted()) {
-                if (ImapAuthenticator::useEncryption(ImapConfiguration(_config), _protocol.capabilities())) {
+                if (ImapAuthenticator::useEncryption(ImapConfiguration(config),
+                                                     _protocol.capabilities())) {
                     // Switch to encrypted mode
                     emit updateStatus( tr("Starting TLS" ) );
                     _protocol.sendStartTLS();
@@ -653,7 +655,7 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
             }
 
             // We are now connected
-            ImapConfiguration imapCfg(_config);            
+            ImapConfiguration imapCfg(config);
             _waitingForIdleFolderIds = configurationIdleFolderIds();
 
             if (!_idlesEstablished
@@ -700,8 +702,9 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
             }
 
             // Now that we know the capabilities, check for Reference and idle support
-            QMailAccount account(_config.id());
-            ImapConfiguration imapCfg(_config);
+            QMailAccount account(_accountId);
+            QMailAccountConfiguration config(_accountId);
+            ImapConfiguration imapCfg(config);
             bool supportsReferences(_protocol.capabilities().contains("URLAUTH", Qt::CaseInsensitive) &&
                                     _protocol.capabilities().contains("CATENATE", Qt::CaseInsensitive)
 #if !defined(QT_NO_SSL)
@@ -717,7 +720,7 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
                 account.setStatus(QMailAccount::CanReferenceExternalData, supportsReferences);
                 imapCfg.setPushCapable(_protocol.supportsCapability("IDLE"));
                 imapCfg.setCapabilities(_protocol.capabilities());
-                if (!QMailStore::instance()->updateAccount(&account, &_config)) {
+                if (!QMailStore::instance()->updateAccount(&account, &config)) {
                     qWarning() << "Unable to update account" << account.id() << "to set imap4 configuration";
                 }
             }
@@ -765,7 +768,8 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
 
         case IMAP_Noop:
         {
-            _inactiveTimer.start(_closeCount ? MaxTimeBeforeNoop : ImapConfiguration(_config).timeTillLogout() % MaxTimeBeforeNoop);
+            QMailAccountConfiguration config(_accountId);
+            _inactiveTimer.start(_closeCount ? MaxTimeBeforeNoop : ImapConfiguration(config).timeTillLogout() % MaxTimeBeforeNoop);
             break;
         }
 
@@ -831,7 +835,7 @@ void ImapClient::mailboxListed(const QString &flags, const QString &path)
     QMailFolderId parentId;
     QMailFolderId boxId;
 
-    QMailAccount account(_config.id());
+    QMailAccount account(_accountId);
 
     QString mailboxPath;
 
@@ -869,7 +873,7 @@ void ImapClient::mailboxListed(const QString &flags, const QString &path)
             parentId = boxId;
         } else {
             // This element needs to be created
-            QMailFolder folder(mailboxPath, parentId, _config.id());
+            QMailFolder folder(mailboxPath, parentId, _accountId);
             folder.setDisplayName(QMailCodec::decodeModifiedUtf7(*it));
             folder.setStatus(QMailFolder::Incoming, true);
             // Set synchronization flag the same as parent folder, or true if there's no parent
@@ -930,7 +934,7 @@ void ImapClient::mailboxListed(const QString &flags, const QString &path)
 void ImapClient::messageFetched(QMailMessage& mail, const QString &detachedFilename, bool structureOnly)
 {
     if (structureOnly) {
-        mail.setParentAccountId(_config.id());
+        mail.setParentAccountId(_accountId);
 
         // Some properties are inherited from the folder
         const ImapMailboxProperties &properties(_protocol.mailbox());
@@ -971,7 +975,7 @@ void ImapClient::messageFetched(QMailMessage& mail, const QString &detachedFilen
 
     } else {
         // We need to update the message from the existing data
-        QMailMessageMetaData existing(mail.serverUid(), _config.id());
+        QMailMessageMetaData existing(mail.serverUid(), _accountId);
         if (existing.id().isValid()) {
             // Record the status fields that may have been updated
             bool replied(mail.status() & QMailMessage::Replied);
@@ -1005,7 +1009,7 @@ void ImapClient::messageFetched(QMailMessage& mail, const QString &detachedFilen
                 mail.setStatus(QMailMessage::PartialContentAvailable, true);
             }
         } else {
-            qWarning() << "Unable to find existing message for uid:" << mail.serverUid() << "account:" << _config.id();
+            qWarning() << "Unable to find existing message for uid:" << mail.serverUid() << "account:" << _accountId;
         }
     }
     mail.setCustomField("qmf-detached-filename", detachedFilename);
@@ -1272,7 +1276,7 @@ void ImapClient::dataFetched(const QString &uid, const QString &section, const Q
         }
     }
     if (!inBuffer) {
-        mail = new QMailMessage(uid, _config.id());
+        mail = new QMailMessage(uid, _accountId);
     }
 
     detachedTempFiles.insert(mail->id(),fileName); // multi
@@ -1427,7 +1431,7 @@ void ImapClient::partHeaderFetched(const QString &uid, const QString &section, c
         }
     }
     if (!inBuffer) {
-        mail = new QMailMessage(uid, _config.id());
+        mail = new QMailMessage(uid, _accountId);
     }
 
     detachedTempFiles.insert(mail->id(),fileName); // multi
@@ -1502,7 +1506,7 @@ void ImapClient::urlAuthorized(const QString &url)
 
 void ImapClient::setupAccount() const
 {
-    QMailAccount account(_config.id());
+    QMailAccount account(_accountId);
     bool updated = false;
 
     if (!(account.status() & QMailAccount::CanCreateFolders)) {
@@ -1530,7 +1534,7 @@ void ImapClient::setupAccount() const
 
 QMailAccountId ImapClient::account() const
 {
-    return _config.id();
+    return _accountId;
 }
 
 void ImapClient::transportError(int code, const QString &msg)
@@ -1574,7 +1578,8 @@ void ImapClient::retrieveOperationCompleted()
 
 void ImapClient::deactivateConnection()
 {
-    int time(ImapConfiguration(_config).timeTillLogout());
+    QMailAccountConfiguration config(_accountId);
+    int time(ImapConfiguration(config).timeTillLogout());
     if (_rapidClosing)
         time = 0;
     _closeCount = time / MaxTimeBeforeNoop;
@@ -1617,7 +1622,7 @@ void ImapClient::operationFailed(QMailServiceAction::Status::ErrorCode code, con
 
 QMailFolderId ImapClient::mailboxId(const QString &path) const
 {
-    QMailFolderIdList folderIds = QMailStore::instance()->queryFolders(QMailFolderKey::parentAccountId(_config.id()) & QMailFolderKey::path(path));
+    QMailFolderIdList folderIds = QMailStore::instance()->queryFolders(QMailFolderKey::parentAccountId(_accountId) & QMailFolderKey::path(path));
     if (folderIds.count() == 1)
         return folderIds.first();
     
@@ -1626,7 +1631,7 @@ QMailFolderId ImapClient::mailboxId(const QString &path) const
 
 QMailFolderIdList ImapClient::mailboxIds() const
 {
-    return QMailStore::instance()->queryFolders(QMailFolderKey::parentAccountId(_config.id()), QMailFolderSortKey::path(Qt::AscendingOrder));
+    return QMailStore::instance()->queryFolders(QMailFolderKey::parentAccountId(_accountId), QMailFolderSortKey::path(Qt::AscendingOrder));
 }
 
 QStringList ImapClient::serverUids(const QMailFolderId &folderId) const
@@ -1655,13 +1660,13 @@ QStringList ImapClient::serverUids(QMailMessageKey key) const
 
 QMailMessageKey ImapClient::messagesKey(const QMailFolderId &folderId) const
 {
-    return (QMailMessageKey::parentAccountId(_config.id()) &
+    return (QMailMessageKey::parentAccountId(_accountId) &
             QMailDisconnected::sourceKey(folderId));
 }
 
 QMailMessageKey ImapClient::trashKey(const QMailFolderId &folderId) const
 {
-    return (QMailMessageKey::parentAccountId(_config.id()) &
+    return (QMailMessageKey::parentAccountId(_accountId) &
             QMailDisconnected::sourceKey(folderId) &
             QMailMessageKey::status(QMailMessage::Trash));
 }
@@ -1670,7 +1675,7 @@ QStringList ImapClient::deletedMessages(const QMailFolderId &folderId) const
 {
     QStringList serverUidList;
 
-    for (const QMailMessageRemovalRecord& r : QMailStore::instance()->messageRemovalRecords(_config.id(), folderId))
+    for (const QMailMessageRemovalRecord& r : QMailStore::instance()->messageRemovalRecords(_accountId, folderId))
         if (!r.serverUid().isEmpty())
             serverUidList.append(r.serverUid());
 
@@ -1689,7 +1694,8 @@ void ImapClient::updateFolderCountStatus(QMailFolder *folder)
 
 bool ImapClient::idlesEstablished()
 {
-    ImapConfiguration imapCfg(_config);
+    QMailAccountConfiguration config(account());
+    ImapConfiguration imapCfg(config);
     if (!imapCfg.pushEnabled())
         return true;
 
@@ -1711,7 +1717,8 @@ void ImapClient::idling(const QMailFolderId &id)
 
 QMailFolderIdList ImapClient::configurationIdleFolderIds()
 {
-    ImapConfiguration imapCfg(_config);            
+    QMailAccountConfiguration config(account());
+    ImapConfiguration imapCfg(config);
     QMailFolderIdList folderIds;
     if (!imapCfg.pushEnabled())
         return folderIds;
@@ -1728,7 +1735,8 @@ void ImapClient::monitor(const QMailFolderIdList &mailboxIds)
 {
     static int count(0);
     
-    ImapConfiguration imapCfg(_config);
+    QMailAccountConfiguration config(account());
+    ImapConfiguration imapCfg(config);
     if (!_protocol.supportsCapability("IDLE")
         || !imapCfg.pushEnabled()) {
         return;
@@ -1810,7 +1818,8 @@ void ImapClient::logIn()
 {
     emit updateStatus( tr("Logging in" ) );
     if (_credentials->status() == QMailCredentialsInterface::Ready) {
-        _protocol.sendLogin(_config, _credentials);
+        QMailAccountConfiguration config(_accountId);
+        _protocol.sendLogin(config, _credentials);
     } else if (_credentials->status() == QMailCredentialsInterface::Fetching) {
         connect(_credentials, &QMailCredentialsInterface::statusChanged,
                 this, &ImapClient::onCredentialsStatusChanged);
@@ -1828,9 +1837,11 @@ void ImapClient::onCredentialsStatusChanged()
     disconnect(_credentials, &QMailCredentialsInterface::statusChanged,
                this, &ImapClient::onCredentialsStatusChanged);
     switch (_credentials->status()) {
-    case (QMailCredentialsInterface::Ready):
-        _protocol.sendLogin(_config, _credentials);
+    case (QMailCredentialsInterface::Ready): {
+        QMailAccountConfiguration config(_accountId);
+        _protocol.sendLogin(config, _credentials);
         break;
+    }
     case (QMailCredentialsInterface::Failed):
         if (_protocol.inUse()) {
             operationFailed(QMailServiceAction::Status::ErrLoginFailed, _credentials->lastError());

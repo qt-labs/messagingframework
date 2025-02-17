@@ -106,7 +106,7 @@ public:
     ImapClient *client();
     ImapProtocol &protocol();
     const ImapMailboxProperties &mailbox();
-    const QMailAccountConfiguration &config();
+    QMailAccountId accountId();
 
     void folderModified(const QMailFolderId &folderId) { _modifiedFolders.insert(folderId); }
 

@@ -42,7 +42,6 @@
 
 #include "imapprotocol.h"
 
-#include <qmailaccountconfiguration.h>
 #include <qmailfolder.h>
 #include <qmailmessage.h>
 #include <qmailmessageclassifier.h>
@@ -160,7 +159,7 @@ private:
     void updateFolderCountStatus(QMailFolder *folder);
 
     static const int MaxTimeBeforeNoop = 60 * 1000; // 1 minute (this must be >= 1ms)
-    QMailAccountConfiguration _config;
+    QMailAccountId _accountId;
 
     ImapProtocol _protocol;
     QTimer _inactiveTimer;

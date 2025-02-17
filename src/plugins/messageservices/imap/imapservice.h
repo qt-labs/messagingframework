@@ -100,7 +100,6 @@ private:
     int _pushRetry;
     bool _accountWasPushEnabled;
     QStringList _previousPushFolders;
-    QString _previousConnectionSettings; // Connection related settings
     enum { ThirtySeconds = 30 };
     static QMap<QMailAccountId, int> _initiatePushDelay; // Limit battery consumption
     QTimer *_initiatePushEmailTimer;
