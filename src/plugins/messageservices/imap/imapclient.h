@@ -84,14 +84,14 @@ public:
     QStringList deletedMessages(const QMailFolderId &folderId) const;
 
     bool idlesEstablished();
-    void idling(const QMailFolderId &id);
+    void stopIdleConnections() { monitor(QMailFolderIdList()); }
     QMailFolderIdList configurationIdleFolderIds();
-    void monitor(const QMailFolderIdList &mailboxIds);
     void removeAllFromBuffer(QMailMessage *message);
     int pushConnectionsReserved() { return _pushConnectionsReserved; }
     void setPushConnectionsReserved(int reserved) { _pushConnectionsReserved = reserved; }
     int idleRetryDelay() const { return _idleRetryDelay; }
     void setIdleRetryDelay(int delay) { _idleRetryDelay = delay; }
+    void setIdlingForFolder(const QMailFolderId &id); // internal
 
 signals:
     void errorOccurred(int, const QString &);
@@ -152,6 +152,7 @@ private:
     void retrieveOperationCompleted();
 
     void logIn();
+    void monitor(const QMailFolderIdList &mailboxIds);
 
     void operationFailed(int code, const QString &text);
     void operationFailed(QMailServiceAction::Status::ErrorCode code, const QString &text);
@@ -165,9 +166,7 @@ private:
     QTimer _inactiveTimer;
     int _closeCount;
 
-    bool _waitingForIdle;
     QMailFolderIdList _waitingForIdleFolderIds;
-    bool _idlesEstablished;
     bool _qresyncEnabled;
     bool _requestRapidClose;
     bool _rapidClosing;
