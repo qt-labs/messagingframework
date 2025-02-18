@@ -87,7 +87,7 @@ public:
     void setIntervalTimer(int interval)
     {
         _intervalTimer.stop();
-        if (interval > 0) {
+        if (interval > 0 && _service->_client) {
             _intervalTimer.start(interval*1000*60); // interval minutes
         }
     }
@@ -95,7 +95,7 @@ public:
     void setPushIntervalTimer(int pushInterval)
     {
         _pushIntervalTimer.stop();
-        if (pushInterval > 0) {
+        if (pushInterval > 0 && _service->_client) {
             _pushIntervalTimer.start(pushInterval*1000*60); // interval minutes
         }
     }
@@ -1552,37 +1552,34 @@ void ImapService::accountsUpdated(const QMailAccountIdList &ids)
     if (!ids.contains(_accountId))
         return;
 
-    QMailAccount account(_accountId);
     QMailAccountConfiguration accountCfg(_accountId);
     ImapConfiguration imapCfg(accountCfg);
-    bool isEnabled(account.status() & QMailAccount::Enabled);
-    bool isPushEnabled(imapCfg.pushEnabled());
-    QStringList pushFolders(imapCfg.pushFolders());
-    if (!isEnabled) {
-        if (_client) {
-            // Account changed from enabled to disabled
-            cancelOperation(QMailServiceAction::Status::ErrConfiguration, tr("Account disabled"));
-            disable();
-        }
-        // Account is disabled nothing more todo
-        return;
-    }
 
-    if ((_accountWasPushEnabled != isPushEnabled)
-        || (_previousPushFolders != pushFolders)) {
-        // push email or connection settings have changed, restart client
-        _initiatePushDelay.remove(_accountId);
-        if (_client) {
-            disable();
+    QMailAccount account(_accountId);
+    bool isEnabled(account.status() & QMailAccount::Enabled);
+    if (isEnabled && _client) {
+        bool isPushEnabled(imapCfg.pushEnabled());
+        if (isPushEnabled && _accountWasPushEnabled) {
+            const QStringList pushFolders(imapCfg.pushFolders());
+            if (_previousPushFolders != pushFolders) {
+                _initiatePushDelay.remove(_accountId);
+                _previousPushFolders = pushFolders;
+                restartPushEmail();
+            }
+        } else if (isPushEnabled && !_accountWasPushEnabled) {
+            _initiatePushDelay.remove(_accountId);
+            enablePushEmail();
+        } else if (!isPushEnabled && _accountWasPushEnabled) {
+            disablePushEmail();
         }
+    } else if (isEnabled && !_client) {
         enable();
-    } else if (!_client) {
-        // account changed from disabled to enabled
-        enable();
+    } else if (!isEnabled && _client) {
+        cancelOperation(QMailServiceAction::Status::ErrConfiguration,
+                        tr("Account disabled"));
+        disable();
     }
     
-    // account was enabled and still is, update checkinterval 
-    // in case it changed
     _source->setIntervalTimer(imapCfg.checkInterval());
 }
 
