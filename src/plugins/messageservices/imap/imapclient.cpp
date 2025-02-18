@@ -657,7 +657,7 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
             // Start / stop idle connections, to keep only idles
             monitor(idleFolders);
 
-            if (idlesEstablished()) {
+            if (isPushEmailEstablished()) {
                 // Login is postponed after idle connections, see
                 // IMAP_Idle_Continuation
                 logIn();
@@ -1678,7 +1678,7 @@ void ImapClient::updateFolderCountStatus(QMailFolder *folder)
     folder->setStatus(QMailFolder::PartialContent, (count < folder->serverCount()));
 }
 
-bool ImapClient::idlesEstablished()
+bool ImapClient::isPushEmailEstablished()
 {
     QMailAccountConfiguration config(account());
     ImapConfiguration imapCfg(config);

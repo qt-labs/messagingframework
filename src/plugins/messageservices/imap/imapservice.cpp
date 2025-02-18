@@ -1663,27 +1663,21 @@ void ImapService::initiatePushEmail()
     _source->setPushIntervalTimer(60); // minutes    
 }
 
-bool ImapService::pushEmailEstablished()
+void ImapService::retryPushEmail()
 {
-    if (!_establishingPushEmail)
-        return true;
-    if (!_client)
-        return false;
-    if (_client->idlesEstablished())
-        return true;
-
     const int oneHour = 60*60;
     qMailLog(Messaging) << "Push email connection could not be established. Reattempting to establish in" << _pushRetry << "seconds";
 
     _restartPushEmailTimer->start(_pushRetry*1000);
     _pushRetry = qMin(oneHour, _pushRetry * 2);
-    return false;
 }
 
 void ImapService::errorOccurred(int code, const QString &text)
 {
-    if (!pushEmailEstablished())
-        return;
+    if (_establishingPushEmail
+        && (!_client || !_client->isPushEmailEstablished())) {
+        retryPushEmail();
+    }
     _source->retrievalTerminated();
     updateStatus(code, text, _accountId);
     emit actionCompleted(false);
@@ -1691,8 +1685,10 @@ void ImapService::errorOccurred(int code, const QString &text)
 
 void ImapService::errorOccurred(QMailServiceAction::Status::ErrorCode code, const QString &text)
 {
-    if (!pushEmailEstablished())
-        return;
+    if (_establishingPushEmail
+        && (!_client || !_client->isPushEmailEstablished())) {
+        retryPushEmail();
+    }
     _source->retrievalTerminated();
     updateStatus(code, text, _accountId);
     emit actionCompleted(false);

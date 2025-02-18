@@ -83,7 +83,7 @@ public:
     QMailMessageKey trashKey(const QMailFolderId &folderId) const;
     QStringList deletedMessages(const QMailFolderId &folderId) const;
 
-    bool idlesEstablished();
+    bool isPushEmailEstablished();
     void stopIdleConnections() { monitor(QMailFolderIdList()); }
     QMailFolderIdList configurationIdleFolderIds();
     void removeAllFromBuffer(QMailMessage *message);

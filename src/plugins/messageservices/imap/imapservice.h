@@ -58,7 +58,6 @@ public:
     QMailMessageSource &source() const override;
 
     bool available() const override;
-    bool pushEmailEstablished();
 
 public slots:
     bool cancelOperation(QMailServiceAction::Status::ErrorCode code, const QString &text) override;
@@ -88,6 +87,7 @@ private:
     friend class Source;
 
     bool accountPushEnabled();
+    void retryPushEmail();
     void setPersistentConnectionStatus(bool status);
     void enablePushEmail();
     void disablePushEmail();
