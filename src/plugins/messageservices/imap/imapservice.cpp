@@ -1467,7 +1467,6 @@ ImapService::ImapService(const QMailAccountId &accountId)
       _restartPushEmailTimer(new QTimer(this)),
       _establishingPushEmail(false),
       _idling(false),
-      _accountWasEnabled(false),
       _accountWasPushEnabled(false),
       _initiatePushEmailTimer(new QTimer(this)),
       _networkSession(0),
@@ -1485,7 +1484,7 @@ ImapService::ImapService(const QMailAccountId &accountId)
 
 void ImapService::enable()
 {
-    _accountWasEnabled = true;
+    qMailLog(IMAP) << "account enabled, initiating a new client.";
     _client = new ImapClient(_accountId, this);
     _source->initClientConnections();
     _establishingPushEmail = false;
@@ -1532,7 +1531,6 @@ void ImapService::disable()
     _restartPushEmailTimer->stop();
     _initiatePushEmailTimer->stop();
     setPersistentConnectionStatus(false);
-    _accountWasEnabled = false;
     _accountWasPushEnabled = imapCfg.pushEnabled();
     _previousPushFolders = imapCfg.pushFolders();
     _previousConnectionSettings = connectionSettings(imapCfg);
@@ -1559,7 +1557,7 @@ void ImapService::accountsUpdated(const QMailAccountIdList &ids)
     QStringList pushFolders(imapCfg.pushFolders());
     QString newConnectionSettings(connectionSettings(imapCfg));
     if (!isEnabled) {
-        if (_accountWasEnabled) {
+        if (_client) {
             // Account changed from enabled to disabled
             cancelOperation(QMailServiceAction::Status::ErrConfiguration, tr("Account disabled"));
             disable();
@@ -1573,11 +1571,11 @@ void ImapService::accountsUpdated(const QMailAccountIdList &ids)
         || (_previousConnectionSettings != newConnectionSettings)) {
         // push email or connection settings have changed, restart client
         _initiatePushDelay.remove(_accountId);
-        if (_accountWasEnabled) {
+        if (_client) {
             disable();
         }
         enable();
-    } else if (!_accountWasEnabled) {
+    } else if (!_client) {
         // account changed from disabled to enabled
         enable();
     }

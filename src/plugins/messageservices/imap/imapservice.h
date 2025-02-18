@@ -98,7 +98,6 @@ private:
     bool _establishingPushEmail;
     bool _idling;
     int _pushRetry;
-    bool _accountWasEnabled;
     bool _accountWasPushEnabled;
     QStringList _previousPushFolders;
     QString _previousConnectionSettings; // Connection related settings
