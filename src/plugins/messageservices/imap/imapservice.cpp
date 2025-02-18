@@ -1476,7 +1476,6 @@ void ImapService::enable()
     _client = new ImapClient(_accountId, this);
     _source->initClientConnections();
     _establishingPushEmail = false;
-    _pushRetry = ThirtySeconds;
     connect(_client, SIGNAL(progressChanged(uint, uint)), this, SIGNAL(progressChanged(uint, uint)));
     connect(_client, SIGNAL(progressChanged(uint, uint)), _source, SLOT(resetExpiryTimer()));
     connect(_client, SIGNAL(errorOccurred(int, QString)), this, SLOT(errorOccurred(int, QString)));
@@ -1486,14 +1485,25 @@ void ImapService::enable()
 
     QMailAccountConfiguration accountCfg(_accountId);
     ImapConfiguration imapCfg(accountCfg);
-    _accountWasPushEnabled = imapCfg.pushEnabled();
-    _previousPushFolders = imapCfg.pushFolders();
-    
-    if (imapCfg.pushEnabled() && imapCfg.pushFolders().count()) {
-        _client->setPushConnectionsReserved(reservePushConnections(imapCfg.pushFolders().count()));
+    _source->setIntervalTimer(imapCfg.checkInterval());
+
+    if (imapCfg.pushEnabled()) {
+        enablePushEmail();
     }
-    
-    if (imapCfg.pushEnabled() && _client->pushConnectionsReserved()) {
+}
+
+void ImapService::enablePushEmail()
+{
+    QMailAccountConfiguration accountCfg(_accountId);
+    ImapConfiguration imapCfg(accountCfg);
+
+    int allowedConnections = reservePushConnections(imapCfg.pushFolders().count());
+    if (allowedConnections > 0) {
+        _client->setPushConnectionsReserved(allowedConnections);
+        _accountWasPushEnabled = true;
+        _previousPushFolders = imapCfg.pushFolders();
+        _pushRetry = ThirtySeconds;
+
         if (!_initiatePushDelay.contains(_accountId)) {
             _initiatePushDelay.insert(_accountId, 0);
         } else if (_initiatePushDelay[_accountId] == 0) {
@@ -1508,26 +1518,33 @@ void ImapService::enable()
                             << "in" << _initiatePushDelay[_accountId] << "seconds";
         _initiatePushEmailTimer->start(_initiatePushDelay[_accountId]*1000);
     }
-    _source->setIntervalTimer(imapCfg.checkInterval());
 }
 
 void ImapService::disable()
+{
+    disablePushEmail();
+    _source->setIntervalTimer(0);
+    _source->setPushIntervalTimer(0);
+    _source->retrievalTerminated();
+    qMailLog(IMAP) << "account disabled, terminating the client.";
+    delete _client;
+    _client = 0;
+}
+
+void ImapService::disablePushEmail()
 {
     QMailAccountConfiguration accountCfg(_accountId);
     ImapConfiguration imapCfg(accountCfg);
     _restartPushEmailTimer->stop();
     _initiatePushEmailTimer->stop();
     setPersistentConnectionStatus(false);
-    _accountWasPushEnabled = imapCfg.pushEnabled();
-    _previousPushFolders = imapCfg.pushFolders();
-    _source->setIntervalTimer(0);
-    _source->setPushIntervalTimer(0);
-    _source->retrievalTerminated();
-    if (_client) {
+    _accountWasPushEnabled = false;
+    if (_client && _client->pushConnectionsReserved() > 0) {
         releasePushConnections(_client->pushConnectionsReserved());
+        _client->setPushConnectionsReserved(0);
+        _client->stopIdleConnections();
     }
-    delete _client;
-    _client = 0;
+    closeIdleSession();
 }
 
 void ImapService::accountsUpdated(const QMailAccountIdList &ids)
@@ -1572,7 +1589,7 @@ void ImapService::accountsUpdated(const QMailAccountIdList &ids)
 ImapService::~ImapService()
 {
     disable();
-    destroyIdleSession();
+    closeIdleSession();
     delete _source;
 }
 
@@ -1699,15 +1716,6 @@ void ImapService::createIdleSession()
     openIdleSession();
 }
 
-void ImapService::destroyIdleSession()
-{
-    qMailLog(Messaging) << "IDLE Session: Destroying IDLE network session";
-
-    if (_networkSession) {
-       closeIdleSession();
-    }
-}
-
 void ImapService::openIdleSession()
 {
     closeIdleSession();
@@ -1805,11 +1813,10 @@ void ImapService::onSessionError(IdleNetworkSession::Error error)
         break;
     }
 
-    setPersistentConnectionStatus(false);
     if (_client) {
         emit _client->sessionError();
     }
-    closeIdleSession();
+    disablePushEmail();
 }
 
 void ImapService::onSessionConnectionTimeout()

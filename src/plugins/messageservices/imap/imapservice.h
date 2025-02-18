@@ -73,7 +73,6 @@ protected slots:
     void updateStatus(const QString& text);
     // Only used for IMAP IDLE, network session for other request types are managed by the caller.
     void createIdleSession();
-    void destroyIdleSession();
     void openIdleSession();
     void closeIdleSession();
 
@@ -90,6 +89,8 @@ private:
 
     bool accountPushEnabled();
     void setPersistentConnectionStatus(bool status);
+    void enablePushEmail();
+    void disablePushEmail();
 
     QMailAccountId _accountId;
     ImapClient *_client;
