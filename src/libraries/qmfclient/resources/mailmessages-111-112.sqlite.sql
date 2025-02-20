@@ -1,2 +1,0 @@
-ALTER TABLE mailmessages ADD COLUMN preview VARCHAR NOT NULL DEFAULT '';
-

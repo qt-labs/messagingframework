@@ -1,1 +1,0 @@
-ALTER TABLE missingancestors ADD COLUMN state INTEGER DEFAULT 0;
