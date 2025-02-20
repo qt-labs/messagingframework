@@ -43,7 +43,7 @@
 
 class QMailAccountConfiguration;
 
-class QMailCryptographicServiceConfiguration
+class QMF_EXPORT QMailCryptographicServiceConfiguration
 {
 public:
     QMailCryptographicServiceConfiguration(QMailAccountConfiguration *config);
