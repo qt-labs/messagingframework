@@ -102,8 +102,6 @@ private:
     bool _accountWasPushEnabled;
     QStringList _previousPushFolders;
     enum { ThirtySeconds = 30 };
-    static QMap<QMailAccountId, int> _initiatePushDelay; // Limit battery consumption
-    QTimer *_initiatePushEmailTimer;
     IdleNetworkSession              *_networkSession;          // IDLE network session
     QTimer                          *_networkSessionTimer;
 };

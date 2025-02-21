@@ -1336,7 +1336,6 @@ void ImapService::Source::retrievalCompleted()
             // Push email must have been successfully established
             _service->_establishingPushEmail = false;
             _service->_pushRetry = ThirtySeconds;
-            _initiatePushDelay.remove(_service->_accountId);
             qMailLog(Messaging) << "Push email established for account" << _service->_accountId 
                                 << QMailAccount(_service->_accountId).name();
             _queuedMailCheckInProgress = false;
@@ -1445,8 +1444,6 @@ void ImapService::Source::emitActionSuccessfullyCompleted()
     _service->actionCompleted(true);
 }
 
-QMap<QMailAccountId, int> ImapService::_initiatePushDelay = QMap<QMailAccountId, int>();
-
 ImapService::ImapService(const QMailAccountId &accountId)
     : QMailMessageService(),
       _accountId(accountId),
@@ -1456,7 +1453,6 @@ ImapService::ImapService(const QMailAccountId &accountId)
       _establishingPushEmail(false),
       _idling(false),
       _accountWasPushEnabled(false),
-      _initiatePushEmailTimer(new QTimer(this)),
       _networkSession(0),
       _networkSessionTimer(new QTimer(this))
 {
@@ -1467,7 +1463,6 @@ ImapService::ImapService(const QMailAccountId &accountId)
     connect(_restartPushEmailTimer, SIGNAL(timeout()), this, SLOT(restartPushEmail()));
     connect(QMailStore::instance(), SIGNAL(accountsUpdated(const QMailAccountIdList&)), 
             this, SLOT(accountsUpdated(const QMailAccountIdList&)));
-    connect(_initiatePushEmailTimer, SIGNAL(timeout()), this, SLOT(initiatePushEmail()));
 }
 
 void ImapService::enable()
@@ -1504,19 +1499,7 @@ void ImapService::enablePushEmail()
         _previousPushFolders = imapCfg.pushFolders();
         _pushRetry = ThirtySeconds;
 
-        if (!_initiatePushDelay.contains(_accountId)) {
-            _initiatePushDelay.insert(_accountId, 0);
-        } else if (_initiatePushDelay[_accountId] == 0) {
-            _initiatePushDelay.insert(_accountId, ThirtySeconds);
-        } else {
-            const int oneHour = 60*60;
-            int oldDelay = _initiatePushDelay[_accountId];
-            _initiatePushDelay.insert(_accountId, qMin(oneHour, oldDelay*2));
-        }
-        qMailLog(Messaging) << "Will attempt to establish push email for account" << _accountId 
-                            << QMailAccount(_accountId).name()
-                            << "in" << _initiatePushDelay[_accountId] << "seconds";
-        _initiatePushEmailTimer->start(_initiatePushDelay[_accountId]*1000);
+        initiatePushEmail();
     }
 }
 
@@ -1536,7 +1519,6 @@ void ImapService::disablePushEmail()
     QMailAccountConfiguration accountCfg(_accountId);
     ImapConfiguration imapCfg(accountCfg);
     _restartPushEmailTimer->stop();
-    _initiatePushEmailTimer->stop();
     setPersistentConnectionStatus(false);
     _accountWasPushEnabled = false;
     if (_client && _client->pushConnectionsReserved() > 0) {
@@ -1562,12 +1544,10 @@ void ImapService::accountsUpdated(const QMailAccountIdList &ids)
         if (isPushEnabled && _accountWasPushEnabled) {
             const QStringList pushFolders(imapCfg.pushFolders());
             if (_previousPushFolders != pushFolders) {
-                _initiatePushDelay.remove(_accountId);
                 _previousPushFolders = pushFolders;
                 restartPushEmail();
             }
         } else if (isPushEnabled && !_accountWasPushEnabled) {
-            _initiatePushDelay.remove(_accountId);
             enablePushEmail();
         } else if (!isPushEnabled && _accountWasPushEnabled) {
             disablePushEmail();
@@ -1639,7 +1619,6 @@ void ImapService::restartPushEmail()
 void ImapService::initiatePushEmail()
 {
     _restartPushEmailTimer->stop();
-    _initiatePushEmailTimer->stop();
     setPersistentConnectionStatus(false);
 
     if (!_networkSession || _networkSession->state() != IdleNetworkSession::Connected) {
