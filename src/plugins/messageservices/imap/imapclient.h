@@ -98,6 +98,7 @@ signals:
     void errorOccurred(QMailServiceAction::Status::ErrorCode, const QString &);
     void updateStatus(const QString &);
     void restartPushEmail();
+    void renewPushEmail();
 
     void progressChanged(uint, uint);
     void retrievalCompleted();
@@ -170,6 +171,7 @@ private:
     bool _qresyncEnabled;
     bool _requestRapidClose;
     bool _rapidClosing;
+    QTimer _idleTimer;
     int _idleRetryDelay; // Try to restablish IDLE state
     enum IdleRetryDelay { InitialIdleRetryDelay = 30 }; //seconds
 

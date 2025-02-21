@@ -190,7 +190,7 @@ signals:
 protected slots:
     virtual void idleContinuation(ImapCommand, const QString &);
     virtual void idleCommandTransition(ImapCommand, OperationStatus);
-    virtual void idleTimeOut();
+    virtual void idleRenew();
     virtual void idleTransportError();
     virtual void idleErrorRecovery();
     void logIn();
@@ -201,7 +201,6 @@ protected:
     QMailFolder _folder;
 
 private:
-    QTimer _idleTimer; // Send a DONE command every 29 minutes
     QTimer _idleRecoveryTimer; // Check command hasn't hung
     QMailCredentialsInterface *_credentials;
 };
@@ -222,9 +221,6 @@ IdleProtocol::IdleProtocol(ImapClient *client, const QMailFolder &folder, QMailC
     connect(_client, SIGNAL(sessionError()),
             this, SLOT(idleTransportError()) );
 
-    _idleTimer.setSingleShot(true);
-    connect(&_idleTimer, SIGNAL(timeout()),
-            this, SLOT(idleTimeOut()));
     _idleRecoveryTimer.setSingleShot(true);
     connect(&_idleRecoveryTimer, SIGNAL(timeout()),
             this, SLOT(idleErrorRecovery()));
@@ -271,15 +267,14 @@ void IdleProtocol::onCredentialsStatusChanged()
 
 void IdleProtocol::idleContinuation(ImapCommand command, const QString &type)
 {
-    const int idleTimeout = 28*60*1000;
-
     if (command == IMAP_Idle) {
         if (type == QString("idling")) {
             qMailLog(IMAP) << objectName() << "IDLE: Idle connection established.";
             
             // We are now idling
-            _idleTimer.start(idleTimeout);
             _idleRecoveryTimer.stop();
+            connect(_client, &ImapClient::renewPushEmail,
+                    this, &IdleProtocol::idleRenew);
 
             _client->setIdlingForFolder(_folder.id());
         } else if (type == QString("newmail")) {
@@ -379,10 +374,11 @@ void IdleProtocol::idleCommandTransition(const ImapCommand command, const Operat
     }
 }
 
-void IdleProtocol::idleTimeOut()
+void IdleProtocol::idleRenew()
 {
     _idleRecoveryTimer.start(_client->idleRetryDelay()*1000); // Detect an unresponsive server
-    _idleTimer.stop();
+    disconnect(_client, &ImapClient::renewPushEmail,
+               this, &IdleProtocol::idleRenew);
     sendIdleDone();
 }
 
@@ -468,6 +464,10 @@ ImapClient::ImapClient(const QMailAccountId &id, QObject* parent)
     _inactiveTimer.setSingleShot(true);
     connect(&_inactiveTimer, SIGNAL(timeout()),
             this, SLOT(connectionInactive()));
+
+    _idleTimer.setSingleShot(true);
+    _idleTimer.setInterval(28 * 60 * 1000);
+    connect(&_idleTimer, &QTimer::timeout, this, &ImapClient::renewPushEmail);
 
     connect(QMailMessageBuffer::instance(), SIGNAL(flushed()), this, SLOT(messageBufferFlushed()));
 
@@ -1691,6 +1691,10 @@ bool ImapClient::isPushEmailEstablished()
 void ImapClient::setIdlingForFolder(const QMailFolderId &id)
 {
     _waitingForIdleFolderIds.removeOne(id);
+    if (_monitored.value(id)->connected()
+        && !_idleTimer.isActive()) {
+        _idleTimer.start();
+    }
     if (_waitingForIdleFolderIds.isEmpty()) {
         _idleRetryDelay = InitialIdleRetryDelay;
         commandCompleted(IMAP_Idle_Continuation, OpOk);
@@ -1716,6 +1720,10 @@ QMailFolderIdList ImapClient::configurationIdleFolderIds()
 void ImapClient::monitor(const QMailFolderIdList &mailboxIds)
 {
     static int count(0);
+
+    if (mailboxIds.isEmpty()) {
+        _idleTimer.stop();
+    }
 
     foreach(const QMailFolderId &id, _monitored.keys()) {
         if (!mailboxIds.contains(id)) {
