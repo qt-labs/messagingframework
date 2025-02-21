@@ -50,6 +50,8 @@
 
 #define Q_USE_SQLITE
 
+#include <functional>
+
 using std::bind;
 using std::cref;
 
