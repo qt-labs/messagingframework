@@ -185,14 +185,13 @@ public:
 signals:
     void idleNewMailNotification(QMailFolderId);
     void idleFlagsChangedNotification(QMailFolderId);
-    void openRequest();
+    void transportError();
 
 protected slots:
     virtual void idleContinuation(ImapCommand, const QString &);
     virtual void idleCommandTransition(ImapCommand, OperationStatus);
     virtual void idleRenew();
     virtual void idleTransportError();
-    virtual void idleErrorRecovery();
     void logIn();
     void onCredentialsStatusChanged();
 
@@ -201,7 +200,7 @@ protected:
     QMailFolder _folder;
 
 private:
-    QTimer _idleRecoveryTimer; // Check command hasn't hung
+    QTimer _timeoutTimer; // Check command hasn't hung
     QMailCredentialsInterface *_credentials;
 };
 
@@ -221,14 +220,14 @@ IdleProtocol::IdleProtocol(ImapClient *client, const QMailFolder &folder, QMailC
     connect(_client, SIGNAL(sessionError()),
             this, SLOT(idleTransportError()) );
 
-    _idleRecoveryTimer.setSingleShot(true);
-    connect(&_idleRecoveryTimer, SIGNAL(timeout()),
-            this, SLOT(idleErrorRecovery()));
+    _timeoutTimer.setSingleShot(true);
+    _timeoutTimer.setInterval(30 * 1000);
+    connect(&_timeoutTimer, &QTimer::timeout, this, &IdleProtocol::idleTransportError);
 }
 
 bool IdleProtocol::open(const ImapConfiguration& config, qint64 bufferSize)
 {
-    _idleRecoveryTimer.start(_client->idleRetryDelay()*1000);
+    _timeoutTimer.start();
     return ImapProtocol::open(config, bufferSize);
 }
 
@@ -272,7 +271,7 @@ void IdleProtocol::idleContinuation(ImapCommand command, const QString &type)
             qMailLog(IMAP) << objectName() << "IDLE: Idle connection established.";
             
             // We are now idling
-            _idleRecoveryTimer.stop();
+            _timeoutTimer.stop();
             connect(_client, &ImapClient::renewPushEmail,
                     this, &IdleProtocol::idleRenew);
 
@@ -295,11 +294,9 @@ void IdleProtocol::idleCommandTransition(const ImapCommand command, const Operat
 {
     if ( status != OpOk ) {
         idleTransportError();
-        int oldDelay = _client->idleRetryDelay();
         // Notify the client that idle session is not blocking the
         // main session login anymore for this folder.
         _client->setIdlingForFolder(_folder.id());
-        _client->setIdleRetryDelay(oldDelay); // don't modify retry delay on failure
         return;
     }
     
@@ -376,7 +373,7 @@ void IdleProtocol::idleCommandTransition(const ImapCommand command, const Operat
 
 void IdleProtocol::idleRenew()
 {
-    _idleRecoveryTimer.start(_client->idleRetryDelay()*1000); // Detect an unresponsive server
+    _timeoutTimer.start(); // Detect an unresponsive server
     disconnect(_client, &ImapClient::renewPushEmail,
                this, &IdleProtocol::idleRenew);
     sendIdleDone();
@@ -385,25 +382,13 @@ void IdleProtocol::idleRenew()
 void IdleProtocol::idleTransportError()
 {
     qMailLog(IMAP) << objectName()
-                   << "IDLE: An IMAP IDLE related error occurred.\n"
-                   << "An attempt to automatically recover is scheduled in" << _client->idleRetryDelay() << "seconds.";
+                   << "IDLE: An IMAP IDLE related error occurred.";
 
     if (inUse())
         close();
 
-    _idleRecoveryTimer.stop();
-
-    QTimer::singleShot(_client->idleRetryDelay()*1000, this, SLOT(idleErrorRecovery()));
-}
-
-void IdleProtocol::idleErrorRecovery()
-{
-    const int oneHour = 60*60;
-    _idleRecoveryTimer.stop();
-
-    _client->setIdleRetryDelay(qMin( oneHour, _client->idleRetryDelay()*2 ));
-
-    emit openRequest();
+    _timeoutTimer.stop();
+    emit transportError();
 }
 
 ImapClient::ImapClient(const QMailAccountId &id, QObject* parent)
@@ -413,7 +398,6 @@ ImapClient::ImapClient(const QMailAccountId &id, QObject* parent)
       _qresyncEnabled(false),
       _requestRapidClose(false),
       _rapidClosing(false),
-      _idleRetryDelay(InitialIdleRetryDelay),
       _pushConnectionsReserved(0),
       _credentials(QMailCredentialsFactory::getCredentialsHandlerForAccount(QMailAccountConfiguration(id))),
       _loginFailed(false)
@@ -1696,7 +1680,6 @@ void ImapClient::setIdlingForFolder(const QMailFolderId &id)
         _idleTimer.start();
     }
     if (_waitingForIdleFolderIds.isEmpty()) {
-        _idleRetryDelay = InitialIdleRetryDelay;
         commandCompleted(IMAP_Idle_Continuation, OpOk);
     }
 }
@@ -1754,27 +1737,11 @@ void ImapClient::monitor(const QMailFolderIdList &mailboxIds)
                     this, SIGNAL(idleNewMailNotification(QMailFolderId)));
             connect(protocol, SIGNAL(idleFlagsChangedNotification(QMailFolderId)),
                     this, SIGNAL(idleFlagsChangedNotification(QMailFolderId)));
-            connect(protocol, SIGNAL(openRequest()),
-                    this, SLOT(idleOpenRequested()));
+            connect(protocol, &IdleProtocol::transportError,
+                    this, &ImapClient::pushEmailError);
             protocol->open(imapCfg);
         }
     }
-}
-
-void ImapClient::idleOpenRequested()
-{
-    if (_protocol.inUse()) { // Setting up new idle connection may be in progress
-        qMailLog(IMAP) << _protocol.objectName() 
-                       << "IDLE: IMAP IDLE error recovery detected that the primary connection is "
-                          "busy. Retrying to establish IDLE state in" 
-                       << idleRetryDelay()/2 << "seconds.";
-        return;
-    }
-    _protocol.close();
-    stopIdleConnections();
-    qMailLog(IMAP) << _protocol.objectName() 
-                   << "IDLE: IMAP IDLE error recovery trying to establish IDLE state now.";
-    emit restartPushEmail();
 }
 
 void ImapClient::messageBufferFlushed()

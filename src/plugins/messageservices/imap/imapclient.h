@@ -89,15 +89,13 @@ public:
     void removeAllFromBuffer(QMailMessage *message);
     int pushConnectionsReserved() { return _pushConnectionsReserved; }
     void setPushConnectionsReserved(int reserved) { _pushConnectionsReserved = reserved; }
-    int idleRetryDelay() const { return _idleRetryDelay; }
-    void setIdleRetryDelay(int delay) { _idleRetryDelay = delay; }
     void setIdlingForFolder(const QMailFolderId &id); // internal
 
 signals:
     void errorOccurred(int, const QString &);
     void errorOccurred(QMailServiceAction::Status::ErrorCode, const QString &);
     void updateStatus(const QString &);
-    void restartPushEmail();
+    void pushEmailError();
     void renewPushEmail();
 
     void progressChanged(uint, uint);
@@ -141,7 +139,6 @@ protected slots:
     void checkCommandResponse(const ImapCommand, const OperationStatus);
     void commandTransition(const ImapCommand, const OperationStatus);
     void transportStatus(const QString& status);
-    void idleOpenRequested();
     void messageBufferFlushed();
     void onCredentialsStatusChanged();
 
@@ -172,8 +169,6 @@ private:
     bool _requestRapidClose;
     bool _rapidClosing;
     QTimer _idleTimer;
-    int _idleRetryDelay; // Try to restablish IDLE state
-    enum IdleRetryDelay { InitialIdleRetryDelay = 30 }; //seconds
 
     QMailMessageClassifier _classifier;
     ImapStrategyContext *_strategyContext;
