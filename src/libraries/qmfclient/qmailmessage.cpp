@@ -48,15 +48,17 @@
 #endif
 
 #include <QtGlobal>
-#include <qcryptographichash.h>
-#include <qdir.h>
-#include <qfile.h>
-#include <qfileinfo.h>
+#include <QCryptographicHash>
+#include <QDir>
+#include <QFile>
+#include <QFileInfo>
 #include <QRegularExpression>
 #include <QRandomGenerator>
-#include <qtextstream.h>
+#include <QDataStream>
+#include <QTextStream>
 #include <QTextCodec>
 #include <QtDebug>
+#include <QMimeDatabase>
 #ifdef USE_HTML_PARSER
 #include <QTextDocument>
 #endif
@@ -1549,7 +1551,7 @@ namespace attachments
             const QString &partName = fi.fileName();
             const QString &filePath = fi.absoluteFilePath();
 
-            QMailMessageContentType attach_type(QMail::mimeTypeFromFileName(imagePath).toLatin1());
+            QMailMessageContentType attach_type(QMimeDatabase().mimeTypeForFile(imagePath).name().toLatin1());
             attach_type.setName(partName.toLatin1());
 
             QMailMessageContentDisposition disposition(QMailMessageContentDisposition::Inline);
@@ -1591,7 +1593,7 @@ namespace attachments
 
             const QString &filePath = fi.absoluteFilePath();
 
-            QMailMessageContentType attach_type(QMail::mimeTypeFromFileName(attachmentPath).toLatin1());
+            QMailMessageContentType attach_type(QMimeDatabase().mimeTypeForFile(attachmentPath).name().toLatin1());
 
             QMailMessageContentDisposition disposition(QMailMessageContentDisposition::Attachment);
             disposition.setSize(fi.size());
@@ -4057,10 +4059,9 @@ void QMailMessagePartContainerPrivate::defaultContentType(const QMailMessagePart
             {
                 QMailMessageContentDisposition disposition(contentDisposition);
 
-                QString mimeType = QMail::mimeTypeFromFileName(QString::fromUtf8(disposition.filename()));
-                if (!mimeType.isEmpty())
-                {
-                    type.setContent(to7BitAscii(mimeType));
+                QList<QMimeType> mimeTypes = QMimeDatabase().mimeTypesForFileName(QString::fromUtf8(disposition.filename()));
+                if (!mimeTypes.isEmpty()) {
+                    type.setContent(to7BitAscii(mimeTypes.at(0).name()));
                     updateHeaderField(type.id(), type.toString(false, false));
                 }
             }
@@ -6359,14 +6360,14 @@ static QString partFileName(const QMailMessagePart &part)
         if (index != -1)
             existing = fileName.mid(index + 1);
 
-        QStringList extensions = QMail::extensionsForMimeType(QLatin1String(part.contentType().content().toLower()));
-        if (!extensions.isEmpty()) {
+        QStringList suffixes = QMimeDatabase().mimeTypeForName(QLatin1String(part.contentType().content().toLower())).suffixes();
+        if (!suffixes.isEmpty()) {
             // See if the existing extension is a known one
-            if (existing.isEmpty() || !extensions.contains(existing, Qt::CaseInsensitive)) {
+            if (existing.isEmpty() || !suffixes.contains(existing, Qt::CaseInsensitive)) {
                 if (!fileName.endsWith(QChar::fromLatin1('.'))) {
                     fileName.append(QChar::fromLatin1('.'));
                 }
-                fileName.append(extensions.first());
+                fileName.append(suffixes.first());
             }
         }
     }

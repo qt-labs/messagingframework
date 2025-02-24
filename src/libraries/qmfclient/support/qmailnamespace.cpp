@@ -35,14 +35,14 @@
 #include "qmailfolderkey.h"
 #include "qmailstore.h"
 #include "qmaillog.h"
+
 #include <QCoreApplication>
 #include <QDir>
 #include <QDBusConnection>
 #include <QDBusConnectionInterface>
-#include <QMutex>
 #include <QRegularExpression>
 #include <QThreadStorage>
-#include <stdio.h>
+
 #include <QSqlDatabase>
 #include <QSqlError>
 
@@ -56,8 +56,6 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #endif
-
-#include <QLockFile>
 
 static const char* QMF_DATA_ENV="QMF_DATA";
 static const char* QMF_SERVER_ENV="QMF_SERVER";
@@ -258,144 +256,6 @@ QSqlDatabase QMail::createDatabase()
     }
 
     return db;
-}
-
-/*!
-    \internal
-    Returns the next word, given the input and starting position.
-*/
-static QString nextString( const char *line, int& posn )
-{
-    if ( line[posn] == '\0' )
-        return QString();
-    int end = posn;
-    char ch;
-    for (;;) {
-        ch = line[end];
-        if ( ch == '\0' || ch == ' ' || ch == '\t' ||
-             ch == '\r' || ch == '\n' ) {
-            break;
-        }
-        ++end;
-    }
-    const char *result = line + posn;
-    int resultLen = end - posn;
-    for (;;) {
-        ch = line[end];
-        if ( ch == '\0' )
-            break;
-        if ( ch != ' ' && ch != '\t' && ch != '\r' && ch != '\n' )
-            break;
-        ++end;
-    }
-    posn = end;
-    return QString::fromLocal8Bit(result, resultLen);
-}
-
-typedef QHash<QString, QString> typeForType;
-Q_GLOBAL_STATIC(typeForType, typeFor);
-typedef QHash<QString, QStringList> extForType;
-Q_GLOBAL_STATIC(extForType, extFor);
-
-/*!
-    \internal
-    Loads the mime type to extensions mapping
-*/
-static void loadExtensions()
-{
-    QMutex mutex;
-    mutex.lock();
-    static bool loaded = false;
-
-    if(loaded)
-    {
-        mutex.unlock();
-        return;
-    }
-
-    QFile file(QLatin1String(":/qmf/mime.types"));
-    if ( file.open(QIODevice::ReadOnly) ) {
-        char line[1024];
-
-        while (file.readLine(line, sizeof(line)) > 0) {
-            if (line[0] == '\0' || line[0] == '#')
-                continue;
-            int posn = 0;
-            QString id = nextString(line, posn);
-            if ( id.isEmpty() )
-                continue;
-            id = id.toLower();
-
-            QStringList exts = extFor()->value(id);
-
-            for( QString ext = nextString( line, posn ); !ext.isEmpty(); ext = nextString(line, posn).toLower() )
-            {
-                if( !exts.contains( ext ) )
-                {
-                    exts.append( ext );
-
-                    typeFor()->insert(ext, id);
-                }
-            }
-            (*extFor())[ id ] = exts;
-        }
-        loaded = true;
-    }
-    mutex.unlock();
-}
-
-/*!
-    Returns the string mime type based on the filename \a filename.
-*/
-QString QMail::mimeTypeFromFileName(const QString& filename)
-{
-    if (filename.isEmpty())
-        return QString();
-
-    loadExtensions();
-
-    // do a case insensitive search for a known mime type.
-    QString lwrExtOrId = filename.toLower();
-    QHash<QString,QStringList>::const_iterator it = extFor()->find(lwrExtOrId);
-    if (it != extFor()->end()) {
-        return lwrExtOrId;
-    }
-
-    // either it doesn't have exactly one mime-separator, or it has
-    // a path separator at the beginning
-    QString mime_sep(QChar::fromLatin1('/'));
-    bool doesntLookLikeMimeString = (filename.count(mime_sep) != 1) || (filename[0] == QDir::separator());
-
-    if (doesntLookLikeMimeString || QFile::exists(filename)) {
-        int dot = filename.lastIndexOf(QChar::fromLatin1('.'));
-        QString ext = dot >= 0 ? filename.mid(dot+1) : filename;
-
-        QHash<QString,QString>::const_iterator it = typeFor()->find(ext.toLower());
-        if (it != typeFor()->end()) {
-            return *it;
-        }
-
-        const char elfMagic[] = { '\177', 'E', 'L', 'F', '\0' };
-        QFile ef(filename);
-        if (ef.exists() && (ef.size() > 5) && ef.open(QIODevice::ReadOnly) && (ef.peek(5) == elfMagic)) { // try to find from magic
-            return QLatin1String("application/x-executable");  // could be a shared library or an exe
-        } else {
-            return QLatin1String("application/octet-stream");
-        }
-    }
-
-    // could be something like application/vnd.oma.rights+object
-    return lwrExtOrId;
-}
-
-/*!
-    Returns a list of valid file extensions for the mime type string \a mimeType
-    or an empty list if the mime type is unrecognized.
-*/
-QStringList QMail::extensionsForMimeType(const QString& mimeType)
-{
-    loadExtensions();
-    return extFor()->value(mimeType);
 }
 
 /*!

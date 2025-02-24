@@ -33,6 +33,8 @@
 
 #include <QObject>
 #include <QTest>
+#include <QMimeDatabase>
+
 #include <qmailmessage.h>
 #include <longstring_p.h>
 #include <qmailnamespace.h>
@@ -852,7 +854,7 @@ void tst_python_email::TestMIMEAudio()
 
     // A sprinkling of the tests from this python class...
     QString p(QFINDTESTDATA(filePath));
-    QString mimeString = QMail::mimeTypeFromFileName(p);
+    QString mimeString = QMimeDatabase().mimeTypeForFile(p).name();
     QCOMPARE(mimeString, QString("audio/basic") );
 
     QMailMessageContentType type(mimeString.toLatin1());
@@ -876,7 +878,7 @@ void tst_python_email::TestMIMEImage()
 
     // A sprinkling of the tests from this python class...
     QString p(QFINDTESTDATA(filename));
-    QString mimeString = QMail::mimeTypeFromFileName(p);
+    QString mimeString = QMimeDatabase().mimeTypeForFile(p).name();
     QCOMPARE(mimeString, QString("image/gif") );
 
     QMailMessageContentType type(mimeString.toLatin1());

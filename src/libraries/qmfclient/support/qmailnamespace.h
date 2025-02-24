@@ -37,8 +37,8 @@
 #include "qmailglobal.h"
 #include "qmailaccount.h"
 #include "qmailfolder.h"
+
 #include <QDate>
-#include <QPair>
 #include <QString>
 #include <QTime>
 
@@ -53,8 +53,6 @@ namespace QMail
     QMF_EXPORT QString tempPath();
     QMF_EXPORT QString messageServerPath();
     QMF_EXPORT QString messageSettingsPath();
-    QMF_EXPORT QString mimeTypeFromFileName(const QString& filename);
-    QMF_EXPORT QStringList extensionsForMimeType(const QString& mimeType);
 
     void closeDatabase();
     QMF_EXPORT QSqlDatabase createDatabase();

@@ -31,7 +31,6 @@
 **
 ****************************************************************************/
 
-#include <ctype.h>
 #include <QObject>
 #include <QTest>
 #include "qmailnamespace.h"
@@ -58,8 +57,4 @@ void tst_QMailnamespace::test_qmailnamespace()
 {
     messageServerPath();
     messageSettingsPath();
-
-    QStringList types = extensionsForMimeType("audio/mpeg");
-    QVERIFY(types.count() != 0);
-    QCOMPARE(extensionsForMimeType("audio/pcmu").count(), 0);
 }
