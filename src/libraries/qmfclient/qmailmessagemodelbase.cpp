@@ -129,14 +129,6 @@ QMailMessageModelImplementation::~QMailMessageModelImplementation()
         The timestamp of a message. "Received" or "Sent" is prepended to the timestamp string depending on the message direction.
     \value MessageSizeTextRole
         The size of a message, formatted as text.
-    \value MessageTypeIconRole
-        A string that can be passed to QIcon representing the type of the message.
-    \value MessageStatusIconRole
-        A string that can be passed to QIcon representing the status of the message. e.g Read, Unread, Downloaded
-    \value MessageDirectionIconRole
-        A string that can be passed to QIcon representing the incoming or outgoing direction of a message.
-    \value MessagePresenceIconRole
-        A string that can be passed to QIcon representing the presence status of the contact associated with the MessageAddressTextRole.
     \value MessageBodyTextRole  
         The body of a message represented as text.
     \value MessageIdRole
@@ -209,29 +201,6 @@ QVariant QMailMessageModelBase::data(const QModelIndex& index, int role) const
 /*! \internal */
 QVariant QMailMessageModelBase::data(const QMailMessageMetaData &message, int role) const
 {
-    static QString outgoingIcon(QLatin1String(":icon/sendmail"));
-    static QString incomingIcon(QLatin1String(":icon/getmail"));
-
-    static QString readIcon(QLatin1String(":icon/flag_normal"));
-    static QString unreadIcon(QLatin1String(":icon/flag_unread"));
-    static QString toGetIcon(QLatin1String(":icon/flag_toget"));
-    static QString removedIcon(QLatin1String(":icon/flag_removed"));
-
-    /* No longer used...
-    static QString toSendIcon(":icon/flag_tosend");
-    static QString unfinishedIcon(":icon/flag_unfinished");
-    static QString noPresenceIcon(":icon/presence-none");
-    static QString offlineIcon(":icon/presence-offline");
-    static QString awayIcon(":icon/presence-away");
-    static QString busyIcon(":icon/presence-busy");
-    static QString onlineIcon(":icon/presence-online");
-
-    static QString messageIcon(":icon/txt");
-    static QString mmsIcon(":icon/multimedia");
-    static QString emailIcon(":icon/email");
-    static QString instantMessageIcon(":icon/im");
-    */
-
     bool sent(message.status() & QMailMessage::Sent);
     //bool incoming(message.status() & QMailMessage::Incoming);
     bool incoming = !sent;
@@ -270,44 +239,6 @@ QVariant QMailMessageModelBase::data(const QMailMessageMetaData &message, int ro
 
         case MessageFilterTextRole:
             return QString(messageAddressText(message,incoming) + QChar::Space + message.subject());
-
-        case Qt::DecorationRole:
-        case MessageTypeIconRole:
-        {
-            // Not currently implemented...
-            return QString();
-        }
-
-        case MessageDirectionIconRole:
-        {
-            QString mainIcon = incoming ? incomingIcon : outgoingIcon;
-            return mainIcon;
-        }
-
-        case MessageStatusIconRole:
-        if (incoming) {
-            quint64 status = message.status();
-            if ( status & QMailMessage::Removed ) {
-                return removedIcon;
-            } else if ( status & QMailMessage::PartialContentAvailable ) {
-                if ( status & QMailMessage::Read ) {
-                    return readIcon;
-                } else {
-                    return unreadIcon;
-                }
-            } else {
-                return toGetIcon;
-            }
-        } else {
-            return readIcon;
-            // TODO: use unfinishedIcon or toSendIcon depending on the message state
-        }
-
-        case MessagePresenceIconRole:
-        {
-            // Not currently implemented...
-            return QString();
-        }
 
         case MessageBodyTextRole:
         {

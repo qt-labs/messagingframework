@@ -89,10 +89,6 @@ public:
         MessageFilterTextRole,
         MessageTimeStampTextRole,
         MessageSizeTextRole,
-        MessageTypeIconRole,
-        MessageStatusIconRole,
-        MessageDirectionIconRole,
-        MessagePresenceIconRole,
         MessageBodyTextRole,
         MessageIdRole
     };

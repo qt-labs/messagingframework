@@ -140,7 +140,6 @@ DBUS_INTERFACES += mailservice
 DBUS_ADAPTORS += mailstore
 
 RESOURCES += qmf.qrc \
-             qmf_icons.qrc \
              qmf_qt.qrc
 
 TRANSLATIONS += libqtopiamail-ar.ts \

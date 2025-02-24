@@ -123,7 +123,7 @@ if (ICU_FOUND)
     support/qcharsetdetector.h)
 endif()
 
-qt_add_resources(SRC qmf.qrc qmf_icons.qrc qmf_qt.qrc)
+qt_add_resources(SRC qmf.qrc qmf_qt.qrc)
 
 set_source_files_properties(qmailservice.xml PROPERTIES
   INCLUDE qmailserviceaction.h)
