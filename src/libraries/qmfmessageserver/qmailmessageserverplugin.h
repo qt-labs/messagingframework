@@ -37,6 +37,16 @@
 #include "qmailglobal.h"
 #include <QObject>
 
+// No real API at the moment, the message server plugins integrate themselves to the environment
+class MESSAGESERVER_EXPORT QMailMessageServerService: public QObject
+{
+    Q_OBJECT
+
+public:
+    QMailMessageServerService();
+    ~QMailMessageServerService();
+};
+
 class MESSAGESERVER_EXPORT QMailMessageServerPlugin : public QObject
 {
     Q_OBJECT
@@ -46,15 +56,14 @@ public:
     ~QMailMessageServerPlugin();
 
     virtual QString key() const = 0;
-    virtual void exec() = 0;
-    virtual QMailMessageServerPlugin *createService() = 0;
+    virtual QMailMessageServerService *createService() = 0;
 };
 
 class MESSAGESERVER_EXPORT QMailMessageServerPluginFactory
 {
 public:
     static QStringList keys();
-    static QMailMessageServerPlugin *createService(const QString& key);
+    static QMailMessageServerService *createService(const QString &key);
 };
 
 #endif // QMAILMESSAGESERVERPLUGIN_H

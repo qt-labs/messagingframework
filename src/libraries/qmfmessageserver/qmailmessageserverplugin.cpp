@@ -77,6 +77,15 @@ static QMailMessageServerPlugin* mapping(const QString& key)
     return 0;
 }
 
+QMailMessageServerService::QMailMessageServerService()
+    : QObject()
+{
+}
+
+QMailMessageServerService::~QMailMessageServerService()
+{
+}
+
 /*!
     \class QMailMessageServerPlugin
     \ingroup libmessageserver
@@ -95,14 +104,6 @@ static QMailMessageServerPlugin* mapping(const QString& key)
     \fn QString QMailMessageServerPlugin::key() const
 
     Returns a string identifying the plugin.
-*/
-
-/*!
-    \fn QString QMailMessageServerPlugin::exec()
-
-    The starting point for the plugin.
-    Plugin implementations should use this function as execution
-    entry point for the service(s) provided by the plugin.
 */
 
 /*!
@@ -125,7 +126,7 @@ QMailMessageServerPlugin::~QMailMessageServerPlugin()
     \class QMailMessageServerPluginFactory
     \ingroup libmessageserver
 
-    \brief The QMailMessageServerPluginFactory class creates objects implementing the QMailMessageServerPlugin interface.
+    \brief The QMailMessageServerPluginFactory class creates objects implementing the QMailMessageServerService interface.
 
     The QMailMessageServerPluginFactory class creates objects that provide plugins services to the
     messageserver daemon. The factory allows implementations to be loaded from plugin libraries,
@@ -153,7 +154,7 @@ QStringList QMailMessageServerPluginFactory::keys()
 /*!
     Creates a plugin object of the class identified by \a key.
 */
-QMailMessageServerPlugin* QMailMessageServerPluginFactory::createService(const QString& key)
+QMailMessageServerService* QMailMessageServerPluginFactory::createService(const QString &key)
 {
     if (QMailMessageServerPlugin* plugin = mapping(key))
         return plugin->createService();

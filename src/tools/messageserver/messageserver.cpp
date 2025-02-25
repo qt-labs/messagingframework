@@ -78,6 +78,10 @@ MessageServer::~MessageServer()
     } else {
         qMailLog(Messaging) << "Unregistered messageserver from D-Bus";
     }
+
+#ifdef MESSAGESERVER_PLUGINS
+    qDeleteAll(m_plugins);
+#endif
 }
 
 bool MessageServer::init()
@@ -169,8 +173,8 @@ bool MessageServer::init()
     QStringList availablePlugins = QMailMessageServerPluginFactory::keys();
 
     for (int i = 0; i < availablePlugins.size(); i++) {
-        QMailMessageServerPlugin *plugin = QMailMessageServerPluginFactory::createService(availablePlugins.at(i));
-        plugin->exec();
+        QMailMessageServerService *service = QMailMessageServerPluginFactory::createService(availablePlugins.at(i));
+        m_plugins.append(service);
     }
 #endif
 

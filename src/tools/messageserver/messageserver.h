@@ -38,13 +38,12 @@
 #include <QObject>
 #include <QSet>
 #include <QSocketNotifier>
+#include <QList>
 
 class ServiceHandler;
 class StoreHandler;
-class QDSData;
-class QMailMessageMetaData;
-class QNetworkState;
 class NewCountNotifier;
+class QMailMessageServerService;
 
 class MessageServer : public QObject
 {
@@ -101,6 +100,11 @@ private:
 
     QSet<QMailMessageId> completionList;
     bool completionAttempted;
+
+#ifdef MESSAGESERVER_PLUGINS
+    QList<QMailMessageServerService*> m_plugins;
+#endif
+
 #if defined(Q_OS_UNIX)
     static int sighupFd[2];
     QSocketNotifier *snHup;
