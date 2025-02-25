@@ -72,7 +72,7 @@ private:
     void onResponse(const SignOn::SessionData &sessionData);
     void onError(const SignOn::Error &code);
 
-    uint m_credentialIds;
+    uint m_credentialIds = 0;
     SignOn::Identity *m_identity = nullptr;
     SignOn::AuthSession *m_session = nullptr;
     SignOn::SessionData m_sessionData;
