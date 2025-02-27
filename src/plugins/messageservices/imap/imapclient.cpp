@@ -1674,13 +1674,15 @@ bool ImapClient::isPushEmailEstablished()
 
 void ImapClient::setIdlingForFolder(const QMailFolderId &id)
 {
-    _waitingForIdleFolderIds.removeOne(id);
     if (_monitored.value(id)->connected()
         && !_idleTimer.isActive()) {
         _idleTimer.start();
     }
-    if (_waitingForIdleFolderIds.isEmpty()) {
-        commandCompleted(IMAP_Idle_Continuation, OpOk);
+    if (!_waitingForIdleFolderIds.isEmpty()) {
+        _waitingForIdleFolderIds.removeOne(id);
+        if (_waitingForIdleFolderIds.isEmpty()) {
+            commandCompleted(IMAP_Idle_Continuation, OpOk);
+        }
     }
 }
 
