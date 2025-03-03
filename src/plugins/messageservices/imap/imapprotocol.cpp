@@ -1743,6 +1743,12 @@ QString SearchMessageState::transmit(ImapContext *c)
     const SearchArgument &search = _searches.last();
     QStringList searchQueries = convertKey(search.key);
 
+    if (searchQueries.isEmpty()) {
+        qWarning() << "Unsupported: search query didn't include any search key we support for IMAP";
+        c->operationCompleted(command(), OpFailed);
+        return QString();
+    }
+
     QString prefix = "UID SEARCH ";
     _utf8 |= !(isPrintable(search.body));
     if (search.count && c->protocol()->capabilities().contains("ESEARCH", Qt::CaseInsensitive)) {
