@@ -1,9 +1,63 @@
 <!DOCTYPE node PUBLIC "-//freedesktop//DTD D-BUS Object Introspection 1.0//EN" "http://www.freedesktop.org/standards/dbus/1.0/introspect.dtd">
 <node>
   <interface name="org.qt.mailstore">
-    <signal name="updated">
-      <arg name="message" type="s" direction="out"/>
-      <arg name="data" type="ay" direction="out"/>
+    <signal name="accountsChanged">
+      <arg name="changeType" type="(i)" direction="out"/>
+      <arg name="ids" type="a(t)" direction="out"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QMailStore::ChangeType"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out1" value="QMailAccountIdList"/>
+    </signal>
+    <signal name="foldersChanged">
+      <arg name="changeType" type="(i)" direction="out"/>
+      <arg name="ids" type="a(t)" direction="out"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QMailStore::ChangeType"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out1" value="QMailFolderIdList"/>
+    </signal>
+    <signal name="threadsChanged">
+      <arg name="changeType" type="(i)" direction="out"/>
+      <arg name="ids" type="a(t)" direction="out"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QMailStore::ChangeType"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out1" value="QMailThreadIdList"/>
+    </signal>
+    <signal name="messagesChanged">
+      <arg name="changeType" type="(i)" direction="out"/>
+      <arg name="ids" type="a(t)" direction="out"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QMailStore::ChangeType"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out1" value="QMailMessageIdList"/>
+    </signal>
+    <signal name="messageMetaDataChanged">
+      <arg name="changeType" type="(i)" direction="out"/>
+      <arg name="data" type="a((i)t(i)(t)su(t)(t)(t)ssssss(t)ssss(t)(i)a{ss}bbs(t))" direction="out"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QMailStore::ChangeType"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out1" value="QMailMessageMetaDataList"/>
+    </signal>
+    <signal name="messagePropertiesChanged">
+      <arg name="ids" type="a(t)" direction="out"/>
+      <arg name="properties" type="(i)" direction="out"/>
+      <arg name="data" type="((i)t(i)(t)su(t)(t)(t)ssssss(t)ssss(t)(i)a{ss}bbs(t))" direction="out"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QMailMessageIdList"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out1" value="QMailMessageKey::Properties"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out2" value="QMailMessageMetaData"/>
+    </signal>
+    <signal name="messageStatusChanged">
+      <arg name="ids" type="a(t)" direction="out"/>
+      <arg name="status" type="t" direction="out"/>
+      <arg name="set" type="b" direction="out"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QMailMessageIdList"/>
+    </signal>
+    <signal name="messageRemovalRecordsChanged">
+      <arg name="changeType" type="(i)" direction="out"/>
+      <arg name="ids" type="a(t)" direction="out"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QMailStore::ChangeType"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out1" value="QMailAccountIdList"/>
+    </signal>
+    <signal name="retrievalInProgress">
+      <arg name="ids" type="a(t)" direction="out"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QMailAccountIdList"/>
+    </signal>
+    <signal name="transmissionInProgress">
+      <arg name="ids" type="a(t)" direction="out"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QMailAccountIdList"/>
     </signal>
   </interface>
 </node>

@@ -267,5 +267,6 @@ private:
 };
 
 Q_DECLARE_USER_METATYPE_ENUM(QMailStore::MessageRemovalOption)
+Q_DECLARE_USER_METATYPE_ENUM(QMailStore::ChangeType)
 
 #endif

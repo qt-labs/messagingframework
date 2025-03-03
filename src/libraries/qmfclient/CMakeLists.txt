@@ -130,6 +130,8 @@ qt_add_resources(SRC qmf.qrc qmf_qt.qrc)
 set_source_files_properties(qmailservice.xml PROPERTIES
   INCLUDE qmailserviceaction.h)
 qt_add_dbus_interface(GENERATED_SOURCES qmailservice.xml qmailservice_interface)
+set_source_files_properties(qmailstore.xml PROPERTIES
+  INCLUDE qmailstore.h)
 qt_add_dbus_adaptor(GENERATED_SOURCES qmailstore.xml qmailstorenotifier_p.h QMailStoreNotifier qmailstore_adaptor)
 
 add_library(QmfClient SHARED ${SRC} ${GENERATED_SOURCES} ${PUBLIC_HEADERS} ${PRIVATE_HEADERS})

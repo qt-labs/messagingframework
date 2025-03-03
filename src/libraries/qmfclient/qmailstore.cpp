@@ -1789,4 +1789,5 @@ QMailStore* QMailStore::instance()
 */
 
 Q_IMPLEMENT_USER_METATYPE_ENUM(QMailStore::MessageRemovalOption)
+Q_IMPLEMENT_USER_METATYPE_ENUM(QMailStore::ChangeType)
 

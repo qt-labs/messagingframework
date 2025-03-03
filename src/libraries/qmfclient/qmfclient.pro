@@ -138,6 +138,7 @@ SOURCES += \
 mailservice.files = qmailservice.xml
 mailservice.header_flags = -i qmailid.h -i qmailaction.h -i qmailserviceaction.h -i qmailstore.h
 mailstore.files = qmailstore.xml
+mailstore.header_flags = -i qmailid.h -i qmailstore.h
 DBUS_INTERFACES += mailservice
 DBUS_ADAPTORS += mailstore
 

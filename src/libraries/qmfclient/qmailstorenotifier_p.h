@@ -54,20 +54,28 @@ class QMF_EXPORT QMailStoreNotifier : public QObject, protected QDBusContext
     Q_OBJECT
 
 public:
-    QMailStoreNotifier(QMailStore* parent);
+    QMailStoreNotifier(QObject* parent = nullptr);
     ~QMailStoreNotifier();
 
     bool asynchronousEmission() const;
 
-    void notifyAccountsChange(QMailStore::ChangeType changeType, const QMailAccountIdList& ids);
-    void notifyMessagesChange(QMailStore::ChangeType changeType, const QMailMessageIdList& ids);
-    void notifyMessagesDataChange(QMailStore::ChangeType changeType, const QMailMessageMetaDataList& data);
-    void notifyMessagesDataChange(const QMailMessageIdList& ids,  const QMailMessageKey::Properties& properties,
-                                                                const QMailMessageMetaData& data);
-    void notifyMessagesDataChange(const QMailMessageIdList& ids, quint64 status, bool set);
-    void notifyFoldersChange(QMailStore::ChangeType changeType, const QMailFolderIdList& ids);
-    void notifyThreadsChange(QMailStore::ChangeType changeType, const QMailThreadIdList &ids);
-    void notifyMessageRemovalRecordsChange(QMailStore::ChangeType changeType, const QMailAccountIdList& ids);
+    void notifyAccountsChange(QMailStore::ChangeType changeType,
+                              const QMailAccountIdList& ids);
+    void notifyMessagesChange(QMailStore::ChangeType changeType,
+                              const QMailMessageIdList& ids);
+    void notifyMessagesDataChange(QMailStore::ChangeType changeType,
+                                  const QMailMessageMetaDataList& data);
+    void notifyMessagesDataChange(const QMailMessageIdList& ids,
+                                  const QMailMessageKey::Properties& properties,
+                                  const QMailMessageMetaData& data);
+    void notifyMessagesDataChange(const QMailMessageIdList& ids,
+                                  quint64 status, bool set);
+    void notifyFoldersChange(QMailStore::ChangeType changeType,
+                             const QMailFolderIdList& ids);
+    void notifyThreadsChange(QMailStore::ChangeType changeType,
+                             const QMailThreadIdList &ids);
+    void notifyMessageRemovalRecordsChange(QMailStore::ChangeType changeType,
+                                           const QMailAccountIdList& ids);
     void notifyRetrievalInProgress(const QMailAccountIdList& ids);
     void notifyTransmissionInProgress(const QMailAccountIdList& ids);
 
@@ -79,50 +87,31 @@ public:
     virtual void disconnectIpc();
     virtual void reconnectIpc();
 
-    static const int maxNotifySegmentSize = 0;
-
 public slots:
     void flushIpcNotifications();
 
-protected:
-    typedef void (QMailStore::*AccountUpdateSignal)(const QMailAccountIdList&);
-    typedef void (QMailStore::*FolderUpdateSignal)(const QMailFolderIdList&);
-    typedef void (QMailStore::*ThreadUpdateSignal)(const QMailThreadIdList&);
-    typedef void (QMailStore::*MessageUpdateSignal)(const QMailMessageIdList&);
-    typedef void (QMailStore::*MessageDataPreCacheSignal)(const QMailMessageMetaDataList&);
+protected slots:
+    virtual void accountsRemotelyChanged(QMailStore::ChangeType changeType,
+                                         const QMailAccountIdList& ids) = 0;
+    virtual void messageRemovalRecordsRemotelyChanged(QMailStore::ChangeType changeType,
+                                                      const QMailAccountIdList& ids) = 0;
+    virtual void remoteTransmissionInProgress(const QMailAccountIdList& ids) = 0;
+    virtual void remoteRetrievalInProgress(const QMailAccountIdList& ids) = 0;
+    virtual void messagesRemotelyChanged(QMailStore::ChangeType changeType,
+                                         const QMailMessageIdList& ids) = 0;
+    virtual void messageMetaDataRemotelyChanged(QMailStore::ChangeType changeType,
+                                                const QMailMessageMetaDataList& data) = 0;
+    virtual void messagePropertiesRemotelyChanged(const QMailMessageIdList& ids,
+                                                  QMailMessageKey::Properties properties,
+                                                  const QMailMessageMetaData& data) = 0;
+    virtual void messageStatusRemotelyChanged(const QMailMessageIdList& ids,
+                                              quint64 status, bool set) = 0;
+    virtual void threadsRemotelyChanged(QMailStore::ChangeType changeType,
+                                        const QMailThreadIdList& ids) = 0;
+    virtual void foldersRemotelyChanged(QMailStore::ChangeType changeType,
+                                        const QMailFolderIdList& ids) = 0;
 
-    virtual void emitIpcNotification(AccountUpdateSignal signal, const QMailAccountIdList &ids);
-    virtual void emitIpcNotification(FolderUpdateSignal signal, const QMailFolderIdList &ids);
-    virtual void emitIpcNotification(ThreadUpdateSignal signal, const QMailThreadIdList &ids);
-    virtual void emitIpcNotification(MessageUpdateSignal signal, const QMailMessageIdList &ids);
-    virtual void emitIpcNotification(MessageDataPreCacheSignal signal, const QMailMessageMetaDataList &data);
-    virtual void emitIpcNotification(const QMailMessageIdList& ids,  const QMailMessageKey::Properties& properties,
-                                     const QMailMessageMetaData& data);
-    virtual void emitIpcNotification(const QMailMessageIdList& ids, quint64 status, bool set);
-
-private slots:
-    void ipcMessage(const QString& message, const QByteArray& data);
-    
 private:
-    typedef QMap<QString, AccountUpdateSignal> AccountUpdateSignalMap;
-    static AccountUpdateSignalMap initAccountUpdateSignals();
-
-    typedef QMap<QString, FolderUpdateSignal> FolderUpdateSignalMap;
-    static FolderUpdateSignalMap initFolderUpdateSignals();
-
-    typedef QMap<QString, ThreadUpdateSignal> ThreadUpdateSignalMap;
-    static ThreadUpdateSignalMap initThreadUpdateSignals();
-
-    typedef QMap<QString, MessageUpdateSignal> MessageUpdateSignalMap;
-    static MessageUpdateSignalMap initMessageUpdateSignals();
-
-    typedef QMap<QString, MessageDataPreCacheSignal> MessageDataPreCacheSignalMap;
-    static MessageDataPreCacheSignalMap initMessageDataPreCacheSignals();
-
-    void aboutToQuit();
-
-    bool asyncEmission;
-
     QTimer preFlushTimer;
     QTimer flushTimer;
 
@@ -165,7 +154,6 @@ private:
     QSet<QMailAccountId> retrievalInProgressIds;
     QSet<QMailAccountId> transmissionInProgressIds;
 
-    QMailStore* q;
     MailstoreAdaptor *ipcAdaptor;
 };
 

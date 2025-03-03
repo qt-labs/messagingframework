@@ -239,6 +239,7 @@ private:
 };
 
 Q_DECLARE_OPERATORS_FOR_FLAGS(QMailMessageKey::Properties)
+Q_DECLARE_USER_METATYPE(QMailMessageKey::Properties)
 Q_DECLARE_USER_METATYPE(QMailMessageKey)
 
 #endif

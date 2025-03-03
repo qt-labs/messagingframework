@@ -753,19 +753,25 @@ private:
     QMailMessage extractMessage(const QSqlRecord& r, const QMap<QString, QString> &customFields, const QMailMessageKey::Properties& properties = allMessageProperties());
     QMailMessageRemovalRecord extractMessageRemovalRecord(const QSqlRecord& r);
 
-    void emitIpcNotification(QMailStoreNotifier::AccountUpdateSignal signal,
-                             const QMailAccountIdList &ids) override;
-    void emitIpcNotification(QMailStoreNotifier::FolderUpdateSignal signal,
-                             const QMailFolderIdList &ids) override;
-    void emitIpcNotification(QMailStoreNotifier::ThreadUpdateSignal signal,
-                             const QMailThreadIdList &ids) override;
-    void emitIpcNotification(QMailStoreNotifier::MessageUpdateSignal signal,
-                             const QMailMessageIdList &ids) override;
-    void emitIpcNotification(QMailStoreNotifier::MessageDataPreCacheSignal signal,
-                             const QMailMessageMetaDataList &data) override;
-    void emitIpcNotification(const QMailMessageIdList& ids,  const QMailMessageKey::Properties& properties,
-                             const QMailMessageMetaData& data) override;
-    void emitIpcNotification(const QMailMessageIdList& ids, quint64 status, bool set) override;
+    void accountsRemotelyChanged(QMailStore::ChangeType changeType,
+                                 const QMailAccountIdList& ids) override;
+    void messageRemovalRecordsRemotelyChanged(QMailStore::ChangeType changeType,
+                                              const QMailAccountIdList& ids) override;
+    void remoteTransmissionInProgress(const QMailAccountIdList& ids) override;
+    void remoteRetrievalInProgress(const QMailAccountIdList& ids) override;
+    void messagesRemotelyChanged(QMailStore::ChangeType changeType,
+                                 const QMailMessageIdList& ids) override;
+    void messageMetaDataRemotelyChanged(QMailStore::ChangeType changeType,
+                                        const QMailMessageMetaDataList &data) override;
+    void messagePropertiesRemotelyChanged(const QMailMessageIdList& ids,
+                                          QMailMessageKey::Properties properties,
+                                          const QMailMessageMetaData& data) override;
+    void messageStatusRemotelyChanged(const QMailMessageIdList& ids,
+                                      quint64 status, bool set) override;
+    void threadsRemotelyChanged(QMailStore::ChangeType changeType,
+                                const QMailThreadIdList &ids) override;
+    void foldersRemotelyChanged(QMailStore::ChangeType changeType,
+                                const QMailFolderIdList &ids) override;
 
     static const int messageCacheSize = 100;
     static const int threadCacheSize = 300;

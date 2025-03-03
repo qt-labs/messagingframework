@@ -1123,4 +1123,4 @@ template void QMF_EXPORT QMailMessageKey::serialize<QDataStream>(QDataStream& st
 template void QMF_EXPORT QMailMessageKey::deserialize<QDataStream>(QDataStream& stream);
 
 Q_IMPLEMENT_USER_METATYPE(QMailMessageKey)
-
+Q_IMPLEMENT_USER_METATYPE_ENUM(QMailMessageKey::Properties)

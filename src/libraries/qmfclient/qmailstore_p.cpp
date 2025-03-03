@@ -9642,49 +9642,146 @@ QSqlQuery QMailStorePrivate::performQuery(const QString& statement, bool batch, 
     return query;
 }
 
-void QMailStorePrivate::emitIpcNotification(QMailStoreImplementation::AccountUpdateSignal signal, const QMailAccountIdList &ids)
+void QMailStorePrivate::accountsRemotelyChanged(QMailStore::ChangeType changeType,
+                                                const QMailAccountIdList& ids)
 {
-    if ((signal == &QMailStore::accountsUpdated) || (signal == &QMailStore::accountsRemoved)) {
-        foreach (const QMailAccountId &id, ids)
+    if ((changeType == QMailStore::Updated)
+        || (changeType == QMailStore::Removed)) {
+        for (const QMailAccountId &id : ids)
             accountCache.remove(id);
     }
 
-    QMailStoreImplementation::emitIpcNotification(signal, ids);
+    switch (changeType) {
+    case QMailStore::Added:
+        emit q_ptr->accountsAdded(ids);
+        break;
+    case QMailStore::Removed:
+        emit q_ptr->accountsRemoved(ids);
+        break;
+    case QMailStore::Updated:
+        emit q_ptr->accountsUpdated(ids);
+        break;
+    case QMailStore::ContentsModified:
+        emit q_ptr->accountContentsModified(ids);
+        break;
+    default:
+        qWarning() << "Unhandled remote account notification";
+        break;
+    }
 }
 
-void QMailStorePrivate::emitIpcNotification(QMailStoreImplementation::FolderUpdateSignal signal, const QMailFolderIdList &ids)
+void QMailStorePrivate::messageRemovalRecordsRemotelyChanged(QMailStore::ChangeType changeType,
+                                                             const QMailAccountIdList& ids)
 {
-    if ((signal == &QMailStore::foldersUpdated) || (signal == &QMailStore::foldersRemoved)) {
-        foreach (const QMailFolderId &id, ids)
+    switch (changeType) {
+    case QMailStore::Added:
+        emit q_ptr->messageRemovalRecordsAdded(ids);
+        break;
+    case QMailStore::Removed:
+        emit q_ptr->messageRemovalRecordsRemoved(ids);
+        break;
+    default:
+        qWarning() << "Unhandled remote message removal record notification";
+        break;
+    }
+}
+
+void QMailStorePrivate::remoteTransmissionInProgress(const QMailAccountIdList& ids)
+{
+    emit q_ptr->transmissionInProgress(ids);
+}
+
+void QMailStorePrivate::remoteRetrievalInProgress(const QMailAccountIdList& ids)
+{
+    emit q_ptr->retrievalInProgress(ids);
+}
+
+void QMailStorePrivate::foldersRemotelyChanged(QMailStore::ChangeType changeType,
+                                               const QMailFolderIdList &ids)
+{
+    if ((changeType == QMailStore::Updated)
+        || (changeType == QMailStore::Removed)) {
+        for (const QMailFolderId &id : ids)
             folderCache.remove(id);
     }
 
-    QMailStoreImplementation::emitIpcNotification(signal, ids);
+    switch (changeType) {
+    case QMailStore::Added:
+        emit q_ptr->foldersAdded(ids);
+        break;
+    case QMailStore::Removed:
+        emit q_ptr->foldersRemoved(ids);
+        break;
+    case QMailStore::Updated:
+        emit q_ptr->foldersUpdated(ids);
+        break;
+    case QMailStore::ContentsModified:
+        emit q_ptr->folderContentsModified(ids);
+        break;
+    default:
+        qWarning() << "Unhandled remote folder notification";
+        break;
+    }
 }
 
-void QMailStorePrivate::emitIpcNotification(QMailStoreImplementation::ThreadUpdateSignal signal, const QMailThreadIdList &ids)
+void QMailStorePrivate::threadsRemotelyChanged(QMailStore::ChangeType changeType,
+                                               const QMailThreadIdList &ids)
 {
-    if ((signal == &QMailStore::threadsUpdated) || (signal == &QMailStore::threadsRemoved)) {
-        foreach (const QMailThreadId &id, ids)
+    if ((changeType == QMailStore::Updated)
+        || (changeType == QMailStore::Removed)) {
+        for (const QMailThreadId &id : ids)
             threadCache.remove(id);
     }
 
-    QMailStoreImplementation::emitIpcNotification(signal, ids);
+    switch (changeType) {
+    case QMailStore::Added:
+        emit q_ptr->threadsAdded(ids);
+        break;
+    case QMailStore::Removed:
+        emit q_ptr->threadsRemoved(ids);
+        break;
+    case QMailStore::Updated:
+        emit q_ptr->threadsUpdated(ids);
+        break;
+    case QMailStore::ContentsModified:
+        emit q_ptr->threadContentsModified(ids);
+        break;
+    default:
+        qWarning() << "Unhandled remote thread notification";
+        break;
+    }
 }
 
-void QMailStorePrivate::emitIpcNotification(QMailStoreImplementation::MessageUpdateSignal signal, const QMailMessageIdList &ids)
+void QMailStorePrivate::messagesRemotelyChanged(QMailStore::ChangeType changeType,
+                                                const QMailMessageIdList& ids)
 {
-    Q_ASSERT(!ids.contains(QMailMessageId()));
-
-    if ((signal == &QMailStore::messagesUpdated) || (signal == &QMailStore::messagesRemoved)) {
-        foreach (const QMailMessageId &id, ids)
+    if ((changeType == QMailStore::Updated)
+        || (changeType == QMailStore::Removed)) {
+        for (const QMailMessageId &id : ids)
             messageCache.remove(id);
     }
 
-    QMailStoreImplementation::emitIpcNotification(signal, ids);
+    switch (changeType) {
+    case QMailStore::Added:
+        emit q_ptr->messagesAdded(ids);
+        break;
+    case QMailStore::Removed:
+        emit q_ptr->messagesRemoved(ids);
+        break;
+    case QMailStore::Updated:
+        emit q_ptr->messagesUpdated(ids);
+        break;
+    case QMailStore::ContentsModified:
+        emit q_ptr->messageContentsModified(ids);
+        break;
+    default:
+        qWarning() << "Unhandled remote account notification";
+        break;
+    }
 }
 
-void QMailStorePrivate::emitIpcNotification(QMailStoreImplementation::MessageDataPreCacheSignal signal, const QMailMessageMetaDataList &data)
+void QMailStorePrivate::messageMetaDataRemotelyChanged(QMailStore::ChangeType changeType,
+                                                       const QMailMessageMetaDataList &data)
 {
     if(!data.isEmpty()) {
 
@@ -9698,13 +9795,24 @@ void QMailStorePrivate::emitIpcNotification(QMailStoreImplementation::MessageDat
             ids.append(metaData.id());
         }
 
-        QMailStoreImplementation::emitIpcNotification(signal, data);
+        switch (changeType) {
+        case QMailStore::Added:
+            emit q_ptr->messageDataAdded(data);
+            break;
+        case QMailStore::Updated:
+            emit q_ptr->messageDataUpdated(data);
+            break;
+        default:
+            qWarning() << "Unhandled remote message meta data notification";
+            break;
+        }
     }
 
 }
 
-void QMailStorePrivate::emitIpcNotification(const QMailMessageIdList& ids,  const QMailMessageKey::Properties& properties,
-                                     const QMailMessageMetaData& data)
+void QMailStorePrivate::messagePropertiesRemotelyChanged(const QMailMessageIdList& ids,
+                                                         QMailMessageKey::Properties properties,
+                                                         const QMailMessageMetaData& data)
 {
     Q_ASSERT(!ids.contains(QMailMessageId()));
 
@@ -9807,10 +9915,11 @@ void QMailStorePrivate::emitIpcNotification(const QMailMessageIdList& ids,  cons
         }
     }
 
-    QMailStoreImplementation::emitIpcNotification(ids, properties, data);
+    emit q_ptr->messagePropertyUpdated(ids, properties, data);
 }
 
-void QMailStorePrivate::emitIpcNotification(const QMailMessageIdList& ids, quint64 status, bool set)
+void QMailStorePrivate::messageStatusRemotelyChanged(const QMailMessageIdList& ids,
+                                                     quint64 status, bool set)
 {
     Q_ASSERT(!ids.contains(QMailMessageId()));
 
@@ -9824,7 +9933,7 @@ void QMailStorePrivate::emitIpcNotification(const QMailMessageIdList& ids, quint
         }
     }
 
-    QMailStoreImplementation::emitIpcNotification(ids, status, set);
+    emit q_ptr->messageStatusUpdated(ids, status, set);
 }
 
 void QMailStorePrivate::disconnectIpc()

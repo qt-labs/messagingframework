@@ -325,6 +325,26 @@ public:
 
     QMap<QString, QString> messageCustomFields(const QMailMessageId &id) override;
 
+    void accountsRemotelyChanged(QMailStore::ChangeType,
+                                 const QMailAccountIdList&) override {}
+    void messageRemovalRecordsRemotelyChanged(QMailStore::ChangeType,
+                                              const QMailAccountIdList&) override {}
+    void remoteTransmissionInProgress(const QMailAccountIdList&) override {}
+    void remoteRetrievalInProgress(const QMailAccountIdList&) override {}
+    void messagesRemotelyChanged(QMailStore::ChangeType,
+                                 const QMailMessageIdList&) override {}
+    void messageMetaDataRemotelyChanged(QMailStore::ChangeType,
+                                        const QMailMessageMetaDataList&) override {}
+    void messagePropertiesRemotelyChanged(const QMailMessageIdList&,
+                                          QMailMessageKey::Properties,
+                                          const QMailMessageMetaData&) override {}
+    void messageStatusRemotelyChanged(const QMailMessageIdList&,
+                                      quint64, bool) override {}
+    void threadsRemotelyChanged(QMailStore::ChangeType,
+                                const QMailThreadIdList&) override {}
+    void foldersRemotelyChanged(QMailStore::ChangeType,
+                                const QMailFolderIdList&) override {}
+
 private:
     bool initStore() override;
 };
