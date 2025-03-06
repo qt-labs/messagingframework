@@ -35,6 +35,7 @@ set(SRC
   qmailstore_p.cpp
   qmailstoreimplementation_p.cpp
   qmailstorenotifier_p.cpp
+  qmailstoresql_p.cpp
   qmailtimestamp.cpp
   qmailthread.cpp
   qmailthreadkey.cpp
@@ -112,6 +113,7 @@ set(PRIVATE_HEADERS
   qmailstore_p.h
   qmailstoreimplementation_p.h
   qmailstorenotifier_p.h
+  qmailstoresql_p.h
   qmailthread_p.h
   qmailthreadkey_p.h
   qmailthreadsortkey_p.h

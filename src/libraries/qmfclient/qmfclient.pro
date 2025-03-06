@@ -81,6 +81,7 @@ HEADERS += \
     qmailstore_p.h \
     qmailstorenotifier_p.h \
     qmailstoreimplementation_p.h \
+    qmailstoresql_p.h \
     qmailthread_p.h \
     qmailthreadkey_p.h \
     qmailthreadsortkey_p.h \
@@ -123,6 +124,7 @@ SOURCES += \
            qmailstore_p.cpp \
            qmailstorenotifier_p.cpp \
            qmailstoreimplementation_p.cpp \
+           qmailstoresql_p.cpp \
            qmailtimestamp.cpp \
            qmailthread.cpp \
            qmailthreadkey.cpp \

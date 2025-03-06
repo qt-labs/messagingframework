@@ -134,6 +134,7 @@ private:
     friend class QMailAccountPrivate;
     friend class QMailStore;
     friend class QMailStorePrivate;
+    friend class QMailStoreSql;
 
     void addMessageSource(const QString &source);
     void addMessageSink(const QString &sink);

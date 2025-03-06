@@ -134,9 +134,9 @@ void tst_QMailStore::addAccount()
         svcCfg->setValue("username", "account1");
     }
 
-    // Verify that invalid retrieval fails
+    // Verify that invalid retrieval succeeds but returns an invalid account
     QMailAccount accountX(account1.id());
-    QCOMPARE(QMailStore::instance()->lastError(), QMailStore::InvalidId);
+    QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
     QVERIFY(!accountX.id().isValid());
     
     // Verify that addition is successful
@@ -1401,9 +1401,9 @@ void tst_QMailStore::removeAccount()
     // Verify that the removeAccount signal is emitted only once
     QCOMPARE(spyAccountRemoved.count(), 1);
 
-    // Verify that retrieval yields invalid result
+    // Verify that retrieval yields no error and an invalid result
     QMailAccount account3(account1.id());
-    QCOMPARE(QMailStore::instance()->lastError(), QMailStore::InvalidId);
+    QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
     QVERIFY(!account3.id().isValid());
 
     QMailAccountConfiguration config3(account1.id());

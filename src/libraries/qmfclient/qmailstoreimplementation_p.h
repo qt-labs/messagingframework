@@ -52,38 +52,22 @@
 #include <QPair>
 #include <QString>
 
-class QMF_EXPORT QMailStoreImplementationBase
+class QMF_EXPORT QMailStoreImplementation : public QMailStoreNotifier
 {
 public:
-    QMailStoreImplementationBase(QMailStore* parent);
-    virtual ~QMailStoreImplementationBase();
+    QMailStoreImplementation(QMailStore* parent);
+    virtual ~QMailStoreImplementation();
 
     void initialize();
     static QMailStore::InitializationState initializationState();
 
-    QMailStore::ErrorCode lastError() const;
-    void setLastError(QMailStore::ErrorCode code) const;
+    virtual QMailStore::ErrorCode lastError() const = 0;
+    virtual void setLastError(QMailStore::ErrorCode code) const = 0;
 
     virtual bool ensureDurability() = 0;
 
     virtual void lock() = 0;
     virtual void unlock() = 0;
-
-protected:
-    static QMailStore::InitializationState initState;
-
-private:
-    virtual bool initStore() = 0;
-
-    QMailStore* q;
-    
-    mutable QMailStore::ErrorCode errorCode;
-};
-
-class QMailStoreImplementation : public QMailStoreImplementationBase, public QMailStoreNotifier
-{
-public:
-    QMailStoreImplementation(QMailStore* parent);
 
     virtual void clearContent() = 0;
 
@@ -176,12 +160,23 @@ public:
     virtual bool registerMessageStatusFlag(const QString &name) = 0;
     virtual quint64 messageStatusMask(const QString &name) const = 0;
     virtual QMap<QString, QString> messageCustomFields(const QMailMessageId &id) = 0;
+
+protected:
+    static QMailStore::InitializationState initState;
+
+private:
+    virtual bool initStore() = 0;
+
+    QMailStore* q;
 };
 
 class QMF_EXPORT QMailStoreNullImplementation : public QMailStoreImplementation
 {
 public:
     QMailStoreNullImplementation(QMailStore* parent);
+
+    QMailStore::ErrorCode lastError() const override;
+    void setLastError(QMailStore::ErrorCode code) const override;
 
     void clearContent() override;
 

@@ -34,61 +34,41 @@
 #include "qmailstoreimplementation_p.h"
 #include <qmailnamespace.h>
 
-QMailStore::InitializationState QMailStoreImplementationBase::initState = QMailStore::Uninitialized;
+QMailStore::InitializationState QMailStoreImplementation::initState = QMailStore::Uninitialized;
 
-QMailStoreImplementationBase::QMailStoreImplementationBase(QMailStore* parent)
-    : q(parent),
-      errorCode(QMailStore::NoError)
+QMailStoreImplementation::QMailStoreImplementation(QMailStore* parent)
+    : q(parent)
 {
     Q_ASSERT(q);
 }
 
-QMailStoreImplementationBase::~QMailStoreImplementationBase()
+QMailStoreImplementation::~QMailStoreImplementation()
 {
 }
 
-void QMailStoreImplementationBase::initialize()
+void QMailStoreImplementation::initialize()
 {
     initState = (initStore() ? QMailStore::Initialized : QMailStore::InitializationFailed);
 }
 
-QMailStore::InitializationState QMailStoreImplementationBase::initializationState()
+QMailStore::InitializationState QMailStoreImplementation::initializationState()
 {
     return initState;
 }
 
-QMailStore::ErrorCode QMailStoreImplementationBase::lastError() const
-{
-    return errorCode;
-}
-
-void QMailStoreImplementationBase::setLastError(QMailStore::ErrorCode code) const
-{
-    if (initState == QMailStore::InitializationFailed) {
-        // Enforce the error code to be this if we can't init:
-        code = QMailStore::StorageInaccessible;
-    }
-
-    if (errorCode != code) {
-        errorCode = code;
-
-        if (errorCode != QMailStore::NoError) {
-            q->emitErrorNotification(errorCode);
-        }
-    }
-}
-
-QMailStoreImplementation::QMailStoreImplementation(QMailStore* parent)
-    : QMailStoreImplementationBase(parent)
-    , QMailStoreNotifier(parent)
-{
-}
-
-
 QMailStoreNullImplementation::QMailStoreNullImplementation(QMailStore* parent)
     : QMailStoreImplementation(parent)
 {
-    setLastError(QMailStore::StorageInaccessible);
+}
+
+QMailStore::ErrorCode QMailStoreNullImplementation::lastError() const
+{
+    return QMailStore::StorageInaccessible;
+}
+
+void QMailStoreNullImplementation::setLastError(QMailStore::ErrorCode code) const
+{
+    Q_UNUSED(code);
 }
 
 void QMailStoreNullImplementation::clearContent()

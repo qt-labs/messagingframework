@@ -231,7 +231,7 @@ Q_SIGNALS:
 
 private:
     friend class QMailStoreNotifier;
-    friend class QMailStoreImplementationBase;
+    friend class QMailStoreImplementation;
     friend class QMailStorePrivate;
     friend class QMailMessageMetaDataPrivate; // for ensureCustomFields
     friend class tst_QMailStore;

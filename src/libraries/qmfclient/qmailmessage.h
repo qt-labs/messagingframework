@@ -679,6 +679,7 @@ private:
     friend class QMailMessagePrivate;
     friend class QMailStore;
     friend class QMailStorePrivate;
+    friend class QMailStoreSql;
 
     virtual void setUnmodified();
 
@@ -800,6 +801,7 @@ protected:
 private:
     friend class QMailStore;
     friend class QMailStorePrivate;
+    friend class QMailStoreSql;
 
     QMailMessageMetaDataPrivate* metaDataImpl();
     const QMailMessageMetaDataPrivate* metaDataImpl() const;

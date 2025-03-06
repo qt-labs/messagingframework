@@ -124,6 +124,7 @@ public:
 private:
     friend class QMailStore;
     friend class QMailStorePrivate;
+    friend class QMailStoreSql;
 
     bool customFieldsModified() const;
     void setCustomFieldsModified(bool set);
