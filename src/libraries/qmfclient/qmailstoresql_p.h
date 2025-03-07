@@ -124,6 +124,8 @@ public:
 
     bool addAccount(QMailAccount *account, QMailAccountConfiguration *config,
                     QMailAccountIdList *addedAccountIds);
+    bool setAccountStandardFolders(const QMailAccountId &id,
+                                   const QMap<QMailFolder::StandardFolder, QMailFolderId> &folders);
 
     bool addFolder(QMailFolder *f,
                    QMailFolderIdList *addedFolderIds, QMailAccountIdList *modifiedAccountIds);
@@ -229,6 +231,7 @@ public:
 
     QMailAccount account(const QMailAccountId &id) const;
     QMailAccountConfiguration accountConfiguration(const QMailAccountId &id) const;
+    QMap<QMailFolder::StandardFolder, QMailFolderId> accountStandardFolders(const QMailAccountId &id) const;
 
     QMailFolder folder(const QMailFolderId &id) const;
 
@@ -449,7 +452,11 @@ private:
                                     QMailAccountIdList *addedAccountIds, 
                                     Transaction &t, bool commitOnSuccess);
 
-    AttemptResult attemptAddFolder(QMailFolder *folder, 
+    AttemptResult attemptSetAccountStandardFolders(const QMailAccountId &id,
+                                                   const QMap<QMailFolder::StandardFolder, QMailFolderId> &folders,
+                                                   Transaction &t, bool commitOnSuccess);
+
+    AttemptResult attemptAddFolder(QMailFolder *folder,
                                    QMailFolderIdList *addedFolderIds, QMailAccountIdList *modifiedAccountIds,
                                    Transaction &t, bool commitOnSuccess);
 
@@ -665,6 +672,10 @@ private:
     AttemptResult attemptAccountConfiguration(const QMailAccountId &id, 
                                               QMailAccountConfiguration *result, 
                                               ReadLock &);
+
+    AttemptResult attemptAccountStandardFolders(const QMailAccountId &id,
+                                                QMap<QMailFolder::StandardFolder, QMailFolderId> *result,
+                                                ReadLock &);
 
     AttemptResult attemptFolder(const QMailFolderId &id, 
                                 QMailFolder *result, 

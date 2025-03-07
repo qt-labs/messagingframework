@@ -4471,6 +4471,15 @@ bool QMailStoreSql::addAccount(QMailAccount *account,
                                    QLatin1String("add account"));
 }
 
+bool QMailStoreSql::setAccountStandardFolders(const QMailAccountId &id,
+                                              const QMap<QMailFolder::StandardFolder, QMailFolderId> &folders)
+{
+    return repeatedly<WriteAccess>(bind(&QMailStoreSql::attemptSetAccountStandardFolders, this,
+                                        cref(id), cref(folders),
+                                        std::placeholders::_1, std::placeholders::_2),
+                                   QLatin1String("set account standard folders"));
+}
+
 bool QMailStoreSql::addFolder(QMailFolder *folder,
                               QMailFolderIdList *addedFolderIds,
                               QMailAccountIdList *modifiedAccountIds)
@@ -4942,6 +4951,16 @@ QMailAccountConfiguration QMailStoreSql::accountConfiguration(const QMailAccount
                                 std::placeholders::_1),
                            QLatin1String("inquire account configuration for id"));
     return config;
+}
+
+QMap<QMailFolder::StandardFolder, QMailFolderId> QMailStoreSql::accountStandardFolders(const QMailAccountId &id) const
+{
+    QMap<QMailFolder::StandardFolder, QMailFolderId> folders;
+    repeatedly<ReadAccess>(bind(&QMailStoreSql::attemptAccountStandardFolders, const_cast<QMailStoreSql*>(this),
+                                cref(id), &folders,
+                                std::placeholders::_1),
+                           QLatin1String("inquire account standard folders for id"));
+    return folders;
 }
 
 QMailFolder QMailStoreSql::folder(const QMailFolderId &id) const
@@ -5416,29 +5435,12 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptAddAccount(QMailAccount *acco
         }
 
         // Insert any standard folders configured for this account
-        const QMap<QMailFolder::StandardFolder, QMailFolderId> &folders(account->standardFolders());
-        if (!folders.isEmpty()) {
-            QVariantList types;
-            QVariantList folderIds;
-
-            QMap<QMailFolder::StandardFolder, QMailFolderId>::const_iterator it = folders.begin(), end = folders.end();
-            for ( ; it != end; ++it) {
-                types.append(static_cast<int>(it.key()));
-                folderIds.append(it.value().toULongLong());
-            }
-
-            // Batch insert the folders
-            QString sql(QLatin1String("INSERT into mailaccountfolders (id,foldertype,folderid) VALUES (%1,?,?)"));
-            QSqlQuery query(batchQuery(sql.arg(QString::number(insertId.toULongLong())),
-                                       QVariantList() << QVariant(types)
-                                       << QVariant(folderIds),
-                                       QLatin1String("addAccount mailaccountfolders query")));
-            if (query.lastError().type() != QSqlError::NoError)
-                return DatabaseFailure;
-        }
+        AttemptResult result = attemptSetAccountStandardFolders(insertId, account->standardFolders(), t, false);
+        if (result != Success)
+            return result;
 
         // Insert any custom fields belonging to this account
-        AttemptResult result = addCustomFields(insertId.toULongLong(), account->customFields(), QLatin1String("mailaccountcustom"));
+        result = addCustomFields(insertId.toULongLong(), account->customFields(), QLatin1String("mailaccountcustom"));
         if (result != Success)
             return result;
     }
@@ -5481,6 +5483,90 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptAddAccount(QMailAccount *acco
     }
 
     addedAccountIds->append(insertId);
+    return Success;
+}
+
+QMailStoreSql::AttemptResult QMailStoreSql::attemptSetAccountStandardFolders(const QMailAccountId &id,
+                                                                             const QMap<QMailFolder::StandardFolder, QMailFolderId> &folders,
+                                                                             Transaction &t, bool commitOnSuccess)
+{
+    // Update any standard folders configured
+    QMap<QMailFolder::StandardFolder, QMailFolderId> existingFolders;
+
+    {
+        // Find the existing folders
+        QSqlQuery query(simpleQuery(QLatin1String("SELECT foldertype,folderid FROM mailaccountfolders WHERE id=?"),
+                                    QVariantList() << id.toULongLong(),
+                                    QLatin1String("updateAccount mailaccountfolders select query")));
+        if (query.lastError().type() != QSqlError::NoError)
+            return DatabaseFailure;
+
+        while (query.next())
+            existingFolders.insert(QMailFolder::StandardFolder(query.value(0).toInt()), QMailFolderId(query.value(1).toULongLong()));
+    }
+
+    QVariantList obsoleteTypes;
+    QVariantList modifiedTypes;
+    QVariantList modifiedFolderIds;
+    QVariantList addedTypes;
+    QVariantList addedFolders;
+
+    // Compare the sets
+    QMap<QMailFolder::StandardFolder, QMailFolderId>::const_iterator fend = folders.end(), eend = existingFolders.end();
+    QMap<QMailFolder::StandardFolder, QMailFolderId>::const_iterator it = existingFolders.begin();
+    for ( ; it != eend; ++it) {
+        QMap<QMailFolder::StandardFolder, QMailFolderId>::const_iterator current = folders.find(it.key());
+        if (current == fend) {
+            obsoleteTypes.append(QVariant(static_cast<int>(it.key())));
+        } else if (*current != *it) {
+            modifiedTypes.append(QVariant(static_cast<int>(current.key())));
+            modifiedFolderIds.append(QVariant(current.value().toULongLong()));
+        }
+    }
+
+    for (it = folders.begin(); it != fend; ++it) {
+        if (existingFolders.find(it.key()) == eend) {
+            addedTypes.append(QVariant(static_cast<int>(it.key())));
+            addedFolders.append(QVariant(it.value().toULongLong()));
+        }
+    }
+
+    if (!obsoleteTypes.isEmpty()) {
+        // Remove the obsolete folders
+        QString sql(QLatin1String("DELETE FROM mailaccountfolders WHERE id=? AND foldertype IN %2"));
+        QSqlQuery query(simpleQuery(sql.arg(expandValueList(obsoleteTypes)),
+                                    QVariantList() << id.toULongLong() << obsoleteTypes,
+                                    QLatin1String("updateAccount mailaccountfolders delete query")));
+        if (query.lastError().type() != QSqlError::NoError)
+            return DatabaseFailure;
+    }
+
+    if (!modifiedTypes.isEmpty()) {
+        // Batch update the modified folders
+        QString sql(QLatin1String("UPDATE mailaccountfolders SET folderid=? WHERE id=%2 AND foldertype=?"));
+        QSqlQuery query(batchQuery(sql.arg(QString::number(id.toULongLong())),
+                                   QVariantList() << QVariant(modifiedFolderIds)
+                                   << QVariant(modifiedTypes),
+                                   QLatin1String("updateAccount mailaccountfolders update query")));
+        if (query.lastError().type() != QSqlError::NoError)
+            return DatabaseFailure;
+    }
+
+    if (!addedTypes.isEmpty()) {
+        // Batch insert the added folders
+        QString sql(QLatin1String("INSERT INTO mailaccountfolders (id,foldertype,folderid) VALUES (%1,?,?)"));
+        QSqlQuery query(batchQuery(sql.arg(QString::number(id.toULongLong())),
+                                   QVariantList() << QVariant(addedTypes) << QVariant(addedFolders),
+                                   QLatin1String("updateAccount mailaccountfolders insert query")));
+        if (query.lastError().type() != QSqlError::NoError)
+            return DatabaseFailure;
+    }
+
+    if (commitOnSuccess && !t.commit()) {
+        qWarning() << "Could not commit account standard folder changes to database";
+        return DatabaseFailure;
+    }
+
     return Success;
 }
 
@@ -6079,80 +6165,14 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptUpdateAccount(QMailAccount *a
                 return DatabaseFailure;
         }
         // Update any standard folders configured
-        const QMap<QMailFolder::StandardFolder, QMailFolderId> &folders(account->standardFolders());
-        QMap<QMailFolder::StandardFolder, QMailFolderId> existingFolders;
-
-        {
-            // Find the existing folders
-            QSqlQuery query(simpleQuery(QLatin1String("SELECT foldertype,folderid FROM mailaccountfolders WHERE id=?"),
-                                        QVariantList() << id.toULongLong(),
-                                        QLatin1String("updateAccount mailaccountfolders select query")));
-            if (query.lastError().type() != QSqlError::NoError)
-                return DatabaseFailure;
-
-            while (query.next())
-                existingFolders.insert(QMailFolder::StandardFolder(query.value(0).toInt()), QMailFolderId(query.value(1).toULongLong()));
-        }
-
-        QVariantList obsoleteTypes;
-        QVariantList modifiedTypes;
-        QVariantList modifiedFolderIds;
-        QVariantList addedTypes;
-        QVariantList addedFolders;
-
-        // Compare the sets
-        QMap<QMailFolder::StandardFolder, QMailFolderId>::const_iterator fend = folders.end(), eend = existingFolders.end();
-        QMap<QMailFolder::StandardFolder, QMailFolderId>::const_iterator it = existingFolders.begin();
-        for ( ; it != eend; ++it) {
-            QMap<QMailFolder::StandardFolder, QMailFolderId>::const_iterator current = folders.find(it.key());
-            if (current == fend) {
-                obsoleteTypes.append(QVariant(static_cast<int>(it.key())));
-            } else if (*current != *it) {
-                modifiedTypes.append(QVariant(static_cast<int>(current.key())));
-                modifiedFolderIds.append(QVariant(current.value().toULongLong()));
-            }
-        }
-
-        for (it = folders.begin(); it != fend; ++it) {
-            if (existingFolders.find(it.key()) == eend) {
-                addedTypes.append(QVariant(static_cast<int>(it.key())));
-                addedFolders.append(QVariant(it.value().toULongLong()));
-            }
-        }
-
-        if (!obsoleteTypes.isEmpty()) {
-            // Remove the obsolete folders
-            QString sql(QLatin1String("DELETE FROM mailaccountfolders WHERE id=? AND foldertype IN %2"));
-            QSqlQuery query(simpleQuery(sql.arg(expandValueList(obsoleteTypes)),
-                                        QVariantList() << id.toULongLong() << obsoleteTypes,
-                                        QLatin1String("updateAccount mailaccountfolders delete query")));
-            if (query.lastError().type() != QSqlError::NoError)
-                return DatabaseFailure;
-        }
-
-        if (!modifiedTypes.isEmpty()) {
-            // Batch update the modified folders
-            QString sql(QLatin1String("UPDATE mailaccountfolders SET folderid=? WHERE id=%2 AND foldertype=?"));
-            QSqlQuery query(batchQuery(sql.arg(QString::number(id.toULongLong())),
-                                       QVariantList() << QVariant(modifiedFolderIds)
-                                                      << QVariant(modifiedTypes),
-                                       QLatin1String("updateAccount mailaccountfolders update query")));
-            if (query.lastError().type() != QSqlError::NoError)
-                return DatabaseFailure;
-        }
-
-        if (!addedTypes.isEmpty()) {
-            // Batch insert the added folders
-            QString sql(QLatin1String("INSERT INTO mailaccountfolders (id,foldertype,folderid) VALUES (%1,?,?)"));
-            QSqlQuery query(batchQuery(sql.arg(QString::number(id.toULongLong())),
-                                          QVariantList() << QVariant(addedTypes) << QVariant(addedFolders),
-                                          QLatin1String("updateAccount mailaccountfolders insert query")));
-            if (query.lastError().type() != QSqlError::NoError)
-                return DatabaseFailure;
-        }
+        AttemptResult result = attemptSetAccountStandardFolders(account->id(),
+                                                                account->standardFolders(),
+                                                                t, false);
+        if (result != Success)
+            return result;
 
         if (account->customFieldsModified()) {
-            AttemptResult result = updateCustomFields(id.toULongLong(), account->customFields(), QLatin1String("mailaccountcustom"));
+            result = updateCustomFields(id.toULongLong(), account->customFields(), QLatin1String("mailaccountcustom"));
             if (result != Success)
                 return result;
         }
@@ -7399,8 +7419,8 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptQueryMessages(const QMailMess
 }
 
 QMailStoreSql::AttemptResult QMailStoreSql::attemptAccount(const QMailAccountId &id,
-                                                                   QMailAccount *result,
-                                                                   ReadLock &)
+                                                           QMailAccount *result,
+                                                           ReadLock &lock)
 {
     {
         QSqlQuery query(simpleQuery(QLatin1String("SELECT * FROM mailaccounts WHERE id=?"),
@@ -7421,21 +7441,18 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptAccount(const QMailAccountId 
     }
 
     if (result->id().isValid()) {
-        {
-            // Find any standard folders configured for this account
-            QSqlQuery query(simpleQuery(QLatin1String("SELECT foldertype,folderid FROM mailaccountfolders WHERE id=?"),
-                                        QVariantList() << id.toULongLong(),
-                                        QLatin1String("account mailaccountfolders query")));
-            if (query.lastError().type() != QSqlError::NoError)
-                return DatabaseFailure;
-
-            while (query.next())
-                result->setStandardFolder(QMailFolder::StandardFolder(query.value(0).toInt()), QMailFolderId(query.value(1).toULongLong()));
+        QMap<QMailFolder::StandardFolder, QMailFolderId> folders;
+        AttemptResult attemptResult = attemptAccountStandardFolders(id, &folders, lock);
+        if (attemptResult != Success)
+            return attemptResult;
+        QMap<QMailFolder::StandardFolder, QMailFolderId>::ConstIterator it;
+        for (it = folders.constBegin(); it != folders.constEnd(); it++) {
+            result->setStandardFolder(it.key(), it.value());
         }
 
         // Find any custom fields for this account
         QMap<QString, QString> fields;
-        AttemptResult attemptResult = customFields(id.toULongLong(), &fields, QLatin1String("mailaccountcustom"));
+        attemptResult = customFields(id.toULongLong(), &fields, QLatin1String("mailaccountcustom"));
         if (attemptResult != Success)
             return attemptResult;
 
@@ -7514,6 +7531,23 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptAccountConfiguration(const QM
 
     result->setId(id);
     result->setModified(false);
+
+    return Success;
+}
+
+QMailStoreSql::AttemptResult QMailStoreSql::attemptAccountStandardFolders(const QMailAccountId &id,
+                                                                          QMap<QMailFolder::StandardFolder, QMailFolderId> *result,
+                                                                          ReadLock &)
+{
+    // Find any standard folders configured for this account
+    QSqlQuery query(simpleQuery(QLatin1String("SELECT foldertype,folderid FROM mailaccountfolders WHERE id=?"),
+                                QVariantList() << id.toULongLong(),
+                                QLatin1String("account mailaccountfolders query")));
+    if (query.lastError().type() != QSqlError::NoError)
+        return DatabaseFailure;
+
+    while (query.next())
+        result->insert(QMailFolder::StandardFolder(query.value(0).toInt()), QMailFolderId(query.value(1).toULongLong()));
 
     return Success;
 }
