@@ -46,6 +46,7 @@
 
 QMailStorePrivate::QMailStorePrivate(QMailStore* parent)
     : QMailStoreImplementation(parent),
+      QMailStoreSql(),
       q_ptr(parent),
       messageCache(messageCacheSize),
       uidCache(uidCacheSize),
@@ -466,6 +467,16 @@ int QMailStorePrivate::countThreads(const QMailThreadKey &key) const
 int QMailStorePrivate::sizeOfMessages(const QMailMessageKey &key) const
 {
     return QMailStoreSql::sizeOfMessages(key);
+}
+
+bool QMailStorePrivate::externalAccountIdExists(const QMailAccountId &id) const
+{
+    return accountManager && accountManager->account(id).id().isValid();
+}
+
+QMailAccountIdList QMailStorePrivate::queryExternalAccounts(const QMailAccountKey &key) const
+{
+    return accountManager ? accountManager->queryAccounts(key) : QMailAccountIdList();
 }
 
 QMailAccountIdList QMailStorePrivate::queryAccounts(const QMailAccountKey &key, const QMailAccountSortKey &sortKey, uint limit, uint offset) const

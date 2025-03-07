@@ -776,7 +776,7 @@ template<typename ArgumentType>
 void appendWhereValues(const ArgumentType &a, QVariantList &values);
 
 template<typename KeyType>
-QVariantList whereClauseValues(const KeyType& key)
+QVariantList whereClauseValues(const KeyType& key, const QMailStoreSql *store)
 {
     QVariantList values;
 
@@ -784,7 +784,57 @@ QVariantList whereClauseValues(const KeyType& key)
         ::appendWhereValues(a, values);
 
     for (const KeyType& subkey : key.subKeys())
-        values += ::whereClauseValues<KeyType>(subkey);
+        values += ::whereClauseValues<KeyType>(subkey, store);
+
+    return values;
+}
+
+template<>
+void appendWhereValues<QMailMessageKey::ArgumentType>(const QMailMessageKey::ArgumentType &a, QVariantList &values);
+
+template<>
+QVariantList whereClauseValues<QMailMessageKey>(const QMailMessageKey& key, const QMailStoreSql *store)
+{
+    QVariantList values;
+
+    for (const typename QMailMessageKey::ArgumentType& a : key.arguments()) {
+        if (a.property == QMailMessageKey::ParentAccountId
+            && a.valueList.first().canConvert<QMailAccountKey>()
+            && store && !store->hasAccountTables()) {
+            QMailAccountKey parentAccountKey = a.valueList.first().value<QMailAccountKey>();
+            values += ::whereClauseValues(QMailMessageKey::parentAccountId(store->queryExternalAccounts(parentAccountKey)), store);
+        } else {
+            ::appendWhereValues(a, values);
+        }
+    }
+
+    for (const QMailMessageKey& subkey : key.subKeys())
+        values += ::whereClauseValues(subkey, store);
+
+    return values;
+}
+
+template<>
+void appendWhereValues<QMailFolderKey::ArgumentType>(const QMailFolderKey::ArgumentType &a, QVariantList &values);
+
+template<>
+QVariantList whereClauseValues<QMailFolderKey>(const QMailFolderKey& key, const QMailStoreSql *store)
+{
+    QVariantList values;
+
+    for (const typename QMailFolderKey::ArgumentType& a : key.arguments()) {
+        if (a.property == QMailFolderKey::ParentAccountId
+            && a.valueList.first().canConvert<QMailAccountKey>()
+            && store && !store->hasAccountTables()) {
+            QMailAccountKey parentAccountKey = a.valueList.first().value<QMailAccountKey>();
+            values += ::whereClauseValues(QMailFolderKey::parentAccountId(store->queryExternalAccounts(parentAccountKey)), store);
+        } else {
+            ::appendWhereValues(a, values);
+        }
+    }
+
+    for (const QMailFolderKey& subkey : key.subKeys())
+        values += ::whereClauseValues(subkey, store);
 
     return values;
 }
@@ -872,7 +922,7 @@ protected:
         const QVariant& var = arg.valueList.first();
 
         if (var.canConvert<ClauseKey>()) {
-            return ::whereClauseValues(var.value<ClauseKey>());
+            return ::whereClauseValues(var.value<ClauseKey>(), nullptr);
         } else {
             QVariantList values;
 
@@ -1958,11 +2008,16 @@ QString whereClauseItem<QMailMessageKey>(const QMailMessageKey &key, const QMail
         case QMailMessageKey::ParentAccountId:
             if(a.valueList.first().canConvert<QMailAccountKey>()) {
                 QMailAccountKey parentAccountKey = a.valueList.first().value<QMailAccountKey>();
+                if (store.hasAccountTables()) {
+                    QString nestedAlias(incrementAlias(alias));
 
-                QString nestedAlias(incrementAlias(alias));
-
-                q << baseExpression(columnName, a.op, true) << "( SELECT " << qualifiedName("id", nestedAlias) << " FROM mailaccounts " << nestedAlias;
-                q << store.buildWhereClause(QMailStoreSql::Key(parentAccountKey, nestedAlias)) << ")";
+                    q << baseExpression(columnName, a.op, true) << "( SELECT " << qualifiedName("id", nestedAlias) << " FROM mailaccounts " << nestedAlias;
+                    q << store.buildWhereClause(QMailStoreSql::Key(parentAccountKey, nestedAlias)) << ")";
+                } else {
+                    const QMailMessageKey parentAccountIdKey
+                        = QMailMessageKey::parentAccountId(store.queryExternalAccounts(parentAccountKey));
+                    q << store.buildWhereClause(QMailStoreSql::Key(parentAccountIdKey, alias), true);
+                }
             } else {
                 q << expression;
             }
@@ -2107,10 +2162,16 @@ QString whereClauseItem<QMailFolderKey>(const QMailFolderKey &key, const QMailFo
         case QMailFolderKey::ParentAccountId:
             if(a.valueList.first().canConvert<QMailAccountKey>()) {
                 QMailAccountKey accountSubKey = a.valueList.first().value<QMailAccountKey>();
-                QString nestedAlias(incrementAlias(alias));
+                if (store.hasAccountTables()) {
+                    QString nestedAlias(incrementAlias(alias));
 
-                q << baseExpression(columnName, a.op, true) << "( SELECT " << qualifiedName("id", nestedAlias) << " FROM mailaccounts " << nestedAlias;
-                q << store.buildWhereClause(QMailStoreSql::Key(accountSubKey, nestedAlias)) << ")";
+                    q << baseExpression(columnName, a.op, true) << "( SELECT " << qualifiedName("id", nestedAlias) << " FROM mailaccounts " << nestedAlias;
+                    q << store.buildWhereClause(QMailStoreSql::Key(accountSubKey, nestedAlias)) << ")";
+                } else {
+                    const QMailFolderKey parentAccountIdKey =
+                        QMailFolderKey::parentAccountId(store.queryExternalAccounts(accountSubKey));
+                    q << store.buildWhereClause(QMailStoreSql::Key(parentAccountIdKey, alias), true);
+                }
             } else {
                 q << expression;
             }
@@ -2197,11 +2258,17 @@ QString whereClauseItem<QMailThreadKey>(const QMailThreadKey &, const QMailThrea
         case QMailThreadKey::ParentAccountId:
             if (a.valueList.first().canConvert<QMailAccountKey>()) {
                 QMailAccountKey subKey = a.valueList.first().value<QMailAccountKey>();
-                QString nestedAlias(incrementAlias(alias));
+                if (store.hasAccountTables()) {
+                    QString nestedAlias(incrementAlias(alias));
 
-                // Expand comparison to sub-query result
-                q << baseExpression(columnName, a.op, true) << "( SELECT " << qualifiedName("id", nestedAlias) << " FROM mailaccounts " << nestedAlias;
-                q << store.buildWhereClause(QMailStoreSql::Key(subKey, nestedAlias)) << ")";
+                    // Expand comparison to sub-query result
+                    q << baseExpression(columnName, a.op, true) << "( SELECT " << qualifiedName("id", nestedAlias) << " FROM mailaccounts " << nestedAlias;
+                    q << store.buildWhereClause(QMailStoreSql::Key(subKey, nestedAlias)) << ")";
+                } else {
+                    const QMailThreadKey parentAccountIdKey =
+                        QMailThreadKey::parentAccountId(store.queryExternalAccounts(subKey));
+                    q << store.buildWhereClause(QMailStoreSql::Key(parentAccountIdKey, alias), true);
+                }
             } else {
                 q << expression;
             }
@@ -2510,8 +2577,9 @@ QSqlDatabase *QMailStoreSql::database() const
 
 ProcessMutex* QMailStoreSql::contentMutex = 0;
 
-QMailStoreSql::QMailStoreSql()
+QMailStoreSql::QMailStoreSql(bool withAccountTables)
     : databaseptr(nullptr),
+      withAccountTables(withAccountTables),
       inTransaction(false),
       lastQueryError(0),
       mutex(0),
@@ -2531,6 +2599,11 @@ QMailStoreSql::~QMailStoreSql()
 {
     delete mutex;
     delete databaseptr;
+}
+
+bool QMailStoreSql::hasAccountTables() const
+{
+    return withAccountTables;
 }
 
 ProcessMutex& QMailStoreSql::databaseMutex() const
@@ -3142,19 +3215,19 @@ bool QMailStoreSql::idValueExists(quint64 id, const QString& table)
     return (query.first());
 }
 
-bool QMailStoreSql::idExists(const QMailAccountId& id, const QString& table)
+bool QMailStoreSql::idExists(const QMailAccountId& id)
 {
-    return idValueExists(id.toULongLong(), (table.isEmpty() ? QLatin1String("mailaccounts") : table));
+    return idValueExists(id.toULongLong(), QLatin1String("mailaccounts"));
 }
 
-bool QMailStoreSql::idExists(const QMailFolderId& id, const QString& table)
+bool QMailStoreSql::idExists(const QMailFolderId& id)
 {
-    return idValueExists(id.toULongLong(), (table.isEmpty() ? QLatin1String("mailfolders") : table));
+    return idValueExists(id.toULongLong(), QLatin1String("mailfolders"));
 }
 
-bool QMailStoreSql::idExists(const QMailMessageId& id, const QString& table)
+bool QMailStoreSql::idExists(const QMailMessageId& id)
 {
-    return idValueExists(id.toULongLong(), (table.isEmpty() ? QLatin1String("mailmessages") : table));
+    return idValueExists(id.toULongLong(), QLatin1String("mailmessages"));
 }
 
 bool QMailStoreSql::messageExists(const QString &serveruid, const QMailAccountId &id)
@@ -3432,7 +3505,7 @@ QString QMailStoreSql::buildOrderClause(const Key& key) const
     } else if (key.isType<QMailThreadSortKey>()) {
         const QMailThreadSortKey &sortKey(key.key<QMailThreadSortKey>());
         return ::buildOrderClause(sortKey.arguments(), key.alias());
-    } else if (key.isType<QMailAccountSortKey>()) {
+    } else if (key.isType<QMailAccountSortKey>() && withAccountTables) {
         const QMailAccountSortKey &sortKey(key.key<QMailAccountSortKey>());
         return ::buildOrderClause(sortKey.arguments(), key.alias());
     } 
@@ -3474,16 +3547,16 @@ QVariantList QMailStoreSql::whereClauseValues(const Key& key) const
 {
     if (key.isType<QMailMessageKey>()) {
         const QMailMessageKey &messageKey(key.key<QMailMessageKey>());
-        return ::whereClauseValues(messageKey);
+        return ::whereClauseValues(messageKey, this);
     } else if (key.isType<QMailFolderKey>()) {
         const QMailFolderKey &folderKey(key.key<QMailFolderKey>());
-        return ::whereClauseValues(folderKey);
+        return ::whereClauseValues(folderKey, this);
     } else if (key.isType<QMailAccountKey>()) {
         const QMailAccountKey &accountKey(key.key<QMailAccountKey>());
-        return ::whereClauseValues(accountKey);
+        return ::whereClauseValues(accountKey, this);
     } else if (key.isType<QMailThreadKey>()) {
         const QMailThreadKey &threadKey(key.key<QMailThreadKey>());
-        return ::whereClauseValues(threadKey);
+        return ::whereClauseValues(threadKey, this);
     }
 
     return QVariantList();
@@ -7715,7 +7788,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptMessagesMetaData(const QMailM
         QString sql(QLatin1String("SELECT %1 name, value FROM mailmessagecustom WHERE id IN ( SELECT t0.id FROM mailmessages t0"));
         sql += buildWhereClause(Key(key, QLatin1String("t0"))) + QLatin1String(" )");
 
-        QVariantList whereValues(::whereClauseValues(key));
+        QVariantList whereValues(::whereClauseValues(key, this));
         QSqlQuery query(simpleQuery(sql.arg(QLatin1String(option == QMailStore::ReturnDistinct ? "DISTINCT " : "")),
                                     whereValues,
                                     QLatin1String("messagesMetaData combined query")));
@@ -8520,7 +8593,7 @@ bool QMailStoreSql::checkPreconditions(const QMailFolder& folder, bool update)
 
     if(folder.parentFolderId().isValid())
     {
-        if (!idExists(folder.parentFolderId(), QLatin1String("mailfolders")))
+        if (!idExists(folder.parentFolderId()))
         {
             qWarning() << "Parent folder does not exist!";
             return false;
@@ -8529,7 +8602,9 @@ bool QMailStoreSql::checkPreconditions(const QMailFolder& folder, bool update)
 
     if(folder.parentAccountId().isValid())
     {
-        if (!idExists(folder.parentAccountId(), QLatin1String("mailaccounts")))
+        if ((withAccountTables
+             ? !idExists(folder.parentAccountId())
+             : !externalAccountIdExists(folder.parentAccountId())))
         {
             qWarning() << "Parent account does not exist!";
             return false;
@@ -8986,7 +9061,7 @@ bool QMailStoreSql::deleteFolders(const QMailFolderKey& key,
     QString statement = QString::fromLatin1("DELETE FROM mailfolderlinks WHERE %1 IN ( SELECT t0.id FROM mailfolders t0");
     statement += buildWhereClause(Key(key, QLatin1String("t0"))) + QLatin1String(" )");
 
-    QVariantList whereValues(::whereClauseValues(key));
+    QVariantList whereValues(::whereClauseValues(key, this));
 
     {
         // Delete where target folders are ancestors
@@ -9055,7 +9130,9 @@ bool QMailStoreSql::deleteAccounts(const QMailAccountKey& key,
                                    QMailThreadIdList& modifiedThreadIds,
                                    QMailAccountIdList& modifiedAccountIds)
 {
-    {
+    QMailAccountIdList ids;
+
+    if (withAccountTables) {
         // Get the identifiers for all the accounts we're deleting
         QSqlQuery query(simpleQuery(QLatin1String("SELECT t0.id FROM mailaccounts t0"),
                                     Key(key, QLatin1String("t0")),
@@ -9063,17 +9140,15 @@ bool QMailStoreSql::deleteAccounts(const QMailAccountKey& key,
         if (query.lastError().type() != QSqlError::NoError)
             return false;
 
-        bool noAccounts = true;
         while (query.next()) {
-            noAccounts = false;
-            
-            deletedAccountIds.append(QMailAccountId(extractValue<quint64>(query.value(0))));
+            ids.append(QMailAccountId(extractValue<quint64>(query.value(0))));
         }
-
-        // No accounts? Then we're already done
-        if (noAccounts)
-            return true;
+    } else {
+        ids = queryExternalAccounts(key);
     }
+    // No accounts? Then we're already done
+    if (ids.isEmpty())
+        return true;
 
     // We won't create new message removal records, since there will be no account to link them to
     QMailStore::MessageRemovalOption option(QMailStore::NoRemovalRecord);
@@ -9082,14 +9157,14 @@ bool QMailStoreSql::deleteAccounts(const QMailAccountKey& key,
     // before folders and threads are deleted
 
     // Create a key to select messages for the accounts to be deleted
-    QMailMessageKey messagesKey(QMailMessageKey::parentAccountId(key));
+    QMailMessageKey messagesKey(QMailMessageKey::parentAccountId(ids));
 
     // Delete all the messages contained by the folders we're deleting
     if (!deleteMessages(messagesKey, option, deletedMessageIds, deletedThreadIds, expiredContent, updatedMessageIds, modifiedFolderIds, modifiedThreadIds, modifiedAccountIds))
         return false;
 
     // Create a key to select folders from the accounts to be deleted
-    QMailFolderKey foldersKey(QMailFolderKey::parentAccountId(key));
+    QMailFolderKey foldersKey(QMailFolderKey::parentAccountId(ids));
     
     // Delete all the folders contained by the accounts we're deleting
     if (!deleteFolders(foldersKey, option, deletedFolderIds, deletedMessageIds, deletedThreadIds, expiredContent, updatedMessageIds, modifiedFolderIds, modifiedThreadIds, modifiedAccountIds))
@@ -9098,7 +9173,7 @@ bool QMailStoreSql::deleteAccounts(const QMailAccountKey& key,
     {
         // Delete the removal records related to these accounts
         QSqlQuery query(simpleQuery(QLatin1String("DELETE FROM deletedmessages"),
-                                    Key(QLatin1String("parentaccountid"), QMailAccountKey::id(deletedAccountIds)),
+                                    Key(QLatin1String("parentaccountid"), QMailAccountKey::id(ids)),
                                     QLatin1String("deleteAccounts removal record delete query")));
         if (query.lastError().type() != QSqlError::NoError)
             return false;
@@ -9107,43 +9182,47 @@ bool QMailStoreSql::deleteAccounts(const QMailAccountKey& key,
     {
         // Remove any standard folders associated with these accounts
         QSqlQuery query(simpleQuery(QLatin1String("DELETE FROM mailaccountfolders"),
-                                    Key(QLatin1String("id"), QMailAccountKey::id(deletedAccountIds)),
+                                    Key(QLatin1String("id"), QMailAccountKey::id(ids)),
                                     QLatin1String("deleteAccounts delete mailaccountfolders query")));
         if (query.lastError().type() != QSqlError::NoError)
             return false;
     }
         // Create a key to select threads for the accounts to be deleted
-        QMailThreadKey threadKey(QMailThreadKey::parentAccountId(deletedAccountIds));
+        QMailThreadKey threadKey(QMailThreadKey::parentAccountId(ids));
 
         // Delete all threads contained by the account we're deleting
         if (!deleteThreads(threadKey, option, deletedThreadIds, deletedMessageIds, expiredContent, updatedMessageIds, modifiedFolderIds, modifiedThreadIds, modifiedAccountIds))
             return false;
-    {
+    if (withAccountTables) {
         // Remove any custom fields associated with these accounts
         QSqlQuery query(simpleQuery(QLatin1String("DELETE FROM mailaccountcustom"),
-                                    Key(QLatin1String("id"), QMailAccountKey::id(deletedAccountIds)),
+                                    Key(QLatin1String("id"), QMailAccountKey::id(ids)),
                                     QLatin1String("deleteAccounts delete mailaccountcustom query")));
         if (query.lastError().type() != QSqlError::NoError)
             return false;
     }
 
-    {
+    if (withAccountTables) {
         // Remove any configuration fields associated with these accounts
         QSqlQuery query(simpleQuery(QLatin1String("DELETE FROM mailaccountconfig"),
-                                    Key(QLatin1String("id"), QMailAccountKey::id(deletedAccountIds)),
+                                    Key(QLatin1String("id"), QMailAccountKey::id(ids)),
                                     QLatin1String("deleteAccounts delete mailaccountconfig query")));
         if (query.lastError().type() != QSqlError::NoError)
             return false;
     }
 
-    {
+    if (withAccountTables) {
         // Perform the account deletion
         QSqlQuery query(simpleQuery(QLatin1String("DELETE FROM mailaccounts"),
-                                    Key(QLatin1String("id"), QMailAccountKey::id(deletedAccountIds)),
+                                    Key(QLatin1String("id"), QMailAccountKey::id(ids)),
                                     QLatin1String("deleteAccounts delete mailaccounts query")));
         if (query.lastError().type() != QSqlError::NoError)
             return false;
     }
+
+    // Accounts and account elements are now deleted.
+    deletedAccountIds.append(ids);
+
     // Do not report any deleted entities as updated
     for (QMailMessageIdList::iterator mit = updatedMessageIds.begin(); mit != updatedMessageIds.end(); ) {
         if (deletedMessageIds.contains(*mit)) {

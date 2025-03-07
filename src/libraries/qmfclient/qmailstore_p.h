@@ -248,6 +248,9 @@ private:
     QMailStore * const q_ptr;
     mutable QTimer databaseUnloadTimer;
 
+    bool externalAccountIdExists(const QMailAccountId &id) const override;
+    QMailAccountIdList queryExternalAccounts(const QMailAccountKey &key) const override;
+
     template <typename KeyType, typename T>
     class Cache
     {

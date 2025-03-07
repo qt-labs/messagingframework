@@ -115,8 +115,10 @@ public:
     struct ReadAccess {};
     struct WriteAccess {};
 
-    QMailStoreSql();
+    QMailStoreSql(bool withAccountTables = true);
     virtual ~QMailStoreSql();
+
+    bool hasAccountTables() const;
 
     bool initStore(const QString &localFolderName = QStringLiteral("Local Storage"));
 
@@ -216,6 +218,8 @@ public:
 
     int sizeOfMessages(const QMailMessageKey &key) const;
 
+    virtual bool externalAccountIdExists(const QMailAccountId &id) const = 0;
+    virtual QMailAccountIdList queryExternalAccounts(const QMailAccountKey &key) const = 0;
     QMailAccountIdList queryAccounts(const QMailAccountKey &key,
                                      const QMailAccountSortKey &sortKey,
                                      uint limit, uint offset) const;
@@ -375,9 +379,9 @@ private:
     QSqlQuery batchQuery(const QString& statement, const QVariantList& bindValues, const QList<Key>& keys, const QString& descriptor);
 
     bool idValueExists(quint64 id, const QString& table);
-    bool idExists(const QMailAccountId& id, const QString& table = QString());
-    bool idExists(const QMailFolderId& id, const QString& table = QString());
-    bool idExists(const QMailMessageId& id, const QString& table = QString());
+    bool idExists(const QMailAccountId& id);
+    bool idExists(const QMailFolderId& id);
+    bool idExists(const QMailMessageId& id);
 
     bool messageExists(const QString &serveruid, const QMailAccountId &id);
 
@@ -528,7 +532,7 @@ private:
     };
 
 
-    AttemptResult attemptRemoveAccounts(const QMailAccountKey &key, 
+    AttemptResult attemptRemoveAccounts(const QMailAccountKey &key,
                                         AttemptRemoveAccountOut *out,
                                         Transaction &t, bool commitOnSuccess);
 
@@ -780,6 +784,7 @@ private:
     mutable QList<const QMailMessageKey::ArgumentType*> temporaryTableKeys;
     QList<const QMailMessageKey::ArgumentType*> expiredTableKeys;
 
+    bool withAccountTables = true;
     bool inTransaction;
     mutable int lastQueryError;
     mutable QMailStore::ErrorCode errorCode;
