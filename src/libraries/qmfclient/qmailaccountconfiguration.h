@@ -68,6 +68,8 @@ public:
         void removeValue(const QString &name);
 
         const QMap<QString, QString> &values() const;
+        static QString fromList(const QStringList &list);
+        static QStringList asList(const QString &value, bool *status = nullptr);
 
         const ServiceConfiguration &operator=(const ServiceConfiguration &other);
 

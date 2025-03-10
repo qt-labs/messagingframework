@@ -173,3 +173,21 @@ packagesExist(icu-uc) {
     warning("icu not available, not doing character set detection")
 }
 
+contains(DEFINES, USE_ACCOUNTS_QT) {
+    packagesExist(accounts-qt5) {
+        CONFIG += link_pkgconfig
+        PKGCONFIG += accounts-qt5
+        PRIVATE_HEADERS += libaccounts_p.h
+        SOURCES += libaccounts_p.cpp
+        DEFINES += "QMF_ACCOUNT_MANAGER_CLASS=LibAccountManager"
+
+        provider.files = resources/email.provider
+        provider.path  = $$QMF_INSTALL_ROOT/share/accounts/providers
+                         service.files = resources/email.service
+        service.path  = $$QMF_INSTALL_ROOT/share/accounts/services
+
+        INSTALLS += provider service
+    } else {
+        warning("libaccounts not available, not using it as account manager.")
+    }
+}

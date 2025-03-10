@@ -129,6 +129,11 @@ if (ICU_FOUND)
     support/qcharsetdetector.h)
 endif()
 
+if (USE_ACCOUNTS_QT)
+  set(SRC ${SRC} libaccounts_p.cpp)
+  set(PRIVATE_HEADERS ${PRIVATE_HEADERS} libaccounts_p.h)
+endif()
+
 qt_add_resources(SRC qmf.qrc qmf_qt.qrc)
 
 set_source_files_properties(qmailservice.xml PROPERTIES
@@ -160,6 +165,12 @@ if (USE_HTML_PARSER)
   target_compile_definitions(QmfClient PRIVATE USE_HTML_PARSER)
   target_link_libraries(QmfClient
     PRIVATE Qt6::Gui)
+endif()
+
+if (USE_ACCOUNTS_QT)
+  target_compile_definitions(QmfClient PRIVATE USE_ACCOUNTS_QT)
+  target_link_libraries(QmfClient PRIVATE Qt6::Xml PkgConfig::LIBACCOUNTS)
+  set(ACCOUNT_MANAGER "LibAccountManager")
 endif()
 
 if (DEFINED ACCOUNT_MANAGER AND NOT ACCOUNT_MANAGER STREQUAL "")

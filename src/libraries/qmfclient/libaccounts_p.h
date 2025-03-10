@@ -39,62 +39,47 @@
 **
 ****************************************************************************/
 
+#ifndef LIBACCOUNTS_P_H
+#define LIBACCOUNTS_P_H
+
 #include "qmailstoreaccount.h"
-#include "qmaillog.h"
 
-#ifdef USE_ACCOUNTS_QT
-#include "libaccounts_p.h"
+#include <QSharedPointer>
+#include <Accounts/Manager>
+#include <Accounts/account.h>
+
+class LibAccountManager : public QMailAccountManager
+{
+public:
+    LibAccountManager(QObject *parent = nullptr);
+    ~LibAccountManager();
+
+    QMailAccount account(const QMailAccountId &id) const override;
+    QMailAccountConfiguration accountConfiguration(const QMailAccountId &id) const override;
+    QMailAccountIdList queryAccounts(const QMailAccountKey &key,
+                                     const QMailAccountSortKey &sortKey = QMailAccountSortKey(),
+                                     uint limit = 0, uint offset = 0) const override;
+    bool addAccount(QMailAccount *account,
+                    QMailAccountConfiguration *config) override;
+    bool removeAccounts(const QMailAccountIdList &ids) override;
+    bool updateAccount(QMailAccount *account,
+                       QMailAccountConfiguration *config) override;
+    bool updateAccountConfiguration(QMailAccountConfiguration *config) override;
+    void clearContent() override;
+
+private:
+    QSharedPointer<Accounts::Manager> manager;
+
+    void onAccountCreated(Accounts::AccountId id);
+    void onAccountRemoved(Accounts::AccountId id);
+    void onAccountUpdated(Accounts::AccountId id);
+    bool onAccountValid(Accounts::AccountId id) const;
+    bool accountValid(Accounts::AccountId id) const;
+    QSharedPointer<Accounts::Account> getAccount(const QMailAccountId &id) const;
+    void updateAccountCustomFields(QSharedPointer<Accounts::Account>& ssoAccount,
+                                   const QMap<QString, QString> &fields);
+    bool updateSharedAccount(QMailAccount *account,
+                             QMailAccountConfiguration *config);
+};
+
 #endif
-
-QMailAccountManager::QMailAccountManager(QObject* parent)
-    : QObject(parent)
-{
-}
-
-QMailAccountManager::~QMailAccountManager()
-{
-}
-
-int QMailAccountManager::countAccounts(const QMailAccountKey &key) const
-{
-    return queryAccounts(key).count();
-}
-
-void QMailAccountManager::addMessageSource(QMailAccount *account,
-                                           const QString &source) const
-{
-    account->addMessageSource(source);
-}
-
-void QMailAccountManager::addMessageSink(QMailAccount *account,
-                                         const QString &sink) const
-{
-    account->addMessageSink(sink);
-}
-
-bool QMailAccountManager::customFieldsModified(const QMailAccount &account) const
-{
-    return account.customFieldsModified();
-}
-
-void QMailAccountManager::setCustomFieldsModified(QMailAccount *account,
-                                                  bool set) const
-{
-    account->setCustomFieldsModified(set);
-}
-
-void QMailAccountManager::setModified(QMailAccountConfiguration *config,
-                                      bool set) const
-{
-    config->setModified(set);
-}
-
-QMailAccountManager *QMailAccountManager::newManager(QObject *parent)
-{
-#ifdef QMF_ACCOUNT_MANAGER_CLASS
-    return new QMF_ACCOUNT_MANAGER_CLASS(parent);
-#else
-    Q_UNUSED(parent);
-    return nullptr;
-#endif
-}

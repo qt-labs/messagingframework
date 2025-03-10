@@ -203,13 +203,25 @@ QString QMailAccountConfiguration::ServiceConfiguration::value(const QString &na
 }
 
 /*!
+    Returns the value as a string list, if the value is not a list,
+    status is set to false.
+*/
+QStringList QMailAccountConfiguration::ServiceConfiguration::asList(const QString &value, bool *status)
+{
+    bool valid = value.startsWith(QStringLiteral("list:\x1F"));
+    if (status)
+        *status = valid;
+    return valid && value.length() > 6 ? value.mid(6).split('\x1F') : QStringList();
+}
+
+/*!
     Returns the value of the parameter named \a name in the service configuration.
+
+    See asList() if it's necessary to know if the conversion can fail.
 */
 QStringList QMailAccountConfiguration::ServiceConfiguration::listValue(const QString &name) const
 {
-    const QString value = d->_configuration->_values.value(name);
-    return value.startsWith(QStringLiteral("list:\x1F")) && value.length() > 6
-        ? value.mid(6).split('\x1F') : QStringList();
+    return asList(d->_configuration->_values.value(name));
 }
 
 /*!
@@ -222,11 +234,20 @@ void QMailAccountConfiguration::ServiceConfiguration::setValue(const QString &na
 }
 
 /*!
+    Returns the value as a string list, if the value is not a list,
+    status is set to false.
+*/
+QString QMailAccountConfiguration::ServiceConfiguration::fromList(const QStringList &list)
+{
+    return QStringLiteral("list:\x1F") + list.join('\x1F');
+}
+
+/*!
     Sets the parameter named \a name to contain the list \a list in the service configuration.
 */
 void QMailAccountConfiguration::ServiceConfiguration::setValue(const QString &name, const QStringList &list)
 {
-    d->_configuration->_values[name] = QStringLiteral("list:\x1F") + list.join('\x1F');
+    d->_configuration->_values[name] = fromList(list);
     d->_parent->_modified = true;
 }
 

@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<service id="email">
+  <type>e-mail</type>
+  <provider>email</provider>
+
+  <template>
+    <setting name="name">Email</setting>
+    <setting name="emailaddress"></setting>
+    <setting name="fullName"></setting>
+  </template>
+</service>
