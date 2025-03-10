@@ -167,8 +167,9 @@ void tst_QMailStore::addAccount()
 
     QMailAccountConfiguration config2(account1.id());
     QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
-    QCOMPARE(config2.services(), config1.services());
-    foreach (const QString &service, config2.services()) {
+
+    for (const QString &service : config1.services()) {
+        QVERIFY(config2.services().contains(service));
         if (QMailAccountConfiguration::ServiceConfiguration *svcCfg = &config2.serviceConfiguration(service)) {
             QCOMPARE(svcCfg->values(), config1.serviceConfiguration(service).values());
         } else QFAIL(qPrintable(QString("no config for %1!").arg(service)));
@@ -712,8 +713,8 @@ void tst_QMailStore::updateAccount()
 
     QMailAccountConfiguration config2(account1.id());
     QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
-    QCOMPARE(config2.services(), config1.services());
-    foreach (const QString &service, config2.services()) {
+    for (const QString &service : config1.services()) {
+        QVERIFY(config2.services().contains(service));
         if (QMailAccountConfiguration::ServiceConfiguration *svcCfg = &config2.serviceConfiguration(service)) {
             QCOMPARE(svcCfg->values(), config1.serviceConfiguration(service).values());
         } else QFAIL(qPrintable(QString("no config for %1!").arg(service)));
@@ -1385,8 +1386,8 @@ void tst_QMailStore::removeAccount()
 
     QMailAccountConfiguration config2(account2.id());
     QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
-    QCOMPARE(config2.services(), config1.services());
-    foreach (const QString &service, config2.services()) {
+    for (const QString &service : config1.services()) {
+        QVERIFY(config2.services().contains(service));
         if (QMailAccountConfiguration::ServiceConfiguration *svcCfg = &config2.serviceConfiguration(service)) {
             QCOMPARE(svcCfg->values(), config1.serviceConfiguration(service).values());
         } else QFAIL(qPrintable(QString("no config for %1!").arg(service)));

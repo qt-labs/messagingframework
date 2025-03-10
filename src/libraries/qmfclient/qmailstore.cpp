@@ -161,7 +161,7 @@
     Constructs a new QMailStore object and opens the message store database.
 */
 QMailStore::QMailStore()
-    : d(new QMailStorePrivate(this))
+    : d(new QMailStorePrivate(this, QMailAccountManager::newManager(this)))
 {
 }
 

@@ -32,6 +32,7 @@ set(SRC
   qmailmessagethreadedmodel.cpp
   qmailserviceaction.cpp
   qmailstore.cpp
+  qmailstoreaccount.cpp
   qmailstore_p.cpp
   qmailstoreimplementation_p.cpp
   qmailstorenotifier_p.cpp
@@ -81,6 +82,7 @@ set(PUBLIC_HEADERS
   qmailserviceaction.h
   qmailsortkeyargument.h
   qmailstore.h
+  qmailstoreaccount.h
   qmailtimestamp.h
   qmailthread.h
   qmailthreadkey.h
@@ -158,6 +160,11 @@ if (USE_HTML_PARSER)
   target_compile_definitions(QmfClient PRIVATE USE_HTML_PARSER)
   target_link_libraries(QmfClient
     PRIVATE Qt6::Gui)
+endif()
+
+if (DEFINED ACCOUNT_MANAGER AND NOT ACCOUNT_MANAGER STREQUAL "")
+  message(STATUS "Using '${ACCOUNT_MANAGER}' as the account manager.")
+  target_compile_definitions(QmfClient PRIVATE QMF_ACCOUNT_MANAGER_CLASS=${ACCOUNT_MANAGER})
 endif()
 
 install(TARGETS QmfClient

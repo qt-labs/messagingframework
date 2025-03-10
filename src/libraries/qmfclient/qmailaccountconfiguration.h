@@ -103,6 +103,7 @@ private:
     friend class QMailAccountConfigurationPrivate;
     friend class QMailStorePrivate;
     friend class QMailStoreSql;
+    friend class QMailAccountManager;
 
     bool modified() const;
     void setModified(bool set);

@@ -44,10 +44,12 @@
 #include <QThread>
 #include <QRegularExpression>
 
-QMailStorePrivate::QMailStorePrivate(QMailStore* parent)
+QMailStorePrivate::QMailStorePrivate(QMailStore* parent,
+                                     QMailAccountManager *accountManager)
     : QMailStoreImplementation(parent),
-      QMailStoreSql(),
+      QMailStoreSql(accountManager == nullptr),
       q_ptr(parent),
+      accountManager(accountManager),
       messageCache(messageCacheSize),
       uidCache(uidCacheSize),
       folderCache(folderCacheSize),
@@ -56,10 +58,34 @@ QMailStorePrivate::QMailStorePrivate(QMailStore* parent)
 {
     connect(&databaseUnloadTimer, &QTimer::timeout,
             this, &QMailStorePrivate::unloadDatabase);
+
+    if (accountManager) {
+        connect(accountManager, &QMailAccountManager::accountCreated,
+                this, &QMailStorePrivate::onExternalAccountCreated);
+        connect(accountManager, &QMailAccountManager::accountRemoved,
+                this, &QMailStorePrivate::onExternalAccountRemoved);
+        connect(accountManager, &QMailAccountManager::accountUpdated,
+                this, &QMailStorePrivate::onExternalAccountUpdated);
+    }
 }
 
 QMailStorePrivate::~QMailStorePrivate()
 {
+}
+
+void QMailStorePrivate::onExternalAccountCreated(QMailAccountId id)
+{
+    accountsRemotelyChanged(QMailStore::Added, QMailAccountIdList() << id);
+}
+
+void QMailStorePrivate::onExternalAccountRemoved(QMailAccountId id)
+{
+    accountsRemotelyChanged(QMailStore::Removed, QMailAccountIdList() << id);
+}
+
+void QMailStorePrivate::onExternalAccountUpdated(QMailAccountId id)
+{
+    accountsRemotelyChanged(QMailStore::Updated, QMailAccountIdList() << id);
 }
 
 bool QMailStorePrivate::initStore()
@@ -101,6 +127,9 @@ void QMailStorePrivate::clearContent()
     lastQueryThreadResult.clear();
 
     QMailStoreSql::clearContent();
+    if (accountManager) {
+        accountManager->clearContent();
+    }
 }
 
 QMap<QString, QString> QMailStorePrivate::messageCustomFields(const QMailMessageId &id)
@@ -111,7 +140,15 @@ QMap<QString, QString> QMailStorePrivate::messageCustomFields(const QMailMessage
 bool QMailStorePrivate::addAccount(QMailAccount *account, QMailAccountConfiguration *config,
                                    QMailAccountIdList *addedAccountIds)
 {
-    return QMailStoreSql::addAccount(account, config, addedAccountIds);
+    if (accountManager) {
+        // Don't populate addedAccountIds,
+        // notification will be sent by the account manager.
+        return accountManager->addAccount(account, config)
+            && QMailStoreSql::setAccountStandardFolders(account->id(),
+                                                        account->standardFolders());
+    } else {
+        return QMailStoreSql::addAccount(account, config, addedAccountIds);
+    }
 }
 
 bool QMailStorePrivate::addFolder(QMailFolder *folder,
@@ -143,6 +180,12 @@ bool QMailStorePrivate::removeAccounts(const QMailAccountKey &key,
     bool success = QMailStoreSql::removeAccounts(key, deletedAccountIds, deletedFolderIds, deletedThreadIds, deletedMessageIds, updatedMessageIds, modifiedFolderIds, modifiedThreadIds, modifiedAccountIds);
     if (success) {
         removeExpiredData(*deletedMessageIds, *deletedThreadIds, *deletedFolderIds, *deletedAccountIds);
+        if (accountManager) {
+            success = accountManager->removeAccounts(*deletedAccountIds);
+            // Don't populate deletedAccountIds,
+            // notification will be sent by the account manager.
+            deletedAccountIds->clear();
+        }
     }
     return success;
 }
@@ -180,7 +223,16 @@ bool QMailStorePrivate::removeThreads(const QMailThreadKey &key, QMailStore::Mes
 bool QMailStorePrivate::updateAccount(QMailAccount *account, QMailAccountConfiguration *config,
                                       QMailAccountIdList *updatedAccountIds)
 {
-    bool success = QMailStoreSql::updateAccount(account, config, updatedAccountIds);
+    bool success;
+    if (accountManager) {
+        // Don't populate updatedAccountIds,
+        // notification will be sent by the account manager.
+        success = accountManager->updateAccount(account, config)
+            && QMailStoreSql::setAccountStandardFolders(account->id(),
+                                                        account->standardFolders());
+    } else {
+        success = QMailStoreSql::updateAccount(account, config, updatedAccountIds);
+    }
     if (success) {
         // Update the account cache
         if (accountCache.contains(account->id()))
@@ -192,7 +244,11 @@ bool QMailStorePrivate::updateAccount(QMailAccount *account, QMailAccountConfigu
 bool QMailStorePrivate::updateAccountConfiguration(QMailAccountConfiguration *config,
                                                    QMailAccountIdList *updatedAccountIds)
 {
-    return QMailStoreSql::updateAccount(nullptr, config, updatedAccountIds);
+    if (accountManager) {
+        return accountManager->updateAccountConfiguration(config);
+    } else {
+        return QMailStoreSql::updateAccount(nullptr, config, updatedAccountIds);
+    }
 }
 
 bool QMailStorePrivate::updateFolder(QMailFolder *folder,
@@ -446,7 +502,8 @@ bool QMailStorePrivate::purgeMessageRemovalRecords(const QMailAccountId &account
 
 int QMailStorePrivate::countAccounts(const QMailAccountKey &key) const
 {
-    return QMailStoreSql::countAccounts(key);
+    return accountManager ? accountManager->countAccounts(key)
+        : QMailStoreSql::countAccounts(key);
 }
 
 int QMailStorePrivate::countFolders(const QMailFolderKey &key) const
@@ -481,7 +538,8 @@ QMailAccountIdList QMailStorePrivate::queryExternalAccounts(const QMailAccountKe
 
 QMailAccountIdList QMailStorePrivate::queryAccounts(const QMailAccountKey &key, const QMailAccountSortKey &sortKey, uint limit, uint offset) const
 {
-    return QMailStoreSql::queryAccounts(key, sortKey, limit, offset);
+    return accountManager ? accountManager->queryAccounts(key, sortKey, limit, offset)
+        : QMailStoreSql::queryAccounts(key, sortKey, limit, offset);
 }
 
 QMailFolderIdList QMailStorePrivate::queryFolders(const QMailFolderKey &key, const QMailFolderSortKey &sortKey, uint limit, uint offset) const
@@ -507,8 +565,18 @@ QMailAccount QMailStorePrivate::account(const QMailAccountId &id) const
 {
     if (accountCache.contains(id))
         return accountCache.lookup(id);
-    QMailAccount result = QMailStoreSql::account(id);
+    QMailAccount result(accountManager
+                        ? accountManager->account(id)
+                        : QMailStoreSql::account(id));
     if (result.id().isValid()) {
+        if (accountManager) {
+            const QMap<QMailFolder::StandardFolder, QMailFolderId> folders
+                = QMailStoreSql::accountStandardFolders(id);
+            QMap<QMailFolder::StandardFolder, QMailFolderId>::ConstIterator it;
+            for (it = folders.constBegin(); it != folders.constEnd(); it++) {
+                result.setStandardFolder(it.key(), it.value());
+            }
+        }
         //update cache
         accountCache.insert(result);
     }
@@ -517,7 +585,15 @@ QMailAccount QMailStorePrivate::account(const QMailAccountId &id) const
 
 QMailAccountConfiguration QMailStorePrivate::accountConfiguration(const QMailAccountId &id) const
 {
-    return QMailStoreSql::accountConfiguration(id);
+    if (accountManager) {
+        const QMailAccountConfiguration config(accountManager->accountConfiguration(id));
+        if (!config.id().isValid()) {
+            setLastError(QMailStore::InvalidId);
+        }
+        return config;
+    } else {
+        return QMailStoreSql::accountConfiguration(id);
+    }
 }
 
 QMailFolder QMailStorePrivate::folder(const QMailFolderId &id) const

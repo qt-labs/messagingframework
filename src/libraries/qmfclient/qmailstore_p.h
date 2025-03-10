@@ -47,6 +47,7 @@
 
 #include "qmailstoreimplementation_p.h"
 #include "qmailstoresql_p.h"
+#include "qmailstoreaccount.h"
 #include <QCache>
 #include <QTimer>
 
@@ -55,7 +56,8 @@ class QMailStorePrivate : public QMailStoreImplementation, public QMailStoreSql
     Q_OBJECT
 
 public:
-    QMailStorePrivate(QMailStore *parent);
+    QMailStorePrivate(QMailStore *parent,
+                      QMailAccountManager *accountManager = nullptr);
     virtual ~QMailStorePrivate();
 
     QMailStore::ErrorCode lastError() const override;
@@ -246,10 +248,15 @@ private:
 private:
     Q_DECLARE_PUBLIC (QMailStore)
     QMailStore * const q_ptr;
+    QMailAccountManager *accountManager = nullptr;
     mutable QTimer databaseUnloadTimer;
 
     bool externalAccountIdExists(const QMailAccountId &id) const override;
     QMailAccountIdList queryExternalAccounts(const QMailAccountKey &key) const override;
+
+    void onExternalAccountCreated(QMailAccountId id);
+    void onExternalAccountRemoved(QMailAccountId id);
+    void onExternalAccountUpdated(QMailAccountId id);
 
     template <typename KeyType, typename T>
     class Cache
