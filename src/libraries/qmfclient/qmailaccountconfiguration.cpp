@@ -271,6 +271,9 @@ QMailAccountConfiguration::ServiceConfiguration &QMailAccountConfigurationPrivat
 
             _configurations.insert(service, QMailAccountConfiguration::ServiceConfiguration(self, &(sit.key()), config));
             it = _configurations.find(service);
+        } else {
+            static QMailAccountConfiguration::ServiceConfiguration invalidService;
+            return invalidService;
         }
     }
 

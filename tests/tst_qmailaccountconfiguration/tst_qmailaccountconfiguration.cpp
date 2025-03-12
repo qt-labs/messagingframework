@@ -85,6 +85,11 @@ void tst_QMailAccountConfiguration::test_service()
 
     QCOMPARE(config.id(), m_id);
 
+    QVERIFY(!config.services().contains(QStringLiteral("not a service")));
+    QMailAccountConfiguration::ServiceConfiguration noService
+        = config.serviceConfiguration(QStringLiteral("not a service"));
+    QVERIFY(!noService.id().isValid());
+
     QVERIFY(config.addServiceConfiguration(QStringLiteral("test")));
     QVERIFY(config.services().contains(QStringLiteral("test")));
 
