@@ -1640,9 +1640,12 @@ void ImapService::initiatePushEmail()
             // Check for flag changes and new mail
             _source->queueFlagsChangedCheck(id);
         }
+
+        // Interval check to update flags on servers that do not push flag changes when idling e.g. gmail
+        _source->setPushIntervalTimer(60); // minutes
+    } else {
+        qWarning() << "No valid push folders, aborting.";
     }
-    // Interval check to update flags on servers that do not push flag changes when idling e.g. gmail
-    _source->setPushIntervalTimer(60); // minutes    
 }
 
 void ImapService::retryPushEmail()

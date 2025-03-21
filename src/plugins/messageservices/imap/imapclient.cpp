@@ -1666,7 +1666,7 @@ bool ImapClient::isPushEmailEstablished()
 {
     QMailAccountConfiguration config(account());
     ImapConfiguration imapCfg(config);
-    if (!imapCfg.pushEnabled())
+    if (!imapCfg.pushEnabled() || configurationIdleFolderIds().isEmpty())
         return true;
 
     return !_monitored.isEmpty() && _waitingForIdleFolderIds.isEmpty();
