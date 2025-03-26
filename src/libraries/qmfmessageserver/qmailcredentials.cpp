@@ -45,6 +45,29 @@
 #include <qmailstore.h>
 #include <qmailpluginmanager.h>
 
+class PlainCredentialConfiguration: public QMailServiceConfiguration
+{
+public:
+    PlainCredentialConfiguration(QMailAccountConfiguration *config, const QString &service)
+        : QMailServiceConfiguration(config, service) {}
+    ~PlainCredentialConfiguration() {}
+
+    QString username() const
+    {
+        const QString key = QLatin1String(service() == QLatin1String("smtp") ? "smtpusername" : "username");
+        return isValid() ? value(key) : QString();
+    }
+
+    QString password() const
+    {
+        const QString key = QLatin1String(service() == QLatin1String("smtp") ? "smtppassword" : "password");
+        // SMTP, POP and IMAP service configurations are
+        // base64 encoding the password in storage,
+        // see smtpconfiguration.cpp for instance.
+        return isValid() ? decodeValue(value(key)) : QString();
+    }
+};
+
 class PlainCredentials: public QMailCredentialsInterface
 {
 public:
@@ -94,17 +117,13 @@ QString PlainCredentials::lastError() const
 QString PlainCredentials::username() const
 {
     QMailAccountConfiguration config(id());
-    QMailServiceConfiguration srv(&config, service());
-    const QString key = QLatin1String(service() == QLatin1String("smtp") ? "smtpusername" : "username");
-    return srv.isValid() ? srv.value(key) : QString();
+    return PlainCredentialConfiguration(&config, service()).username();
 }
 
 QString PlainCredentials::password() const
 {
     QMailAccountConfiguration config(id());
-    QMailServiceConfiguration srv(&config, service());
-    const QString key = QLatin1String(service() == QLatin1String("smtp") ? "smtppassword" : "password");
-    return srv.isValid() ? srv.value(key) : QString();
+    return PlainCredentialConfiguration(&config, service()).password();
 }
 
 QString PlainCredentials::accessToken() const
