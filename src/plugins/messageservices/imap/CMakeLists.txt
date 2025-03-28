@@ -48,3 +48,9 @@ endif()
 
 install(TARGETS imap
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/qt5/plugins/messageservices)
+
+if(BUILD_TESTING)
+  add_custom_target(link_imap ALL
+    COMMAND ${CMAKE_COMMAND} -E create_symlink imap/libimap.so ../libimap.so
+    DEPENDS imap)
+endif()

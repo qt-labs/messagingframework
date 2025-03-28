@@ -32,3 +32,9 @@ endif()
 
 install(TARGETS pop
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/qt5/plugins/messageservices)
+
+if(BUILD_TESTING)
+  add_custom_target(link_pop ALL
+    COMMAND ${CMAKE_COMMAND} -E create_symlink pop/libpop.so ../libpop.so
+    DEPENDS pop)
+endif()

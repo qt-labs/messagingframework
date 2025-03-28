@@ -4,5 +4,9 @@ target_include_directories(tst_storagemanager
 target_link_libraries(tst_storagemanager
   PRIVATE Qt6::Core Qt6::Core5Compat Qt6::Test QmfClient)
 
+add_test(NAME tst_storagemanager COMMAND tst_storagemanager)
+set_tests_properties(tst_storagemanager PROPERTIES
+  ENVIRONMENT QT_PLUGIN_PATH=${CMAKE_BINARY_DIR}/src/plugins:$ENV{QT_PLUGIN_PATH})
+
 install(TARGETS tst_storagemanager
   RUNTIME DESTINATION /opt/tests/qmf)

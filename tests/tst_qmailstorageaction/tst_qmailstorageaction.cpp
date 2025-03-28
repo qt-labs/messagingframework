@@ -622,8 +622,8 @@ void tst_QMailStorageAction::test_storageaction_movetostandardfolder()
         QVERIFY(arguments.at(0).toInt() != QMailServiceAction::Failed);
     }
     
-    QVERIFY(QMailStore::instance()->countMessages(QMailMessageKey::parentFolderId(trashId1)) == (oldTrashCount + 1));
-    QVERIFY(QMailStore::instance()->countMessages(QMailMessageKey::parentFolderId(inboxId2)) == (oldInboxCount - 1));
+    QCOMPARE(QMailStore::instance()->countMessages(QMailMessageKey::parentFolderId(trashId1)), oldTrashCount + 1);
+    QCOMPARE(QMailStore::instance()->countMessages(QMailMessageKey::parentFolderId(inboxId2)), oldInboxCount - 1);
 
     QMailMessageMetaData metadata("savedMessage3", accountId2);
     QVERIFY(metadata.parentFolderId() == trashId1);

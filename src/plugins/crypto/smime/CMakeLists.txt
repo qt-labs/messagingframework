@@ -8,3 +8,9 @@ target_link_libraries(smime
 
 install(TARGETS smime
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/qt5/plugins/crypto)
+
+if(BUILD_TESTING)
+  add_custom_target(link_smime ALL
+    COMMAND ${CMAKE_COMMAND} -E create_symlink smime/libsmime.so ../libsmime.so
+    DEPENDS smime)
+endif()

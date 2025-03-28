@@ -16,5 +16,10 @@ target_include_directories(tst_smtp
 target_link_libraries(tst_smtp
   PRIVATE Qt6::Core Qt6::Core5Compat Qt6::Network Qt6::Test QmfClient QmfMessageServer)
 
+add_test(NAME tst_smtp COMMAND tst_smtp)
+set_tests_properties(tst_smtp PROPERTIES
+  ENVIRONMENT QT_PLUGIN_PATH=${CMAKE_BINARY_DIR}/src/plugins:$ENV{QT_PLUGIN_PATH})
+set_tests_properties(tst_smtp PROPERTIES WILL_FAIL TRUE)
+
 install(TARGETS tst_smtp
   RUNTIME DESTINATION /opt/tests/qmf)

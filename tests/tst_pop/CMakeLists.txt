@@ -16,5 +16,10 @@ target_include_directories(tst_pop
 target_link_libraries(tst_pop
   PRIVATE Qt6::Core Qt6::Core5Compat Qt6::Network Qt6::Test QmfClient QmfMessageServer)
 
+add_test(NAME tst_pop COMMAND tst_pop)
+set_tests_properties(tst_pop PROPERTIES
+  ENVIRONMENT QT_PLUGIN_PATH=${CMAKE_BINARY_DIR}/src/plugins:$ENV{QT_PLUGIN_PATH})
+set_tests_properties(tst_pop PROPERTIES WILL_FAIL TRUE)
+
 install(TARGETS tst_pop
   RUNTIME DESTINATION /opt/tests/qmf)

@@ -8,3 +8,9 @@ target_link_libraries(gpgme
 
 install(TARGETS gpgme
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/qt5/plugins/crypto)
+
+if(BUILD_TESTING)
+  add_custom_target(link_gpgme ALL
+    COMMAND ${CMAKE_COMMAND} -E create_symlink gpgme/libgpgme.so ../libgpgme.so
+    DEPENDS gpgme)
+endif()

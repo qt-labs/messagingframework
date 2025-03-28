@@ -4,5 +4,9 @@ target_include_directories(tst_qmaildisconnected
 target_link_libraries(tst_qmaildisconnected
   PRIVATE Qt6::Core Qt6::Core5Compat Qt6::Test QmfClient)
 
+add_test(NAME tst_qmaildisconnected COMMAND tst_qmaildisconnected)
+set_tests_properties(tst_qmaildisconnected PROPERTIES
+  ENVIRONMENT QT_PLUGIN_PATH=${CMAKE_BINARY_DIR}/src/plugins:$ENV{QT_PLUGIN_PATH})
+
 install(TARGETS tst_qmaildisconnected
   RUNTIME DESTINATION /opt/tests/qmf)

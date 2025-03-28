@@ -110,7 +110,7 @@ void tst_QMailStore::cleanupTestCase()
 
 void tst_QMailStore::addAccount()
 {
-    QSignalSpy spyAccountAdded(QMailStore::instance(), SIGNAL(accountsAdded(QMailAccountIdList)));
+    QSignalSpy spyAccountAdded(QMailStore::instance(), &QMailStore::accountsAdded);
 
     QMailAccount account1;
     account1.setName("Account 1");
@@ -334,8 +334,8 @@ void tst_QMailStore::addFolder()
 
 void tst_QMailStore::addMessage()
 {
-    QSignalSpy spyMessagesAdded(QMailStore::instance(), SIGNAL(messagesAdded(QMailMessageIdList)));
-    QSignalSpy spyMessageDataAdded(QMailStore::instance(), SIGNAL(messageDataAdded(QMailMessageMetaDataList)));
+    QSignalSpy spyMessagesAdded(QMailStore::instance(), &QMailStore::messagesAdded);
+    QSignalSpy spyMessageDataAdded(QMailStore::instance(), &QMailStore::messageDataAdded);
 
     QMailAccount account;
     account.setName("Account");
@@ -435,8 +435,8 @@ void tst_QMailStore::addMessage()
 
 void tst_QMailStore::addMessages()
 {
-    QSignalSpy spyMessagesAdded(QMailStore::instance(), SIGNAL(messagesAdded(QMailMessageIdList)));
-    QSignalSpy spyMessageDataAdded(QMailStore::instance(), SIGNAL(messageDataAdded(QMailMessageMetaDataList)));
+    QSignalSpy spyMessagesAdded(QMailStore::instance(), &QMailStore::messagesAdded);
+    QSignalSpy spyMessageDataAdded(QMailStore::instance(), &QMailStore::messageDataAdded);
 
     QMailAccount account;
     account.setName("Account");
@@ -943,8 +943,8 @@ void tst_QMailStore::updateFolder()
 
 void tst_QMailStore::updateMessage()
 {
-    QSignalSpy spyMessagesUpdated(QMailStore::instance(), SIGNAL(messagesUpdated(QMailMessageIdList)));
-    QSignalSpy spyMessagesDataUpdated(QMailStore::instance(), SIGNAL(messageDataUpdated(QMailMessageMetaDataList)));
+    QSignalSpy spyMessagesUpdated(QMailStore::instance(), &QMailStore::messagesUpdated);
+    QSignalSpy spyMessagesDataUpdated(QMailStore::instance(), &QMailStore::messageDataUpdated);
 
     QMailAccount account;
     account.setName("Account");
@@ -1227,11 +1227,11 @@ void tst_QMailStore::updateMessage()
 
 void tst_QMailStore::updateMessages()
 {
-    QSignalSpy spyMessagesAdded(QMailStore::instance(), SIGNAL(messagesAdded(QMailMessageIdList)));
-    QSignalSpy spyMessagesUpdated(QMailStore::instance(), SIGNAL(messagesUpdated(QMailMessageIdList)));
-    QSignalSpy spyMessagesDataUpdated(QMailStore::instance(), SIGNAL(messageDataUpdated(QMailMessageMetaDataList)));
-    QSignalSpy spyMessagePropertyUpdated(QMailStore::instance(), SIGNAL(messagePropertyUpdated(QMailMessageIdList, QMailMessageKeyProperties, QMailMessageMetaData)));
-    QSignalSpy spyMessageStatusUpdated(QMailStore::instance(), SIGNAL(messageStatusUpdated(QMailMessageIdList, quint64, bool)));
+    QSignalSpy spyMessagesAdded(QMailStore::instance(), &QMailStore::messagesAdded);
+    QSignalSpy spyMessagesUpdated(QMailStore::instance(), &QMailStore::messagesUpdated);
+    QSignalSpy spyMessagesDataUpdated(QMailStore::instance(), &QMailStore::messageDataUpdated);
+    QSignalSpy spyMessagePropertyUpdated(QMailStore::instance(), &QMailStore::messagePropertyUpdated);
+    QSignalSpy spyMessageStatusUpdated(QMailStore::instance(), &QMailStore::messageStatusUpdated);
 
 
     QMailAccount account;
@@ -1341,7 +1341,7 @@ void tst_QMailStore::updateMessages()
 
 void tst_QMailStore::removeAccount()
 {
-    QSignalSpy spyAccountRemoved(QMailStore::instance(), SIGNAL(accountsRemoved(QMailAccountIdList)));
+    QSignalSpy spyAccountRemoved(QMailStore::instance(), &QMailStore::accountsRemoved);
 
     QMailAccount account1;
     account1.setName("Account 1");

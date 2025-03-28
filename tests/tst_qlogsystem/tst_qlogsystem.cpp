@@ -195,7 +195,7 @@ void tst_QLogSystem::loggerOutput()
     QVERIFY2(file.open(QFile::ReadOnly), "Could not open log file for reading");
     QByteArray dataBuf= file.readLine();
 
-    QCOMPARE( QString(dataBuf.data()), expected);
+    QCOMPARE( dataBuf, expected.toUtf8());
 
     file.close();
 }

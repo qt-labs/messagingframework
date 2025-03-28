@@ -32,3 +32,9 @@ endif()
 
 install(TARGETS smtp
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/qt5/plugins/messageservices)
+
+if(BUILD_TESTING)
+  add_custom_target(link_smtp ALL
+    COMMAND ${CMAKE_COMMAND} -E create_symlink smtp/libsmtp.so ../libsmtp.so
+    DEPENDS smtp)
+endif()

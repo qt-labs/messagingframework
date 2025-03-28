@@ -6,3 +6,9 @@ target_link_libraries(qmfstoragemanager
 
 install(TARGETS qmfstoragemanager
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/qt5/plugins/contentmanagers)
+
+if(BUILD_TESTING)
+  add_custom_target(link_qmfstoragemanager ALL
+    COMMAND ${CMAKE_COMMAND} -E create_symlink qmfstoragemanager/libqmfstoragemanager.so ../libqmfstoragemanager.so
+    DEPENDS qmfstoragemanager)
+endif()
