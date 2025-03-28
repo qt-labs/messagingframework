@@ -93,16 +93,9 @@ QLOG_DISABLE(MessagingState)
 // To prevent logging statements using these categories from being compiled into the executable
 // these statements shall be changed to QLOG_DISABLE calls.
 
-#ifdef QMF_ENABLE_LOGGING
 QLOG_RUNTIME(Messaging, true)
 QLOG_RUNTIME(IMAP, true)
 QLOG_RUNTIME(SMTP, true)
 QLOG_RUNTIME(POP, true)
-#else
-QLOG_DISABLE(Messaging)
-QLOG_DISABLE(IMAP)
-QLOG_DISABLE(SMTP)
-QLOG_DISABLE(POP)
-#endif // QMF_ENABLE_LOGGING
 
 #endif //QMAILLOG_H

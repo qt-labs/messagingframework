@@ -32,7 +32,6 @@
 ****************************************************************************/
 
 #include "qmaillog.h"
-#include "qlogsystem.h"
 #include "qloggers.h"
 
 #include <QString>
@@ -40,11 +39,6 @@
 #include <QStringList>
 #include <QSettings>
 #include <QDir>
-
-#include <sys/types.h>
-#if !defined(Q_OS_WIN)
-#include <sys/socket.h>
-#endif
 
 QMF_EXPORT QDebug QLogBase::log(const char* category)
 {
@@ -80,7 +74,6 @@ namespace
     };
 }
 
-#if !defined(Q_OS_WIN)
 static void createDefaultLogConfig(QSettings &settings)
 {
     QStringList groups = settings.childGroups();
@@ -109,21 +102,14 @@ static void createDefaultLogConfig(QSettings &settings)
         settings.endGroup();
     }
 }
+
 QMF_EXPORT void qMailLoggersRecreate(const QString& organization, const QString& application, const char* ident)
 {
     QSettings settings(organization, application);
     createDefaultLogConfig(settings);
 
-    bool defaultStdError(
-#ifdef QMF_ENABLE_LOGGING
-     true
-#else
-     false
-#endif
-     );
-
     const bool syslogEnabled = settings.value(QLatin1String("Syslog/Enabled"), false).toBool();
-    const bool stderrEnabled = settings.value(QLatin1String("StdStreamLog/Enabled"), defaultStdError).toBool();
+    const bool stderrEnabled = settings.value(QLatin1String("StdStreamLog/Enabled"), true).toBool();
     QString filePath = settings.value(QLatin1String("FileLog/Path")).toString();
     const bool fileEnabled = settings.value(QLatin1String("FileLog/Enabled"), false).toBool() && !filePath.isEmpty();
 
@@ -134,8 +120,12 @@ QMF_EXPORT void qMailLoggersRecreate(const QString& organization, const QString&
     loggers.clear();
 
     if(syslogEnabled) {
+#if !defined(Q_OS_WIN)
         SysLogger<LvlLogPrefix>* sl = new SysLogger<LvlLogPrefix>(QLatin1String(ident), LOG_PID, LOG_LOCAL7);
         addLoggerIfReady(sl);
+#else
+        qWarning() << "No syslog available, disabling.";
+#endif
     };
 
     if(fileEnabled) {
@@ -200,26 +190,3 @@ QMF_EXPORT bool qmf_checkLoggingEnabled(const char *category, const bool defValu
 
     return r;
 }
-
-#else
-
-QMF_EXPORT void qMailLoggersRecreate(const QString& organization, const QString& application, const char* ident)
-{
-    Q_UNUSED(organization);
-    Q_UNUSED(application);
-    Q_UNUSED(ident);
-}
-
-QMF_EXPORT void qmf_registerLoggingFlag(char *flag)
-{
-    Q_UNUSED(flag);
-}
-QMF_EXPORT void qmf_resetLoggingFlags() { }
-
-QMF_EXPORT bool qmf_checkLoggingEnabled(const char *category, const bool defValue)
-{
-    Q_UNUSED(category);
-    Q_UNUSED(defValue);
-    return true;
-}
-#endif
