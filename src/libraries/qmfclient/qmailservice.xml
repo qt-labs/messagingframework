@@ -122,7 +122,8 @@
     <signal name="protocolResponse">
       <arg name="action" type="t" direction="out"/>
       <arg name="response" type="s" direction="out"/>
-      <arg name="data" type="v" direction="out"/>
+      <arg name="data" type="a{sv}" direction="out"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.Out2" value="QVariantMap"/>
     </signal>
     <signal name="protocolRequestCompleted">
       <arg name="action" type="t" direction="out"/>
@@ -355,9 +356,10 @@
       <arg name="actionId" type="t" direction="in"/>
       <arg name="accountId" type="(t)" direction="in"/>
       <arg name="request" type="s" direction="in"/>
-      <arg name="data" type="v" direction="in"/>
+      <arg name="data" type="a{sv}" direction="in"/>
       <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
       <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="QMailAccountId"/>
+      <annotation name="org.qtproject.QtDBus.QtTypeName.In3" value="QVariantMap"/>
     </method>
     <method name="searchMessages">
       <arg name="actionId" type="t" direction="in"/>

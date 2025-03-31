@@ -105,9 +105,7 @@ QMailMessageServerPrivate::QMailMessageServerPrivate(QMailMessageServer* parent)
     connect(this, &OrgQtMessageserverInterface::actionsListed,
             parent, &QMailMessageServer::actionsListed);
     connect(this, &OrgQtMessageserverInterface::protocolResponse,
-            [parent] (qulonglong action, const QString &response, const QDBusVariant &data) {
-                emit parent->protocolResponse(action, response, data.variant());
-            });
+            parent, &QMailMessageServer::protocolResponse);
     connect(this, &OrgQtMessageserverInterface::protocolRequestCompleted,
             parent, &QMailMessageServer::protocolRequestCompleted);
 }
@@ -340,7 +338,7 @@ QMailMessageServerPrivate::~QMailMessageServerPrivate()
 */
 
 /*!
-    \fn void QMailMessageServer::protocolResponse(quint64 action, const QString &response, const QVariant &data);
+    \fn void QMailMessageServer::protocolResponse(quint64 action, const QString &response, const QVariantMap &data);
 
     Emitted when the protocol request identified by \a action generates the response
     \a response, with the associated \a data.
@@ -1075,10 +1073,12 @@ void QMailMessageServer::listActions()
     Requests that the MessageServer forward the protocol-specific request \a request
     to the QMailMessageSource configured for the account identified by \a accountId.
     The request, identified by \a action, may have associated \a data, in a protocol-specific form.
+    There might be limitations on what type of data is allowed.
 */
-void QMailMessageServer::protocolRequest(quint64 action, const QMailAccountId &accountId, const QString &request, const QVariant &data)
+void QMailMessageServer::protocolRequest(quint64 action, const QMailAccountId &accountId, const QString &request,
+                                         const QVariantMap &data)
 {
-    d->protocolRequest(action, accountId, request, QDBusVariant(data));
+    d->protocolRequest(action, accountId, request, data);
 }
 
 Q_IMPLEMENT_USER_METATYPE_TYPEDEF(QMailMessageCountMap, QMailMessageCountMap)

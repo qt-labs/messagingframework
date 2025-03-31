@@ -846,7 +846,7 @@ void ServiceHandler::registerAccountSource(const QMailAccountId &accountId, QMai
     connect(source, SIGNAL(matchingMessageIds(QMailMessageIdList, quint64)), this, SLOT(matchingMessageIds(QMailMessageIdList, quint64)));
     connect(source, SIGNAL(remainingMessagesCount(uint, quint64)), this, SLOT(remainingMessagesCount(uint, quint64)));
     connect(source, SIGNAL(messagesCount(uint, quint64)), this, SLOT(messagesCount(uint, quint64)));
-    connect(source, SIGNAL(protocolResponse(QString, QVariant, quint64)), this, SLOT(protocolResponse(QString, QVariant, quint64)));
+    connect(source, SIGNAL(protocolResponse(QString, QVariantMap, quint64)), this, SLOT(protocolResponse(QString, QVariantMap, quint64)));
     // } else {
     connect(source, SIGNAL(messagesDeleted(QMailMessageIdList)), this, SLOT(messagesDeleted(QMailMessageIdList)));
     connect(source, SIGNAL(messagesCopied(QMailMessageIdList)), this, SLOT(messagesCopied(QMailMessageIdList)));
@@ -856,7 +856,7 @@ void ServiceHandler::registerAccountSource(const QMailAccountId &accountId, QMai
     connect(source, SIGNAL(matchingMessageIds(QMailMessageIdList)), this, SLOT(matchingMessageIds(QMailMessageIdList)));
     connect(source, SIGNAL(remainingMessagesCount(uint)), this, SLOT(remainingMessagesCount(uint)));
     connect(source, SIGNAL(messagesCount(uint)), this, SLOT(messagesCount(uint)));
-    connect(source, SIGNAL(protocolResponse(QString, QVariant)), this, SLOT(protocolResponse(QString, QVariant)));
+    connect(source, SIGNAL(protocolResponse(QString, QVariantMap)), this, SLOT(protocolResponse(QString, QVariantMap)));
     // }
 }
 
@@ -1052,7 +1052,11 @@ quint64 ServiceHandler::serviceAction(QMailMessageService *service) const
     return 0;
 }
 
-void ServiceHandler::enqueueRequest(quint64 action, const QByteArray &data, const QSet<QMailMessageService*> &services, RequestServicer servicer, CompletionSignal completion, QMailServerRequestType description, const QSet<QMailMessageService*> &preconditions)
+void ServiceHandler::enqueueRequest(quint64 action, const QByteArray &data,
+                                    const QSet<QMailMessageService*> &services,
+                                    RequestServicer servicer, CompletionSignal completion,
+                                    QMailServerRequestType description,
+                                    const QSet<QMailMessageService*> &preconditions)
 {
     QSet<QPointer<QMailMessageService> > safeServices;
     QSet<QPointer<QMailMessageService> > safePreconditions;
@@ -2877,25 +2881,23 @@ void ServiceHandler::messagesCount(uint count, quint64 a)
     emit messagesCount(a, count);
 }
 
-void ServiceHandler::protocolResponse(const QString &response, const QVariant &data, quint64 a)
+void ServiceHandler::protocolResponse(const QString &response, const QVariantMap &data, quint64 a)
 {
     emit protocolResponse(a, response, data);
 }
 
 // end concurrent actions
 
-void ServiceHandler::protocolRequest(quint64 action, const QMailAccountId &accountId, const QString &request, const QDBusVariant &data)
-{
-    protocolRequest(action, accountId, request, data.variant());
-}
-
-void ServiceHandler::protocolRequest(quint64 action, const QMailAccountId &accountId, const QString &request, const QVariant &data)
+void ServiceHandler::protocolRequest(quint64 action, const QMailAccountId &accountId, const QString &request,
+                                     const QVariantMap &data)
 {
     QSet<QMailMessageService*> sources(sourceServiceSet(accountId));
     if (sources.isEmpty()) {
-        reportFailure(action, QMailServiceAction::Status::ErrNoConnection, tr("Unable to forward protocol-specific request for unconfigured account"));
+        reportFailure(action, QMailServiceAction::Status::ErrNoConnection,
+                      tr("Unable to forward protocol-specific request for unconfigured account"));
     } else {
-        enqueueRequest(action, serialize(accountId, request, data), sources, &ServiceHandler::dispatchProtocolRequest, &ServiceHandler::protocolRequestCompleted, ProtocolRequestRequestType);
+        enqueueRequest(action, serialize(accountId, request, data), sources, &ServiceHandler::dispatchProtocolRequest,
+                       &ServiceHandler::protocolRequestCompleted, ProtocolRequestRequestType);
     }
 }
 
@@ -2903,7 +2905,7 @@ bool ServiceHandler::dispatchProtocolRequest(quint64 action, const QByteArray &d
 {
     QMailAccountId accountId;
     QString request;
-    QVariant requestData;
+    QVariantMap requestData;
 
     deserialize(data, accountId, request, requestData);
 
@@ -2970,7 +2972,7 @@ void ServiceHandler::messagesCount(uint count)
         emit messagesCount(action, count);
 }
 
-void ServiceHandler::protocolResponse(const QString &response, const QVariant &data)
+void ServiceHandler::protocolResponse(const QString &response, const QVariantMap &data)
 {
     if (quint64 action = sourceAction(qobject_cast<QMailMessageSource*>(sender())))
         emit protocolResponse(action, response, data);

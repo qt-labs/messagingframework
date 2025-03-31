@@ -424,14 +424,14 @@ class QMailProtocolActionPrivate : public QMailServiceActionPrivate
 public:
     QMailProtocolActionPrivate(QMailProtocolAction *i);
 
-    void protocolRequest(const QMailAccountId &accountId, const QString &request, const QVariant &data);
+    void protocolRequest(const QMailAccountId &accountId, const QString &request, const QVariantMap &data);
 
 signals:
-    void protocolResponse(const QString &response, const QVariant &data);
+    void protocolResponse(const QString &response, const QVariantMap &data);
 
 private slots:
-    void protocolResponse(quint64 action, const QString &response, const QVariant &data);
-    void protocolRequestCompleted(quint64 action);
+    void handleProtocolResponse(quint64 action, const QString &response, const QVariantMap &data);
+    void handleProtocolRequestCompleted(quint64 action);
 
 private:
     friend class QMailProtocolAction;

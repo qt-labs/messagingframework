@@ -100,7 +100,7 @@ Q_SIGNALS:
 
     void actionsListed(const QMailActionDataList &);
 
-    void protocolResponse(quint64, const QString &response, const QVariant &data);
+    void protocolResponse(quint64, const QString &response, const QVariantMap &data);
     void protocolRequestCompleted(quint64);
 
 public Q_SLOTS:
@@ -155,7 +155,7 @@ public Q_SLOTS:
 
     void listActions();
 
-    void protocolRequest(quint64, const QMailAccountId &accountId, const QString &request, const QVariant &data);
+    void protocolRequest(quint64, const QMailAccountId &accountId, const QString &request, const QVariantMap &data);
 
 private:
     QMailMessageServerPrivate* d;

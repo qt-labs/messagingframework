@@ -353,10 +353,10 @@ public:
     ~QMailProtocolAction();
 
 Q_SIGNALS:
-    void protocolResponse(const QString &response, const QVariant &data);
+    void protocolResponse(const QString &response, const QVariantMap &data);
 
 public Q_SLOTS:
-    void protocolRequest(const QMailAccountId &accountId, const QString &request, const QVariant &data);
+    void protocolRequest(const QMailAccountId &accountId, const QString &request, const QVariantMap &data);
 };
 
 

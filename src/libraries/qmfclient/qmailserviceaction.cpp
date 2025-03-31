@@ -2704,27 +2704,29 @@ void QMailActionObserver::listActionsRequest()
 QMailProtocolActionPrivate::QMailProtocolActionPrivate(QMailProtocolAction *i)
     : QMailServiceActionPrivate(this, i)
 {
-    connect(_server.data(), SIGNAL(protocolResponse(quint64, QString, QVariant)),
-            this, SLOT(protocolResponse(quint64, QString, QVariant)));
-    connect(_server.data(), SIGNAL(protocolRequestCompleted(quint64)),
-            this, SLOT(protocolRequestCompleted(quint64)));
+    connect(_server.data(), &QMailMessageServer::protocolResponse,
+            this, &QMailProtocolActionPrivate::handleProtocolResponse);
+    connect(_server.data(), &QMailMessageServer::protocolRequestCompleted,
+            this, &QMailProtocolActionPrivate::handleProtocolRequestCompleted);
 
     init();
 }
 
-void QMailProtocolActionPrivate::protocolRequest(const QMailAccountId &accountId, const QString &request, const QVariant &data)
+void QMailProtocolActionPrivate::protocolRequest(const QMailAccountId &accountId, const QString &request,
+                                                 const QVariantMap &data)
 {
     _server->protocolRequest(newAction(), accountId, request, data);
 }
 
-void QMailProtocolActionPrivate::protocolResponse(quint64 action, const QString &response, const QVariant &data)
+void QMailProtocolActionPrivate::handleProtocolResponse(quint64 action, const QString &response,
+                                                        const QVariantMap &data)
 {
     if (validAction(action)) {
         emit protocolResponse(response, data);
     }
 }
 
-void QMailProtocolActionPrivate::protocolRequestCompleted(quint64 action)
+void QMailProtocolActionPrivate::handleProtocolRequestCompleted(quint64 action)
 {
     if (validAction(action)) {
         setActivity(QMailServiceAction::Successful);
@@ -2766,7 +2768,7 @@ void QMailProtocolActionPrivate::protocolRequestCompleted(quint64 action)
 QMailProtocolAction::QMailProtocolAction(QObject *parent)
     : QMailServiceAction(new QMailProtocolActionPrivate(this), parent)
 {
-    connect(impl(this), SIGNAL(protocolResponse(QString, QVariant)), this, SIGNAL(protocolResponse(QString, QVariant)));
+    connect(impl(this), SIGNAL(protocolResponse(QString, QVariantMap)), this, SIGNAL(protocolResponse(QString, QVariantMap)));
 }
 
 /*! \internal */
@@ -2778,14 +2780,15 @@ QMailProtocolAction::~QMailProtocolAction()
     Requests that the message server forward the protocol-specific request \a request
     to the QMailMessageSource configured for the account identified by \a accountId.
     The request may have associated \a data, in a protocol-specific form.
+    There might be limitations on what type of data is allowed.
 */
-void QMailProtocolAction::protocolRequest(const QMailAccountId &accountId, const QString &request, const QVariant &data)
+void QMailProtocolAction::protocolRequest(const QMailAccountId &accountId, const QString &request, const QVariantMap &data)
 {
     impl(this)->protocolRequest(accountId, request, data);
 }
 
 /*!
-    \fn QMailProtocolAction::protocolResponse(const QString &response, const QVariant &data)
+    \fn QMailProtocolAction::protocolResponse(const QString &response, const QVariantMap &data)
 
     This signal is emitted when the response \a response is emitted by the messageserver,
     with the associated \a data.

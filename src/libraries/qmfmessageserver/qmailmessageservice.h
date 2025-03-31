@@ -179,8 +179,8 @@ public Q_SLOTS:
     virtual bool prepareMessages(const QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > &ids);
     virtual bool prepareMessages(const QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > &ids, quint64 action);
 
-    virtual bool protocolRequest(const QMailAccountId &accountId, const QString &request, const QVariant &data);
-    virtual bool protocolRequest(const QMailAccountId &accountId, const QString &request, const QVariant &data, quint64 action);
+    virtual bool protocolRequest(const QMailAccountId &accountId, const QString &request, const QVariantMap &data);
+    virtual bool protocolRequest(const QMailAccountId &accountId, const QString &request, const QVariantMap &data, quint64 action);
 
 Q_SIGNALS:
     void newMessagesAvailable();
@@ -205,8 +205,8 @@ Q_SIGNALS:
     void messagesPrepared(const QMailMessageIdList &ids);
     void messagesPrepared(const QMailMessageIdList &ids, quint64 action);
 
-    void protocolResponse(const QString &response, const QVariant &data);
-    void protocolResponse(const QString &response, const QVariant &data, quint64 action);
+    void protocolResponse(const QString &response, const QVariantMap &data);
+    void protocolResponse(const QString &response, const QVariantMap &data, quint64 action);
 
 protected Q_SLOTS:
     void deleteMessages();

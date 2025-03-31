@@ -1016,7 +1016,7 @@ bool QMailMessageSource::prepareMessages(const QList<QPair<QMailMessagePart::Loc
     
     \sa protocolResponse()
 */
-bool QMailMessageSource::protocolRequest(const QMailAccountId &accountId, const QString &request, const QVariant &data)
+bool QMailMessageSource::protocolRequest(const QMailAccountId &accountId, const QString &request, const QVariantMap &data)
 {
     Q_UNUSED(accountId)
     Q_UNUSED(request)
@@ -1086,7 +1086,7 @@ bool QMailMessageSource::protocolRequest(const QMailAccountId &accountId, const 
 */
 
 /*!
-    \fn void QMailMessageSource::protocolResponse(const QString &response, const QVariant &data);
+    \fn void QMailMessageSource::protocolResponse(const QString &response, const QVariantMap &data);
 
     Signal emitted by the source to report the response \a response resulting from a 
     protocol-specific request, with any associated \a data.
@@ -2050,7 +2050,7 @@ bool QMailMessageSource::prepareMessages(const QList<QPair<QMailMessagePart::Loc
 
     The request has the identifier \a action.
 */
-bool QMailMessageSource::protocolRequest(const QMailAccountId &accountId, const QString &request, const QVariant &data, quint64 action)
+bool QMailMessageSource::protocolRequest(const QMailAccountId &accountId, const QString &request, const QVariantMap &data, quint64 action)
 {
     Q_UNUSED(accountId)
     Q_UNUSED(request)
@@ -2203,7 +2203,7 @@ bool QMailMessageService::cancelOperation(QMailServiceAction::Status::ErrorCode 
 */
 
 /*!
-    \fn void QMailMessageSource::protocolResponse(const QString &response, const QVariant &data, quint64 action)
+    \fn void QMailMessageSource::protocolResponse(const QString &response, const QVariantMap &data, quint64 action)
 
     \overload
     
