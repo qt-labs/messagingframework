@@ -43,25 +43,18 @@
 #include "qmailfolder.h"
 #include "qmailaction.h"
 #include "qmailstore.h"
+
+#include <QScopedPointer>
 #include <QString>
 #include <QStringList>
 
 class QMailServiceActionPrivate;
 
-class QMF_EXPORT QMailServiceAction
-    : public QObject,
-      public QPrivatelyNoncopyable<QMailServiceActionPrivate>
+class QMF_EXPORT QMailServiceAction: public QObject
 {
     Q_OBJECT
 
-    friend class QMailServiceActionPrivate;
-    friend class QMailRetrievalActionPrivate;
-    friend class QMailTransmitActionPrivate;
-    friend class QMailSearchActionPrivate;
-
 public:
-    typedef QMailServiceActionPrivate ImplementationType;
-
     enum Connectivity {
         Offline = 0,
         Connecting,
@@ -145,13 +138,16 @@ Q_SIGNALS:
     void progressChanged(uint value, uint total);
 
 protected:
-    // Only allow creation by sub-types
-    template<typename Subclass>
-    QMailServiceAction(Subclass *p, QObject *parent);
+    QMailServiceAction(QMailServiceActionPrivate &dd, QObject *parent = nullptr);
 
-protected:
     void setStatus(Status::ErrorCode code, const QString &text = QString());
-    void setStatus(Status::ErrorCode code, const QString &text, const QMailAccountId &accountId,const QMailFolderId &folderId = QMailFolderId(), const QMailMessageId &messageId = QMailMessageId());
+    void setStatus(Status::ErrorCode code, const QString &text, const QMailAccountId &accountId,
+                   const QMailFolderId &folderId = QMailFolderId(), const QMailMessageId &messageId = QMailMessageId());
+
+    QScopedPointer<QMailServiceActionPrivate> d_ptr;
+
+private:
+    Q_DECLARE_PRIVATE(QMailServiceAction)
 };
 
 class QMailRetrievalActionPrivate;
@@ -161,8 +157,6 @@ class QMF_EXPORT QMailRetrievalAction : public QMailServiceAction
     Q_OBJECT
 
 public:
-    typedef QMailRetrievalActionPrivate ImplementationType;
-
     enum RetrievalSpecification {
         Flags,
         MetaData,
@@ -175,8 +169,10 @@ public:
 
 public Q_SLOTS:
     void retrieveFolderList(const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending = true);
-    void retrieveMessageList(const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum = 0, const QMailMessageSortKey &sort = QMailMessageSortKey());
-    void retrieveMessageLists(const QMailAccountId &accountId, const QMailFolderIdList &folderIds, uint minimum = 0, const QMailMessageSortKey &sort = QMailMessageSortKey());
+    void retrieveMessageList(const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum = 0,
+                             const QMailMessageSortKey &sort = QMailMessageSortKey());
+    void retrieveMessageLists(const QMailAccountId &accountId, const QMailFolderIdList &folderIds, uint minimum = 0,
+                              const QMailMessageSortKey &sort = QMailMessageSortKey());
     static uint defaultMinimum() { return 20; }
     void retrieveNewMessages(const QMailAccountId &accountId, const QMailFolderIdList &folderIds);
 
@@ -193,8 +189,10 @@ public Q_SLOTS:
 
     void retrieveAll(const QMailAccountId &accountId); // deprecated
     void synchronizeAll(const QMailAccountId &accountId); // deprecated
-};
 
+private:
+    Q_DECLARE_PRIVATE(QMailRetrievalAction)
+};
 
 class QMailTransmitActionPrivate;
 
@@ -203,8 +201,6 @@ class QMF_EXPORT QMailTransmitAction : public QMailServiceAction
     Q_OBJECT
 
 public:
-    typedef QMailTransmitActionPrivate ImplementationType;
-
     QMailTransmitAction(QObject *parent = Q_NULLPTR);
     ~QMailTransmitAction();
 
@@ -215,8 +211,10 @@ Q_SIGNALS:
 public Q_SLOTS:
     void transmitMessages(const QMailAccountId &accountId);
     void transmitMessage(const QMailMessageId &messageId);
-};
 
+private:
+    Q_DECLARE_PRIVATE(QMailTransmitAction)
+};
 
 class QMailStorageActionPrivate;
 
@@ -256,8 +254,10 @@ public Q_SLOTS:
     void moveToFolder(const QMailMessageIdList& ids, const QMailFolderId& folderId);
     void flagMessages(const QMailMessageIdList& ids, quint64 setMask, quint64 unsetMask);
     void restoreToPreviousFolder(const QMailMessageKey& key);
-};
 
+private:
+    Q_DECLARE_PRIVATE(QMailStorageAction)
+};
 
 class QMailSearchActionPrivate;
 
@@ -266,8 +266,6 @@ class QMF_EXPORT QMailSearchAction : public QMailServiceAction
     Q_OBJECT
 
 public:
-    typedef QMailSearchActionPrivate ImplementationType;
-
     enum SearchSpecification {
         Local,
         Remote
@@ -287,20 +285,25 @@ Q_SIGNALS:
     void messagesCount(uint);
 
 public Q_SLOTS:
-    void searchMessages(const QMailMessageKey &filter, const QString& bodyText, SearchSpecification spec, const QMailMessageSortKey &sort = QMailMessageSortKey());
-    void searchMessages(const QMailMessageKey &filter, const QString& bodyText, SearchSpecification spec, quint64 limit, const QMailMessageSortKey &sort = QMailMessageSortKey());
+    void searchMessages(const QMailMessageKey &filter, const QString& bodyText, SearchSpecification spec,
+                        const QMailMessageSortKey &sort = QMailMessageSortKey());
+    void searchMessages(const QMailMessageKey &filter, const QString& bodyText, SearchSpecification spec,
+                        quint64 limit, const QMailMessageSortKey &sort = QMailMessageSortKey());
     void countMessages(const QMailMessageKey &filter, const QString& bodyText);
     void cancelOperation() override;
+
+private:
+    Q_DECLARE_PRIVATE(QMailSearchAction)
 };
 
 class QMailActionInfoPrivate;
 class QMailMessageServer;
 
-class QMF_EXPORT  QMailActionInfo : public QMailServiceAction {
+class QMF_EXPORT QMailActionInfo : public QMailServiceAction
+{
     Q_OBJECT
 public:
     typedef Status::ErrorCode StatusErrorCode; // moc hack
-    typedef QMailActionInfoPrivate ImplementationType;
 
     QMailActionId id() const;
     QMailServerRequestType requestType() const;
@@ -318,9 +321,13 @@ Q_SIGNALS:
     void statusFolderIdChanged(const QMailFolderId &newFolderId);
     void statusMessageIdChanged(const QMailMessageId &newMessageId);
     void totalProgressChanged(float progress);
+
 protected:
     friend class QMailActionObserverPrivate;
     QMailActionInfo(const QMailActionData &data, QSharedPointer<QMailMessageServer> server);
+
+private:
+    Q_DECLARE_PRIVATE(QMailActionInfo)
 };
 
 class QMailActionObserverPrivate;
@@ -329,15 +336,17 @@ class QMF_EXPORT QMailActionObserver : public QMailServiceAction
 {
     Q_OBJECT
 public:   
-    typedef QMailActionObserverPrivate ImplementationType;
-
     QMailActionObserver(QObject *parent = Q_NULLPTR);
     virtual ~QMailActionObserver();
 
     QList< QSharedPointer<QMailActionInfo> > actions() const;
     void listActionsRequest();
+
 Q_SIGNALS:
     void actionsChanged(const QList< QSharedPointer<QMailActionInfo> > &newActions);
+
+private:
+    Q_DECLARE_PRIVATE(QMailActionObserver)
 };
 
 class QMailProtocolActionPrivate;
@@ -347,8 +356,6 @@ class QMF_EXPORT QMailProtocolAction : public QMailServiceAction
     Q_OBJECT
 
 public:
-    typedef QMailProtocolActionPrivate ImplementationType;
-
     QMailProtocolAction(QObject *parent = Q_NULLPTR);
     ~QMailProtocolAction();
 
@@ -357,6 +364,9 @@ Q_SIGNALS:
 
 public Q_SLOTS:
     void protocolRequest(const QMailAccountId &accountId, const QString &request, const QVariantMap &data);
+
+private:
+    Q_DECLARE_PRIVATE(QMailProtocolAction)
 };
 
 

@@ -50,8 +50,6 @@
 #include "qmailserviceaction.h"
 #include "qmailmessageserver.h"
 
-// These classes are implemented via qmailmessage.cpp and qmailinstantiations.cpp
-
 class QMailServiceActionCommand
 {
 public:
@@ -64,13 +62,12 @@ struct ActionCommand {
     QSharedPointer<QMailServiceActionCommand> command;
 };
 
-class QMailServiceActionPrivate : public QObject, public QPrivateNoncopyableBase
+class QMailServiceActionPrivate : public QObject
 {
     Q_OBJECT
 
 public:
-    template<typename Subclass>
-    QMailServiceActionPrivate(Subclass *p, QMailServiceAction *i,
+    QMailServiceActionPrivate(QMailServiceAction *i,
                               QSharedPointer<QMailMessageServer> server = QSharedPointer<QMailMessageServer>());
 
     virtual ~QMailServiceActionPrivate();
@@ -107,7 +104,8 @@ protected:
 
     void setStatus(const QMailServiceAction::Status &status);
     void setStatus(QMailServiceAction::Status::ErrorCode code, const QString &text);
-    void setStatus(QMailServiceAction::Status::ErrorCode code, const QString &text, const QMailAccountId &accountId, const QMailFolderId &folderId, const QMailMessageId &messageId);
+    void setStatus(QMailServiceAction::Status::ErrorCode code, const QString &text, const QMailAccountId &accountId,
+                   const QMailFolderId &folderId, const QMailMessageId &messageId);
 
     void setProgress(uint newProgress, uint newTotal);
 
@@ -144,9 +142,12 @@ public:
 
     void retrieveFolderListHelper(const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending = true);
     void retrieveFolderList(const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending);
-    void retrieveMessageListHelper(const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort);
-    void retrieveMessageList(const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort);
-    void retrieveMessageLists(const QMailAccountId &accountId, const QMailFolderIdList &folderIds, uint minimum, const QMailMessageSortKey &sort);
+    void retrieveMessageListHelper(const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum,
+                                   const QMailMessageSortKey &sort);
+    void retrieveMessageList(const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum,
+                             const QMailMessageSortKey &sort);
+    void retrieveMessageLists(const QMailAccountId &accountId, const QMailFolderIdList &folderIds, uint minimum,
+                              const QMailMessageSortKey &sort);
     void retrieveNewMessages(const QMailAccountId &accountId, const QMailFolderIdList &folderIds);
 
     void createStandardFolders(const QMailAccountId &accountId);
@@ -164,6 +165,7 @@ public:
     void retrieveAll(const QMailAccountId &accountId);
     void synchronizeAllHelper(const QMailAccountId &accountId);
     void synchronizeAll(const QMailAccountId &accountId);
+
 protected slots:
     void retrievalCompleted(quint64);
 
@@ -177,6 +179,7 @@ public:
     QMailExportUpdatesCommand(QMailRetrievalActionPrivate *action, const QMailAccountId &accountId)
         : _action(action), _accountId(accountId) {}
     void execute() override { _action->exportUpdatesHelper(_accountId); }
+
 private:
     QMailRetrievalActionPrivate *_action;
     QMailAccountId _accountId;
@@ -188,6 +191,7 @@ public:
     QMailSynchronizeCommand(QMailRetrievalActionPrivate *action, const QMailAccountId &accountId)
         : _action(action), _accountId(accountId) {}
     void execute() override { _action->synchronizeAllHelper(_accountId); }
+
 private:
     QMailRetrievalActionPrivate *_action;
     QMailAccountId _accountId;
@@ -199,6 +203,7 @@ public:
     QMailRetrieveFolderListCommand(QMailRetrievalActionPrivate *action, const QMailAccountId &accountId)
         : _action(action), _accountId(accountId) {}
     void execute() override { _action->retrieveFolderListHelper(_accountId, QMailFolderId()); }
+
 private:
     QMailRetrievalActionPrivate *_action;
     QMailAccountId _accountId;
@@ -207,11 +212,12 @@ private:
 class QMailRetrieveMessageListCommand : public QMailServiceActionCommand
 {
 public:
- QMailRetrieveMessageListCommand(QMailRetrievalActionPrivate *action, const QMailAccountId &accountId, uint minimum) 
-     :_action(action), 
-      _accountId(accountId),
-      _minimum(minimum) {}
+    QMailRetrieveMessageListCommand(QMailRetrievalActionPrivate *action, const QMailAccountId &accountId, uint minimum)
+        :_action(action),
+          _accountId(accountId),
+          _minimum(minimum) {}
     void execute() override { _action->retrieveMessageListHelper(_accountId, QMailFolderId(), _minimum, QMailMessageSortKey()); }
+
 private:
     QMailRetrievalActionPrivate *_action;
     QMailAccountId _accountId;
@@ -297,6 +303,7 @@ public:
     QMailDeleteFolderCommand(QMailStorageActionPrivate *action, const QMailFolderId &folderId)
         : _action(action), _folderId(folderId) {}
     void execute() override { _action->onlineDeleteFolderHelper(_folderId); }
+
 private:
     QMailStorageActionPrivate *_action;
     QMailFolderId _folderId;
@@ -308,6 +315,7 @@ public:
     QMailMoveCommand(QMailStorageActionPrivate *action, const QMailMessageIdList &ids, const QMailFolderId &destinationId) 
         : _action(action), _ids(ids), _folderId(destinationId) {}
     void execute() override { _action->onlineMoveMessages(_ids, _folderId); }
+
 private:
     QMailStorageActionPrivate *_action;
     QMailMessageIdList _ids;
@@ -320,6 +328,7 @@ public:
     QMailDeleteMessagesCommand(QMailStorageActionPrivate *action, const QMailMessageIdList &ids)
         : _action(action), _ids(ids) {}
     void execute() override { _action->onlineDeleteMessagesHelper(_ids); }
+
 private:
     QMailStorageActionPrivate *_action;
     QMailMessageIdList _ids;
@@ -333,8 +342,10 @@ public:
     QMailSearchActionPrivate(QMailSearchAction *i);
     virtual ~QMailSearchActionPrivate();
 
-    void searchMessages(const QMailMessageKey &filter, const QString &bodyText, QMailSearchAction::SearchSpecification spec, const QMailMessageSortKey &sort);
-    void searchMessages(const QMailMessageKey &filter, const QString &bodyText, QMailSearchAction::SearchSpecification spec, quint64 limit, const QMailMessageSortKey &sort);
+    void searchMessages(const QMailMessageKey &filter, const QString &bodyText,
+                        QMailSearchAction::SearchSpecification spec, const QMailMessageSortKey &sort);
+    void searchMessages(const QMailMessageKey &filter, const QString &bodyText,
+                        QMailSearchAction::SearchSpecification spec, quint64 limit, const QMailMessageSortKey &sort);
     void countMessages(const QMailMessageKey &filter, const QString &bodyText);
     void cancelOperation();
 
@@ -377,6 +388,7 @@ public:
     QMailAccountId statusAccountId() const;
     QMailFolderId statusFolderId() const;
     QMailMessageId statusMessageId() const;
+
 signals:
     void statusErrorCodeChanged(QMailActionInfo::StatusErrorCode newError);
     void statusTextChanged(const QString &newText);
@@ -384,9 +396,11 @@ signals:
     void statusFolderIdChanged(const QMailFolderId &newFolderId);
     void statusMessageIdChanged(const QMailMessageId &newMessageId);
     void totalProgressChanged(float progress);
+
 public slots:
     void theStatusChanged(const QMailServiceAction::Status &newStatus);
     void theProgressChanged(uint progress, uint total);
+
 private slots:
     void activityCompleted(quint64 action);
 
@@ -403,10 +417,13 @@ public:
     QMailActionObserverPrivate(QMailActionObserver *i);
     void requestInitialization();
      QList< QSharedPointer<QMailActionInfo> > runningActions() const;
+
 signals:
     void actionsChanged(const QList< QSharedPointer<QMailActionInfo> > &);
+
 public slots:
     void listActionsRequest();
+
 private slots:
     void onActivityChanged(quint64 id, QMailServiceAction::Activity activity);
     void actionsListed(const QMailActionDataList &actions);

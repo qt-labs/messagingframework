@@ -54,19 +54,6 @@ template class QPrivatelyImplemented<QMailThreadPrivate>;
 template class QPrivateNoncopyablePointer<QMailMessageSetContainerPrivate>;
 template class QPrivatelyNoncopyable<QMailMessageSetContainerPrivate>;
 
-template class QPrivateNoncopyablePointer<QMailServiceActionPrivate>;
-template class QPrivatelyNoncopyable<QMailServiceActionPrivate>;
-template class QPrivateNoncopyablePointer<QMailRetrievalActionPrivate>;
-template class QPrivatelyNoncopyable<QMailRetrievalActionPrivate>;
-template class QPrivateNoncopyablePointer<QMailTransmitActionPrivate>;
-template class QPrivatelyNoncopyable<QMailTransmitActionPrivate>;
-template class QPrivateNoncopyablePointer<QMailStorageActionPrivate>;
-template class QPrivatelyNoncopyable<QMailStorageActionPrivate>;
-template class QPrivateNoncopyablePointer<QMailSearchActionPrivate>;
-template class QPrivatelyNoncopyable<QMailSearchActionPrivate>;
-template class QPrivateNoncopyablePointer<QMailProtocolActionPrivate>;
-template class QPrivatelyNoncopyable<QMailProtocolActionPrivate>;
-
 Q_IMPLEMENT_USER_METATYPE_ENUM(QMailMessageBody::TransferEncoding)
 Q_IMPLEMENT_USER_METATYPE_ENUM(QMailMessagePartContainer::MultipartType)
 Q_IMPLEMENT_USER_METATYPE_ENUM(QMailMessage::MessageType)

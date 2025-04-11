@@ -63,12 +63,9 @@ QPair<uint, uint> messageActionParts(quint64 action)
 
 }
 
-
-template<typename Subclass>
-QMailServiceActionPrivate::QMailServiceActionPrivate(Subclass *p, QMailServiceAction *i,
+QMailServiceActionPrivate::QMailServiceActionPrivate(QMailServiceAction *i,
                                                      QSharedPointer<QMailMessageServer> server)
-    : QPrivateNoncopyableBase(p),
-      _interface(i),
+    : _interface(i),
       _server(server ? server : QSharedPointer<QMailMessageServer>(new QMailMessageServer)),
       _connectivity(QMailServiceAction::Offline),
       _activity(QMailServiceAction::Pending),
@@ -226,7 +223,8 @@ void QMailServiceActionPrivate::init()
 {
     _connectivity = QMailServiceAction::Offline;
     _activity = QMailServiceAction::Pending;
-    _status = QMailServiceAction::Status(QMailServiceAction::Status::ErrNoError, QString(), QMailAccountId(), QMailFolderId(), QMailMessageId());
+    _status = QMailServiceAction::Status(QMailServiceAction::Status::ErrNoError, QString(), QMailAccountId(),
+                                         QMailFolderId(), QMailMessageId());
     _total = 0;
     _progress = 0;
     _action = 0;
@@ -260,7 +258,8 @@ bool QMailServiceActionPrivate::validAction(quint64 action)
    return (action && _action == action);
 }
 
-void QMailServiceActionPrivate::appendSubAction(QMailServiceAction *subAction, QSharedPointer<QMailServiceActionCommand> command)
+void QMailServiceActionPrivate::appendSubAction(QMailServiceAction *subAction,
+                                                QSharedPointer<QMailServiceActionCommand> command)
 {
     ActionCommand a;
     a.action = subAction;
@@ -450,7 +449,8 @@ QMailServiceAction::Status::Status()
     \l folderId set to \a f and 
     \l messageId set to \a m.
 */
-QMailServiceAction::Status::Status(ErrorCode c, const QString &t, const QMailAccountId &a, const QMailFolderId &f, const QMailMessageId &m)
+QMailServiceAction::Status::Status(ErrorCode c, const QString &t, const QMailAccountId &a,
+                                   const QMailFolderId &f, const QMailMessageId &m)
     : errorCode(c),
       text(t),
       accountId(a),
@@ -613,18 +613,12 @@ template void QMailServiceAction::Status::deserialize(const QDBusArgument &);
 */
 
 /*!
-    \typedef QMailServiceAction::ImplementationType
+    \fn QMailServiceAction::QMailServiceAction(QMailServiceActionPrivate&, QObject*)
     \internal
 */
-
-/*!
-    \fn QMailServiceAction::QMailServiceAction(Subclass*, QObject*)
-    \internal
-*/
-template<typename Subclass>
-QMailServiceAction::QMailServiceAction(Subclass* p, QObject *parent)
-    : QObject(parent),
-      QPrivatelyNoncopyable<QMailServiceActionPrivate>(p)
+QMailServiceAction::QMailServiceAction(QMailServiceActionPrivate &dd, QObject *parent)
+    : QObject(parent)
+    , d_ptr(&dd)
 {
 }
 
@@ -640,7 +634,8 @@ QMailServiceAction::~QMailServiceAction()
 */
 QMailServiceAction::Connectivity QMailServiceAction::connectivity() const
 {
-    return impl(this)->_connectivity;
+    Q_D(const QMailServiceAction);
+    return d->_connectivity;
 }
 
 /*!
@@ -650,7 +645,8 @@ QMailServiceAction::Connectivity QMailServiceAction::connectivity() const
 */
 QMailServiceAction::Activity QMailServiceAction::activity() const
 {
-    return impl(this)->_activity;
+    Q_D(const QMailServiceAction);
+    return d->_activity;
 }
 
 /*!
@@ -660,7 +656,8 @@ QMailServiceAction::Activity QMailServiceAction::activity() const
 */
 const QMailServiceAction::Status QMailServiceAction::status() const
 {
-    return impl(this)->_status;
+    Q_D(const QMailServiceAction);
+    return d->_status;
 }
 
 /*!
@@ -670,7 +667,8 @@ const QMailServiceAction::Status QMailServiceAction::status() const
 */
 QPair<uint, uint> QMailServiceAction::progress() const
 {
-    return qMakePair(impl(this)->_progress, impl(this)->_total);
+    Q_D(const QMailServiceAction);
+    return qMakePair(d->_progress, d->_total);
 }
 
 /*!
@@ -679,7 +677,8 @@ QPair<uint, uint> QMailServiceAction::progress() const
 
 bool QMailServiceAction::isRunning() const
 {
-    return impl(this)->_isValid;
+    Q_D(const QMailServiceAction);
+    return d->_isValid;
 }
 
 /*!
@@ -687,7 +686,8 @@ bool QMailServiceAction::isRunning() const
 */
 void QMailServiceAction::cancelOperation()
 {
-    impl(this)->cancelOperation();
+    Q_D(QMailServiceAction);
+    d->cancelOperation();
 }
 
 /*!
@@ -697,7 +697,8 @@ void QMailServiceAction::cancelOperation()
 */
 void QMailServiceAction::setStatus(QMailServiceAction::Status::ErrorCode c, const QString &t)
 {
-    impl(this)->setStatus(c, t, QMailAccountId(), QMailFolderId(), QMailMessageId());
+    Q_D(QMailServiceAction);
+    d->setStatus(c, t, QMailAccountId(), QMailFolderId(), QMailMessageId());
 }
 
 /*!
@@ -708,14 +709,16 @@ void QMailServiceAction::setStatus(QMailServiceAction::Status::ErrorCode c, cons
     \l{QMailServiceAction::Status::folderId} folderId is set to \a f and 
     \l{QMailServiceAction::Status::messageId} messageId is set to \a m.
 */
-void QMailServiceAction::setStatus(QMailServiceAction::Status::ErrorCode c, const QString &t, const QMailAccountId &a, const QMailFolderId &f, const QMailMessageId &m)
+void QMailServiceAction::setStatus(QMailServiceAction::Status::ErrorCode c, const QString &t,
+                                   const QMailAccountId &a, const QMailFolderId &f, const QMailMessageId &m)
 {
-    impl(this)->setStatus(c, t, a, f, m);
+    Q_D(QMailServiceAction);
+    d->setStatus(c, t, a, f, m);
 }
 
 
 QMailRetrievalActionPrivate::QMailRetrievalActionPrivate(QMailRetrievalAction *i)
-    : QMailServiceActionPrivate(this, i)
+    : QMailServiceActionPrivate(i)
 {
     connect(_server.data(), SIGNAL(retrievalCompleted(quint64)),
             this, SLOT(retrievalCompleted(quint64)));
@@ -723,29 +726,36 @@ QMailRetrievalActionPrivate::QMailRetrievalActionPrivate(QMailRetrievalAction *i
     init();
 }
 
-void QMailRetrievalActionPrivate::retrieveFolderListHelper(const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending)
+void QMailRetrievalActionPrivate::retrieveFolderListHelper(const QMailAccountId &accountId,
+                                                           const QMailFolderId &folderId, bool descending)
 {
     _server->retrieveFolderList(newAction(), accountId, folderId, descending);
 }
 
-void QMailRetrievalActionPrivate::retrieveFolderList(const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending)
+void QMailRetrievalActionPrivate::retrieveFolderList(const QMailAccountId &accountId, const QMailFolderId &folderId,
+                                                     bool descending)
 {
     Q_ASSERT(!_pendingActions.count());
     retrieveFolderListHelper(accountId, folderId, descending);
 }
 
-void QMailRetrievalActionPrivate::retrieveMessageListHelper(const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort)
+void QMailRetrievalActionPrivate::retrieveMessageListHelper(const QMailAccountId &accountId,
+                                                            const QMailFolderId &folderId, uint minimum,
+                                                            const QMailMessageSortKey &sort)
 {
     _server->retrieveMessageList(newAction(), accountId, folderId, minimum, sort);
 }
 
-void QMailRetrievalActionPrivate::retrieveMessageList(const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort)
+void QMailRetrievalActionPrivate::retrieveMessageList(const QMailAccountId &accountId, const QMailFolderId &folderId,
+                                                      uint minimum, const QMailMessageSortKey &sort)
 {
     Q_ASSERT(!_pendingActions.count());
     retrieveMessageListHelper(accountId, folderId, minimum, sort);
 }
 
-void QMailRetrievalActionPrivate::retrieveMessageLists(const QMailAccountId &accountId, const QMailFolderIdList &folderIds, uint minimum, const QMailMessageSortKey &sort)
+void QMailRetrievalActionPrivate::retrieveMessageLists(const QMailAccountId &accountId,
+                                                       const QMailFolderIdList &folderIds,
+                                                       uint minimum, const QMailMessageSortKey &sort)
 {
     Q_ASSERT(!_pendingActions.count());
     _server->retrieveMessageLists(newAction(), accountId, folderIds, minimum, sort);
@@ -771,12 +781,10 @@ void QMailRetrievalActionPrivate::createStandardFolders(const QMailAccountId &ac
                 emitChanges();
             }
             return;
-        }
-        else {
+        } else {
             _server->createStandardFolders(newAction(), accountId);
         }
-    }
-    else {
+    } else {
         qMailLog(Messaging) << "Standard folders matched for account: " << accountId;
         if (validAction(newAction())) {
             setActivity(QMailServiceAction::Successful);
@@ -836,19 +844,20 @@ void QMailRetrievalActionPrivate::synchronize(const QMailAccountId &accountId, u
 {
     Q_ASSERT(!_pendingActions.count());
     newAction();
-    
+
     QMailRetrievalAction *exportAction = new QMailRetrievalAction();
-    QMailExportUpdatesCommand *exportCommand = new QMailExportUpdatesCommand(exportAction->impl(exportAction), accountId);
+    QMailExportUpdatesCommand *exportCommand = new QMailExportUpdatesCommand(exportAction->d_func(), accountId);
     appendSubAction(exportAction, QSharedPointer<QMailServiceActionCommand>(exportCommand));
 
     QMailRetrievalAction *retrieveFolderListAction = new QMailRetrievalAction();
-    QMailRetrieveFolderListCommand *retrieveFolderListCommand = new QMailRetrieveFolderListCommand(retrieveFolderListAction->impl(retrieveFolderListAction), accountId);
+    QMailRetrieveFolderListCommand *retrieveFolderListCommand
+            = new QMailRetrieveFolderListCommand(retrieveFolderListAction->d_func(), accountId);
     appendSubAction(retrieveFolderListAction, QSharedPointer<QMailServiceActionCommand>(retrieveFolderListCommand));
     
     QMailRetrievalAction *retrieveMessageListAction = new QMailRetrievalAction();
-    QMailRetrieveMessageListCommand *retrieveMessageListCommand = new QMailRetrieveMessageListCommand(retrieveMessageListAction->impl(retrieveMessageListAction), accountId, minimum);
+    QMailRetrieveMessageListCommand *retrieveMessageListCommand
+            = new QMailRetrieveMessageListCommand(retrieveMessageListAction->d_func(), accountId, minimum);
     appendSubAction(retrieveMessageListAction, QSharedPointer<QMailServiceActionCommand>(retrieveMessageListCommand));
-    
     executeNextSubAction();
 }
 
@@ -915,16 +924,11 @@ void QMailRetrievalActionPrivate::retrievalCompleted(quint64 action)
                         For example, this may mean skipping the attachments.
 */
 
-/*!
-    \typedef QMailRetrievalAction::ImplementationType
-    \internal
-*/
-
 /*! 
     Constructs a new retrieval action object with the supplied \a parent.
 */
 QMailRetrievalAction::QMailRetrievalAction(QObject *parent)
-    : QMailServiceAction(new QMailRetrievalActionPrivate(this), parent)
+    : QMailServiceAction(*(new QMailRetrievalActionPrivate(this)), parent)
 {
 }
 
@@ -950,9 +954,11 @@ QMailRetrievalAction::~QMailRetrievalAction()
 
     \sa retrieveMessageList(),  retrieveMessageLists()
 */
-void QMailRetrievalAction::retrieveFolderList(const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending)
+void QMailRetrievalAction::retrieveFolderList(const QMailAccountId &accountId, const QMailFolderId &folderId,
+                                              bool descending)
 {
-    impl(this)->retrieveFolderList(accountId, folderId, descending);
+    Q_D(QMailRetrievalAction);
+    d->retrieveFolderList(accountId, folderId, descending);
 }
 
 /*!
@@ -989,9 +995,11 @@ void QMailRetrievalAction::retrieveFolderList(const QMailAccountId &accountId, c
 
     \sa QMailAccount::lastSynchronized()
 */
-void QMailRetrievalAction::retrieveMessageList(const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort)
+void QMailRetrievalAction::retrieveMessageList(const QMailAccountId &accountId, const QMailFolderId &folderId,
+                                               uint minimum, const QMailMessageSortKey &sort)
 {
-    impl(this)->retrieveMessageList(accountId, folderId, minimum, sort);
+    Q_D(QMailRetrievalAction);
+    d->retrieveMessageList(accountId, folderId, minimum, sort);
 }
 
 /*!
@@ -1028,17 +1036,19 @@ void QMailRetrievalAction::retrieveMessageList(const QMailAccountId &accountId, 
 
     \sa QMailAccount::lastSynchronized()
 */
-void QMailRetrievalAction::retrieveMessageLists(const QMailAccountId &accountId, const QMailFolderIdList &folderIds, uint minimum, const QMailMessageSortKey &sort)
+void QMailRetrievalAction::retrieveMessageLists(const QMailAccountId &accountId, const QMailFolderIdList &folderIds,
+                                                uint minimum, const QMailMessageSortKey &sort)
 {
+    Q_D(QMailRetrievalAction);
+
     if (folderIds.isEmpty()) {
         // nothing to do
-        impl(this)->newAction();
-        impl(this)->setActivity(QMailServiceAction::Successful);
-        impl(this)->emitChanges();
-        return;
+        d->newAction();
+        d->setActivity(QMailServiceAction::Successful);
+        d->emitChanges();
+    } else {
+        d->retrieveMessageLists(accountId, folderIds, minimum, sort);
     }
-
-    impl(this)->retrieveMessageLists(accountId, folderIds, minimum, sort);
 }
 
 /*
@@ -1056,7 +1066,8 @@ void QMailRetrievalAction::retrieveMessageLists(const QMailAccountId &accountId,
 */
 void QMailRetrievalAction::retrieveNewMessages(const QMailAccountId &accountId, const QMailFolderIdList &folderIds)
 {
-    impl(this)->retrieveNewMessages(accountId, folderIds);
+    Q_D(QMailRetrievalAction);
+    d->retrieveNewMessages(accountId, folderIds);
 }
 
 /*!
@@ -1073,7 +1084,8 @@ void QMailRetrievalAction::retrieveNewMessages(const QMailAccountId &accountId, 
 */
 void QMailRetrievalAction::createStandardFolders(const QMailAccountId &accountId)
 {
-    impl(this)->createStandardFolders(accountId);
+    Q_D(QMailRetrievalAction);
+    d->createStandardFolders(accountId);
 }
 
 /*!
@@ -1099,7 +1111,8 @@ void QMailRetrievalAction::createStandardFolders(const QMailAccountId &accountId
 */
 void QMailRetrievalAction::retrieveMessages(const QMailMessageIdList &messageIds, RetrievalSpecification spec)
 {
-    impl(this)->retrieveMessages(messageIds, spec);
+    Q_D(QMailRetrievalAction);
+    d->retrieveMessages(messageIds, spec);
 }
 
 /*!
@@ -1115,7 +1128,8 @@ void QMailRetrievalAction::retrieveMessages(const QMailMessageIdList &messageIds
 */
 void QMailRetrievalAction::retrieveMessagePart(const QMailMessagePart::Location &partLocation)
 {
-    impl(this)->retrieveMessagePart(partLocation);
+    Q_D(QMailRetrievalAction);
+    d->retrieveMessagePart(partLocation);
 }
 
 /*!
@@ -1131,7 +1145,8 @@ void QMailRetrievalAction::retrieveMessagePart(const QMailMessagePart::Location 
 */
 void QMailRetrievalAction::retrieveMessageRange(const QMailMessageId &messageId, uint minimum)
 {
-    impl(this)->retrieveMessageRange(messageId, minimum);
+    Q_D(QMailRetrievalAction);
+    d->retrieveMessageRange(messageId, minimum);
 }
 
 /*!
@@ -1151,7 +1166,8 @@ void QMailRetrievalAction::retrieveMessageRange(const QMailMessageId &messageId,
 */
 void QMailRetrievalAction::retrieveMessagePartRange(const QMailMessagePart::Location &partLocation, uint minimum)
 {
-    impl(this)->retrieveMessagePartRange(partLocation, minimum);
+    Q_D(QMailRetrievalAction);
+    d->retrieveMessagePartRange(partLocation, minimum);
 }
 
 /*!
@@ -1177,7 +1193,8 @@ void QMailRetrievalAction::retrieveMessagePartRange(const QMailMessagePart::Loca
 */
 void QMailRetrievalAction::retrieveAll(const QMailAccountId &accountId)
 {
-    impl(this)->retrieveAll(accountId);
+    Q_D(QMailRetrievalAction);
+    d->retrieveAll(accountId);
 }
 
 /*!
@@ -1194,15 +1211,15 @@ void QMailRetrievalAction::retrieveAll(const QMailAccountId &accountId)
 */
 void QMailRetrievalAction::exportUpdates(const QMailAccountId &accountId)
 {
+    Q_D(QMailRetrievalAction);
     if (!QMailDisconnected::updatesOutstanding(accountId)) {
         // nothing to do
-        impl(this)->newAction();
-        impl(this)->setActivity(QMailServiceAction::Successful);
-        impl(this)->emitChanges();
-        return;
+        d->newAction();
+        d->setActivity(QMailServiceAction::Successful);
+        d->emitChanges();
+    } else {
+        d->exportUpdates(accountId);
     }
-        
-    impl(this)->exportUpdates(accountId);
 }
 
 /*!
@@ -1233,7 +1250,8 @@ void QMailRetrievalAction::exportUpdates(const QMailAccountId &accountId)
 */
 void QMailRetrievalAction::synchronizeAll(const QMailAccountId &accountId)
 {
-    impl(this)->synchronizeAll(accountId);
+    Q_D(QMailRetrievalAction);
+    d->synchronizeAll(accountId);
 }
 
 
@@ -1253,7 +1271,8 @@ void QMailRetrievalAction::synchronizeAll(const QMailAccountId &accountId)
 */
 void QMailRetrievalAction::synchronize(const QMailAccountId &accountId, uint minimum)
 {
-    impl(this)->synchronize(accountId, minimum);
+    Q_D(QMailRetrievalAction);
+    d->synchronize(accountId, minimum);
 }
 
 
@@ -1270,7 +1289,7 @@ void QMailRetrievalAction::synchronize(const QMailAccountId &accountId, uint min
 
 
 QMailTransmitActionPrivate::QMailTransmitActionPrivate(QMailTransmitAction *i)
-    : QMailServiceActionPrivate(this, i)
+    : QMailServiceActionPrivate(i)
 {
     connect(_server.data(), SIGNAL(messagesTransmitted(quint64, QMailMessageIdList)),
             this, SLOT(messagesTransmitted(quint64, QMailMessageIdList)));
@@ -1308,7 +1327,8 @@ void QMailTransmitActionPrivate::messagesTransmitted(quint64 action, const QMail
     }
 }
 
-void QMailTransmitActionPrivate::messagesFailedTransmission(quint64 action, const QMailMessageIdList &ids, QMailServiceAction::Status::ErrorCode error)
+void QMailTransmitActionPrivate::messagesFailedTransmission(quint64 action, const QMailMessageIdList &ids,
+                                                            QMailServiceAction::Status::ErrorCode error)
 {
     if (validAction(action)) {
         emit messagesFailedTransmission(ids, error);
@@ -1355,11 +1375,6 @@ void QMailTransmitActionPrivate::transmissionCompleted(quint64 action)
 */
 
 /*!
-    \typedef QMailTransmitAction::ImplementationType
-    \internal
-*/
-
-/*!
     \fn QMailTransmitAction::messagesTransmitted(const QMailMessageIdList &ids)
 
     This signal is emitted to report the successful transmission of the messages listed in \a ids.
@@ -1378,11 +1393,12 @@ void QMailTransmitActionPrivate::transmissionCompleted(quint64 action)
     Constructs a new transmit action object with the supplied \a parent.
 */
 QMailTransmitAction::QMailTransmitAction(QObject *parent)
-    : QMailServiceAction(new QMailTransmitActionPrivate(this), parent)
+    : QMailServiceAction(*(new QMailTransmitActionPrivate(this)), parent)
 {
-    connect(impl(this), SIGNAL(messagesTransmitted(QMailMessageIdList)), 
+    Q_D(QMailTransmitAction);
+    connect(d, SIGNAL(messagesTransmitted(QMailMessageIdList)),
             this, SIGNAL(messagesTransmitted(QMailMessageIdList)));
-    connect(impl(this), SIGNAL(messagesFailedTransmission(QMailMessageIdList, QMailServiceAction::Status::ErrorCode)), 
+    connect(d, SIGNAL(messagesFailedTransmission(QMailMessageIdList, QMailServiceAction::Status::ErrorCode)),
             this, SIGNAL(messagesFailedTransmission(QMailMessageIdList, QMailServiceAction::Status::ErrorCode)));
 }
 
@@ -1402,7 +1418,8 @@ QMailTransmitAction::~QMailTransmitAction()
 */
 void QMailTransmitAction::transmitMessages(const QMailAccountId &accountId)
 {
-    impl(this)->transmitMessages(accountId);
+    Q_D(QMailTransmitAction);
+    d->transmitMessages(accountId);
 }
 
 /*!
@@ -1413,11 +1430,12 @@ void QMailTransmitAction::transmitMessages(const QMailAccountId &accountId)
 */
 void QMailTransmitAction::transmitMessage(const QMailMessageId &messageId)
 {
-    impl(this)->transmitMessage(messageId);
+    Q_D(QMailTransmitAction);
+    d->transmitMessage(messageId);
 }
 
 QMailStorageActionPrivate::QMailStorageActionPrivate(QMailStorageAction *i)
-    : QMailServiceActionPrivate(this, i)
+    : QMailServiceActionPrivate(i)
 {
     connect(_server.data(), SIGNAL(messagesDeleted(quint64, QMailMessageIdList)),
             this, SLOT(messagesEffected(quint64, QMailMessageIdList)));
@@ -1548,7 +1566,9 @@ void QMailStorageActionPrivate::updateMessages(const QMailMessageList &list)
     // If so must use sync updating
     bool fwod(false);
     for (QMailMessage message : list) {
-        if (message.status() & (QMailMessage::HasUnresolvedReferences | QMailMessage::TransmitFromExternal | QMailMessage::Outgoing)) {
+        if (message.status() & (QMailMessage::HasUnresolvedReferences
+                                | QMailMessage::TransmitFromExternal
+                                | QMailMessage::Outgoing)) {
             fwod = true;
             break;
         }
@@ -1754,15 +1774,10 @@ void QMailStorageActionPrivate::storageActionCompleted(quint64 action)
 */
 
 /*!
-    \typedef QMailStorageAction::ImplementationType
-    \internal
-*/
-
-/*!
     Constructs a new transmit action object with the supplied \a parent.
 */
 QMailStorageAction::QMailStorageAction(QObject *parent)
-    : QMailServiceAction(new QMailStorageActionPrivate(this), parent)
+    : QMailServiceAction(*(new QMailStorageActionPrivate(this)), parent)
 {
 }
 
@@ -1780,7 +1795,8 @@ QMailStorageAction::~QMailStorageAction()
 */
 void QMailStorageAction::onlineDeleteMessages(const QMailMessageIdList &ids)
 {
-    impl(this)->onlineDeleteMessages(ids);
+    Q_D(QMailStorageAction);
+    d->onlineDeleteMessages(ids);
 }
 
 /*!
@@ -1788,7 +1804,8 @@ void QMailStorageAction::onlineDeleteMessages(const QMailMessageIdList &ids)
 */
 void QMailStorageAction::discardMessages(const QMailMessageIdList &ids)
 {
-    impl(this)->discardMessages(ids);
+    Q_D(QMailStorageAction);
+    d->discardMessages(ids);
 }
 
 /*!
@@ -1799,7 +1816,8 @@ void QMailStorageAction::discardMessages(const QMailMessageIdList &ids)
 */
 void QMailStorageAction::onlineCopyMessages(const QMailMessageIdList &ids, const QMailFolderId &destinationId)
 {
-    impl(this)->onlineCopyMessages(ids, destinationId);
+    Q_D(QMailStorageAction);
+    d->onlineCopyMessages(ids, destinationId);
 }
 
 /*!
@@ -1810,7 +1828,8 @@ void QMailStorageAction::onlineCopyMessages(const QMailMessageIdList &ids, const
 */
 void QMailStorageAction::onlineMoveMessages(const QMailMessageIdList &ids, const QMailFolderId &destinationId)
 {
-    impl(this)->onlineMoveMessages(ids, destinationId);
+    Q_D(QMailStorageAction);
+    d->onlineMoveMessages(ids, destinationId);
 }
 
 /*!
@@ -1825,9 +1844,11 @@ void QMailStorageAction::onlineMoveMessages(const QMailMessageIdList &ids, const
     
     \sa QMailMessage::setStatus(), QMailStore::updateMessagesMetaData()
 */
-void QMailStorageAction::onlineFlagMessagesAndMoveToStandardFolder(const QMailMessageIdList &ids, quint64 setMask, quint64 unsetMask)
+void QMailStorageAction::onlineFlagMessagesAndMoveToStandardFolder(const QMailMessageIdList &ids, quint64 setMask,
+                                                                   quint64 unsetMask)
 {
-    impl(this)->onlineFlagMessagesAndMoveToStandardFolder(ids, setMask, unsetMask);
+    Q_D(QMailStorageAction);
+    d->onlineFlagMessagesAndMoveToStandardFolder(ids, setMask, unsetMask);
 }
 
 /*!
@@ -1841,7 +1862,8 @@ void QMailStorageAction::onlineFlagMessagesAndMoveToStandardFolder(const QMailMe
 */
 void QMailStorageAction::addMessages(const QMailMessageList &messages)
 {
-    impl(this)->addMessages(messages);
+    Q_D(QMailStorageAction);
+    d->addMessages(messages);
 }
 
 /*!
@@ -1849,7 +1871,8 @@ void QMailStorageAction::addMessages(const QMailMessageList &messages)
 */
 QMailMessageIdList QMailStorageAction::messagesAdded() const
 {
-    return impl(this)->_addedOrUpdatedIds;
+    Q_D(const QMailStorageAction);
+    return d->_addedOrUpdatedIds;
 }
 
 /*!
@@ -1863,7 +1886,8 @@ QMailMessageIdList QMailStorageAction::messagesAdded() const
 */
 void QMailStorageAction::updateMessages(const QMailMessageList &messages)
 {
-    impl(this)->updateMessages(messages);
+    Q_D(QMailStorageAction);
+    d->updateMessages(messages);
 }
 
 /*!
@@ -1879,7 +1903,8 @@ void QMailStorageAction::updateMessages(const QMailMessageList &messages)
 */
 void QMailStorageAction::updateMessages(const QMailMessageMetaDataList &messages)
 {
-    impl(this)->updateMessages(messages);
+    Q_D(QMailStorageAction);
+    d->updateMessages(messages);
 }
 
 /*!
@@ -1887,7 +1912,8 @@ void QMailStorageAction::updateMessages(const QMailMessageMetaDataList &messages
 */
 QMailMessageIdList QMailStorageAction::messagesUpdated() const
 {
-    return impl(this)->_addedOrUpdatedIds;
+    Q_D(const QMailStorageAction);
+    return d->_addedOrUpdatedIds;
 }
 
 /*!
@@ -1903,7 +1929,8 @@ QMailMessageIdList QMailStorageAction::messagesUpdated() const
 */
 void QMailStorageAction::deleteMessages(const QMailMessageIdList& mailList)
 {
-    emit impl(this)->deleteMessages(mailList);
+    Q_D(QMailStorageAction);
+    emit d->deleteMessages(mailList);
 }
 
 /*!
@@ -1917,7 +1944,8 @@ void QMailStorageAction::deleteMessages(const QMailMessageIdList& mailList)
 */
 void QMailStorageAction::rollBackUpdates(const QMailAccountId &mailAccountId)
 {
-    impl(this)->rollBackUpdates(mailAccountId);
+    Q_D(QMailStorageAction);
+    d->rollBackUpdates(mailAccountId);
 }
 
 /*!
@@ -1932,7 +1960,8 @@ void QMailStorageAction::rollBackUpdates(const QMailAccountId &mailAccountId)
 */
 void QMailStorageAction::moveToStandardFolder(const QMailMessageIdList& ids, QMailFolder::StandardFolder standardFolder)
 {
-    impl(this)->moveToStandardFolder(ids, standardFolder);
+    Q_D(QMailStorageAction);
+    d->moveToStandardFolder(ids, standardFolder);
 }
 
 /*!
@@ -1949,7 +1978,8 @@ void QMailStorageAction::moveToStandardFolder(const QMailMessageIdList& ids, QMa
 */
 void QMailStorageAction::moveToFolder(const QMailMessageIdList& ids, const QMailFolderId& folderId)
 {
-    emit impl(this)->moveToFolder(ids, folderId);
+    Q_D(QMailStorageAction);
+    emit d->moveToFolder(ids, folderId);
 }
 
 /*!
@@ -1966,7 +1996,8 @@ void QMailStorageAction::moveToFolder(const QMailMessageIdList& ids, const QMail
 */
 void QMailStorageAction::flagMessages(const QMailMessageIdList& ids, quint64 setMask, quint64 unsetMask)
 {
-    emit impl(this)->flagMessages(ids, setMask, unsetMask);
+    Q_D(QMailStorageAction);
+    emit d->flagMessages(ids, setMask, unsetMask);
 }
 
 /*!
@@ -1979,7 +2010,8 @@ void QMailStorageAction::flagMessages(const QMailMessageIdList& ids, quint64 set
 */
 void QMailStorageAction::restoreToPreviousFolder(const QMailMessageKey& key)
 {
-    emit impl(this)->restoreToPreviousFolder(key);
+    Q_D(QMailStorageAction);
+    emit d->restoreToPreviousFolder(key);
 }
 
 /*!
@@ -1994,7 +2026,8 @@ void QMailStorageAction::restoreToPreviousFolder(const QMailMessageKey& key)
 */
 void QMailStorageAction::onlineCreateFolder(const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId)
 {
-    impl(this)->onlineCreateFolder(name, accountId, parentId);
+    Q_D(QMailStorageAction);
+    d->onlineCreateFolder(name, accountId, parentId);
 }
 
 /*!
@@ -2006,7 +2039,8 @@ void QMailStorageAction::onlineCreateFolder(const QString &name, const QMailAcco
 */
 void QMailStorageAction::onlineRenameFolder(const QMailFolderId &folderId, const QString &name)
 {
-    impl(this)->onlineRenameFolder(folderId, name);
+    Q_D(QMailStorageAction);
+    d->onlineRenameFolder(folderId, name);
 }
 
 /*!
@@ -2019,7 +2053,8 @@ void QMailStorageAction::onlineRenameFolder(const QMailFolderId &folderId, const
 */
 void QMailStorageAction::onlineDeleteFolder(const QMailFolderId &folderId)
 {
-    impl(this)->onlineDeleteFolder(folderId);
+    Q_D(QMailStorageAction);
+    d->onlineDeleteFolder(folderId);
 }
 
 /*!
@@ -2033,11 +2068,12 @@ void QMailStorageAction::onlineDeleteFolder(const QMailFolderId &folderId)
 */
 void QMailStorageAction::onlineMoveFolder(const QMailFolderId &folderId, const QMailFolderId &newParentId)
 {
-    impl(this)->onlineMoveFolder(folderId, newParentId);
+    Q_D(QMailStorageAction);
+    d->onlineMoveFolder(folderId, newParentId);
 }
 
 QMailSearchActionPrivate::QMailSearchActionPrivate(QMailSearchAction *i)
-    : QMailServiceActionPrivate(this, i)
+    : QMailServiceActionPrivate(i)
 {
     connect(_server.data(), SIGNAL(matchingMessageIds(quint64, QMailMessageIdList)),
             this, SLOT(matchingMessageIds(quint64, QMailMessageIdList)));
@@ -2055,13 +2091,17 @@ QMailSearchActionPrivate::~QMailSearchActionPrivate()
 {
 }
 
-void QMailSearchActionPrivate::searchMessages(const QMailMessageKey &filter, const QString &bodyText, QMailSearchAction::SearchSpecification spec, const QMailMessageSortKey &sort)
+void QMailSearchActionPrivate::searchMessages(const QMailMessageKey &filter, const QString &bodyText,
+                                              QMailSearchAction::SearchSpecification spec,
+                                              const QMailMessageSortKey &sort)
 {
     _server->searchMessages(newAction(), filter, bodyText, spec, sort);
     emitChanges();
 }
 
-void QMailSearchActionPrivate::searchMessages(const QMailMessageKey &filter, const QString &bodyText, QMailSearchAction::SearchSpecification spec, quint64 limit, const QMailMessageSortKey &sort)
+void QMailSearchActionPrivate::searchMessages(const QMailMessageKey &filter, const QString &bodyText,
+                                              QMailSearchAction::SearchSpecification spec, quint64 limit,
+                                              const QMailMessageSortKey &sort)
 {
     _server->searchMessages(newAction(), filter, bodyText, spec, limit, sort);
     emitChanges();
@@ -2169,19 +2209,15 @@ void QMailSearchActionPrivate::finaliseSearch()
 */
 
 /*!
-    \typedef QMailSearchAction::ImplementationType
-    \internal
-*/
-
-/*!
     Constructs a new search action object with the supplied \a parent.
 */
 QMailSearchAction::QMailSearchAction(QObject *parent)
-    : QMailServiceAction(new QMailSearchActionPrivate(this), parent)
+    : QMailServiceAction(*(new QMailSearchActionPrivate(this)), parent)
 {
-    connect(impl(this), SIGNAL(messageIdsMatched(QMailMessageIdList)), this, SIGNAL(messageIdsMatched(QMailMessageIdList)));
-    connect(impl(this), SIGNAL(remainingMessagesCount(uint)), this, SIGNAL(remainingMessagesCount(uint)));
-    connect(impl(this), SIGNAL(messagesCount(uint)), this, SIGNAL(messagesCount(uint)));
+    Q_D(const QMailSearchAction);
+    connect(d, SIGNAL(messageIdsMatched(QMailMessageIdList)), this, SIGNAL(messageIdsMatched(QMailMessageIdList)));
+    connect(d, SIGNAL(remainingMessagesCount(uint)), this, SIGNAL(remainingMessagesCount(uint)));
+    connect(d, SIGNAL(messagesCount(uint)), this, SIGNAL(messagesCount(uint)));
 }
 
 /*! \internal */
@@ -2201,9 +2237,11 @@ QMailSearchAction::~QMailSearchAction()
     If \a sort is not empty, the external service will return matching messages in 
     the ordering indicated by the sort criterion if possible.
 */
-void QMailSearchAction::searchMessages(const QMailMessageKey &filter, const QString &bodyText, SearchSpecification spec, const QMailMessageSortKey &sort)
+void QMailSearchAction::searchMessages(const QMailMessageKey &filter, const QString &bodyText,
+                                       SearchSpecification spec, const QMailMessageSortKey &sort)
 {
-    impl(this)->searchMessages(filter, bodyText, spec, sort);
+    Q_D(QMailSearchAction);
+    d->searchMessages(filter, bodyText, spec, sort);
 }
 
 /*!
@@ -2220,9 +2258,11 @@ void QMailSearchAction::searchMessages(const QMailMessageKey &filter, const QStr
     If \a sort is not empty, the external service will return matching messages in 
     the ordering indicated by the sort criterion if possible.
 */
-void QMailSearchAction::searchMessages(const QMailMessageKey &filter, const QString &bodyText, SearchSpecification spec, quint64 limit, const QMailMessageSortKey &sort)
+void QMailSearchAction::searchMessages(const QMailMessageKey &filter, const QString &bodyText,
+                                       SearchSpecification spec, quint64 limit, const QMailMessageSortKey &sort)
 {
-    impl(this)->searchMessages(filter, bodyText, spec, limit, sort);
+    Q_D(QMailSearchAction);
+    d->searchMessages(filter, bodyText, spec, limit, sort);
 }
 
 /*!
@@ -2236,7 +2276,8 @@ void QMailSearchAction::searchMessages(const QMailMessageKey &filter, const QStr
 */
 void QMailSearchAction::countMessages(const QMailMessageKey &filter, const QString &bodyText)
 {
-    impl(this)->countMessages(filter, bodyText);
+    Q_D(QMailSearchAction);
+    d->countMessages(filter, bodyText);
 }
 
 /*!
@@ -2244,7 +2285,8 @@ void QMailSearchAction::countMessages(const QMailMessageKey &filter, const QStri
 */
 void QMailSearchAction::cancelOperation()
 {
-    impl(this)->cancelOperation();
+    Q_D(QMailSearchAction);
+    d->cancelOperation();
 }
 
 /*!
@@ -2253,7 +2295,8 @@ void QMailSearchAction::cancelOperation()
 */
 QMailMessageIdList QMailSearchAction::matchingMessageIds() const
 {
-    return impl(this)->_matchingIds;
+    Q_D(const QMailSearchAction);
+    return d->_matchingIds;
 }
 
 /*!
@@ -2263,7 +2306,8 @@ QMailMessageIdList QMailSearchAction::matchingMessageIds() const
 */
 uint QMailSearchAction::remainingMessagesCount() const
 {
-    return impl(this)->_remainingMessagesCount;
+    Q_D(const QMailSearchAction);
+    return d->_remainingMessagesCount;
 }
 
 /*!
@@ -2271,7 +2315,8 @@ uint QMailSearchAction::remainingMessagesCount() const
 */
 uint QMailSearchAction::messagesCount() const
 {
-    return impl(this)->_messagesCount;
+    Q_D(const QMailSearchAction);
+    return d->_messagesCount;
 }
 
 /*!
@@ -2315,7 +2360,7 @@ QMailMessageKey QMailSearchAction::temporaryKey()
 
 QMailActionInfoPrivate::QMailActionInfoPrivate(const QMailActionData &data, QMailActionInfo *i,
                                                QSharedPointer<QMailMessageServer> server)
-    : QMailServiceActionPrivate(this, i, server),
+    : QMailServiceActionPrivate(i, server),
       _requestType(data.requestType()),
       _actionCompleted(false)
 {
@@ -2424,11 +2469,6 @@ QMailMessageId QMailActionInfoPrivate::statusMessageId() const
 */
 
 /*!
-    \typedef QMailActionInfo::ImplementationType
-    \internal
-*/
-
-/*!
     \typedef QMailActionInfo::StatusErrorCode
 
     A typedef for QMailServiceAction::Status::ErrorCode so moc can parse it
@@ -2472,22 +2512,23 @@ QMailMessageId QMailActionInfoPrivate::statusMessageId() const
 
 /*! \internal */
 QMailActionInfo::QMailActionInfo(const QMailActionData &data, QSharedPointer<QMailMessageServer> server)
-    : QMailServiceAction(new QMailActionInfoPrivate(data, this, server), 0) // NB: No qobject parent!
+    : QMailServiceAction(*(new QMailActionInfoPrivate(data, this, server)), nullptr) // NB: No qobject parent!
 {
-    connect(impl(this), SIGNAL(statusAccountIdChanged(QMailAccountId)),
+    Q_D(QMailActionInfo);
+    connect(d, SIGNAL(statusAccountIdChanged(QMailAccountId)),
             this, SIGNAL(statusAccountIdChanged(QMailAccountId)));
-    connect(impl(this), SIGNAL(statusErrorCodeChanged(QMailActionInfo::StatusErrorCode)),
+    connect(d, SIGNAL(statusErrorCodeChanged(QMailActionInfo::StatusErrorCode)),
              this, SIGNAL(statusErrorCodeChanged(QMailActionInfo::StatusErrorCode)));
-    connect(impl(this), SIGNAL(statusTextChanged(QString)),
+    connect(d, SIGNAL(statusTextChanged(QString)),
             this, SIGNAL(statusTextChanged(QString)));
-    connect(impl(this), SIGNAL(statusFolderIdChanged(QMailFolderId)),
+    connect(d, SIGNAL(statusFolderIdChanged(QMailFolderId)),
             this, SIGNAL(statusFolderIdChanged(QMailFolderId)));
-    connect(impl(this), SIGNAL(statusMessageIdChanged(QMailMessageId)),
+    connect(d, SIGNAL(statusMessageIdChanged(QMailMessageId)),
             this, SIGNAL(statusMessageIdChanged(QMailMessageId)));
 
     // Hack to get around _interface not being "ready" in the private class
-    connect(this, SIGNAL(progressChanged(uint,uint)), impl(this), SLOT(theProgressChanged(uint,uint)));
-    connect(this, SIGNAL(statusChanged(QMailServiceAction::Status)), impl(this), SLOT(theStatusChanged(QMailServiceAction::Status)));
+    connect(this, SIGNAL(progressChanged(uint,uint)), d, SLOT(theProgressChanged(uint,uint)));
+    connect(this, SIGNAL(statusChanged(QMailServiceAction::Status)), d, SLOT(theStatusChanged(QMailServiceAction::Status)));
 }
 
 /*!
@@ -2496,7 +2537,8 @@ QMailActionInfo::QMailActionInfo(const QMailActionData &data, QSharedPointer<QMa
 */
 QMailServerRequestType QMailActionInfo::requestType() const
 {
-    return impl(this)->requestType();
+    Q_D(const QMailActionInfo);
+    return d->requestType();
 }
 
 /*!
@@ -2504,7 +2546,8 @@ QMailServerRequestType QMailActionInfo::requestType() const
 */
 quint64 QMailActionInfo::id() const
 {
-    return impl(this)->actionId();
+    Q_D(const QMailActionInfo);
+    return d->actionId();
 }
 
 /*!
@@ -2514,7 +2557,8 @@ quint64 QMailActionInfo::id() const
 */
 float QMailActionInfo::totalProgress() const
 {
-    return impl(this)->totalProgress();
+    Q_D(const QMailActionInfo);
+    return d->totalProgress();
 }
 
 /*!
@@ -2523,7 +2567,8 @@ float QMailActionInfo::totalProgress() const
 */
 QMailActionInfo::StatusErrorCode QMailActionInfo::statusErrorCode() const
 {
-    return impl(this)->statusErrorCode();
+    Q_D(const QMailActionInfo);
+    return d->statusErrorCode();
 }
 
 /*!
@@ -2532,7 +2577,8 @@ QMailActionInfo::StatusErrorCode QMailActionInfo::statusErrorCode() const
 */
 QString QMailActionInfo::statusText() const
 {
-    return impl(this)->statusText();
+    Q_D(const QMailActionInfo);
+    return d->statusText();
 }
 
 /*!
@@ -2541,7 +2587,8 @@ QString QMailActionInfo::statusText() const
 */
 QMailAccountId QMailActionInfo::statusAccountId() const
 {
-    return impl(this)->statusAccountId();
+    Q_D(const QMailActionInfo);
+    return d->statusAccountId();
 }
 
 /*!
@@ -2550,7 +2597,8 @@ QMailAccountId QMailActionInfo::statusAccountId() const
 */
 QMailFolderId QMailActionInfo::statusFolderId() const
 {
-    return impl(this)->statusFolderId();
+    Q_D(const QMailActionInfo);
+    return d->statusFolderId();
 }
 
 /*!
@@ -2560,11 +2608,12 @@ QMailFolderId QMailActionInfo::statusFolderId() const
 
 QMailMessageId QMailActionInfo::statusMessageId() const
 {
-    return impl(this)->statusMessageId();
+    Q_D(const QMailActionInfo);
+    return d->statusMessageId();
 }
 
 QMailActionObserverPrivate::QMailActionObserverPrivate(QMailActionObserver *i)
-    : QMailServiceActionPrivate(this, i),
+    : QMailServiceActionPrivate(i),
       _isReady(false)
 {
     connect(_server.data(), SIGNAL(actionStarted(QMailActionData)),
@@ -2651,11 +2700,6 @@ void QMailActionObserverPrivate::onActivityChanged(quint64 id, QMailServiceActio
 */
 
 /*!
-    \typedef QMailActionObserver::ImplementationType
-    \internal
-*/
-
-/*!
     \fn QMailActionObserver::actionsChanged(const QList< QSharedPointer<QMailActionInfo> > &newActions)
 
     This signal is emitted whenever the list of actions we are observing changes. This can be
@@ -2670,10 +2714,12 @@ void QMailActionObserverPrivate::onActivityChanged(quint64 id, QMailServiceActio
 
 /*! Constructs a new QMailActionObserver with a supplied \a parent  */
 QMailActionObserver::QMailActionObserver(QObject *parent)
-    : QMailServiceAction(new QMailActionObserverPrivate(this), parent)
+    : QMailServiceAction(*(new QMailActionObserverPrivate(this)), parent)
 {
-    connect(impl(this), SIGNAL(actionsChanged(QList<QSharedPointer<QMailActionInfo> >)), this,
-            SIGNAL(actionsChanged(QList<QSharedPointer<QMailActionInfo> >)));
+    Q_D(QMailActionObserver);
+
+    connect(d, SIGNAL(actionsChanged(QList<QSharedPointer<QMailActionInfo> >)),
+            this, SIGNAL(actionsChanged(QList<QSharedPointer<QMailActionInfo> >)));
 }
 
 /*! Destructs QMailActionObserver */
@@ -2689,7 +2735,8 @@ QMailActionObserver::~QMailActionObserver()
 */
 QList< QSharedPointer<QMailActionInfo> > QMailActionObserver::actions() const
 {
-    return impl(this)->runningActions();
+    Q_D(const QMailActionObserver);
+    return d->runningActions();
 }
 
 /*!
@@ -2698,11 +2745,12 @@ QList< QSharedPointer<QMailActionInfo> > QMailActionObserver::actions() const
 */
 void QMailActionObserver::listActionsRequest()
 {
-    impl(this)->listActionsRequest();
+    Q_D(QMailActionObserver);
+    d->listActionsRequest();
 }
 
 QMailProtocolActionPrivate::QMailProtocolActionPrivate(QMailProtocolAction *i)
-    : QMailServiceActionPrivate(this, i)
+    : QMailServiceActionPrivate(i)
 {
     connect(_server.data(), &QMailMessageServer::protocolResponse,
             this, &QMailProtocolActionPrivate::handleProtocolResponse);
@@ -2758,17 +2806,13 @@ void QMailProtocolActionPrivate::handleProtocolRequestCompleted(quint64 action)
 */
 
 /*!
-    \typedef QMailProtocolAction::ImplementationType
-    \internal
-*/
-
-/*!
     Constructs a new protocol action object with the supplied \a parent.
 */
 QMailProtocolAction::QMailProtocolAction(QObject *parent)
-    : QMailServiceAction(new QMailProtocolActionPrivate(this), parent)
+    : QMailServiceAction(*(new QMailProtocolActionPrivate(this)), parent)
 {
-    connect(impl(this), SIGNAL(protocolResponse(QString, QVariantMap)), this, SIGNAL(protocolResponse(QString, QVariantMap)));
+    Q_D(QMailProtocolAction);
+    connect(d, SIGNAL(protocolResponse(QString, QVariantMap)), this, SIGNAL(protocolResponse(QString, QVariantMap)));
 }
 
 /*! \internal */
@@ -2782,9 +2826,11 @@ QMailProtocolAction::~QMailProtocolAction()
     The request may have associated \a data, in a protocol-specific form.
     There might be limitations on what type of data is allowed.
 */
-void QMailProtocolAction::protocolRequest(const QMailAccountId &accountId, const QString &request, const QVariantMap &data)
+void QMailProtocolAction::protocolRequest(const QMailAccountId &accountId, const QString &request,
+                                          const QVariantMap &data)
 {
-    impl(this)->protocolRequest(accountId, request, data);
+    Q_D(QMailProtocolAction);
+    d->protocolRequest(accountId, request, data);
 }
 
 /*!
