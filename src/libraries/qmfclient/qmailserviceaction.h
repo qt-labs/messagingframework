@@ -281,8 +281,8 @@ public:
 
 Q_SIGNALS:
     void messageIdsMatched(const QMailMessageIdList &ids);
-    void remainingMessagesCount(uint);
-    void messagesCount(uint);
+    void remainingMessagesCountChanged(uint);
+    void messagesCountChanged(uint);
 
 public Q_SLOTS:
     void searchMessages(const QMailMessageKey &filter, const QString& bodyText, SearchSpecification spec,

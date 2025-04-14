@@ -79,14 +79,14 @@ QMailServiceActionPrivate::QMailServiceActionPrivate(QMailServiceAction *i,
       _progressChanged(false),
       _statusChanged(false)
 {
-    connect(_server.data(), SIGNAL(activityChanged(quint64, QMailServiceAction::Activity)),
-            this, SLOT(activityChanged(quint64, QMailServiceAction::Activity)));
-    connect(_server.data(), SIGNAL(connectivityChanged(quint64, QMailServiceAction::Connectivity)),
-            this, SLOT(connectivityChanged(quint64, QMailServiceAction::Connectivity)));
-    connect(_server.data(), SIGNAL(statusChanged(quint64, const QMailServiceAction::Status)),
-            this, SLOT(statusChanged(quint64, const QMailServiceAction::Status)));
-    connect(_server.data(), SIGNAL(progressChanged(quint64, uint, uint)),
-            this, SLOT(progressChanged(quint64, uint, uint)));
+    connect(_server.data(), &QMailMessageServer::activityChanged,
+            this, &QMailServiceActionPrivate::activityChanged);
+    connect(_server.data(), &QMailMessageServer::connectivityChanged,
+            this, &QMailServiceActionPrivate::connectivityChanged);
+    connect(_server.data(), &QMailMessageServer::statusChanged,
+            this, &QMailServiceActionPrivate::statusChanged);
+    connect(_server.data(), &QMailMessageServer::progressChanged,
+            this, &QMailServiceActionPrivate::progressChanged);
 }
 
 QMailServiceActionPrivate::~QMailServiceActionPrivate()
@@ -186,26 +186,26 @@ void QMailServiceActionPrivate::subActionProgressChanged(uint value, uint total)
 
 void QMailServiceActionPrivate::connectSubAction(QMailServiceAction *subAction)
 {
-    connect(subAction, SIGNAL(connectivityChanged(QMailServiceAction::Connectivity)),
-            this, SLOT(subActionConnectivityChanged(QMailServiceAction::Connectivity)));
-    connect(subAction, SIGNAL(activityChanged(QMailServiceAction::Activity)),
-            this, SLOT(subActionActivityChanged(QMailServiceAction::Activity)));
-    connect(subAction, SIGNAL(statusChanged(const QMailServiceAction::Status &)),
-            this, SLOT(subActionStatusChanged(const QMailServiceAction::Status &)));
-    connect(subAction, SIGNAL(progressChanged(uint, uint)),
-            this, SLOT(subActionProgressChanged(uint, uint)));
+    connect(subAction, &QMailServiceAction::connectivityChanged,
+            this, &QMailServiceActionPrivate::subActionConnectivityChanged);
+    connect(subAction, &QMailServiceAction::activityChanged,
+            this, &QMailServiceActionPrivate::subActionActivityChanged);
+    connect(subAction, &QMailServiceAction::statusChanged,
+            this, &QMailServiceActionPrivate::subActionStatusChanged);
+    connect(subAction, &QMailServiceAction::progressChanged,
+            this, &QMailServiceActionPrivate::subActionProgressChanged);
 }
 
 void QMailServiceActionPrivate::disconnectSubAction(QMailServiceAction *subAction)
 {
-    disconnect(subAction, SIGNAL(connectivityChanged(QMailServiceAction::Connectivity)),
-            this, SLOT(subActionConnectivityChanged(QMailServiceAction::Connectivity)));
-    disconnect(subAction, SIGNAL(activityChanged(QMailServiceAction::Activity)),
-            this, SLOT(subActionActivityChanged(QMailServiceAction::Activity)));
-    disconnect(subAction, SIGNAL(statusChanged(const QMailServiceAction::Status &)),
-            this, SLOT(subActionStatusChanged(const QMailServiceAction::Status &)));
-    disconnect(subAction, SIGNAL(progressChanged(uint, uint)),
-            this, SLOT(subActionProgressChanged(uint, uint)));
+    disconnect(subAction, &QMailServiceAction::connectivityChanged,
+               this, &QMailServiceActionPrivate::subActionConnectivityChanged);
+    disconnect(subAction, &QMailServiceAction::activityChanged,
+               this, &QMailServiceActionPrivate::subActionActivityChanged);
+    disconnect(subAction, &QMailServiceAction::statusChanged,
+               this, &QMailServiceActionPrivate::subActionStatusChanged);
+    disconnect(subAction, &QMailServiceAction::progressChanged,
+               this, &QMailServiceActionPrivate::subActionProgressChanged);
 }
 
 void QMailServiceActionPrivate::clearSubActions()
@@ -720,8 +720,8 @@ void QMailServiceAction::setStatus(QMailServiceAction::Status::ErrorCode c, cons
 QMailRetrievalActionPrivate::QMailRetrievalActionPrivate(QMailRetrievalAction *i)
     : QMailServiceActionPrivate(i)
 {
-    connect(_server.data(), SIGNAL(retrievalCompleted(quint64)),
-            this, SLOT(retrievalCompleted(quint64)));
+    connect(_server.data(), &QMailMessageServer::retrievalCompleted,
+            this, &QMailRetrievalActionPrivate::retrievalCompleted);
 
     init();
 }
@@ -1291,12 +1291,12 @@ void QMailRetrievalAction::synchronize(const QMailAccountId &accountId, uint min
 QMailTransmitActionPrivate::QMailTransmitActionPrivate(QMailTransmitAction *i)
     : QMailServiceActionPrivate(i)
 {
-    connect(_server.data(), SIGNAL(messagesTransmitted(quint64, QMailMessageIdList)),
-            this, SLOT(messagesTransmitted(quint64, QMailMessageIdList)));
-    connect(_server.data(), SIGNAL(messagesFailedTransmission(quint64, QMailMessageIdList, QMailServiceAction::Status::ErrorCode)),
-            this, SLOT(messagesFailedTransmission(quint64, QMailMessageIdList, QMailServiceAction::Status::ErrorCode)));
-    connect(_server.data(), SIGNAL(transmissionCompleted(quint64)),
-            this, SLOT(transmissionCompleted(quint64)));
+    connect(_server.data(), &QMailMessageServer::messagesTransmitted,
+            this, &QMailTransmitActionPrivate::handleMessagesTransmitted);
+    connect(_server.data(), &QMailMessageServer::messagesFailedTransmission,
+            this, &QMailTransmitActionPrivate::handleMessagesFailedTransmission);
+    connect(_server.data(), &QMailMessageServer::transmissionCompleted,
+            this, &QMailTransmitActionPrivate::handleTransmissionCompleted);
 
     init();
 }
@@ -1320,22 +1320,22 @@ void QMailTransmitActionPrivate::init()
     QMailServiceActionPrivate::init();
 }
 
-void QMailTransmitActionPrivate::messagesTransmitted(quint64 action, const QMailMessageIdList &ids)
+void QMailTransmitActionPrivate::handleMessagesTransmitted(quint64 action, const QMailMessageIdList &ids)
 {
     if (validAction(action)) {
         emit messagesTransmitted(ids);
     }
 }
 
-void QMailTransmitActionPrivate::messagesFailedTransmission(quint64 action, const QMailMessageIdList &ids,
-                                                            QMailServiceAction::Status::ErrorCode error)
+void QMailTransmitActionPrivate::handleMessagesFailedTransmission(quint64 action, const QMailMessageIdList &ids,
+                                                                  QMailServiceAction::Status::ErrorCode error)
 {
     if (validAction(action)) {
         emit messagesFailedTransmission(ids, error);
     }
 }
 
-void QMailTransmitActionPrivate::transmissionCompleted(quint64 action)
+void QMailTransmitActionPrivate::handleTransmissionCompleted(quint64 action)
 {
     if (validAction(action)) {
         QMailServiceAction::Activity result(QMailServiceAction::Successful);
@@ -1396,10 +1396,10 @@ QMailTransmitAction::QMailTransmitAction(QObject *parent)
     : QMailServiceAction(*(new QMailTransmitActionPrivate(this)), parent)
 {
     Q_D(QMailTransmitAction);
-    connect(d, SIGNAL(messagesTransmitted(QMailMessageIdList)),
-            this, SIGNAL(messagesTransmitted(QMailMessageIdList)));
-    connect(d, SIGNAL(messagesFailedTransmission(QMailMessageIdList, QMailServiceAction::Status::ErrorCode)),
-            this, SIGNAL(messagesFailedTransmission(QMailMessageIdList, QMailServiceAction::Status::ErrorCode)));
+    connect(d, &QMailTransmitActionPrivate::messagesTransmitted,
+            this, &QMailTransmitAction::messagesTransmitted);
+    connect(d, &QMailTransmitActionPrivate::messagesFailedTransmission,
+            this, &QMailTransmitAction::messagesFailedTransmission);
 }
 
 /*! \internal */
@@ -1437,20 +1437,20 @@ void QMailTransmitAction::transmitMessage(const QMailMessageId &messageId)
 QMailStorageActionPrivate::QMailStorageActionPrivate(QMailStorageAction *i)
     : QMailServiceActionPrivate(i)
 {
-    connect(_server.data(), SIGNAL(messagesDeleted(quint64, QMailMessageIdList)),
-            this, SLOT(messagesEffected(quint64, QMailMessageIdList)));
-    connect(_server.data(), SIGNAL(messagesMoved(quint64, QMailMessageIdList)),
-            this, SLOT(messagesEffected(quint64, QMailMessageIdList)));
-    connect(_server.data(), SIGNAL(messagesCopied(quint64, QMailMessageIdList)),
-            this, SLOT(messagesEffected(quint64, QMailMessageIdList)));
-    connect(_server.data(), SIGNAL(messagesFlagged(quint64, QMailMessageIdList)),
-            this, SLOT(messagesEffected(quint64, QMailMessageIdList)));
-    connect(_server.data(), SIGNAL(messagesAdded(quint64, QMailMessageIdList)),
-            this, SLOT(messagesAdded(quint64, QMailMessageIdList)));
-    connect(_server.data(), SIGNAL(messagesUpdated(quint64, QMailMessageIdList)),
-            this, SLOT(messagesUpdated(quint64, QMailMessageIdList)));
-    connect(_server.data(), SIGNAL(storageActionCompleted(quint64)),
-            this, SLOT(storageActionCompleted(quint64)));
+    connect(_server.data(), &QMailMessageServer::messagesDeleted,
+            this, &QMailStorageActionPrivate::messagesEffected);
+    connect(_server.data(), &QMailMessageServer::messagesMoved,
+            this, &QMailStorageActionPrivate::messagesEffected);
+    connect(_server.data(), &QMailMessageServer::messagesCopied,
+            this, &QMailStorageActionPrivate::messagesEffected);
+    connect(_server.data(), &QMailMessageServer::messagesFlagged,
+            this, &QMailStorageActionPrivate::messagesEffected);
+    connect(_server.data(), &QMailMessageServer::messagesAdded,
+            this, &QMailStorageActionPrivate::messagesAdded);
+    connect(_server.data(), &QMailMessageServer::messagesUpdated,
+            this, &QMailStorageActionPrivate::messagesUpdated);
+    connect(_server.data(), &QMailMessageServer::storageActionCompleted,
+            this, &QMailStorageActionPrivate::storageActionCompleted);
 
     init();
 }
@@ -2075,14 +2075,14 @@ void QMailStorageAction::onlineMoveFolder(const QMailFolderId &folderId, const Q
 QMailSearchActionPrivate::QMailSearchActionPrivate(QMailSearchAction *i)
     : QMailServiceActionPrivate(i)
 {
-    connect(_server.data(), SIGNAL(matchingMessageIds(quint64, QMailMessageIdList)),
-            this, SLOT(matchingMessageIds(quint64, QMailMessageIdList)));
-    connect(_server.data(), SIGNAL(remainingMessagesCount(quint64, uint)),
-            this, SLOT(remainingMessagesCount(quint64, uint)));
-    connect(_server.data(), SIGNAL(messagesCount(quint64, uint)),
-            this, SLOT(messagesCount(quint64, uint)));
-    connect(_server.data(), SIGNAL(searchCompleted(quint64)),
-            this, SLOT(searchCompleted(quint64)));
+    connect(_server.data(), &QMailMessageServer::matchingMessageIds,
+            this, &QMailSearchActionPrivate::matchingMessageIds);
+    connect(_server.data(), &QMailMessageServer::remainingMessagesCount,
+            this, &QMailSearchActionPrivate::handleRemainingMessagesCount);
+    connect(_server.data(), &QMailMessageServer::messagesCount,
+            this, &QMailSearchActionPrivate::handleMessagesCount);
+    connect(_server.data(), &QMailMessageServer::searchCompleted,
+            this, &QMailSearchActionPrivate::searchCompleted);
 
     init();
 }
@@ -2138,21 +2138,21 @@ void QMailSearchActionPrivate::matchingMessageIds(quint64 action, const QMailMes
     }
 }
 
-void QMailSearchActionPrivate::remainingMessagesCount(quint64 action, uint count)
+void QMailSearchActionPrivate::handleRemainingMessagesCount(quint64 action, uint count)
 {
     if (validAction(action)) {
         _remainingMessagesCount = count;
 
-        emit remainingMessagesCount(count);
+        emit remainingMessagesCountChanged(count);
     }
 }
 
-void QMailSearchActionPrivate::messagesCount(quint64 action, uint count)
+void QMailSearchActionPrivate::handleMessagesCount(quint64 action, uint count)
 {
     if (validAction(action)) {
         _messagesCount = count;
 
-        emit messagesCount(count);
+        emit messagesCountChanged(count);
     }
 }
 
@@ -2215,9 +2215,12 @@ QMailSearchAction::QMailSearchAction(QObject *parent)
     : QMailServiceAction(*(new QMailSearchActionPrivate(this)), parent)
 {
     Q_D(const QMailSearchAction);
-    connect(d, SIGNAL(messageIdsMatched(QMailMessageIdList)), this, SIGNAL(messageIdsMatched(QMailMessageIdList)));
-    connect(d, SIGNAL(remainingMessagesCount(uint)), this, SIGNAL(remainingMessagesCount(uint)));
-    connect(d, SIGNAL(messagesCount(uint)), this, SIGNAL(messagesCount(uint)));
+    connect(d, &QMailSearchActionPrivate::messageIdsMatched,
+            this, &QMailSearchAction::messageIdsMatched);
+    connect(d, &QMailSearchActionPrivate::remainingMessagesCountChanged,
+            this, &QMailSearchAction::remainingMessagesCountChanged);
+    connect(d, &QMailSearchActionPrivate::messagesCountChanged,
+            this, &QMailSearchAction::messagesCountChanged);
 }
 
 /*! \internal */
@@ -2338,7 +2341,7 @@ QMailMessageKey QMailSearchAction::temporaryKey()
 */
 
 /*!
-    \fn QMailSearchAction::remainingMessagesCount(uint count)
+    \fn QMailSearchAction::remainingMessagesCountChanged(uint count)
 
     This signal emits the \a count of messages remaining on the remote server; that
     is the count of matching messages that will not be retrieved to the device.
@@ -2349,7 +2352,7 @@ QMailMessageKey QMailSearchAction::temporaryKey()
 */
 
 /*!
-    \fn QMailSearchAction::messagesCount(uint count)
+    \fn QMailSearchAction::messagesCountChanged(uint count)
 
     This signal emits the \a count of matching messages on the remote server.
 
@@ -2366,14 +2369,14 @@ QMailActionInfoPrivate::QMailActionInfoPrivate(const QMailActionData &data, QMai
 {
     // Service handler really should be sending the activity,
     // rather than us faking it..
-    connect(_server.data(), SIGNAL(retrievalCompleted(quint64)),
-            this, SLOT(activityCompleted(quint64)));
-    connect(_server.data(), SIGNAL(storageActionCompleted(quint64)),
-            this, SLOT(activityCompleted(quint64)));
-    connect(_server.data(), SIGNAL(searchCompleted(quint64)),
-            this, SLOT(activityCompleted(quint64)));
-    connect(_server.data(), SIGNAL(transmissionCompleted(quint64)),
-            this, SLOT(activityCompleted(quint64)));
+    connect(_server.data(), &QMailMessageServer::retrievalCompleted,
+            this, &QMailActionInfoPrivate::activityCompleted);
+    connect(_server.data(), &QMailMessageServer::storageActionCompleted,
+            this, &QMailActionInfoPrivate::activityCompleted);
+    connect(_server.data(), &QMailMessageServer::searchCompleted,
+            this, &QMailActionInfoPrivate::activityCompleted);
+    connect(_server.data(), &QMailMessageServer::transmissionCompleted,
+            this, &QMailActionInfoPrivate::activityCompleted);
 
     init();
     _progress = data.progressCurrent();
@@ -2515,20 +2518,24 @@ QMailActionInfo::QMailActionInfo(const QMailActionData &data, QSharedPointer<QMa
     : QMailServiceAction(*(new QMailActionInfoPrivate(data, this, server)), nullptr) // NB: No qobject parent!
 {
     Q_D(QMailActionInfo);
-    connect(d, SIGNAL(statusAccountIdChanged(QMailAccountId)),
-            this, SIGNAL(statusAccountIdChanged(QMailAccountId)));
-    connect(d, SIGNAL(statusErrorCodeChanged(QMailActionInfo::StatusErrorCode)),
-             this, SIGNAL(statusErrorCodeChanged(QMailActionInfo::StatusErrorCode)));
-    connect(d, SIGNAL(statusTextChanged(QString)),
-            this, SIGNAL(statusTextChanged(QString)));
-    connect(d, SIGNAL(statusFolderIdChanged(QMailFolderId)),
-            this, SIGNAL(statusFolderIdChanged(QMailFolderId)));
-    connect(d, SIGNAL(statusMessageIdChanged(QMailMessageId)),
-            this, SIGNAL(statusMessageIdChanged(QMailMessageId)));
+    connect(d, &QMailActionInfoPrivate::statusAccountIdChanged,
+            this, &QMailActionInfo::statusAccountIdChanged);
+    connect(d, &QMailActionInfoPrivate::statusErrorCodeChanged,
+            this, &QMailActionInfo::statusErrorCodeChanged);
+    connect(d, &QMailActionInfoPrivate::statusTextChanged,
+            this, &QMailActionInfo::statusTextChanged);
+    connect(d, &QMailActionInfoPrivate::statusFolderIdChanged,
+            this, &QMailActionInfo::statusFolderIdChanged);
+    connect(d, &QMailActionInfoPrivate::statusMessageIdChanged,
+            this, &QMailActionInfo::statusMessageIdChanged);
+    connect(d, &QMailActionInfoPrivate::totalProgressChanged,
+            this, &QMailActionInfo::totalProgressChanged);
 
     // Hack to get around _interface not being "ready" in the private class
-    connect(this, SIGNAL(progressChanged(uint,uint)), d, SLOT(theProgressChanged(uint,uint)));
-    connect(this, SIGNAL(statusChanged(QMailServiceAction::Status)), d, SLOT(theStatusChanged(QMailServiceAction::Status)));
+    connect(this, &QMailActionInfo::progressChanged,
+            d, &QMailActionInfoPrivate::theProgressChanged);
+    connect(this, &QMailActionInfo::statusChanged,
+            d, &QMailActionInfoPrivate::theStatusChanged);
 }
 
 /*!
@@ -2616,10 +2623,10 @@ QMailActionObserverPrivate::QMailActionObserverPrivate(QMailActionObserver *i)
     : QMailServiceActionPrivate(i),
       _isReady(false)
 {
-    connect(_server.data(), SIGNAL(actionStarted(QMailActionData)),
-            this, SLOT(actionStarted(QMailActionData)));
-    connect(_server.data(), SIGNAL(actionsListed(QMailActionDataList)),
-            this, SLOT(actionsListed(QMailActionDataList)));
+    connect(_server.data(), &QMailMessageServer::actionStarted,
+            this, &QMailActionObserverPrivate::actionStarted);
+    connect(_server.data(), &QMailMessageServer::actionsListed,
+            this, &QMailActionObserverPrivate::actionsListed);
     connect(_server.data(), &QMailMessageServer::activityChanged,
             this, &QMailActionObserverPrivate::onActivityChanged);
 
@@ -2718,8 +2725,8 @@ QMailActionObserver::QMailActionObserver(QObject *parent)
 {
     Q_D(QMailActionObserver);
 
-    connect(d, SIGNAL(actionsChanged(QList<QSharedPointer<QMailActionInfo> >)),
-            this, SIGNAL(actionsChanged(QList<QSharedPointer<QMailActionInfo> >)));
+    connect(d, &QMailActionObserverPrivate::actionsChanged,
+            this, &QMailActionObserver::actionsChanged);
 }
 
 /*! Destructs QMailActionObserver */
@@ -2812,7 +2819,8 @@ QMailProtocolAction::QMailProtocolAction(QObject *parent)
     : QMailServiceAction(*(new QMailProtocolActionPrivate(this)), parent)
 {
     Q_D(QMailProtocolAction);
-    connect(d, SIGNAL(protocolResponse(QString, QVariantMap)), this, SIGNAL(protocolResponse(QString, QVariantMap)));
+    connect(d, &QMailProtocolActionPrivate::protocolResponse,
+            this, &QMailProtocolAction::protocolResponse);
 }
 
 /*! \internal */

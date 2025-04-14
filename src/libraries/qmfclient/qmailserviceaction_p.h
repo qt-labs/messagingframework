@@ -242,9 +242,9 @@ protected:
     void init() override;
 
 protected slots:
-    void messagesTransmitted(quint64, const QMailMessageIdList &id);
-    void messagesFailedTransmission(quint64, const QMailMessageIdList &id, QMailServiceAction::Status::ErrorCode);
-    void transmissionCompleted(quint64);
+    void handleMessagesTransmitted(quint64, const QMailMessageIdList &id);
+    void handleMessagesFailedTransmission(quint64, const QMailMessageIdList &id, QMailServiceAction::Status::ErrorCode);
+    void handleTransmissionCompleted(quint64);
 
 private:
     friend class QMailTransmitAction;
@@ -354,13 +354,13 @@ protected:
 
 signals:
     void messageIdsMatched(const QMailMessageIdList &ids);
-    void remainingMessagesCount(uint);
-    void messagesCount(uint);
+    void remainingMessagesCountChanged(uint);
+    void messagesCountChanged(uint);
 
 private slots:
     void matchingMessageIds(quint64 action, const QMailMessageIdList &ids);
-    void remainingMessagesCount(quint64 action, uint count);
-    void messagesCount(quint64 action, uint count);
+    void handleRemainingMessagesCount(quint64 action, uint count);
+    void handleMessagesCount(quint64 action, uint count);
     void searchCompleted(quint64 action);
 
     void finaliseSearch();
