@@ -559,7 +559,7 @@ QMailMessageMetaData QMailStorePrivate::messageMetaData(const QString &uid, cons
 {
     QMailMessageMetaData metaData;
 
-    QPair<QMailAccountId, QString> key(accountId, uid);
+    ServerUid key(accountId, uid);
     if (uidCache.contains(key)) {
         // We can look this message up in the cache
         QMailMessageId id(uidCache.lookup(key));
