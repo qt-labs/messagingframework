@@ -89,7 +89,7 @@ public:
                                  bool synchronizeEnabled);
     ~QMailAccountListModelPrivate();
 
-    void initialize() const;
+    void populate() const;
     const QMailAccountIdList& ids() const;
 
     int indexOf(const QMailAccountId& id) const;
@@ -103,7 +103,7 @@ public:
     bool synchronizeEnabled;
     mutable QMailAccountIdList idList;
     mutable QMailAccountId deletionId;
-    mutable bool init;
+    mutable bool populated;
     mutable bool needSynchronize;
 };
 
@@ -114,7 +114,7 @@ QMailAccountListModelPrivate::QMailAccountListModelPrivate(const QMailAccountKey
     key(key),
     sortKey(sortKey),
     synchronizeEnabled(synchronizeEnabled),
-    init(false),
+    populated(false),
     needSynchronize(true)
 {
 }
@@ -123,17 +123,17 @@ QMailAccountListModelPrivate::~QMailAccountListModelPrivate()
 {
 }
 
-void QMailAccountListModelPrivate::initialize() const
+void QMailAccountListModelPrivate::populate() const
 {
-    idList = QMailStore::instance()->queryAccounts(key,sortKey);
-    init = true;
+    idList = QMailStore::instance()->queryAccounts(key, sortKey);
+    populated = true;
     needSynchronize = false;
 }
 
 const QMailAccountIdList& QMailAccountListModelPrivate::ids() const
 {
-    if (!init) {
-        initialize();
+    if (!populated) {
+        populate();
     }
 
     return idList;
@@ -220,7 +220,7 @@ QMailAccountListModel::QMailAccountListModel(QObject* parent)
 
 QMailAccountListModel::~QMailAccountListModel()
 {
-    delete d; d = 0;
+    delete d;
 }
 
 /*!
@@ -239,7 +239,7 @@ int QMailAccountListModel::rowCount(const QModelIndex& index) const
 
 QVariant QMailAccountListModel::data(const QModelIndex& index, int role) const
 {
-    if(!index.isValid())
+    if (!index.isValid())
         return QVariant();
 
     int offset = index.row();
@@ -249,27 +249,26 @@ QVariant QMailAccountListModel::data(const QModelIndex& index, int role) const
 
     QMailAccount account(id);
 
-    switch(role)
-    {
-       case Qt::DisplayRole:
-       case NameTextRole:
-            return account.name();
+    switch(role) {
+    case Qt::DisplayRole:
+    case NameTextRole:
+        return account.name();
 
-       case MessageTypeRole:
-            return static_cast<int>(account.messageType());
+    case MessageTypeRole:
+        return static_cast<int>(account.messageType());
 
-       case MessageSourcesRole:
-            return account.messageSources();
+    case MessageSourcesRole:
+        return account.messageSources();
 
-       case MessageSinksRole:
-            return account.messageSinks();
+    case MessageSinksRole:
+        return account.messageSinks();
     }
 
     return QVariant();
 }
 
 /*!
-    Returns the QMailAccountKey used to populate the contents of this model.
+    Returns the QMailAccountKey used to select the contents of this model.
 */
 
 QMailAccountKey QMailAccountListModel::key() const
@@ -278,16 +277,15 @@ QMailAccountKey QMailAccountListModel::key() const
 }
 
 /*!
-    Sets the QMailAccountKey used to populate the contents of the model to \a key.
-    If the key is empty, the model is populated with all the accounts from the 
-    database.
+    Sets the QMailAccountKey used to select the contents of the model to \a key.
+    If the key is empty, the model lists all the accounts from the database.
 */
 
 void QMailAccountListModel::setKey(const QMailAccountKey& key) 
 {
     beginResetModel();
     d->key = key;
-    d->init = false;
+    d->populated = false;
     endResetModel();
 }
 
@@ -310,7 +308,7 @@ void QMailAccountListModel::setSortKey(const QMailAccountSortKey& sortKey)
 {
     beginResetModel();
     d->sortKey = sortKey;
-    d->init = false;
+    d->populated = false;
     endResetModel();
 }
 
@@ -319,51 +317,50 @@ void QMailAccountListModel::setSortKey(const QMailAccountSortKey& sortKey)
 void QMailAccountListModel::accountsAdded(const QMailAccountIdList& ids)
 {
     d->needSynchronize = true;
-    if(!d->synchronizeEnabled)
+    if (!d->synchronizeEnabled)
         return;
 
     //TODO change this code to use our own searching and insertion routines
     //for more control
     //use id sorted indexes
     
-    if(!d->init)
-        d->initialize();
+    if (!d->populated) {
+        d->populate();
+        return;
+    }
     
-    QMailAccountKey passKey = d->key & QMailAccountKey::id(ids);
-    QMailAccountIdList results = QMailStore::instance()->queryAccounts(passKey);
-    if(results.isEmpty())
+    QMailAccountKey idKey = QMailAccountKey::id(ids) & QMailAccountKey::id(d->idList, QMailDataComparator::Excludes);
+    const QMailAccountIdList results = QMailStore::instance()->queryAccounts(d->key & idKey);
+    if (results.isEmpty())
         return;
 
-    if(results.count() > fullRefreshCutoff)
+    if (results.count() > fullRefreshCutoff) {
         fullRefresh();
+        return;
+    }
 
-    if(!d->sortKey.isEmpty())
-    { 
-        foreach(const QMailAccountId &id,results)
-        {
+    if (!d->sortKey.isEmpty()) {
+        for (const QMailAccountId &id : results) {
             LessThanFunctorA lessThan(d->sortKey);
 
             //if sorting the list fails, then resort to a complete refresh
-            if(lessThan.invalidatedList())
+            if (lessThan.invalidatedList()) {
                 fullRefresh();
-            else
-            {
+                return;
+            } else {
                 QMailAccountIdList::iterator itr = d->lowerBound(id, lessThan);
                 int newIndex = (itr - d->idList.begin());
 
-                beginInsertRows(QModelIndex(),newIndex,newIndex);
+                beginInsertRows(QModelIndex(), newIndex, newIndex);
                 d->idList.insert(itr, id);
                 endInsertRows();
             }
         }
-    }
-    else
-    {
+    } else {
         int index = d->idList.count();
 
-        beginInsertRows(QModelIndex(),index,(index + results.count() - 1));
-        foreach(const QMailAccountId &id,results)
-            d->idList.append(id);
+        beginInsertRows(QModelIndex(), index, (index + results.count() - 1));
+        d->idList.append(results);
         endInsertRows();
     }
     d->needSynchronize = false;
@@ -374,30 +371,28 @@ void QMailAccountListModel::accountsAdded(const QMailAccountIdList& ids)
 void QMailAccountListModel::accountsUpdated(const QMailAccountIdList& ids)
 {
     d->needSynchronize = true;
-    if(!d->synchronizeEnabled)
+    if (!d->synchronizeEnabled)
         return;
 
     //TODO change this code to use our own searching and insertion routines
     //for more control
     //use id sorted indexes
 
-    if(!d->init)
-        d->initialize();
+    if (!d->populated) {
+        d->populate();
+        return;
+    }
 
-    QMailAccountKey idKey(QMailAccountKey::id(ids));
-
-    QMailAccountIdList validIds = QMailStore::instance()->queryAccounts(idKey & d->key);
-    if(validIds.count() > fullRefreshCutoff)
-    {
+    QMailAccountKey idKey = QMailAccountKey::id(ids);
+    const QMailAccountIdList validIds = QMailStore::instance()->queryAccounts(idKey & d->key);
+    if (validIds.count() > fullRefreshCutoff) {
         fullRefresh();
         return;
     }
 
     // Remove invalid ids from model
-    foreach(const QMailAccountId &id,ids)
-    {
-        if (!validIds.contains(id))
-        {
+    for (const QMailAccountId &id : ids) {
+        if (!validIds.contains(id)) {
             //get the index
             int index = d->idList.indexOf(id);
             if (index == -1)
@@ -413,15 +408,13 @@ void QMailAccountListModel::accountsUpdated(const QMailAccountIdList& ids)
 
     LessThanFunctorA lessThan(d->sortKey);
 
-    foreach(const QMailAccountId &id, validIds)
-    {
+    for (const QMailAccountId &id : validIds) {
         int index = d->idList.indexOf(id);
-        if(index == -1) //insert
-        {
-            if(lessThan.invalidatedList())
+        if (index == -1) { //insert
+            if (lessThan.invalidatedList()) {
                 fullRefresh();
-            else
-            {
+                return;
+            } else {
                 QMailAccountIdList::iterator itr = d->lowerBound(id, lessThan);
                 int newIndex = (itr - d->idList.begin());
 
@@ -429,26 +422,21 @@ void QMailAccountListModel::accountsUpdated(const QMailAccountIdList& ids)
                 d->idList.insert(itr, id);
                 endInsertRows();
             }
-        }
-        else //update
-        {
-            if(lessThan.invalidatedList())
+        } else { //update
+            if (lessThan.invalidatedList()) {
                 fullRefresh();
-            else
-            {
+                return;
+            } else {
                 QMailAccountIdList::iterator itr = d->lowerBound(id, lessThan);
                 int newIndex = (itr - d->idList.begin());
 
-                if((newIndex == index) || (newIndex == index + 1))
-                {
+                if ((newIndex == index) || (newIndex == index + 1)) {
                     // This item would be inserted either immediately before or after itself
-                    QModelIndex modelIndex = createIndex(index,0);
-                    emit dataChanged(modelIndex,modelIndex);
-                }
-                else
-                {
+                    QModelIndex modelIndex = createIndex(index, 0);
+                    emit dataChanged(modelIndex, modelIndex);
+                } else {
                     d->deletionId = id;
-                    beginRemoveRows(QModelIndex(),index,index);
+                    beginRemoveRows(QModelIndex(), index, index);
                     d->idList.removeAt(index);
                     endRemoveRows();
                     d->deletionId = QMailAccountId();
@@ -456,7 +444,7 @@ void QMailAccountListModel::accountsUpdated(const QMailAccountIdList& ids)
                     if (newIndex > index)
                         --newIndex;
 
-                    beginInsertRows(QModelIndex(),newIndex,newIndex);
+                    beginInsertRows(QModelIndex(), newIndex, newIndex);
                     d->idList.insert(newIndex, id);
                     endInsertRows();
                 }
@@ -471,20 +459,21 @@ void QMailAccountListModel::accountsUpdated(const QMailAccountIdList& ids)
 void QMailAccountListModel::accountsRemoved(const QMailAccountIdList& ids)
 {
     d->needSynchronize = true;
-    if(!d->synchronizeEnabled)
+    if (!d->synchronizeEnabled)
         return;
 
-    if(!d->init)
-        d->initialize();
+    if (!d->populated) {
+        d->populate();
+        return;
+    }
 
-    foreach(const QMailAccountId &id, ids)
-    {
+    for (const QMailAccountId &id : ids) {
         int index = d->indexOf(id);
         if(index == -1)
             continue;
 
         d->deletionId = id;
-        beginRemoveRows(QModelIndex(),index,index);
+        beginRemoveRows(QModelIndex(), index, index);
         d->idList.removeAt(index);
         endRemoveRows();
         d->deletionId = QMailAccountId();
@@ -499,7 +488,7 @@ void QMailAccountListModel::accountsRemoved(const QMailAccountIdList& ids)
 
 QMailAccountId QMailAccountListModel::idFromIndex(const QModelIndex& index) const
 {
-    if(!index.isValid())
+    if (!index.isValid())
         return QMailAccountId();
 
     return d->ids().at(index.row());
@@ -507,15 +496,15 @@ QMailAccountId QMailAccountListModel::idFromIndex(const QModelIndex& index) cons
 
 /*!
     Returns the QModelIndex that represents the account with QMailAccountId \a id.
-    If the id is not conatained in this model, an invalid QModelIndex is returned.
+    If the id is not contained in this model, an invalid QModelIndex is returned.
 */
 
 QModelIndex QMailAccountListModel::indexFromId(const QMailAccountId& id) const
 {
     //if the id does not exist return null
     int index = d->indexOf(id);
-    if(index != -1) {
-        return createIndex(index,0);
+    if (index != -1) {
+        return createIndex(index, 0);
     }
 
     return QModelIndex();
@@ -532,14 +521,14 @@ bool QMailAccountListModel::synchronizeEnabled() const
 }
 
 /*!
-    Sets wheather the model synchronizes its contents based on account changes
+    Sets whether the model synchronizes its contents based on account changes
     in the database to \a val.
 */
 
 void QMailAccountListModel::setSynchronizeEnabled(bool val)
 {
     d->synchronizeEnabled = val;
-    if(val && d->needSynchronize)
+    if (val && d->needSynchronize && d->populated)
         fullRefresh();
 }
 
@@ -548,7 +537,7 @@ void QMailAccountListModel::setSynchronizeEnabled(bool val)
 void QMailAccountListModel::fullRefresh()
 {
     beginResetModel();
-    d->init = false;
+    d->populated = false;
     endResetModel();
 }
 
