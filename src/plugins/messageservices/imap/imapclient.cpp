@@ -301,7 +301,7 @@ void IdleProtocol::idleCommandTransition(const ImapCommand command, const Operat
     }
 
     QMailAccountConfiguration config(_client->account());
-    switch( command ) {
+    switch ( command ) {
         case IMAP_Init:
         {
             if (receivedCapabilities()) {
@@ -598,7 +598,7 @@ void ImapClient::checkCommandResponse(ImapCommand command, OperationStatus statu
 
 void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
 {
-    switch( command ) {
+    switch ( command ) {
         case IMAP_Init:
         {
             // We need to request the capabilities. Even in the case that an unsolicited response
@@ -809,7 +809,7 @@ void ImapClient::mailboxListed(const QString &flags, const QString &path)
 
     QString mailboxPath;
 
-    if(_protocol.delimiterUnknown())
+    if (_protocol.delimiterUnknown())
         qWarning() << "Delimiter has not yet been discovered, which is essential to know the structure of a mailbox";
 
     QStringList list = _protocol.flatHierarchy() ? QStringList(path) : path.split(_protocol.delimiter());
@@ -857,7 +857,7 @@ void ImapClient::mailboxListed(const QString &flags, const QString &path)
                 folderFlags = flags;
             }
 
-            if(QString::compare(path, "INBOX", Qt::CaseInsensitive) == 0) {
+            if (QString::compare(path, "INBOX", Qt::CaseInsensitive) == 0) {
                 //don't let inbox be deleted/renamed
                 folder.setStatus(QMailFolder::DeletionPermitted, false);
                 folder.setStatus(QMailFolder::RenamePermitted, false);

@@ -427,7 +427,7 @@ bool WriteMail::prepareComposer(QMailMessage::MessageType type, const QMailAccou
     }
 
     updateAccountSelection(type, accountId);
-    if(m_composerInterface)
+    if (m_composerInterface)
         m_composerInterface->setSendingAccountId(accountId);
 
     return success;
@@ -460,7 +460,7 @@ bool WriteMail::draft()
 
 void WriteMail::statusChanged(const QString& status)
 {
-    if(status.isEmpty())
+    if (status.isEmpty())
         setWindowTitle(tr("(Unnamed)"));
     else
         setWindowTitle(status);

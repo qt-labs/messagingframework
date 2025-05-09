@@ -1568,7 +1568,7 @@ void tst_QMailStore::remove1000Messages()
 
     static const int largeMessageCount = 10;
 
-    for(int i = 0; i < largeMessageCount; ++i)
+    for (int i = 0; i < largeMessageCount; ++i)
     {
         QMailMessage message1;
         message1.setServerUid(QString("%1|Just some message").arg(i));
@@ -1593,7 +1593,7 @@ void tst_QMailStore::remove1000Messages()
 
     //with message removal record
 
-    for(int i = 0; i < largeMessageCount; ++i)
+    for (int i = 0; i < largeMessageCount; ++i)
     {
         QMailMessage message1;
         message1.setServerUid(QString("Just some message$%1").arg(i));

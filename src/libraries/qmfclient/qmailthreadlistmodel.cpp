@@ -65,7 +65,7 @@ bool LessThanFunctorT::operator()(const QMailThreadId& first, const QMailThreadI
     QMailThreadKey secondKey(QMailThreadKey::id(second));
 
     QMailThreadIdList results = QMailStore::instance()->queryThreads(firstKey | secondKey, mSortKey);
-    if(results.count() != 2)
+    if (results.count() != 2)
     {
         mInvalidatedList = true;
         return false;
@@ -241,7 +241,7 @@ int QMailThreadListModel::rowCount(const QModelIndex& index) const
 
 QVariant QMailThreadListModel::data(const QModelIndex& index, int role) const
 {
-    if(!index.isValid())
+    if (!index.isValid())
         return QVariant();
 
     int offset = index.row();
@@ -251,7 +251,7 @@ QVariant QMailThreadListModel::data(const QModelIndex& index, int role) const
 
     QMailThread thread(id);
 
-    switch(role)
+    switch (role)
     {
     case Qt::DisplayRole:
         return thread.subject();
@@ -333,29 +333,29 @@ void QMailThreadListModel::setSortKey(const QMailThreadSortKey& sortKey)
 void QMailThreadListModel::threadsAdded(const QMailThreadIdList& ids)
 {
     d->needSynchronize = true;
-    if(!d->synchronizeEnabled)
+    if (!d->synchronizeEnabled)
         return;
 
     //TODO change this code to use our own searching and insertion routines
     //for more control
     //use id sorted indexes
 
-    if(!d->init)
+    if (!d->init)
         d->initialize();
 
     QMailThreadKey passKey = d->key & QMailThreadKey::id(ids);
     QMailThreadIdList results = QMailStore::instance()->queryThreads(passKey);
-    if(results.isEmpty())
+    if (results.isEmpty())
         return;
 
-    if(!d->sortKey.isEmpty())
+    if (!d->sortKey.isEmpty())
     {
         foreach(const QMailThreadId &id,results)
         {
             LessThanFunctorT lessThan(d->sortKey);
 
             //if sorting the list fails, then resort to a complete refresh
-            if(lessThan.invalidatedList())
+            if (lessThan.invalidatedList())
                 fullRefresh();
             else
             {
@@ -385,14 +385,14 @@ void QMailThreadListModel::threadsAdded(const QMailThreadIdList& ids)
 void QMailThreadListModel::threadsUpdated(const QMailThreadIdList& ids)
 {
     d->needSynchronize = true;
-    if(!d->synchronizeEnabled)
+    if (!d->synchronizeEnabled)
         return;
 
     //TODO change this code to use our own searching and insertion routines
     //for more control
     //use id sorted indexes
 
-    if(!d->init)
+    if (!d->init)
         d->initialize();
 
     QMailThreadKey idKey(QMailThreadKey::id(ids));
@@ -400,7 +400,7 @@ void QMailThreadListModel::threadsUpdated(const QMailThreadIdList& ids)
     QMailThreadIdList validIds = QMailStore::instance()->queryThreads(idKey & d->key);
 
     //if the key is empty the id's will be returned valid and invalid
-    if(!d->key.isEmpty())
+    if (!d->key.isEmpty())
     {
         QMailThreadIdList invalidIds = QMailStore::instance()->queryThreads(idKey & ~d->key);
         foreach(const QMailThreadId &id,invalidIds)
@@ -423,9 +423,9 @@ void QMailThreadListModel::threadsUpdated(const QMailThreadIdList& ids)
     foreach(const QMailThreadId &id, validIds)
     {
         int index = d->idList.indexOf(id);
-        if(index == -1) //insert
+        if (index == -1) //insert
         {
-            if(lessThan.invalidatedList())
+            if (lessThan.invalidatedList())
                 fullRefresh();
             else
             {
@@ -439,14 +439,14 @@ void QMailThreadListModel::threadsUpdated(const QMailThreadIdList& ids)
         }
         else //update
         {
-            if(lessThan.invalidatedList())
+            if (lessThan.invalidatedList())
                 fullRefresh();
             else
             {
                 QMailThreadIdList::iterator itr = d->lowerBound(id, lessThan);
                 int newIndex = (itr - d->idList.begin());
 
-                if((newIndex == index) || (newIndex == index + 1))
+                if ((newIndex == index) || (newIndex == index + 1))
                 {
                     // This item would be inserted either immediately before or after itself
                     QModelIndex modelIndex = createIndex(index,0);
@@ -478,16 +478,16 @@ void QMailThreadListModel::threadsUpdated(const QMailThreadIdList& ids)
 void QMailThreadListModel::threadsRemoved(const QMailThreadIdList& ids)
 {
     d->needSynchronize = true;
-    if(!d->synchronizeEnabled)
+    if (!d->synchronizeEnabled)
         return;
 
-    if(!d->init)
+    if (!d->init)
         d->initialize();
 
     foreach(const QMailThreadId &id, ids)
     {
         int index = d->indexOf(id);
-        if(index == -1)
+        if (index == -1)
             continue;
 
         d->deletionId = id;
@@ -506,7 +506,7 @@ void QMailThreadListModel::threadsRemoved(const QMailThreadIdList& ids)
 
 QMailThreadId QMailThreadListModel::idFromIndex(const QModelIndex& index) const
 {
-    if(!index.isValid())
+    if (!index.isValid())
         return QMailThreadId();
 
     return d->ids().at(index.row());
@@ -521,7 +521,7 @@ QModelIndex QMailThreadListModel::indexFromId(const QMailThreadId& id) const
 {
     //if the id does not exist return null
     int index = d->indexOf(id);
-    if(index != -1) {
+    if (index != -1) {
         return createIndex(index,0);
     }
 
@@ -551,7 +551,7 @@ bool QMailThreadListModel::synchronizeEnabled() const
 void QMailThreadListModel::setSynchronizeEnabled(bool val)
 {
     d->synchronizeEnabled = val;
-    if(val && d->needSynchronize)
+    if (val && d->needSynchronize)
         fullRefresh();
 }
 

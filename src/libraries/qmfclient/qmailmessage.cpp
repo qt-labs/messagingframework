@@ -265,7 +265,7 @@ static QMailMessageBody::TransferEncoding encodingForName(const QByteArray& name
 
 static const char* nameForEncoding(QMailMessageBody::TransferEncoding te)
 {
-    switch( te )
+    switch ( te )
     {
         case QMailMessageBody::SevenBit:
             return "7bit";
@@ -286,7 +286,7 @@ static const char* nameForEncoding(QMailMessageBody::TransferEncoding te)
 
 static QMailCodec* codecForEncoding(QMailMessageBody::TransferEncoding te, bool textualData)
 {
-    switch( te )
+    switch ( te )
     {
         case QMailMessageBody::NoEncoding:
         case QMailMessageBody::Binary:

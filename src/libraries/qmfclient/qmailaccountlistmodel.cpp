@@ -67,7 +67,7 @@ bool LessThanFunctorA::operator()(const QMailAccountId& first, const QMailAccoun
     QMailAccountKey secondKey(QMailAccountKey::id(second));
 
     QMailAccountIdList results = QMailStore::instance()->queryAccounts(firstKey | secondKey, mSortKey);
-    if(results.count() != 2)
+    if (results.count() != 2)
     {
         mInvalidatedList = true;
         return false;
@@ -249,7 +249,7 @@ QVariant QMailAccountListModel::data(const QModelIndex& index, int role) const
 
     QMailAccount account(id);
 
-    switch(role) {
+    switch (role) {
     case Qt::DisplayRole:
     case NameTextRole:
         return account.name();
@@ -469,7 +469,7 @@ void QMailAccountListModel::accountsRemoved(const QMailAccountIdList& ids)
 
     for (const QMailAccountId &id : ids) {
         int index = d->indexOf(id);
-        if(index == -1)
+        if (index == -1)
             continue;
 
         d->deletionId = id;

@@ -285,7 +285,7 @@ void LongStringFileMapping::map() const
                     fileMapping.mapping = reinterpret_cast<char*>(fileMapping.file->map(0, fileMapping.size));
                     fileMapping.file->close();
 
-                    if(!fileMapping.mapping) {
+                    if (!fileMapping.mapping) {
                         qWarning() << "Unable to map file:" << filename;
                     }
                 } else {
@@ -484,7 +484,7 @@ const QByteArray LongStringPrivate::toQByteArray() const
     if (mapping) {
         // Does not copy:
         const QByteArray input = mapping->toQByteArray();
-        if(!input.isEmpty()) {
+        if (!input.isEmpty()) {
             return QByteArray::fromRawData(input.constData() + offset, len);
         }
     }

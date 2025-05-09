@@ -109,7 +109,7 @@ QMailMessageRemovalRecord::~QMailMessageRemovalRecord()
 /*! \internal */
 QMailMessageRemovalRecord& QMailMessageRemovalRecord::operator=(const QMailMessageRemovalRecord& other)
 {
-    if(&other != this)
+    if (&other != this)
         d = other.d;
     return *this;
 }

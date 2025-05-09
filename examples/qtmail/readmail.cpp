@@ -277,7 +277,7 @@ void ReadMail::updateView(QMailViewerFactory::PresentationType type)
 
 void ReadMail::keyPressEvent(QKeyEvent *e)
 {
-    switch( e->key() ) {
+    switch ( e->key() ) {
         default:
             QWidget::keyPressEvent( e );
     }

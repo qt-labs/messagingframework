@@ -86,7 +86,7 @@ void FolderDelegate::drawDisplay(QPainter *painter, const QStyleOptionViewItem &
         QRect statusRect = option.direction == Qt::RightToLeft
             ? QRect(0, rect.top(), tw + margin, rect.height())
             : QRect(rect.left()+rect.width()-tw-margin, rect.top(), tw, rect.height());
-        if(m_showStatus)
+        if (m_showStatus)
             painter->drawText(statusRect, Qt::AlignCenter, _statusText);
     }
 }

@@ -91,7 +91,7 @@ public:
 
     void set_ready(bool ready)
     {
-        if(ready)
+        if (ready)
             setReady();
         else
             setUnReady("TestBaseLoggerFoundation");

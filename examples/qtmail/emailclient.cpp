@@ -119,16 +119,16 @@ void ActivityIcon::itemChanged(StatusItem* item)
 
 void ActivityIcon::showActivity(bool val)
 {
-    if(val)
+    if (val)
     {
-        if(m_activeIcon.state() == QMovie::Running)
+        if (m_activeIcon.state() == QMovie::Running)
             return;
         setMovie(&m_activeIcon);
         m_activeIcon.start();
     }
     else
     {
-        if(m_activeIcon.state() == QMovie::NotRunning)
+        if (m_activeIcon.state() == QMovie::NotRunning)
             return;
         m_activeIcon.stop();
         setPixmap(m_inactiveIcon);
@@ -336,7 +336,7 @@ void MessageUiBase::presentMessage(const QMailMessageId &id, QMailViewerFactory:
 void MessageUiBase::updateWindowTitle()
 {
     QMailMessageSet* item = folderView()->currentItem();
-    if(!item) return;
+    if (!item) return;
 
     QString folderName = item->data(Qt::DisplayRole).value<QString>();
     QString folderStatus = item->data(EmailFolderModel::FolderStatusRole).value<QString>();
@@ -344,15 +344,15 @@ void MessageUiBase::updateWindowTitle()
     QMailFolderId folderId = item->data(EmailFolderModel::FolderIdRole).value<QMailFolderId>();
     QMailAccountId accountId = item->data(EmailFolderModel::ContextualAccountIdRole).value<QMailAccountId>();
 
-    if(!folderStatus.isEmpty())
+    if (!folderStatus.isEmpty())
         folderStatus = " (" + folderStatus + ")";
 
     //don't display account prefix for account root items
     bool isFolderItem = accountId.isValid() && folderId.isValid();
-    if(isFolderItem)
+    if (isFolderItem)
     {
         QMailAccount account(accountId);
-        if(!account.name().isEmpty())
+        if (!account.name().isEmpty())
             accountName = account.name() + '/';
     }
 
@@ -361,7 +361,7 @@ void MessageUiBase::updateWindowTitle()
 
 void MessageUiBase::checkUpdateWindowTitle(const QModelIndex& topLeft, const QModelIndex& bottomRight)
 {
-    if(topLeft == folderView()->currentIndex() || bottomRight == folderView()->currentIndex())
+    if (topLeft == folderView()->currentIndex() || bottomRight == folderView()->currentIndex())
         updateWindowTitle();
 }
 
@@ -479,7 +479,7 @@ EmailClient::EmailClient(QWidget *parent, Qt::WindowFlags f)
 
     //run account setup if we don't have any defined yet
     bool haveAccounts = QMailStore::instance()->countAccounts() > 0;
-    if(!haveAccounts)
+    if (!haveAccounts)
         QTimer::singleShot(0,this,SLOT(settings()));
 
     init();
@@ -554,7 +554,7 @@ void EmailClient::resumeInterruptedComposition()
 bool EmailClient::startMessageServer()
 {
     qMailLog(Messaging) << "Starting messageserver child process...";
-    if(m_messageServerProcess) delete m_messageServerProcess;
+    if (m_messageServerProcess) delete m_messageServerProcess;
     m_messageServerProcess = new QProcess(this);
     connect(m_messageServerProcess,SIGNAL(error(QProcess::ProcessError)),
             this,SLOT(messageServerProcessError(QProcess::ProcessError)));
@@ -571,7 +571,7 @@ bool EmailClient::startMessageServer()
 
 bool EmailClient::waitForMessageServer()
 {
-    if(m_messageServerProcess)
+    if (m_messageServerProcess)
     {
         qMailLog(Messaging) << "Shutting down messageserver child process..";
         bool result = m_messageServerProcess->waitForFinished();
@@ -635,7 +635,7 @@ bool EmailClient::closeImmediately()
 
 void EmailClient::setVisible(bool visible)
 {
-    if(visible)
+    if (visible)
     {
         QPoint p(0, 0);
         const QScreen *scrn = QGuiApplication::primaryScreen();
@@ -1564,7 +1564,7 @@ QString EmailClient::mailType(QMailMessage::MessageType type)
 void EmailClient::messageActivated()
 {
     QMailMessageId currentId = messageListView()->current();
-    if(!currentId.isValid())
+    if (!currentId.isValid())
         return;
 
     QMailMessage message(currentId);
@@ -1577,7 +1577,7 @@ void EmailClient::messageActivated()
 void EmailClient::messageOpenRequested()
 {
     QMailMessageId currentId = messageListView()->current();
-    if(!currentId.isValid())
+    if (!currentId.isValid())
         return;
 
     QMailMessage message(currentId);
@@ -1713,14 +1713,14 @@ void EmailClient::deleteSelectedMessages()
         //delete LocalOnly messages clientside first
         QMailMessageKey localOnlyKey(QMailMessageKey::id(deleteList) & QMailMessageKey::status(QMailMessage::LocalOnly));
         QMailMessageIdList localOnlyIds(QMailStore::instance()->queryMessages(localOnlyKey));
-        if(!localOnlyIds.isEmpty())
+        if (!localOnlyIds.isEmpty())
         {
             QMailStore::instance()->removeMessages(QMailMessageKey::id(localOnlyIds));
             for (const QMailMessageId &id : localOnlyIds) {
                 deleteList.removeAll(id);
             }
         }
-        if(!deleteList.isEmpty())
+        if (!deleteList.isEmpty())
             storageAction("Deleting messages..")->deleteMessages(deleteList);
     }
     else
@@ -1854,7 +1854,7 @@ void EmailClient::copySelectedMessages()
     foreach(QMailMessageId id, copyIds) {
         QMailMessage message(id);
         bool complete(message.status() & QMailMessage::ContentAvailable);
-        for(uint i = 0; (i < message.partCount()) && complete; ++i) {
+        for (uint i = 0; (i < message.partCount()) && complete; ++i) {
             complete &= message.partAt(i).contentAvailable();
         }
 
@@ -2078,7 +2078,7 @@ void EmailClient::deleteFolder()
 {
     QString folderName = QMailFolder(selectedFolderId).displayName();
 
-    if(QMessageBox::question(this, tr("Delete"), tr("Are you sure you wish to delete the folder %1 and all its contents?").arg(folderName), QMessageBox::Ok, QMessageBox::Cancel) != QMessageBox::Ok)
+    if (QMessageBox::question(this, tr("Delete"), tr("Are you sure you wish to delete the folder %1 and all its contents?").arg(folderName), QMessageBox::Ok, QMessageBox::Cancel) != QMessageBox::Ok)
         return;
     storageAction("Deleting folder ")->onlineDeleteFolder(selectedFolderId);
 }
@@ -2087,7 +2087,7 @@ void EmailClient::createFolder()
 {
     QString name = QInputDialog::getText(this, tr("New Folder Name"), tr("The name of the new folder should be: "));
 
-    if(name.isEmpty())
+    if (name.isEmpty())
         return;
 
     storageAction("Creating folder ")->onlineCreateFolder(name, selectedAccountId, selectedFolderId);
@@ -2096,12 +2096,12 @@ void EmailClient::createFolder()
 
 void EmailClient::renameFolder()
 {
-    if(selectedFolderId.isValid())
+    if (selectedFolderId.isValid())
     {
         QString oldName = QMailFolder(selectedFolderId).displayName();
         QString newName = QInputDialog::getText(this, tr("Rename Folder"), tr("Rename folder %1 to: ").arg(oldName));
 
-        if(newName.isEmpty())
+        if (newName.isEmpty())
             return;
 
         storageAction("Renaming folder")->onlineRenameFolder(selectedFolderId, newName);
@@ -2111,7 +2111,7 @@ void EmailClient::renameFolder()
 void EmailClient::search()
 {
     static bool init = false;
-    if(!init) {
+    if (!init) {
         connect(searchView(), SIGNAL(searchResultSelected(QMailMessageId)), this, SLOT(showSearchResult(const QMailMessageId &)));
         init = true;
     }
@@ -2155,7 +2155,7 @@ bool EmailClient::checkMailConflict(const QString& msg1, const QString& msg2)
 {
     if ( writeMailWidget()->isVisible()) {
         QString message = tr("<qt>You are currently editing a message:<br>%1</qt>").arg(msg1);
-        switch( QMessageBox::warning( 0, tr("Messages conflict"), message,
+        switch ( QMessageBox::warning( 0, tr("Messages conflict"), message,
                                       tr("Yes"), tr("No"), 0, 0, 1 ) ) {
 
             case 0:
@@ -2177,21 +2177,21 @@ bool EmailClient::checkMailConflict(const QString& msg1, const QString& msg2)
 void EmailClient::replyClicked()
 {
     QMailMessageId currentId = readMailWidget()->displayedMessage();
-    if(currentId.isValid())
+    if (currentId.isValid())
         respond(QMailMessage(currentId),QMailMessage::Reply);
 }
 
 void EmailClient::replyAllClicked()
 {
     QMailMessageId currentId = readMailWidget()->displayedMessage();
-    if(currentId.isValid())
+    if (currentId.isValid())
         respond(QMailMessage(currentId),QMailMessage::ReplyToAll);
 }
 
 void EmailClient::forwardClicked()
 {
     QMailMessageId currentId = readMailWidget()->displayedMessage();
-    if(currentId.isValid())
+    if (currentId.isValid())
         respond(QMailMessage(currentId),QMailMessage::Forward);
 }
 
@@ -2350,7 +2350,7 @@ void EmailClient::quit()
         }
     }
 
-    if(m_messageServerProcess)
+    if (m_messageServerProcess)
     {
         //we started the messageserver, direct it to shut down
         //before we quit ourselves
@@ -2706,7 +2706,7 @@ void EmailClient::messageSelectionChanged()
     setActionVisible(copyAction, (messagesSelected && !(trashCount > 0)));
     setActionVisible(restoreAction, (messagesSelected && (trashCount > 0)));
 
-    if(messageListView()->current().isValid())
+    if (messageListView()->current().isValid())
     {
         QMailMessage mail(messageListView()->current());
         bool incoming(mail.status() & QMailMessage::Incoming);
@@ -2791,7 +2791,7 @@ QMailStorageAction* EmailClient::storageAction(const QString& description)
 
 QMailRetrievalAction* EmailClient::retrieveAction(const QString& description)
 {
-    if(!m_retrievalAction)
+    if (!m_retrievalAction)
     {
         m_retrievalAction = new QMailRetrievalAction(this);
         connectServiceAction(m_retrievalAction);
@@ -2803,7 +2803,7 @@ QMailRetrievalAction* EmailClient::retrieveAction(const QString& description)
 
 QMailTransmitAction* EmailClient::transmitAction(const QString& description)
 {
-    if(!m_transmitAction)
+    if (!m_transmitAction)
     {
         m_transmitAction = new QMailTransmitAction(this);
         connectServiceAction(m_transmitAction);

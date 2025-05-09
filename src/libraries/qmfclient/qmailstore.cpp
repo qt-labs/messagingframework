@@ -1480,7 +1480,7 @@ QMailMessageMetaDataList QMailStore::dataList(const QList<QMailMessage*>& messag
 
     foreach (QMailMessage* message, messages) {
         Q_ASSERT (message);
-        if(ids.contains(message->id())) {
+        if (ids.contains(message->id())) {
             data.append(dataToTransfer(message));
         }
     }
@@ -1495,7 +1495,7 @@ QMailMessageMetaDataList QMailStore::dataList(const QList<QMailMessageMetaData*>
 
     foreach (QMailMessageMetaData* message, messages) {
         Q_ASSERT (message);
-        if(ids.contains(message->id())) {
+        if (ids.contains(message->id())) {
             data.append(dataToTransfer(message));
         }
     }

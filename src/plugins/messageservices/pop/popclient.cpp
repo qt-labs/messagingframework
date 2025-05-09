@@ -321,7 +321,7 @@ bool PopClient::findInbox()
         childFolder.setStatus(QMailFolder::Incoming, true);
         childFolder.setStatus(QMailFolder::MessagesPermitted, true);
 
-        if(!QMailStore::instance()->addFolder(&childFolder))
+        if (!QMailStore::instance()->addFolder(&childFolder))
             qWarning() << "Unable to add child folder to pop account";
         folderId = childFolder.id();
         account.setStandardFolder(QMailFolder::InboxFolder, folderId);
@@ -1267,7 +1267,7 @@ void PopClient::retrieveOperationCompleted()
         // Only update PartialContent flag when retrieving message list
         QMailFolder folder(folderId);
         folder.setStatus(QMailFolder::PartialContent, partialContent);
-        if(!QMailStore::instance()->updateFolder(&folder))
+        if (!QMailStore::instance()->updateFolder(&folder))
             qWarning() << "Unable to update folder" << folder.id() << "to set PartialContent";
     }
 

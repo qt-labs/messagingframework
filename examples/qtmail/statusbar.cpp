@@ -83,7 +83,7 @@ bool ArrowButton::upState() const
 
 void ArrowButton::thisClicked()
 {
-    if(up)
+    if (up)
         emit upClicked();
     else
         emit downClicked();
@@ -103,7 +103,7 @@ m_showDetailsButton(true)
 
 void StatusBar::setProgress(unsigned int min, unsigned int max)
 {
-    if(min == max)
+    if (min == max)
     {
         clearProgress();
         return;
@@ -113,7 +113,7 @@ void StatusBar::setProgress(unsigned int min, unsigned int max)
 
     m_progressBar->setRange(0,max);
     m_progressBar->setValue(min);
-    if(m_detailsButton->isVisible() && !m_detailsButton->upState())
+    if (m_detailsButton->isVisible() && !m_detailsButton->upState())
         emit showDetails();
 }
 

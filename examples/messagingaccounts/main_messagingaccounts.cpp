@@ -38,7 +38,7 @@
 
 int main(int argc, char** argv)
 {
-    if(QMail::fileLock("messagingsettings-instance.lock") == -1)
+    if (QMail::fileLock("messagingsettings-instance.lock") == -1)
         qFatal("MessagingSettings already running!\n");
 
     QApplication app(argc, argv);

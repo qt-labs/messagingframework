@@ -87,7 +87,7 @@ tst_QLogSystem::~tst_QLogSystem()
 
 void tst_QLogSystem::initTestCase()
 { // this file will be regenerated in each test
-    if(QFile::exists("./LoggersTest.log"))
+    if (QFile::exists("./LoggersTest.log"))
         QVERIFY2(QFile::remove("./LoggersTest.log"), "could not delete log file");
 }
 
@@ -102,7 +102,7 @@ void tst_QLogSystem::init()
 
 void tst_QLogSystem::cleanup()
 {
-    if(QFile::exists("./LoggersTest.log"))
+    if (QFile::exists("./LoggersTest.log"))
         QVERIFY2(QFile::remove("./LoggersTest.log"), "could not delete log file");
 }
 Q_DECLARE_METATYPE(LogLevel)

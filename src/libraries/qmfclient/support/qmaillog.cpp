@@ -61,7 +61,7 @@ namespace
 
         QString err;
         const bool isReady = logger->isReady(err);
-        if(!isReady) {
+        if (!isReady) {
             // Need to print to stderr in case no loggers are acting now
             fprintf(stderr, "%s: Can't initialize logger, error: '%s'\n", Q_FUNC_INFO, qPrintable(err));
             // Printing through the log subsystem
@@ -119,7 +119,7 @@ QMF_EXPORT void qMailLoggersRecreate(const QString& organization, const QString&
     LogSystem& loggers = LogSystem::getInstance();
     loggers.clear();
 
-    if(syslogEnabled) {
+    if (syslogEnabled) {
 #if !defined(Q_OS_WIN)
         SysLogger<LvlLogPrefix>* sl = new SysLogger<LvlLogPrefix>(QLatin1String(ident), LOG_PID, LOG_LOCAL7);
         addLoggerIfReady(sl);
@@ -128,12 +128,12 @@ QMF_EXPORT void qMailLoggersRecreate(const QString& organization, const QString&
 #endif
     };
 
-    if(fileEnabled) {
+    if (fileEnabled) {
         FileLogger<LvlTimePidLogPrefix>* fl = new FileLogger<LvlTimePidLogPrefix>(filePath);
         addLoggerIfReady(fl);
     };
 
-    if(stderrEnabled) {
+    if (stderrEnabled) {
         FileLogger<LvlTimePidLogPrefix>* el = new FileLogger<LvlTimePidLogPrefix>(stderr);
         addLoggerIfReady(el);
     };

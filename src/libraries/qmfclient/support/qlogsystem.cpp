@@ -78,7 +78,7 @@ void LogSystem::log(LogLevel lvl, const char* fmt, ...)
 void LogSystem::addLogger(ILogger* logger)
 {
     Q_ASSERT(logger);
-    if(!loggers.contains(logger))
+    if (!loggers.contains(logger))
         loggers.append(logger);
 }
 

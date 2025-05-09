@@ -125,7 +125,7 @@ bool QMailMessageClassifier::classifyMessage(QMailMessageMetaData& metaData)
             // Handle voicemail emails, from pre-configured addresses
             if (voiceMailAddresses.contains(metaData.from().address())) {
                 content = QMailMessage::VoicemailContent;
-            } else if(videoMailAddresses.contains(metaData.from().address())) {
+            } else if (videoMailAddresses.contains(metaData.from().address())) {
                 content = QMailMessage::VideomailContent;
             }
             break;

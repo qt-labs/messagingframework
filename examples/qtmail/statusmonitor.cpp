@@ -141,7 +141,7 @@ QString ServiceActionStatusItem::status() const
 
 void ServiceActionStatusItem::serviceActivityChanged(QMailServiceAction::Activity a)
 {
-    if(a == QMailServiceAction::Successful || a == QMailServiceAction::Failed)
+    if (a == QMailServiceAction::Successful || a == QMailServiceAction::Failed)
         emit finished();
 }
 
@@ -159,7 +159,7 @@ StatusMonitor* StatusMonitor::instance()
 
 void StatusMonitor::add(StatusItem* newItem)
 {
-    if(!newItem || m_statusItems.contains(newItem))
+    if (!newItem || m_statusItems.contains(newItem))
     {
         qWarning() << "Status item already exists.";
         return;
@@ -218,7 +218,7 @@ void StatusMonitor::statusItemProgressChanged()
 void StatusMonitor::statusItemDestroyed(QObject* s)
 {
     StatusItem* ss = qobject_cast<StatusItem*>(s);
-    if(ss)
+    if (ss)
     {
         m_statusItems.removeAll(ss);
         disconnect(ss);

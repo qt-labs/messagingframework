@@ -1010,7 +1010,7 @@ void QMailStorePrivate::messagesRemotelyChanged(QMailStore::ChangeType changeTyp
 void QMailStorePrivate::messageMetaDataRemotelyChanged(QMailStore::ChangeType changeType,
                                                        const QMailMessageMetaDataList &data)
 {
-    if(!data.isEmpty()) {
+    if (!data.isEmpty()) {
 
         QMailMessageIdList ids;
 
@@ -1045,7 +1045,7 @@ void QMailStorePrivate::messagePropertiesRemotelyChanged(const QMailMessageIdLis
 
     foreach(const QMailMessageId& id, ids) {
 
-        if(messageCache.contains(id)) {
+        if (messageCache.contains(id)) {
             QMailMessageMetaData metaData = messageCache.lookup(id);
             if ((properties & QMailMessageKey::Custom)) {
                 metaData.setCustomFields(data.customFields());
@@ -1152,7 +1152,7 @@ void QMailStorePrivate::messageStatusRemotelyChanged(const QMailMessageIdList& i
 
     foreach(const QMailMessageId& id, ids) {
 
-        if(messageCache.contains(id)) {
+        if (messageCache.contains(id)) {
             QMailMessageMetaData metaData = messageCache.lookup(id);
             metaData.setStatus(status, set);
             metaData.setUnmodified();

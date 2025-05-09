@@ -298,7 +298,7 @@ QVariant EmailFolderModel::data(QMailMessageSet *item, int role, int column) con
     if (item) {
         if (role == FolderSynchronizationEnabledRole) {
             return itemSynchronizationEnabled(item);
-        } else if(role == FolderChildCreationPermittedRole || role == FolderDeletionPermittedRole
+        } else if (role == FolderChildCreationPermittedRole || role == FolderDeletionPermittedRole
                   || role == FolderRenamePermittedRole) {
             return itemPermitted(item, static_cast<Roles>(role));
         }
@@ -467,7 +467,7 @@ bool EmailFolderModel::itemPermitted(QMailMessageSet *item, Roles role) const
         QMailFolder folder(folderItem->folderId());
         if (folder.parentAccountId().isValid()) {
             quint64 folderStatus = folder.status();
-            switch(role) {
+            switch (role) {
             case FolderChildCreationPermittedRole:
                 return (folderStatus & QMailFolder::ChildCreationPermitted);
             case FolderDeletionPermittedRole:

@@ -147,7 +147,7 @@ void QuickSearchWidget::searchTermsChanged()
 QMailMessageKey QuickSearchWidget::buildSearchKey() const
 {
     QMailMessageKey statusKey = qvariant_cast<QMailMessageKey>(m_statusCombo->itemData(m_statusCombo->currentIndex()));
-    if(m_searchTerms->text().isEmpty() && m_statusCombo->currentIndex() == 0)
+    if (m_searchTerms->text().isEmpty() && m_statusCombo->currentIndex() == 0)
         return statusKey;
 
     QMailMessageKey subjectKey = QMailMessageKey::subject(m_searchTerms->text(),QMailDataComparator::Includes);
@@ -220,13 +220,13 @@ static QString dateString(const QDateTime& dt)
 {
     QDateTime current = QDateTime::currentDateTime();
     //today
-    if(dt.date() == current.date())
+    if (dt.date() == current.date())
         return QString("Today %1").arg(dt.toString("h:mm:ss ap"));
     //yesterday
-    else if(dt.daysTo(current) <= 1)
+    else if (dt.daysTo(current) <= 1)
         return QString("Yesterday %1").arg(dt.toString("h:mm:ss ap"));
     //within 7 days
-    else if(dt.daysTo(current) < 7)
+    else if (dt.daysTo(current) < 7)
         return dt.toString("dddd h:mm:ss ap");
     else return dt.toString("dd/MM/yy h:mm:ss ap");
 }
@@ -236,7 +236,7 @@ QVariant MessageListModel<BaseModel>::data(const QModelIndex & index, int role) 
 {
     if (index.isValid()) {
         if (role == Qt::DisplayRole && index.isValid()) {
-            switch(index.column())
+            switch (index.column())
             {
             case 0:
                 return SuperType::data(index, QMailMessageModelBase::MessageSubjectTextRole);
@@ -327,13 +327,13 @@ MessageList::~MessageList()
 
 void MessageList::keyPressEvent(QKeyEvent* e)
 {
-    switch( e->key() ) {
+    switch ( e->key() ) {
         case Qt::Key_Space:
         case Qt::Key_Return:
         case Qt::Key_Select:
         case Qt::Key_Enter:
         {
-            if(currentIndex().isValid())
+            if (currentIndex().isValid())
                 emit clicked(currentIndex());
         }
         break;

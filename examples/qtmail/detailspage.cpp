@@ -93,7 +93,7 @@ DetailsPage::DetailsPage( QWidget *parent, const char *name )
 {
 /*    QMenu *menu = QSoftMenuBar::menuFor( this );
     QWidget* p = QWidget::parentWidget();
-    while(p)
+    while (p)
     {
         addActionsFromWidget(p,menu);
         p = p->parentWidget();
@@ -107,7 +107,7 @@ DetailsPage::DetailsPage( QWidget *parent, const char *name )
     setObjectName( name );
     QIcon abicon(":icon/addressbook/AddressBook");
 //    QMenu *menu = QSoftMenuBar::menuFor( this );
-//  if( !Qtopia::mousePreferred() )
+//  if ( !Qtopia::mousePreferred() )
 //  {
 //      menu->addAction( abicon, tr("From contacts", "Find recipient's phone number or email address from Contacts application"),
 //                       this, SLOT(editRecipients()) );
@@ -206,11 +206,11 @@ DetailsPage::DetailsPage( QWidget *parent, const char *name )
     QList<QWidget*> tabOrderList;
 
     tabOrderList.append( m_toField );
-//    if( Qtopia::mousePreferred() && m_toPicker)
+//    if ( Qtopia::mousePreferred() && m_toPicker)
 //        tabOrderList.append( m_toPicker );
     tabOrderList.append( m_ccField );
     tabOrderList.append( m_bccField );
- //   if( Qtopia::mousePreferred() && m_bccPicker)
+ //   if ( Qtopia::mousePreferred() && m_bccPicker)
  //       tabOrderList.append( m_bccPicker );
     tabOrderList.append( m_subjectField );
     tabOrderList.append( m_fromField );
@@ -283,15 +283,15 @@ void DetailsPage::editRecipients()
     /*
     RecipientEdit *edit = 0;
     if (Qtopia::mousePreferred()) {
-//        if( sender() == m_toPicker )
+//        if ( sender() == m_toPicker )
 //            edit = m_toField;
-        else if( sender() == m_ccPicker )
+        else if ( sender() == m_ccPicker )
             edit = m_ccField;
-        else if( sender() == m_bccPicker )
+        else if ( sender() == m_bccPicker )
             edit = m_bccField;
     } else {
         QWidget *w = focusWidget();
-        if( w && w->inherits("RecipientEdit") )
+        if ( w && w->inherits("RecipientEdit") )
             edit = static_cast<RecipientEdit *>(w);
     }
     if (edit)
@@ -304,7 +304,7 @@ void DetailsPage::editRecipients()
 void DetailsPage::setType( int t )
 {
     //QtopiaApplication::InputMethodHint imHint = QtopiaApplication::Normal;
-    if( m_type != t )
+    if ( m_type != t )
     {
         m_allowPhoneNumbers = false;
         m_allowEmails = false;
@@ -320,7 +320,7 @@ void DetailsPage::setType( int t )
         m_readReplyField->hide();
         m_deliveryReportField->hide();
 
-        if( t == QMailMessage::Mms )
+        if ( t == QMailMessage::Mms )
         {
             m_allowPhoneNumbers = true;
             //m_allowEmails = true; //TODO reenable when address picker supports selection of multiple types
@@ -333,12 +333,12 @@ void DetailsPage::setType( int t )
             m_readReplyField->show();
             m_deliveryReportField->show();
         }
-        else if( t == QMailMessage::Sms )
+        else if ( t == QMailMessage::Sms )
         {
             m_allowPhoneNumbers = true;
 
         }
-        else if( t == QMailMessage::Email )
+        else if ( t == QMailMessage::Email )
         {
             m_allowEmails = true;
             m_ccFieldLabel->show();
@@ -477,7 +477,7 @@ void DetailsPage::setBcc( const QString &a_bcc )
 QString DetailsPage::bcc() const
 {
     QString text;
-    if( !m_bccField->isHidden() )
+    if ( !m_bccField->isHidden() )
         text = m_bccField->text();
     return text;
 }
@@ -491,7 +491,7 @@ void DetailsPage::setCc( const QString &a_cc )
 QString DetailsPage::cc() const
 {
     QString text;
-    if( !m_ccField->isHidden() )
+    if ( !m_ccField->isHidden() )
         text = m_ccField->text();
     return text;
 }
@@ -567,11 +567,11 @@ void DetailsPage::copy()
 {
 #ifndef QT_NO_CLIPBOARD
     QWidget *fw = focusWidget();
-    if( !fw )
+    if ( !fw )
         return;
-    if( fw->inherits( "QLineEdit" ) )
+    if ( fw->inherits( "QLineEdit" ) )
         static_cast<QLineEdit*>(fw)->copy();
-    else if( fw->inherits( "QTextEdit" ) )
+    else if ( fw->inherits( "QTextEdit" ) )
         static_cast<QTextEdit*>(fw)->copy();
 #endif
 }
@@ -580,11 +580,11 @@ void DetailsPage::paste()
 {
 #ifndef QT_NO_CLIPBOARD
     QWidget *fw = focusWidget();
-    if( !fw )
+    if ( !fw )
         return;
-    if( fw->inherits( "QLineEdit" ) )
+    if ( fw->inherits( "QLineEdit" ) )
         static_cast<QLineEdit*>(fw)->paste();
-    else if( fw->inherits( "QTextEdit" ))
+    else if ( fw->inherits( "QTextEdit" ))
         static_cast<QTextEdit*>(fw)->paste();
 #endif
 }

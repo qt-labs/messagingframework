@@ -216,7 +216,7 @@ bool ImapService::Source::retrieveFolderList(const QMailAccountId &accountId, co
     _service->_client->strategyContext()->foldersOnlyStrategy.setDescending(descending);
     _service->_client->strategyContext()->foldersOnlyStrategy.setIgnoreSyncFlag(true);
     appendStrategy(&_service->_client->strategyContext()->foldersOnlyStrategy);
-    if(!_unavailable)
+    if (!_unavailable)
         return initiateStrategy();
     return true;
 }
@@ -308,7 +308,7 @@ bool ImapService::Source::retrieveMessageLists(const QMailAccountId &accountId, 
     _service->_client->strategyContext()->retrieveMessageListStrategy.selectedFoldersAppend(folderIds);
     _service->_client->strategyContext()->retrieveMessageListStrategy.setIgnoreSyncFlag(!_folderIds.isEmpty());
     appendStrategy(&_service->_client->strategyContext()->retrieveMessageListStrategy);
-    if(!_unavailable)
+    if (!_unavailable)
         return initiateStrategy();
     return true;
 }
@@ -330,7 +330,7 @@ bool ImapService::Source::retrieveMessages(const QMailMessageIdList &messageIds,
         _service->_client->strategyContext()->updateMessagesFlagsStrategy.clearSelection();
         _service->_client->strategyContext()->updateMessagesFlagsStrategy.selectedMailsAppend(messageIds);
         appendStrategy(&_service->_client->strategyContext()->updateMessagesFlagsStrategy);
-        if(!_unavailable)
+        if (!_unavailable)
             return initiateStrategy();
         return true;
     }
@@ -356,7 +356,7 @@ bool ImapService::Source::retrieveMessages(const QMailMessageIdList &messageIds,
 
     appendStrategy(&_service->_client->strategyContext()->selectedStrategy);
 
-    if(!_unavailable)
+    if (!_unavailable)
         return initiateStrategy();
     return true;
 }
@@ -393,7 +393,7 @@ bool ImapService::Source::retrieveMessagePart(const QMailMessagePart::Location &
     _service->_client->strategyContext()->selectedStrategy.setOperation(_service->_client->strategyContext(), QMailRetrievalAction::Content);
     _service->_client->strategyContext()->selectedStrategy.selectedSectionsAppend(partLocation);
     appendStrategy(&_service->_client->strategyContext()->selectedStrategy);
-    if(!_unavailable)
+    if (!_unavailable)
         return initiateStrategy();
     return true;
 }
@@ -434,7 +434,7 @@ bool ImapService::Source::retrieveMessageRange(const QMailMessageId &messageId, 
     _service->_client->strategyContext()->selectedStrategy.setOperation(_service->_client->strategyContext(), QMailRetrievalAction::Content);
     _service->_client->strategyContext()->selectedStrategy.selectedSectionsAppend(location, minimum);
     appendStrategy(&_service->_client->strategyContext()->selectedStrategy);
-    if(!_unavailable)
+    if (!_unavailable)
         return initiateStrategy();
     return true;
 }
@@ -476,7 +476,7 @@ bool ImapService::Source::retrieveMessagePartRange(const QMailMessagePart::Locat
     _service->_client->strategyContext()->selectedStrategy.selectedSectionsAppend(partLocation, minimum);
     appendStrategy(&_service->_client->strategyContext()->selectedStrategy);
 
-    if(!_unavailable)
+    if (!_unavailable)
         return initiateStrategy();
     return true;
 }
@@ -501,7 +501,7 @@ bool ImapService::Source::retrieveAll(const QMailAccountId &accountId)
     _service->_client->strategyContext()->retrieveAllStrategy.setOperation(_service->_client->strategyContext(), QMailRetrievalAction::Auto);
     _service->_client->strategyContext()->retrieveAllStrategy.setIgnoreSyncFlag(false);
     appendStrategy(&_service->_client->strategyContext()->retrieveAllStrategy);
-    if(!_unavailable)
+    if (!_unavailable)
         return initiateStrategy();
     return true;
 }
@@ -550,7 +550,7 @@ bool ImapService::Source::exportUpdates(const QMailAccountId &accountId)
 
     _service->_client->strategyContext()->exportUpdatesStrategy.clearSelection();
     appendStrategy(&_service->_client->strategyContext()->exportUpdatesStrategy);
-    if(!_unavailable)
+    if (!_unavailable)
         return initiateStrategy();
     return true;
 }
@@ -577,7 +577,7 @@ bool ImapService::Source::synchronize(const QMailAccountId &accountId)
     _service->_client->strategyContext()->synchronizeAccountStrategy.setOperation(_service->_client->strategyContext(), QMailRetrievalAction::Auto);
     _service->_client->strategyContext()->synchronizeAccountStrategy.setIgnoreSyncFlag(false);
     appendStrategy(&_service->_client->strategyContext()->synchronizeAccountStrategy);
-    if(!_unavailable)
+    if (!_unavailable)
         return initiateStrategy();
     return true;
 }
@@ -657,7 +657,7 @@ bool ImapService::Source::doDelete(const QMailMessageIdList &ids)
         _service->_client->strategyContext()->deleteMessagesStrategy.setLocalMessageRemoval(true);
         _service->_client->strategyContext()->deleteMessagesStrategy.selectedMailsAppend(ids);
         appendStrategy(&_service->_client->strategyContext()->deleteMessagesStrategy, SIGNAL(messagesDeleted(QMailMessageIdList)));
-        if(!_unavailable)
+        if (!_unavailable)
             return initiateStrategy();
         return true;
     }
@@ -688,7 +688,7 @@ bool ImapService::Source::copyMessages(const QMailMessageIdList &messageIds, con
         _service->_client->strategyContext()->copyMessagesStrategy.clearSelection();
         _service->_client->strategyContext()->copyMessagesStrategy.appendMessageSet(messageIds, destinationId);
         appendStrategy(&_service->_client->strategyContext()->copyMessagesStrategy, SIGNAL(messagesCopied(QMailMessageIdList)));
-        if(!_unavailable)
+        if (!_unavailable)
             return initiateStrategy();
         return true;
     }
@@ -719,7 +719,7 @@ bool ImapService::Source::moveMessages(const QMailMessageIdList &messageIds, con
         _service->_client->strategyContext()->moveMessagesStrategy.clearSelection();
         _service->_client->strategyContext()->moveMessagesStrategy.appendMessageSet(messageIds, destinationId);
         appendStrategy(&_service->_client->strategyContext()->moveMessagesStrategy, SIGNAL(messagesMoved(QMailMessageIdList)));
-        if(!_unavailable)
+        if (!_unavailable)
             return initiateStrategy();
         return true;
     }
@@ -738,7 +738,7 @@ bool ImapService::Source::moveMessages(const QMailMessageIdList &messageIds, con
             _service->_client->strategyContext()->deleteMessagesStrategy.setLocalMessageRemoval(false);
             _service->_client->strategyContext()->deleteMessagesStrategy.selectedMailsAppend(serverMessages);
             appendStrategy(&_service->_client->strategyContext()->deleteMessagesStrategy);
-            if(!_unavailable)
+            if (!_unavailable)
                 initiateStrategy();
         }
     }
@@ -806,7 +806,7 @@ bool ImapService::Source::flagMessages(const QMailMessageIdList &messageIds, qui
 
                 appendStrategy(&_service->_client->strategyContext()->moveMessagesStrategy, SIGNAL(messagesFlagged(QMailMessageIdList)));
 
-                if(!_unavailable)
+                if (!_unavailable)
                     return initiateStrategy();
                 return true;
 
@@ -823,7 +823,7 @@ bool ImapService::Source::flagMessages(const QMailMessageIdList &messageIds, qui
                 }
 
                 appendStrategy(&_service->_client->strategyContext()->moveMessagesStrategy, SIGNAL(messagesFlagged(QMailMessageIdList)));
-                if(!_unavailable)
+                if (!_unavailable)
                     return initiateStrategy();
                 return true;
             }
@@ -862,7 +862,7 @@ bool ImapService::Source::flagMessages(const QMailMessageIdList &messageIds, qui
                 _service->_client->strategyContext()->moveMessagesStrategy.appendMessageSet(moveIds, sentId);
                 appendStrategy(&_service->_client->strategyContext()->moveMessagesStrategy, SIGNAL(messagesFlagged(QMailMessageIdList)));
             }
-            if(!_unavailable)
+            if (!_unavailable)
                 return initiateStrategy();
             else return true;
         }
@@ -879,7 +879,7 @@ bool ImapService::Source::flagMessages(const QMailMessageIdList &messageIds, qui
             _service->_client->strategyContext()->moveMessagesStrategy.clearSelection();
             _service->_client->strategyContext()->moveMessagesStrategy.appendMessageSet(messageIds, draftId);
             appendStrategy(&_service->_client->strategyContext()->moveMessagesStrategy, SIGNAL(messagesFlagged(QMailMessageIdList)));
-            if(!_unavailable)
+            if (!_unavailable)
                 return initiateStrategy();
             return true;
         }
@@ -945,7 +945,7 @@ bool ImapService::Source::flagMessages(const QMailMessageIdList &messageIds, qui
             }
             _service->_client->strategyContext()->flagMessagesStrategy.selectedMailsAppend(messageIds);
             appendStrategy(&_service->_client->strategyContext()->flagMessagesStrategy, SIGNAL(messagesFlagged(QMailMessageIdList)));
-            if(!_unavailable)
+            if (!_unavailable)
                 return initiateStrategy();
             return true;
         }
@@ -972,7 +972,7 @@ bool ImapService::Source::createFolder(const QString &name, const QMailAccountId
     }
     //here we'll create a QMailFolder and give it to the strategy
     //if it is successful, we'll let it register it as a real folder in the QMailStore
-    if(name.isEmpty()) {
+    if (name.isEmpty()) {
         _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("Cannot create empty named folder"));
         return false;
     }
@@ -980,7 +980,7 @@ bool ImapService::Source::createFolder(const QString &name, const QMailAccountId
     _service->_client->strategyContext()->createFolderStrategy.createFolder(parentId, name, matchFolderRequired);
 
     appendStrategy(&_service->_client->strategyContext()->createFolderStrategy);
-    if(!_unavailable)
+    if (!_unavailable)
         return initiateStrategy();
     return true;
 }
@@ -1040,7 +1040,7 @@ bool ImapService::Source::createStandardFolders(const QMailAccountId &accountId)
     appendStrategy(&_service->_client->strategyContext()->createFolderStrategy);
 
 
-    if(!_unavailable)
+    if (!_unavailable)
         return initiateStrategy();
     return true;
 }
@@ -1053,7 +1053,7 @@ bool ImapService::Source::deleteFolder(const QMailFolderId &folderId)
         return false;
     }
 
-    if(!folderId.isValid()) {
+    if (!folderId.isValid()) {
         _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("Deleting invalid folder"));
         return false;
     }
@@ -1065,7 +1065,7 @@ bool ImapService::Source::deleteFolder(const QMailFolderId &folderId)
     //remove remote copy
     _service->_client->strategyContext()->deleteFolderStrategy.deleteFolder(folderId);
     appendStrategy(&_service->_client->strategyContext()->deleteFolderStrategy);
-    if(!_unavailable)
+    if (!_unavailable)
         return initiateStrategy();
     return true;
 }
@@ -1078,11 +1078,11 @@ bool ImapService::Source::renameFolder(const QMailFolderId &folderId, const QStr
         return false;
     }
 
-    if(name.isEmpty()) {
+    if (name.isEmpty()) {
         _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("Cannot rename to an empty folder"));
         return false;
     }
-    if(!folderId.isValid()) {
+    if (!folderId.isValid()) {
         _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("Cannot rename an invalid folder"));
         return false;
     }
@@ -1090,7 +1090,7 @@ bool ImapService::Source::renameFolder(const QMailFolderId &folderId, const QStr
     _service->_client->strategyContext()->renameFolderStrategy.renameFolder(folderId, name);
 
     appendStrategy(&_service->_client->strategyContext()->renameFolderStrategy);
-    if(!_unavailable)
+    if (!_unavailable)
         return initiateStrategy();
     return true;
 }
@@ -1150,7 +1150,7 @@ bool ImapService::Source::searchMessages(const QMailMessageKey &searchCriteria, 
         return false;
     }
 
-    if(searchCriteria.isEmpty() && bodyText.isEmpty()) {
+    if (searchCriteria.isEmpty() && bodyText.isEmpty()) {
         //we're not going to do an empty search (which returns all emails..)
         _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("Empty search provided"));
         return false;
@@ -1158,7 +1158,7 @@ bool ImapService::Source::searchMessages(const QMailMessageKey &searchCriteria, 
 
     _service->_client->strategyContext()->searchMessageStrategy.searchArguments(searchCriteria, bodyText, limit, sort, count);
     appendStrategy(&_service->_client->strategyContext()->searchMessageStrategy);
-    if(!_unavailable)
+    if (!_unavailable)
         initiateStrategy();
     return true;
 }
@@ -1172,7 +1172,7 @@ bool ImapService::Source::cancelSearch()
 
     _service->_client->strategyContext()->searchMessageStrategy.cancelSearch();
     appendStrategy(&_service->_client->strategyContext()->searchMessageStrategy);
-    if(!_unavailable)
+    if (!_unavailable)
         initiateStrategy();
    return true;
 }
@@ -1236,7 +1236,7 @@ bool ImapService::Source::prepareMessages(const QList<QPair<QMailMessagePart::Lo
         _service->_client->strategyContext()->externalizeMessagesStrategy.appendMessageSet(externaliseIds, sentId);
         appendStrategy(&_service->_client->strategyContext()->externalizeMessagesStrategy, SIGNAL(messagesPrepared(QMailMessageIdList)));
     }
-    if(!_unavailable)
+    if (!_unavailable)
         return initiateStrategy();
     return true;
 }

@@ -1120,7 +1120,7 @@ const char* requestTypeNames[] =
 void ServiceHandler::dispatchRequest()
 {
     QList<Request>::iterator request(mRequests.begin());
-    while(request != mRequests.end())
+    while (request != mRequests.end())
     {
         if (!servicesAvailable(*request)) {
             ++request;
@@ -2411,7 +2411,7 @@ void ServiceHandler::restoreToPreviousFolder(quint64 action, const QMailMessageK
 
 void ServiceHandler::onlineCreateFolder(quint64 action, const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId)
 {
-    if(accountId.isValid()) {
+    if (accountId.isValid()) {
 
         QSet<QMailAccountId> accounts;
         if (parentId.isValid()) {
@@ -2436,7 +2436,7 @@ bool ServiceHandler::dispatchOnlineCreateFolder(quint64 action, const QByteArray
 
     deserialize(data, name, accountId, parentId);
 
-    if(QMailMessageSource *source = accountSource(accountId)) {
+    if (QMailMessageSource *source = accountSource(accountId)) {
         bool success(sourceService.value(source)->usesConcurrentActions()
             ? source->createFolder(name, accountId, parentId, action)
             : source->createFolder(name, accountId, parentId));
@@ -2455,7 +2455,7 @@ bool ServiceHandler::dispatchOnlineCreateFolder(quint64 action, const QByteArray
 
 void ServiceHandler::onlineRenameFolder(quint64 action, const QMailFolderId &folderId, const QString &name)
 {
-    if(folderId.isValid()) {
+    if (folderId.isValid()) {
         QSet<QMailAccountId> accounts = folderAccount(folderId);
         QSet<QMailMessageService *> sources(sourceServiceSet(accounts));
 
@@ -2472,7 +2472,7 @@ bool ServiceHandler::dispatchOnlineRenameFolder(quint64 action, const QByteArray
 
     deserialize(data, folderId, newFolderName);
 
-    if(QMailMessageSource *source = accountSource(QMailFolder(folderId).parentAccountId())) {
+    if (QMailMessageSource *source = accountSource(QMailFolder(folderId).parentAccountId())) {
         bool success(sourceService.value(source)->usesConcurrentActions()
             ? source->renameFolder(folderId, newFolderName, action)
             : source->renameFolder(folderId, newFolderName));
@@ -2491,7 +2491,7 @@ bool ServiceHandler::dispatchOnlineRenameFolder(quint64 action, const QByteArray
 
 void ServiceHandler::onlineDeleteFolder(quint64 action, const QMailFolderId &folderId)
 {
-    if(folderId.isValid()) {
+    if (folderId.isValid()) {
         QSet<QMailAccountId> accounts = folderAccount(folderId);
         QSet<QMailMessageService *> sources(sourceServiceSet(accounts));
 
@@ -2507,8 +2507,8 @@ bool ServiceHandler::dispatchOnlineDeleteFolder(quint64 action, const QByteArray
 
     deserialize(data, folderId);
 
-    if(QMailMessageSource *source = accountSource(QMailFolder(folderId).parentAccountId())) {
-        if(source->deleteFolder(folderId)) {
+    if (QMailMessageSource *source = accountSource(QMailFolder(folderId).parentAccountId())) {
+        if (source->deleteFolder(folderId)) {
             return true;
         } else {
             qWarning() << "Unable to service request to delete folder id:" << folderId;
@@ -2679,7 +2679,7 @@ void ServiceHandler::listActions()
 {
     QMailActionDataList list;
 
-    for(QMap<quint64, ActionData>::iterator i(mActiveActions.begin()) ; i != mActiveActions.end(); ++i)
+    for (QMap<quint64, ActionData>::iterator i(mActiveActions.begin()) ; i != mActiveActions.end(); ++i)
     {
         QMailActionData t(i.key(), i->description, i->progressTotal, i->progressCurrent,
                           i->status.errorCode, i->status.text,

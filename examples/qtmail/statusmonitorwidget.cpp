@@ -46,7 +46,7 @@ m_bottomMargin(bottomMargin),
 m_rightMargin(rightMargin)
 {
     init();
-    if(parent)
+    if (parent)
         parent->installEventFilter(this);
     connect(StatusMonitor::instance(),SIGNAL(added(StatusItem*)),this,
             SLOT(statusAdded(StatusItem*)));
@@ -68,7 +68,7 @@ QSize StatusMonitorWidget::sizeHint() const
 
 bool StatusMonitorWidget::eventFilter(QObject* source, QEvent* event)
 {
-    if(source == parent() && isVisible() && event->type() == QEvent::Resize)
+    if (source == parent() && isVisible() && event->type() == QEvent::Resize)
         repositionToParent();
     return QWidget::eventFilter(source,event);
 }
@@ -88,7 +88,7 @@ void StatusMonitorWidget::statusAdded(StatusItem* s)
 
 void StatusMonitorWidget::statusRemoved(StatusItem* s)
 {
-    if(QWidget* w = m_statusWidgets.value(s))
+    if (QWidget* w = m_statusWidgets.value(s))
     {
         m_statusWidgets.remove(s);
         w->deleteLater();
@@ -109,7 +109,7 @@ void StatusMonitorWidget::init()
 void StatusMonitorWidget::repositionToParent()
 {
     QWidget* parentWidget = qobject_cast<QWidget*>(parent());
-    if(!parentWidget)
+    if (!parentWidget)
         return;
     int x = parentWidget->width() - m_rightMargin - width();
     int y = parentWidget->height() - m_bottomMargin - height();

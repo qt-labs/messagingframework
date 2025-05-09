@@ -189,7 +189,7 @@ static void syncStatusWithFolder(QMailMessageMetaData& message)
 
     QMailAccount messageAccount(message.parentAccountId());
 
-    for( QMap<QMailFolder::StandardFolder, QMailFolderId>::const_iterator it(messageAccount.standardFolders().begin())
+    for ( QMap<QMailFolder::StandardFolder, QMailFolderId>::const_iterator it(messageAccount.standardFolders().begin())
         ; it != messageAccount.standardFolders().end() ; it++)
     {
         if (message.parentFolderId() == it.value()) {
@@ -279,7 +279,7 @@ void QMailDisconnected::rollBackUpdates(const QMailAccountId &mailAccountId)
     QMailMessageIdList movedIds = QMailStore::instance()->queryMessages(movedKey);
 
     // remove copies
-    if(!copiedIds.isEmpty()) {
+    if (!copiedIds.isEmpty()) {
         if (!QMailStore::instance()->removeMessages(QMailMessageKey::id(copiedIds))) {
             qWarning() << "Unable to rollback disconnected copies for account:" << mailAccountId;
             return;

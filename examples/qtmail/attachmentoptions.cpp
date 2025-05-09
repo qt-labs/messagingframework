@@ -363,11 +363,11 @@ QSize AttachmentOptions::sizeHint() const
 
 static QString humanReadable(int size)
 {
-    if(size < 1024)
+    if (size < 1024)
         return QObject::tr("%n byte(s)", "", size);
-    else if(size < (1024 * 1024))
+    else if (size < (1024 * 1024))
         return QObject::tr("%1 KB").arg(((float)size)/1024.0, 0, 'f', 1);
-    else if(size < (1024 * 1024 * 1024))
+    else if (size < (1024 * 1024 * 1024))
         return QObject::tr("%1 MB").arg(((float)size)/(1024.0 * 1024.0), 0, 'f', 1);
     else
         return QObject::tr("%1 GB").arg(((float)size)/(1024.0 * 1024.0 * 1024.0), 0, 'f', 1);

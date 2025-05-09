@@ -723,7 +723,7 @@ QString CreateState::transmit(ImapContext *c)
     const QMailFolderId &parent = _mailboxes.last().first;
     const QString &name = _mailboxes.last().second;
 
-    if(parent.isValid() && c->protocol()->delimiterUnknown()) {
+    if (parent.isValid() && c->protocol()->delimiterUnknown()) {
         // We are waiting on delim to create
         return QString();
     }
@@ -764,8 +764,8 @@ QString CreateState::makePath(ImapContext *c, const QMailFolderId &parent, const
 {
     QString path;
 
-    if(parent.isValid()) {
-        if(!c->protocol()->delimiterUnknown())
+    if (parent.isValid()) {
+        if (!c->protocol()->delimiterUnknown())
             path = QMailFolder(parent).path() + c->protocol()->delimiter();
         else
             qWarning() << "Cannot create a child folder, without a delimiter";
@@ -868,7 +868,7 @@ void RenameState::init()
 
 QString RenameState::transmit(ImapContext *c)
 {
-    if(c->protocol()->delimiterUnknown()) {
+    if (c->protocol()->delimiterUnknown()) {
         // We are waiting on delim to create
         return QString();
     }
@@ -911,7 +911,7 @@ QString RenameState::buildNewPath(ImapContext *c , const QMailFolder &folder, QS
 {
     QString path;
     QString encodedNewName = QMailCodec::encodeModifiedUtf7(newName);
-    if(c->protocol()->flatHierarchy() || folder.path().count(c->protocol()->delimiter()) == 0)
+    if (c->protocol()->flatHierarchy() || folder.path().count(c->protocol()->delimiter()) == 0)
         path = encodedNewName;
     else
         path = folder.path().section(c->protocol()->delimiter(), 0, -2) + c->protocol()->delimiter() + encodedNewName;
@@ -1105,9 +1105,9 @@ void ListState::untaggedResponse(ImapContext *c, const QString &line)
     flags = token(str, '(', ')', &index);
 
     delimiter = token(str, ' ', ' ', &index);
-    if(c->protocol()->delimiterUnknown()) //only figure it out precisely if needed
+    if (c->protocol()->delimiterUnknown()) //only figure it out precisely if needed
     {
-        if(delimiter == "NIL") {
+        if (delimiter == "NIL") {
             c->protocol()->setFlatHierarchy(true);
         } else {
             pos = 0;
@@ -1115,7 +1115,7 @@ void ListState::untaggedResponse(ImapContext *c, const QString &line)
                 pos = 0;
                 delimiter = token(delimiter, '"', '"', &pos);
             }
-            if(delimiter.length() != 1)
+            if (delimiter.length() != 1)
                 qWarning() << "Delimiter length is" << delimiter.length() << "while should only be 1 character";
             c->protocol()->setDelimiter(*delimiter.begin());
         }
@@ -1799,7 +1799,7 @@ QStringList SearchMessageState::convertValue(const QVariant &value, const QMailM
                                              const QMailKey::Comparator &comparer)
 {
 
-    switch(property) {
+    switch (property) {
     case QMailMessageKey::Id:
         break;
     case QMailMessageKey::Type:
@@ -1811,7 +1811,7 @@ QStringList SearchMessageState::convertValue(const QVariant &value, const QMailM
             QStringList result = QStringList(QString("FROM {%1}").arg(sender.size()));
             result.append(QString("%1").arg(QString(sender)));
             return result;
-        } else if(comparer == QMailKey::NotEqual || comparer == QMailKey::Excludes) {
+        } else if (comparer == QMailKey::NotEqual || comparer == QMailKey::Excludes) {
             QStringList result = QStringList(QString("NOT (FROM {%1}").arg(sender.size()));
             result.append(QString("%1)").arg(QString(sender)));
             return result;
@@ -1825,13 +1825,13 @@ QStringList SearchMessageState::convertValue(const QVariant &value, const QMailM
     case QMailMessageKey::Recipients: {
         _utf8 |= !(isPrintable(value.toString()));
         QString recipients = value.toString().toUtf8(); // utf8 is backwards compatible with 7 bit ascii
-        if(comparer == QMailKey::Equal || comparer == QMailKey::Includes) {
+        if (comparer == QMailKey::Equal || comparer == QMailKey::Includes) {
             QStringList result = QStringList(QString("OR (BCC {%1}").arg(recipients.size()));
             result.append(QString("%1) (OR (CC {%2}").arg(recipients).arg(recipients.size()));
             result.append(QString("%1) (TO {%2}").arg(recipients).arg(recipients.size()));
             result.append(QString("%1))").arg(recipients));
             return result;
-        } else if(comparer == QMailKey::NotEqual || comparer == QMailKey::Excludes) {
+        } else if (comparer == QMailKey::NotEqual || comparer == QMailKey::Excludes) {
             QStringList result = QStringList(QString("NOT (OR (BCC {%1}").arg(recipients.size()));
             result.append(QString("%1) (OR (CC {%2}").arg(recipients).arg(recipients.size()));
             result.append(QString("%1) (TO {%2}").arg(recipients).arg(recipients.size()));
@@ -1845,11 +1845,11 @@ QStringList SearchMessageState::convertValue(const QVariant &value, const QMailM
     case QMailMessageKey::Subject: {
         _utf8 |=  !(isPrintable(value.toString()));
         QString subject = value.toString().toUtf8(); //utf8 is backwards compatible with 7 bit ascii
-        if(comparer == QMailKey::Equal || comparer == QMailKey::Includes) {
+        if (comparer == QMailKey::Equal || comparer == QMailKey::Includes) {
             QStringList result = QStringList(QString("SUBJECT {%1}").arg(subject.size()));
             result.append(QString("%1").arg(QString(subject)));
             return result;
-        } else if(comparer == QMailKey::NotEqual || comparer == QMailKey::Excludes) {
+        } else if (comparer == QMailKey::NotEqual || comparer == QMailKey::Excludes) {
             QStringList result = QStringList(QString("NOT (SUBJECT {%1}").arg(subject.size()));
             result.append(QString("%1)").arg(QString(subject)));
             return result;
@@ -1871,15 +1871,15 @@ QStringList SearchMessageState::convertValue(const QVariant &value, const QMailM
     case QMailMessageKey::Size: {
         int size = value.toInt();
 
-        if(comparer == QMailKey::GreaterThan)
+        if (comparer == QMailKey::GreaterThan)
             return QStringList(QString("LARGER %1").arg(size));
-        else if(comparer == QMailKey::LessThan)
+        else if (comparer == QMailKey::LessThan)
             return QStringList(QString("SMALLER %1").arg(size));
-        else if(comparer == QMailKey::GreaterThanEqual)
+        else if (comparer == QMailKey::GreaterThanEqual)
             return QStringList(QString("LARGER %1").arg(size-1)); // imap has no >= search, so convert it to a >
-        else if(comparer == QMailKey::LessThanEqual)
+        else if (comparer == QMailKey::LessThanEqual)
             return QStringList(QString("SMALLER %1").arg(size+1)); // ..same with <=
-        else if(comparer == QMailKey::Equal) // ..cause real men know how many bytes they're looking for
+        else if (comparer == QMailKey::Equal) // ..cause real men know how many bytes they're looking for
             return QStringList(QString("LARGER %1 SMALLER %2").arg(size-1).arg(size+1));
         else
             qWarning() << "Unknown comparer: " << comparer << "for size";
@@ -1939,7 +1939,7 @@ QStringList SearchMessageState::convertKey(const QMailMessageKey &key)
         if (!searchKey.isEmpty())
             subSearchKeys.append(searchKey);
     }
-    if(!subSearchKeys.isEmpty()) {
+    if (!subSearchKeys.isEmpty()) {
         result += combine(subSearchKeys, combiner);
     }
 
@@ -1951,7 +1951,7 @@ QStringList SearchMessageState::combine(const QList<QStringList> &searchKeys, co
     Q_ASSERT(searchKeys.size() >= 1);
     if (searchKeys.size() == 1) {
         return searchKeys.first();
-    } else if(combiner == QMailKey::And) {
+    } else if (combiner == QMailKey::And) {
         // IMAP uses AND so just add a space and we're good to go!
         QStringList result = searchKeys.first();
         for (int i = 1 ; i < searchKeys.count() ; i++) {
@@ -1967,7 +1967,7 @@ QStringList SearchMessageState::combine(const QList<QStringList> &searchKeys, co
             }
         }
         return result;
-    } else if(combiner == QMailKey::Or) {
+    } else if (combiner == QMailKey::Or) {
         QStringList result;
 
         for (int i = 0 ; i < searchKeys.count() ; i++) {
@@ -1989,8 +1989,8 @@ QStringList SearchMessageState::combine(const QList<QStringList> &searchKeys, co
         }
 
         return result;
-    } else if(combiner == QMailKey::None) {
-        if(searchKeys.count() != 1) {
+    } else if (combiner == QMailKey::None) {
+        if (searchKeys.count() != 1) {
             qWarning() << "Attempting to combine more than thing, without a combiner?";
             return QStringList();
         } else {
@@ -3337,7 +3337,7 @@ void ImapProtocol::sendExamine(const QMailFolder &mailbox)
 void ImapProtocol::sendCreate(const QMailFolderId &parentFolderId, const QString &name)
 {
     QString mailboxPath;
-    if(parentFolderId.isValid())
+    if (parentFolderId.isValid())
     {
         if (delimiterUnknown()) {
             sendDiscoverDelimiter();

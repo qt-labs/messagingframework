@@ -99,7 +99,7 @@ RowWidget::RowWidget(QSharedPointer<QMailActionInfo> action, QWidget *parent)
 
 QString RowWidget::requestTypeToString(QMailServerRequestType t)
 {
-    switch(t)
+    switch (t)
     {
     case AcknowledgeNewMessagesRequestType:
         return tr("Acknowledging new messages");

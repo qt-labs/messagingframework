@@ -93,7 +93,7 @@ SearchButton::SearchButton(QWidget* parent)
 
 void SearchButton::thisClicked()
 {
-    if(m_searching)
+    if (m_searching)
         emit stopSearch();
     else
         emit startSearch();
@@ -107,7 +107,7 @@ void SearchButton::searchActivityChanged(QMailServiceAction::Activity a)
 
 void SearchButton::updateView()
 {
-    if(m_searching)
+    if (m_searching)
     {
         setText("Stop");
         setIcon(Qtmail::icon("cancel"));
@@ -156,7 +156,7 @@ QWidget(parent)
 
 QString BodySearchWidget::term() const
 {
-    if(m_checkBox->isChecked())
+    if (m_checkBox->isChecked())
         return m_term->text();
     else
         return QString();
@@ -340,7 +340,7 @@ public:
     static QMap<Comparator,QString> comparatorMap()
     {
         static QMap<Comparator,QString> s;
-        if(s.isEmpty())
+        if (s.isEmpty())
         {
             s.insert(Contains,"Contains");
             s.insert(DoesNotContain,"Does not contain");
@@ -366,7 +366,7 @@ public:
     static QMap<Property,QString> propertyMap()
     {
         static QMap<Property,QString> s;
-        if(s.isEmpty())
+        if (s.isEmpty())
         {
             s.insert(AllRecipients,"All recipients");
             s.insert(SizeInBytes,"Size in bytes");
@@ -422,7 +422,7 @@ QMailMessageKey()
 
     enum compartorType{Equality,Inclusion,Relation,Presence,None} ct = None;
 
-    switch(comparator)
+    switch (comparator)
     {
         case SearchTermWidget::Contains:
         {
@@ -466,18 +466,18 @@ QMailMessageKey()
         } break;
     }
 
-    switch(property)
+    switch (property)
     {
         case SearchTermWidget::AllRecipients:
         {
-            if(ct == Equality)
+            if (ct == Equality)
                 QMailMessageKey::operator=(recipients(value.value<QString>(),ec));
             else
                 QMailMessageKey::operator=(recipients(value.value<QString>(),ic));
         }break;
         case SearchTermWidget::SizeInBytes:
         {
-            if(ct == Equality)
+            if (ct == Equality)
                 QMailMessageKey::operator=(size(value.value<int>(),ec));
             else
                 QMailMessageKey::operator=(size(value.value<int>(),rc));
@@ -488,14 +488,14 @@ QMailMessageKey()
         }break;
         case SearchTermWidget::Subject:
         {
-            if(ct == Equality)
+            if (ct == Equality)
                 QMailMessageKey::operator=(subject(value.value<QString>(),ec));
             else
                 QMailMessageKey::operator=(subject(value.value<QString>(),ic));
         }break;
         case SearchTermWidget::From:
         {
-            if(ct == Equality)
+            if (ct == Equality)
                 QMailMessageKey::operator=(sender(value.value<QString>(),ec));
             else
                 QMailMessageKey::operator=(sender(value.value<QString>(),ic));
@@ -505,21 +505,21 @@ QMailMessageKey()
             //beacuse the storage system uses the more fine grained QDateTime, we need to construct keys that
             //consider time range as well
 
-            if(ct == Equality)
+            if (ct == Equality)
             {
                 QMailMessageKey startRange = receptionTimeStamp(value.value<QDate>().startOfDay(),QMailDataComparator::GreaterThanEqual);
                 QMailMessageKey endRange = receptionTimeStamp(value.value<QDate>().addDays(1).startOfDay(),QMailDataComparator::LessThan);
 
-                if(ec == QMailDataComparator::Equal)
+                if (ec == QMailDataComparator::Equal)
                    QMailMessageKey::operator=(startRange & endRange);
                 else
                     QMailMessageKey::operator=(~(startRange & endRange));
             }
             else
             {
-                if(rc == QMailDataComparator::GreaterThan)
+                if (rc == QMailDataComparator::GreaterThan)
                     QMailMessageKey::operator=(receptionTimeStamp(value.value<QDate>().addDays(1).startOfDay(),QMailDataComparator::GreaterThanEqual));
-                else if(rc == QMailDataComparator::LessThanEqual)
+                else if (rc == QMailDataComparator::LessThanEqual)
                     QMailMessageKey::operator=(receptionTimeStamp(value.value<QDate>().startOfDay().addDays(1),QMailDataComparator::LessThan));
                 else
                     QMailMessageKey::operator=(receptionTimeStamp(value.value<QDate>().startOfDay(),rc));
@@ -550,7 +550,7 @@ void SearchTermWidget::reset()
 
 QMailMessageKey SearchTermWidget::searchKey() const
 {
-    if(term().isValid())
+    if (term().isValid())
         return SearchKey(property(),comparator(),term());
     else
         return QMailMessageKey();
@@ -558,7 +558,7 @@ QMailMessageKey SearchTermWidget::searchKey() const
 
 void SearchTermWidget::propertyChanged()
 {
-    switch(property())
+    switch (property())
     {
         case SizeInBytes:
             setComparators(numericComparators());
@@ -586,7 +586,7 @@ void SearchTermWidget::setupUi()
 
     m_property = new QComboBox(this);
     QMap<Property,QString>::const_iterator itr = propertyMap().constBegin();
-    for(;itr != propertyMap().constEnd() ; itr++)
+    for (;itr != propertyMap().constEnd() ; itr++)
         m_property->addItem(*itr,itr.key());
 
     layout->addWidget(m_property);
@@ -624,9 +624,9 @@ void SearchTermWidget::setComparators(Comparators c)
 {
     m_comparator->clear();
     QMap<Comparator,QString>::const_iterator itr = comparatorMap().constBegin();
-    for(;itr != comparatorMap().constEnd();itr++)
+    for (;itr != comparatorMap().constEnd();itr++)
     {
-        if(c & itr.key())
+        if (c & itr.key())
             m_comparator->addItem(*itr,itr.key());
     }
 }
@@ -638,7 +638,7 @@ void SearchTermWidget::setTerm(TermFormat t)
     m_messageFlagsTerm->hide();
     m_dateTerm->hide();
     QWidget* w = 0;
-    switch(t)
+    switch (t)
     {
         case TextTerm:
         w = m_textTerm;
@@ -655,7 +655,7 @@ void SearchTermWidget::setTerm(TermFormat t)
         case NoTerm:
         break;
     }
-    if(w) w->show();
+    if (w) w->show();
 }
 
 SearchTermWidget::Property SearchTermWidget::property() const
@@ -673,20 +673,20 @@ SearchTermWidget::Comparator SearchTermWidget::comparator() const
 QVariant SearchTermWidget::term() const
 {
     TermFormat f = NoTerm;
-    if(m_textTerm->isVisible())
+    if (m_textTerm->isVisible())
         f = TextTerm;
-    else if(m_numericTerm->isVisible())
+    else if (m_numericTerm->isVisible())
         f = NumericTerm;
-    else if(m_messageFlagsTerm->isVisible())
+    else if (m_messageFlagsTerm->isVisible())
         f = MessageFlagsTerm;
-    else if(m_dateTerm->isVisible())
+    else if (m_dateTerm->isVisible())
         f = DateTerm;
 
     QVariant keyValue;
-    switch(f)
+    switch (f)
     {
         case TextTerm:
-            if(!m_textTerm->text().isEmpty())
+            if (!m_textTerm->text().isEmpty())
                 keyValue = m_textTerm->text();
             break;
         case NumericTerm:
@@ -767,7 +767,7 @@ QWidget(parent)
     controlButtonsLayout->addStretch();
 
     layout->addLayout(controlButtonsLayout);
-    for(int i = 0; i < minSearchTerms; ++i)
+    for (int i = 0; i < minSearchTerms; ++i)
         addSearchTerm();
 }
 
@@ -778,14 +778,14 @@ QMailMessageKey SearchTermsComposer::searchKey() const
     QMailMessageKey key = (*itr)->searchKey();
     itr++;
 
-    if(m_matchAllButton->isChecked())
+    if (m_matchAllButton->isChecked())
     {
-        for(;itr != m_terms.end(); ++itr)
+        for (;itr != m_terms.end(); ++itr)
             key &= (*itr)->searchKey();
     }
-    else if(m_matchAnyButton->isChecked())
+    else if (m_matchAnyButton->isChecked())
     {
-        for(;itr != m_terms.end(); ++itr)
+        for (;itr != m_terms.end(); ++itr)
             key |= (*itr)->searchKey();
     }
     return key;
@@ -797,7 +797,7 @@ void SearchTermsComposer::reset()
     foreach(SearchTermWidget* stw, m_terms)
         stw->deleteLater();
     m_terms = QList<SearchTermWidget*>();
-    for(int i = 0 ; i < minSearchTerms; ++i)
+    for (int i = 0 ; i < minSearchTerms; ++i)
         addSearchTerm();
     updateGeometry();
     setUpdatesEnabled(true);
@@ -805,13 +805,13 @@ void SearchTermsComposer::reset()
 
 void SearchTermsComposer::moreButtonClicked()
 {
-    if(m_terms.count() < maxSearchTerms )
+    if (m_terms.count() < maxSearchTerms )
         addSearchTerm();
 }
 
 void SearchTermsComposer::lessButtonClicked()
 {
-    if(m_terms.count() > minSearchTerms )
+    if (m_terms.count() > minSearchTerms )
         removeSearchTerm();
 
 }
@@ -880,7 +880,7 @@ void SearchView::reset()
 
 void SearchView::close()
 {
-    if(m_searchAction->activity() == QMailServiceAction::InProgress)
+    if (m_searchAction->activity() == QMailServiceAction::InProgress)
         m_searchAction->cancelOperation();
     QMainWindow::close();
 }
@@ -935,9 +935,9 @@ void SearchView::setupUi()
 QMailMessageKey SearchView::searchKey() const
 {
     QMailMessageKey key = m_searchTermsComposer->searchKey();
-    if(!m_folderSelectorWidget->searchKey().isEmpty())
+    if (!m_folderSelectorWidget->searchKey().isEmpty())
     {
-        if(!key.isEmpty())
+        if (!key.isEmpty())
             key &= m_folderSelectorWidget->searchKey();
         else
             key = m_folderSelectorWidget->searchKey();
@@ -949,16 +949,16 @@ void SearchView::startSearch()
 {
     m_searchResults->setKey(QMailMessageKey::nonMatchingKey());
 
-    if(m_searched) { //lets "restart" the search action
+    if (m_searched) { //lets "restart" the search action
         delete m_searchAction;
         setupSearchAction();
     }
 
     QMailMessageKey key = searchKey();
-    if(key.isEmpty() && m_bodySearchWidget->term().isEmpty())
+    if (key.isEmpty() && m_bodySearchWidget->term().isEmpty())
         return;
 
-    if(m_searchAction->activity() != QMailServiceAction::InProgress)
+    if (m_searchAction->activity() != QMailServiceAction::InProgress)
         m_searchAction->searchMessages(key,m_bodySearchWidget->term(), m_folderSelectorWidget->searchSpecification());
 
     m_searched = true;
@@ -966,7 +966,7 @@ void SearchView::startSearch()
 
 void SearchView::stopSearch()
 {
-    if(m_searched)
+    if (m_searched)
         m_searchAction->cancelOperation();
 }
 
@@ -977,13 +977,13 @@ void SearchView::messageIdsMatched(const QMailMessageIdList& ids)
 
 void SearchView::searchActivityChanged(QMailServiceAction::Activity a)
 {
-    if(a == QMailServiceAction::Successful)
+    if (a == QMailServiceAction::Successful)
         m_statusBar->showMessage("Done.");
 }
 
 void SearchView::searchProgressChanged(uint value, uint total)
 {
-    if(total > 0)
+    if (total > 0)
         m_statusBar->showMessage(QString("Searching %1%").arg((value*100)/total));
 }
 

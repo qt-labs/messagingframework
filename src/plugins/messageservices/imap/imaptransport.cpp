@@ -325,8 +325,8 @@ void ImapTransport::test()
     // Mainly aiming to test for bounday conditions
     // So make the compression/decompression buffers about the same size as the input/output
     QByteArray data("This\n is some test data.\r\n The quick brown fox jumps over the lazy dog. 0123456789.\r\n");
-    for(int i = 10; i <= 100; ++ i) {
-        for(int j = 10; i <= 100; ++ i) {
+    for (int i = 10; i <= 100; ++ i) {
+        for (int j = 10; i <= 100; ++ i) {
             for (int k = 10; k <= 100; ++k) {
                 Rfc1951Compressor compressor(i);
                 Rfc1951Decompressor decompressor(j);

@@ -407,7 +407,7 @@ QMailAccount::QMailAccount(const QMailAccount& other)
 
 QMailAccount& QMailAccount::operator=(const QMailAccount& other)
 {
-    if(&other != this)
+    if (&other != this)
         d = other.d;
     return *this;
 }

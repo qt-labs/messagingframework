@@ -247,11 +247,11 @@ void TestMallocPrivate::updatePeak()
     do { if (D) {               \
         didref = true;          \
         D->inTestMalloc.ref();  \
-    } } while(0)
+    } } while (0)
 #define DEREF if (didref) D->inTestMalloc.deref()
 #else
-#define REF     do {} while(0)
-#define DEREF   do {} while(0)
+#define REF     do {} while (0)
+#define DEREF   do {} while (0)
 #endif
 
 extern "C" void* malloc(size_t size)

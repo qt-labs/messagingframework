@@ -197,10 +197,10 @@ RecipientType RecipientWidget::recipientType() const
 
 void RecipientWidget::setRecipientType(RecipientType t)
 {
-    for(int index = 0; index < m_typeCombo->count(); index++)
+    for (int index = 0; index < m_typeCombo->count(); index++)
     {
         RecipientType v = static_cast<RecipientType>(m_typeCombo->itemData(index).toUInt());
-        if(v == t)
+        if (v == t)
         {
             m_typeCombo->setCurrentIndex(index);
             break;
@@ -212,8 +212,8 @@ bool RecipientWidget::eventFilter(QObject* obj, QEvent* event)
 {
     if (obj == m_recipientEdit && event->type() == QEvent::KeyPress) {
         QKeyEvent *keyEvent = static_cast<QKeyEvent *>(event);
-        if(keyEvent->key() == Qt::Key_Backspace)
-            if(isEmpty())
+        if (keyEvent->key() == Qt::Key_Backspace)
+            if (isEmpty())
             {
                 emit removeClicked();
                 return true;
@@ -267,7 +267,7 @@ QStringList RecipientListWidget::recipients(RecipientType t) const
     QStringList results;
 
     foreach(RecipientWidget* r,m_widgetList)
-        if(!r->isEmpty() && r->recipientType() == t)
+        if (!r->isEmpty() && r->recipientType() == t)
             results.append(r->recipient());
 
     return results;
@@ -278,7 +278,7 @@ QStringList RecipientListWidget::recipients() const
     QStringList results;
 
     foreach(RecipientWidget* r,m_widgetList)
-        if(!r->isEmpty())
+        if (!r->isEmpty())
             results.append(r->recipient());
 
     return results;
@@ -286,12 +286,12 @@ QStringList RecipientListWidget::recipients() const
 
 void RecipientListWidget::setRecipients(RecipientType t, const QStringList& addresses)
 {
-    if(addresses.isEmpty())
+    if (addresses.isEmpty())
         return;
 
     foreach(RecipientWidget* r, m_widgetList)
     {
-        if(r->isEmpty())
+        if (r->isEmpty())
         {
             m_widgetList.removeAll(r);
             delete r;
@@ -300,7 +300,7 @@ void RecipientListWidget::setRecipients(RecipientType t, const QStringList& addr
 
     foreach(QString address, addresses)
     {
-        if(!containRecipient(t,address))
+        if (!containRecipient(t,address))
         {
             RecipientWidget* r = addRecipientWidget();
             r->setRecipientType(t);
@@ -330,7 +330,7 @@ int RecipientListWidget::emptyRecipientSlots() const
     int emptyCount = 0;
     foreach(RecipientWidget* r,m_widgetList)
     {
-        if(r->isEmpty())
+        if (r->isEmpty())
             emptyCount++;
     }
     return emptyCount;
@@ -340,7 +340,7 @@ bool RecipientListWidget::containRecipient(RecipientType t, const QString& addre
 {
     foreach(RecipientWidget* r,m_widgetList)
     {
-        if(r->recipientType() == t && r->recipient() == address)
+        if (r->recipientType() == t && r->recipient() == address)
             return true;
     }
     return false;
@@ -357,7 +357,7 @@ RecipientWidget* RecipientListWidget::addRecipientWidget()
     setUpdatesEnabled(false);
 
     m_layout->addWidget(r);
-    if(!m_widgetList.isEmpty())
+    if (!m_widgetList.isEmpty())
         m_widgetList.last()->setTabOrder(m_widgetList.last(),r);
 
     r->setRemoveEnabled(!m_widgetList.isEmpty());
@@ -371,9 +371,9 @@ RecipientWidget* RecipientListWidget::addRecipientWidget()
 
 void RecipientListWidget::removeRecipientWidget()
 {
-    if(RecipientWidget* r = qobject_cast<RecipientWidget*>(sender()))
+    if (RecipientWidget* r = qobject_cast<RecipientWidget*>(sender()))
     {
-        if(m_widgetList.count() <= 1)
+        if (m_widgetList.count() <= 1)
             return;
         setUpdatesEnabled(false);
         int index = m_widgetList.indexOf(r);
@@ -382,10 +382,10 @@ void RecipientListWidget::removeRecipientWidget()
         m_layout->removeWidget(r);
         r->deleteLater();
 
-        if(index >= m_widgetList.count())
+        if (index >= m_widgetList.count())
             index = m_widgetList.count()-1;
 
-        if(m_widgetList.at(index)->isEmpty() && index > 0)
+        if (m_widgetList.at(index)->isEmpty() && index > 0)
             index--;
         m_widgetList.at(index)->setFocus();
 
@@ -397,9 +397,9 @@ void RecipientListWidget::removeRecipientWidget()
 
 void RecipientListWidget::recipientChanged()
 {
-    if(qobject_cast<RecipientWidget*>(sender()))
+    if (qobject_cast<RecipientWidget*>(sender()))
     {
-        if(emptyRecipientSlots() == 0)
+        if (emptyRecipientSlots() == 0)
             addRecipientWidget();
     }
 }
@@ -462,7 +462,7 @@ protected:
 
 void SpellingHighlighter::highlightBlock(const QString &text)
 {
-    if(text.startsWith(EmailComposerInterface::quotePrefix()))
+    if (text.startsWith(EmailComposerInterface::quotePrefix()))
         return; //don't find errors in quoted text
 
     Dictionary *dictionary = Dictionary::instance();
@@ -546,11 +546,11 @@ void BodyTextEdit::keyPressEvent(QKeyEvent* e)
         }
 
         if (e->key() == Qt::Key_Back) {
-//            if( Qtopia::mousePreferred() ) {
+//            if ( Qtopia::mousePreferred() ) {
 //                e->ignore();
 //                return;
 //            } else if (isEmpty()) {
-                if(isEmpty()) {
+                if (isEmpty()) {
                 e->accept();
                 emit finished();
                 return;

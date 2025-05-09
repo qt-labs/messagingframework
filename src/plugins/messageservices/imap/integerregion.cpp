@@ -103,7 +103,7 @@ IntegerRegion::IntegerRegion(const QString &uidString)
             int b = s.mid(index+1).toInt(&ok);
             if (!ok)
                 continue;
-            for(int i = a; i <= b; ++i) {
+            for (int i = a; i <= b; ++i) {
                 // could be optimized if union is implemented
                 add(i);
             }

@@ -254,7 +254,7 @@ void AccountSettings::updateActions()
 
 void AccountSettings::editCurrentAccount()
 {
-    if(!accountModel->rowCount())
+    if (!accountModel->rowCount())
         return;
 
     QModelIndex index = accountView->currentIndex();

@@ -86,7 +86,7 @@ QIcon Qtmail::icon(const QString& name)
     static IconMap icons(init());
     QIcon result = icons[name];
 
-    if(result.isNull())
+    if (result.isNull())
         qWarning() << name << " icon not found.";
 
     return icons[name];

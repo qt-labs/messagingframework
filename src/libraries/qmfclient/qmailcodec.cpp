@@ -241,7 +241,7 @@ QByteArray QMailCodec::bestCompatibleCharset(const QByteArray& charset, bool tra
         if (translateAscii && (encoding.contains("ascii") || (encoding.contains("unicode-1-1-utf-7")))) {
             // We'll assume the text is plain ASCII, to be extracted to Latin-1
             encoding = "ISO-8859-1";
-        } else if(encoding.contains("ks_c_5601")) {
+        } else if (encoding.contains("ks_c_5601")) {
             encoding = "EUC-KR";
         } else if (encoding == "gb2312" || encoding == "gbk") {
             // gb18030 is a superset of gb2312 and gbk, prefer it

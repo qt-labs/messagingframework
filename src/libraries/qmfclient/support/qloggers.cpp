@@ -45,7 +45,7 @@ void BaseLoggerFoundation::setMinLogLvl(const LogLevel _min_lvl)
 
 bool BaseLoggerFoundation::isReady(QString& _err) const
 {
-    if(!is_ready) _err = err_msg;
+    if (!is_ready) _err = err_msg;
     return is_ready;
 }
 

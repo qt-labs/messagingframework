@@ -96,7 +96,7 @@ QString QMail::dataPath()
 {
     // encoding as best guess, likely just ascii
     static QString dataEnv(QString::fromUtf8(qgetenv(QMF_DATA_ENV)));
-    if(!dataEnv.isEmpty())
+    if (!dataEnv.isEmpty())
         return dataEnv + QChar::fromLatin1('/');
     //default to ~/.qmf if not env set
     return QDir::homePath() + QLatin1String("/.qmf/");
@@ -158,7 +158,7 @@ QString QMail::tempPath()
 QString QMail::messageServerPath()
 {
     static QString serverEnv(QString::fromUtf8(qgetenv(QMF_SERVER_ENV)));
-    if(!serverEnv.isEmpty())
+    if (!serverEnv.isEmpty())
         return serverEnv + QChar::fromLatin1('/');
 
     return QCoreApplication::applicationDirPath() + QChar::fromLatin1('/');
@@ -170,7 +170,7 @@ QString QMail::messageServerPath()
 QString QMail::messageSettingsPath()
 {
     static QString settingsEnv(QString::fromUtf8(qgetenv(QMF_SETTINGS_ENV)));
-    if(!settingsEnv.isEmpty())
+    if (!settingsEnv.isEmpty())
         return settingsEnv + QChar::fromLatin1('/');
     return QCoreApplication::applicationDirPath() + QChar::fromLatin1('/');
 }
@@ -247,7 +247,7 @@ QSqlDatabase QMail::createDatabase()
 
         db.setDatabaseName(dataPath() + QLatin1String("database/qmailstore.db"));
 
-        if(!db.open()) {
+        if (!db.open()) {
             QSqlError dbError = db.lastError();
             qCritical() << "Cannot open database: " << dbError.text();
         }

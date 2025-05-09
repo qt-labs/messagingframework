@@ -78,7 +78,7 @@ void ServiceActionQueue::activityChanged(QMailServiceAction::Activity activity)
 
 void ServiceActionQueue::clear()
 {
-    for(int i = 0; i < _commands.size(); ++i) {
+    for (int i = 0; i < _commands.size(); ++i) {
         delete _commands.takeFirst();
         ++i;
     }

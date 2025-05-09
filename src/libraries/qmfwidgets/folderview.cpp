@@ -210,7 +210,7 @@ void FolderView::dataChanged(const QModelIndex& topLeft, const QModelIndex& bott
 {
     Q_UNUSED(roles)
 
-    if(topLeft == currentIndex() || bottomRight == currentIndex())
+    if (topLeft == currentIndex() || bottomRight == currentIndex())
         emit selectionUpdated();
     QTreeView::dataChanged(topLeft,bottomRight);
 }

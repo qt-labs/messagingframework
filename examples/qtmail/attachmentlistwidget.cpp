@@ -51,11 +51,11 @@ class AttachmentListWidget;
 
 static QString sizeString(uint size)
 {
-    if(size < 1024)
+    if (size < 1024)
         return QObject::tr("%n byte(s)", "", size);
-    else if(size < (1024 * 1024))
+    else if (size < (1024 * 1024))
         return QObject::tr("%1 KB").arg(((float)size)/1024.0, 0, 'f', 1);
-    else if(size < (1024 * 1024 * 1024))
+    else if (size < (1024 * 1024 * 1024))
         return QObject::tr("%1 MB").arg(((float)size)/(1024.0 * 1024.0), 0, 'f', 1);
     else
         return QObject::tr("%1 GB").arg(((float)size)/(1024.0 * 1024.0 * 1024.0), 0, 'f', 1);
@@ -97,7 +97,7 @@ m_parent(parent)
 
 void AttachmentListHeader::paintSection(QPainter * painter, const QRect & rect, int logicalIndex) const
 {
-    if(logicalIndex == 3 && m_parent->attachments().count() > 1)
+    if (logicalIndex == 3 && m_parent->attachments().count() > 1)
     {
         painter->save();
         QFont font = painter->font();
@@ -113,7 +113,7 @@ void AttachmentListHeader::paintSection(QPainter * painter, const QRect & rect, 
 #ifndef QT_NO_CURSOR
 bool AttachmentListHeader::viewportEvent(QEvent* e)
 {
-    if(e->type() == QEvent::Leave)
+    if (e->type() == QEvent::Leave)
         setCursor(QCursor());
     return QAbstractItemView::viewportEvent(e);
 }
@@ -121,19 +121,19 @@ bool AttachmentListHeader::viewportEvent(QEvent* e)
 void AttachmentListHeader::mouseMoveEvent(QMouseEvent* e)
 {
     QHeaderView::mouseMoveEvent(e);
-    if(overRemoveLink(e))
+    if (overRemoveLink(e))
     {
         QCursor handCursor(Qt::PointingHandCursor);
         setCursor(handCursor);
     }
-    else if(cursor().shape() == Qt::PointingHandCursor)
+    else if (cursor().shape() == Qt::PointingHandCursor)
         setCursor(QCursor());
 }
 #endif
 
 void AttachmentListHeader::mousePressEvent(QMouseEvent* e)
 {
-    if(overRemoveLink(e))
+    if (overRemoveLink(e))
         emit clear();
     QHeaderView::mousePressEvent(e);
 }
@@ -167,7 +167,7 @@ m_parent(parent)
 
 void AttachmentListDelegate::paint(QPainter* painter, const QStyleOptionViewItem& option, const QModelIndex& index) const
 {
-    if(index.isValid() && index.column() == 3)
+    if (index.isValid() && index.column() == 3)
     {
         painter->save();
         QFont font = painter->font();
@@ -233,19 +233,19 @@ QTreeView(parent)
 #ifndef QT_NO_CURSOR
 bool AttachmentListView::viewportEvent(QEvent* e)
 {
-    if(e->type() == QEvent::Leave)
+    if (e->type() == QEvent::Leave)
         setCursor(QCursor());
     return QAbstractItemView::viewportEvent(e);
 }
 
 void AttachmentListView::mouseMoveEvent(QMouseEvent* e)
 {
-    if(overRemoveLink(e))
+    if (overRemoveLink(e))
     {
         QCursor handCursor(Qt::PointingHandCursor);
         setCursor(handCursor);
     }
-    else if(cursor().shape() == Qt::PointingHandCursor)
+    else if (cursor().shape() == Qt::PointingHandCursor)
         setCursor(QCursor());
     QTreeView::mouseMoveEvent(e);
 }
@@ -253,7 +253,7 @@ void AttachmentListView::mouseMoveEvent(QMouseEvent* e)
 
 void AttachmentListView::mousePressEvent(QMouseEvent* e)
 {
-    if(overRemoveLink(e))
+    if (overRemoveLink(e))
     {
         QModelIndex index = indexAt(e->pos());
         emit removeAttachmentAtIndex(index.row());
@@ -264,7 +264,7 @@ void AttachmentListView::mousePressEvent(QMouseEvent* e)
 bool AttachmentListView::overRemoveLink(QMouseEvent* e)
 {
     QModelIndex index = indexAt(e->pos());
-    if(index.isValid() && index.column() == 3)
+    if (index.isValid() && index.column() == 3)
     {
         AttachmentListDelegate* delegate = static_cast<AttachmentListDelegate*>(itemDelegate());
         return delegate->isOverRemoveLink(visualRect(index),e->pos());
@@ -302,7 +302,7 @@ QVariant AttachmentListModel::headerData(int section, Qt::Orientation o, int rol
 {
     if (role == Qt::DisplayRole)
     {
-        if(section < headers.count())
+        if (section < headers.count())
             return headers.at(section);
     }
 
@@ -328,14 +328,14 @@ int AttachmentListModel::rowCount(const QModelIndex& parent) const
 
 QVariant AttachmentListModel::data( const QModelIndex & index, int role) const
 {
-    if(index.isValid())
+    if (index.isValid())
     {
-        if(role == Qt::DisplayRole && index.isValid())
+        if (role == Qt::DisplayRole && index.isValid())
         {
             QString path = m_attachments.at(index.row());
             QFileInfo fi(path);
 
-            switch(index.column())
+            switch (index.column())
             {
             case 0:
                 return fi.fileName();
@@ -345,14 +345,14 @@ QVariant AttachmentListModel::data( const QModelIndex & index, int role) const
                 break;
             case 2:
                 QString mimeType = QMail::mimeTypeFromFileName(path);
-                if(mimeType.isEmpty()) mimeType = "Unknown";
+                if (mimeType.isEmpty()) mimeType = "Unknown";
                 return mimeType;
                 break;
             }
         }
-        else if((role == Qt::DecorationRole  || role == Qt::CheckStateRole )&& index.column() > 0)
+        else if ((role == Qt::DecorationRole  || role == Qt::CheckStateRole )&& index.column() > 0)
             return QVariant();
-            else if(role == Qt::DecorationRole)
+            else if (role == Qt::DecorationRole)
         {
             static QIcon attachIcon( ":icon/attach" );
             return attachIcon;
@@ -435,7 +435,7 @@ bool AttachmentListWidget::isEmpty() const
 
 void AttachmentListWidget::addAttachment(const QString& attachment)
 {
-    if(m_attachments.contains(attachment))
+    if (m_attachments.contains(attachment))
         return;
 
     m_attachments.append(attachment);
@@ -486,7 +486,7 @@ void AttachmentListWidget::clear()
 
 void AttachmentListWidget::clearClicked()
 {
-    if(QMessageBox::question(this,
+    if (QMessageBox::question(this,
                              "Remove attachments",
                              QString("Remove %1 attachments?").arg(m_attachments.count()),
                              QMessageBox::Yes | QMessageBox::No) == QMessageBox::Yes)
@@ -495,7 +495,7 @@ void AttachmentListWidget::clearClicked()
 
 void AttachmentListWidget::removeAttachmentAtIndex(int index)
 {
-    if(index >= m_attachments.count())
+    if (index >= m_attachments.count())
         return;
 
     QString attachment = m_attachments.at(index);

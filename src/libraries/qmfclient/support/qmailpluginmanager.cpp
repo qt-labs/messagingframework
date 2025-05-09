@@ -133,12 +133,12 @@ QMailPluginManagerPrivate::QMailPluginManagerPrivate(const QString& path)
     foreach(QString libraryPath, libraryPaths) {
         QDir dir(libraryPath);
         //Change into the sub directory, and make sure it's readable
-        if(!dir.cd(path) || !dir.isReadable())
+        if (!dir.cd(path) || !dir.isReadable())
             continue;
 
         foreach(const QString &libname, dir.entryList(pluginFilePatterns(), QDir::Files)) {
             QString libfile = dir.absoluteFilePath(libname);
-            if(pluginMap.contains(libname))
+            if (pluginMap.contains(libname))
                 pluginMap[libname]->setFileName(libfile);
             else
                 pluginMap[libname] = new QPluginLoader(libfile);
@@ -173,7 +173,7 @@ QStringList QMailPluginManager::list() const
 QObject* QMailPluginManager::instance(const QString& name)
 {
     if (d->pluginMap.contains(name)) {
-        if(d->pluginMap[name]->load()) {
+        if (d->pluginMap[name]->load()) {
             return d->pluginMap[name]->instance();
         } else {
             qWarning() << "Error loading" << name << "with errorString()" << d->pluginMap[name]->errorString();

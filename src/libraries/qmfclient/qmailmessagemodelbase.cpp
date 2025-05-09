@@ -182,7 +182,7 @@ QVariant QMailMessageModelBase::data(const QModelIndex& index, int role) const
         return QVariant();
 
     // Some items can be processed without loading the message data
-    switch(role)
+    switch (role)
     {
     case MessageIdRole:
         return id;
@@ -205,7 +205,7 @@ QVariant QMailMessageModelBase::data(const QMailMessageMetaData &message, int ro
     //bool incoming(message.status() & QMailMessage::Incoming);
     bool incoming = !sent;
 
-    switch(role)
+    switch (role)
     {
         case Qt::DisplayRole:
         case MessageAddressTextRole:

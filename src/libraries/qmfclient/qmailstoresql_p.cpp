@@ -1875,7 +1875,7 @@ QString whereClauseItem<QMailAccountKey>(const QMailAccountKey &, const QMailAcc
 
         QString expression = columnExpression(columnName, a.op, a.valueList, patternMatching, bitwise, noCase);
 
-        switch(a.property)
+        switch (a.property)
         {
         case QMailAccountKey::Id:
             if (a.valueList.first().canConvert<QMailAccountKey>()) {
@@ -1942,7 +1942,7 @@ QString whereClauseItem<QMailMessageKey>(const QMailMessageKey &key, const QMail
 
         QString expression = columnExpression(columnName, a.op, a.valueList, patternMatching, bitwise, noCase);
 
-        switch(a.property)
+        switch (a.property)
         {
         case QMailMessageKey::Id:
             if (a.valueList.count() >= IdLookupThreshold) {
@@ -1964,7 +1964,7 @@ QString whereClauseItem<QMailMessageKey>(const QMailMessageKey &key, const QMail
         case QMailMessageKey::ParentFolderId:
         case QMailMessageKey::PreviousParentFolderId:
         case QMailMessageKey::RestoreFolderId:
-            if(a.valueList.first().canConvert<QMailFolderKey>()) {
+            if (a.valueList.first().canConvert<QMailFolderKey>()) {
                 QMailFolderKey parentFolderKey = a.valueList.first().value<QMailFolderKey>();
                 QString nestedAlias(incrementAlias(alias));
 
@@ -2006,7 +2006,7 @@ QString whereClauseItem<QMailMessageKey>(const QMailMessageKey &key, const QMail
             break;
 
         case QMailMessageKey::ParentAccountId:
-            if(a.valueList.first().canConvert<QMailAccountKey>()) {
+            if (a.valueList.first().canConvert<QMailAccountKey>()) {
                 QMailAccountKey parentAccountKey = a.valueList.first().value<QMailAccountKey>();
                 if (store.hasAccountTables()) {
                     QString nestedAlias(incrementAlias(alias));
@@ -2130,7 +2130,7 @@ QString whereClauseItem<QMailFolderKey>(const QMailFolderKey &key, const QMailFo
             break;
 
         case QMailFolderKey::ParentFolderId:
-            if(a.valueList.first().canConvert<QMailFolderKey>()) {
+            if (a.valueList.first().canConvert<QMailFolderKey>()) {
                 QMailFolderKey folderSubKey = a.valueList.first().value<QMailFolderKey>();
                 QString nestedAlias(incrementAlias(alias));
 
@@ -2160,7 +2160,7 @@ QString whereClauseItem<QMailFolderKey>(const QMailFolderKey &key, const QMailFo
             break;
 
         case QMailFolderKey::ParentAccountId:
-            if(a.valueList.first().canConvert<QMailAccountKey>()) {
+            if (a.valueList.first().canConvert<QMailAccountKey>()) {
                 QMailAccountKey accountSubKey = a.valueList.first().value<QMailAccountKey>();
                 if (store.hasAccountTables()) {
                     QString nestedAlias(incrementAlias(alias));
@@ -2243,7 +2243,7 @@ QString whereClauseItem<QMailThreadKey>(const QMailThreadKey &, const QMailThrea
             break;
 
         case QMailThreadKey::Includes:
-            if(a.valueList.first().canConvert<QMailMessageKey>()) {
+            if (a.valueList.first().canConvert<QMailMessageKey>()) {
                 QMailMessageKey messageSubKey = a.valueList.first().value<QMailMessageKey>();
                 QString nestedAlias(incrementAlias(alias));
 
@@ -3200,14 +3200,14 @@ bool QMailStoreSql::idValueExists(quint64 id, const QString& table)
 {
     QSqlQuery query(*database());
     QString sql = QLatin1String("SELECT id FROM ") + table + QLatin1String(" WHERE id=?");
-    if(!query.prepare(sql)) {
+    if (!query.prepare(sql)) {
         setQueryError(query.lastError(), QLatin1String("Failed to prepare idExists query"), queryText(query));
         return false;
     }
 
     query.addBindValue(id);
 
-    if(!query.exec()) {
+    if (!query.exec()) {
         setQueryError(query.lastError(), QLatin1String("Failed to execute idExists query"), queryText(query));
         return false;
     }
@@ -3234,13 +3234,13 @@ bool QMailStoreSql::messageExists(const QString &serveruid, const QMailAccountId
 {
     QSqlQuery query(*database());
     QString sql = QLatin1String("SELECT id FROM mailmessages WHERE serveruid=? AND parentaccountid=?");
-    if(!query.prepare(sql)) {
+    if (!query.prepare(sql)) {
         setQueryError(query.lastError(), QLatin1String("Failed to prepare messageExists query"));
     }
     query.addBindValue(serveruid);
     query.addBindValue(id.toULongLong());
 
-    if(!query.exec()) {
+    if (!query.exec()) {
         setQueryError(query.lastError(), QLatin1String("Failed to execute messageExists"));
     }
 
@@ -4451,7 +4451,7 @@ bool QMailStoreSql::performMaintenance()
 QString QMailStoreSql::parseSql(QTextStream& ts)
 {
     QString qry;
-    while(!ts.atEnd())
+    while (!ts.atEnd())
     {
         QString line = ts.readLine();
         // comment, remove.
@@ -4598,7 +4598,7 @@ bool QMailStoreSql::addMessages(const QList<QMailMessage *> &messages,
             return false;
         }
 
-        if(!message->contentScheme().isEmpty())
+        if (!message->contentScheme().isEmpty())
             contentSchemes.insert(message->contentScheme());
     }
 
@@ -5884,7 +5884,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptAddMessage(QMailMessageMetaDa
         return Failure;
     }
 
-    if(!metaData->serverUid().isEmpty() && metaData->parentAccountId().isValid()
+    if (!metaData->serverUid().isEmpty() && metaData->parentAccountId().isValid()
         && messageExists(metaData->serverUid(), metaData->parentAccountId()))
     {
         qWarning() << "Message with serveruid: " << metaData->serverUid() << "and accountid:" << metaData->parentAccountId()
@@ -6408,7 +6408,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptUpdateFolder(QMailFolder *fol
                                                                 Transaction &t, bool commitOnSuccess)
 {
     //check that the parent folder actually exists
-    if(!checkPreconditions(*folder, true))
+    if (!checkPreconditions(*folder, true))
         return Failure;
 
     QMailFolderId parentFolderId;
@@ -8132,7 +8132,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::messagePredecessor(QMailMessageMetaD
         if (referencedMessages.isEmpty()) {
             // All the references are missing
             *missingReferences = references;
-            if(findPotentialPredecessorsBySubject(metaData, baseSubject, missingAncestor, potentialPredecessors) == DatabaseFailure)
+            if (findPotentialPredecessorsBySubject(metaData, baseSubject, missingAncestor, potentialPredecessors) == DatabaseFailure)
                 return DatabaseFailure;
         } else {
             for (int i = references.count() - 1; i >= 0; --i) {
@@ -8568,9 +8568,9 @@ bool QMailStoreSql::checkPreconditions(const QMailFolder& folder, bool update)
     //if the parent is valid, check that it exists
     //if the account is valid, check that is exists
 
-    if(!update)
+    if (!update)
     {
-        if(folder.id().isValid())
+        if (folder.id().isValid())
         {
             qWarning() << "Folder exists, use update instead of add.";
             return false;
@@ -8578,20 +8578,20 @@ bool QMailStoreSql::checkPreconditions(const QMailFolder& folder, bool update)
     }
     else
     {
-        if(!folder.id().isValid())
+        if (!folder.id().isValid())
         {
             qWarning() << "Folder does not exist, use add instead of update.";
             return false;
         }
 
-        if(folder.parentFolderId().isValid() && folder.parentFolderId() == folder.id())
+        if (folder.parentFolderId().isValid() && folder.parentFolderId() == folder.id())
         {
             qWarning() << "A folder cannot be a child to itself";
             return false;
         }
     }
 
-    if(folder.parentFolderId().isValid())
+    if (folder.parentFolderId().isValid())
     {
         if (!idExists(folder.parentFolderId()))
         {
@@ -8600,7 +8600,7 @@ bool QMailStoreSql::checkPreconditions(const QMailFolder& folder, bool update)
         }
     }
 
-    if(folder.parentAccountId().isValid())
+    if (folder.parentAccountId().isValid())
     {
         if ((withAccountTables
              ? !idExists(folder.parentAccountId())
