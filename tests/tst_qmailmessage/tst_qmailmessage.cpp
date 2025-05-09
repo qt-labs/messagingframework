@@ -285,7 +285,7 @@ void tst_QMailMessage::toRfc2822_data()
     QStringList toAddressList;
     toAddressList << unicodeAddress << simpleAddress;
 
-    QTest::newRow("simple") 
+    QTest::newRow("simple")
         /* from              */ << latin1Address
         /* to                */ << toAddressList
         /* subject           */ << QStringLiteral("Test")
@@ -304,7 +304,7 @@ void tst_QMailMessage::toRfc2822_data()
         /* rfc_body_text     */ << QByteArray(
 "Plain text.");
 
-    QTest::newRow("multipart") 
+    QTest::newRow("multipart")
         /* from              */ << latin1Address
         /* to                */ << toAddressList
         /* subject           */ << QStringLiteral("Test")
@@ -326,13 +326,13 @@ CRLF
 "--bound01" CRLF
 "Content-Type: text/plain" CRLF
 "<ENCODING>"
-"Content-Disposition: inline" CRLF 
+"Content-Disposition: inline" CRLF
 CRLF
 "<ENCODED_TEXT_0>" CRLF
 "--bound01" CRLF
 "Content-Type: text/html" CRLF
 "<ENCODING>"
-"Content-Disposition: inline" CRLF 
+"Content-Disposition: inline" CRLF
 CRLF
 "<ENCODED_TEXT_1>" CRLF
 "--bound01--" CRLF);
@@ -1141,7 +1141,7 @@ void tst_QMailMessage::setTo()
             QCOMPARE(m.dataModified(), true);
             QCOMPARE(m.contentModified(), true);
         }
-        
+
         // Test that conversion to-and-from RFC2822 yields equivalence
         QByteArray identity = m.toRfc2822(QMailMessage::IdentityFormat);
         QMailMessage reconstituted = QMailMessage::fromRfc2822(identity);
@@ -1314,7 +1314,7 @@ void tst_QMailMessage::multiMultipart()
 
     QMailMessagePart p1;
     type = "text/plain; charset=UTF-8";
-    data = "P1: This is a plain text part.", 
+    data = "P1: This is a plain text part.",
     p1.setBody(QMailMessageBody::fromData(data, QMailMessageContentType(type), QMailMessageBody::EightBit, QMailMessageBody::RequiresEncoding));
     QCOMPARE( p1.contentType().toString().toLower(), QByteArray("Content-Type: text/plain; charset=UTF-8").toLower() );
     QCOMPARE( p1.transferEncoding(), QMailMessageBody::EightBit );
@@ -1326,7 +1326,7 @@ void tst_QMailMessage::multiMultipart()
 
     QMailMessagePart p3;
     type = "text/html; charset=UTF-8";
-    data = 
+    data =
 #ifndef FIT_MESSAGE_WITHIN_QDEBUG_LIMIT
 "<!DOCTYPE html PUBLIC \"-//W3C//DTD XHTML 1.0 Strict//EN\" \"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd\">"
 "<html xmlns=\"http://www.w3.org/1999/xhtml\" xml:lang=\"en\" lang=\"en\">"
@@ -1421,7 +1421,7 @@ void tst_QMailMessage::multiMultipart()
         QDataStream out(&serialized, QIODevice::WriteOnly);
         out << m;
     }
-    { 
+    {
         QDataStream in(&serialized, QIODevice::ReadOnly);
         QMailMessage m3;
         in >> m3;

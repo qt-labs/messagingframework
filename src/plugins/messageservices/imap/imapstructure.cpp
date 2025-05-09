@@ -92,7 +92,7 @@ void processChars(Processor p, const QString& field, QString::const_iterator ori
 
         escaped = (c == '\\');
     } while (++it != end);
-    
+
     if ((it != begin) && (depth >= 0)) {
         // Terminate the sequence
         p('\0', depth, quoted, field, begin, it);
@@ -283,7 +283,7 @@ QMailMessageContentDisposition fromDispositionDescription(const QString &desc, c
             for ( ; (it != end) && (it + 1 != end); ++it) {
                 disposition.setParameter((*it).toLatin1(), (*(it + 1)).toLatin1());
                 ++it;
-            }            
+            }
         }
     } else {
         // Default to inline for no specification
@@ -456,7 +456,7 @@ void setMultipartFromDescription(const QStringList &structure, QMailMessagePartC
             if (!language.isEmpty() && (language.trimmed().toUpper() != "NIL"))
                 part->setContentLanguage(language);
         }
-        
+
         // [4]: content-location
         if (details.count() > 4) {
             const QString &location(details.at(4));
@@ -540,7 +540,7 @@ bool setMessageContentFromStructure(const QStringList &structure, QMailMessage *
                 message->setStatus(QMailMessage::PartialContentAvailable, false);
             }
         }
-        
+
         // See if any of the parts are attachments
         if (message->hasAttachments()) {
             message->setStatus( QMailMessage::HasAttachments, true );

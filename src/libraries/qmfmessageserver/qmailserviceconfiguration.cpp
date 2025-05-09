@@ -46,7 +46,7 @@
 
     QMailServiceConfiguration provides a simple interface for manipulating the configuration
     parameters of a single service within an account configuration.  For each specific
-    service implemented, a configuration class derived from QMailServiceConfiguration 
+    service implemented, a configuration class derived from QMailServiceConfiguration
     should be implemented to make the configuration easily accessible.
 
     \sa QMailAccountConfiguration::ServiceConfiguration
@@ -54,7 +54,7 @@
 
 /*!
     \enum QMailServiceConfiguration::ServiceType
-    
+
     This enum type is used to describe the type of a service
 
     \value Unknown          The type of the service is unknown.
@@ -145,7 +145,7 @@ QMailServiceConfiguration::ServiceType QMailServiceConfiguration::type() const
     } else if (svcType == QLatin1String("storage")) {
         return Storage;
     }
-        
+
     return Unknown;
 }
 
@@ -221,7 +221,7 @@ QString QMailServiceConfiguration::value(const QString &name, const QString &def
     return result;
 }
 
-/*! 
+/*!
     Sets the configuration parameter \a name to have the value \a value.
 */
 void QMailServiceConfiguration::setValue(const QString &name, const QString &value)

@@ -80,7 +80,7 @@ AccountSettings::AccountSettings(QWidget *parent, Qt::WindowFlags flags)
     resetAccountAction = new QAction( Qtmail::icon("reset"), tr("Reset"), this );
     connect(resetAccountAction, SIGNAL(triggered()), this, SLOT(resetAccount()));
     accountView->addAction(resetAccountAction);
-    
+
     removeAccountAction = new QAction( Qtmail::icon("remove"), tr("Remove"), this );
     connect(removeAccountAction, SIGNAL(triggered()), this, SLOT(removeAccount()));
     accountView->addAction(removeAccountAction);

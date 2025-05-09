@@ -211,7 +211,7 @@ public:
     {
         if (locked) {
             mutex.unlock();
-            locked = false; 
+            locked = false;
         }
     }
 };
@@ -277,7 +277,7 @@ template<>
 class MessageValueExtractor<QMailMessageMetaData>
 {
     const QMailMessageMetaData &_data;
-    
+
 public:
     MessageValueExtractor(const QMailMessageMetaData &d) : _data(d) {}
 
@@ -336,7 +336,7 @@ template<>
 class MessageValueExtractor<QVariant>
 {
     const QVariant &_value;
-    
+
 public:
     MessageValueExtractor(const QVariant &v) : _value(v) {}
 
@@ -431,7 +431,7 @@ static QString messagePropertyName(QMailMessageKey::Property property)
     if ((property != QMailMessageKey::AncestorFolderIds) &&
         (property != QMailMessageKey::Custom))
         qWarning() << "Unknown message property:" << property;
-    
+
     return QString();
 }
 
@@ -445,9 +445,9 @@ static bool caseInsensitiveProperty(QMailMessageKey::Property property)
 typedef QMap<QMailAccountKey::Property, QString> AccountPropertyMap;
 
 // Properties of the mailaccounts table
-static AccountPropertyMap accountPropertyMap() 
+static AccountPropertyMap accountPropertyMap()
 {
-    AccountPropertyMap map; 
+    AccountPropertyMap map;
 
     map.insert(QMailAccountKey::Id, QLatin1String("id"));
     map.insert(QMailAccountKey::Name, QLatin1String("name"));
@@ -483,9 +483,9 @@ static bool caseInsensitiveProperty(QMailAccountKey::Property property)
 typedef QMap<QMailFolderKey::Property, QString> FolderPropertyMap;
 
 // Properties of the mailfolders table
-static FolderPropertyMap folderPropertyMap() 
+static FolderPropertyMap folderPropertyMap()
 {
-    FolderPropertyMap map; 
+    FolderPropertyMap map;
 
     map.insert(QMailFolderKey::Id, QLatin1String("id"));
     map.insert(QMailFolderKey::Path, QLatin1String("name"));
@@ -844,7 +844,7 @@ class ArgumentExtractorBase
 {
 protected:
     const Argument &arg;
-    
+
     ArgumentExtractorBase(const Argument &a) : arg(a) {}
 
     QString minimalString(const QString &s) const
@@ -855,7 +855,7 @@ protected:
             QString minimal(address.minimalPhoneNumber());
 
             // Rather than compare exact numbers, we will only use the trailing
-            // digits to compare phone numbers - otherwise, slightly different 
+            // digits to compare phone numbers - otherwise, slightly different
             // forms of the same number will not be matched
             static const int significantDigits = 8;
 
@@ -980,10 +980,10 @@ protected:
 
     RecordExtractorBase(const QSqlRecord &r, BitmapType b = 0) : record(r), bitmap(b) {}
     virtual ~RecordExtractorBase() {}
-    
+
     template<typename ValueType>
-    ValueType value(const QString &field, const ValueType &defaultValue = ValueType()) const 
-    { 
+    ValueType value(const QString &field, const ValueType &defaultValue = ValueType()) const
+    {
         int index(fieldIndex(field, bitmap));
 
         if (record.isNull(index))
@@ -991,10 +991,10 @@ protected:
         else
             return QMailStoreSql::extractValue<ValueType>(record.value(index), defaultValue);
     }
-    
+
     template<typename ValueType>
-    ValueType value(PropertyType p, const ValueType &defaultValue = ValueType()) const 
-    { 
+    ValueType value(PropertyType p, const ValueType &defaultValue = ValueType()) const
+    {
         return value(fieldName(p, QString()), defaultValue);
     }
 
@@ -1024,7 +1024,7 @@ protected:
 class MessageRecord : public RecordExtractorBase<QMailMessageKey::Property, QMailMessageKey::Properties>
 {
 public:
-    MessageRecord(const QSqlRecord &r, QMailMessageKey::Properties props) 
+    MessageRecord(const QSqlRecord &r, QMailMessageKey::Properties props)
         : RecordExtractorBase<QMailMessageKey::Property, QMailMessageKey::Properties>(r, props) {}
 
     QMailMessageId id() const { return QMailMessageId(value<quint64>(QMailMessageKey::Id)); }
@@ -1067,18 +1067,18 @@ public:
 
     QMailFolderId previousParentFolderId() const { return QMailFolderId(value<quint64>(QMailMessageKey::PreviousParentFolderId)); }
 
-    QString contentScheme() const 
-    { 
-        if (_uriElements.first.isNull()) 
-            _uriElements = extractUriElements(value<QString>(QMailMessageKey::ContentScheme)); 
+    QString contentScheme() const
+    {
+        if (_uriElements.first.isNull())
+            _uriElements = extractUriElements(value<QString>(QMailMessageKey::ContentScheme));
 
         return _uriElements.first;
     }
 
-    QString contentIdentifier() const 
-    { 
-        if (_uriElements.first.isNull()) 
-            _uriElements = extractUriElements(value<QString>(QMailMessageKey::ContentIdentifier)); 
+    QString contentIdentifier() const
+    {
+        if (_uriElements.first.isNull())
+            _uriElements = extractUriElements(value<QString>(QMailMessageKey::ContentIdentifier));
 
         return _uriElements.second;
     }
@@ -1118,7 +1118,7 @@ QMap<QMailMessageKey::Properties, QMap<QString, int> > MessageRecord::_fieldInde
 class MessageKeyArgumentExtractor : public ArgumentExtractorBase<QMailMessageKey>
 {
 public:
-    MessageKeyArgumentExtractor(const QMailMessageKey::ArgumentType &a) 
+    MessageKeyArgumentExtractor(const QMailMessageKey::ArgumentType &a)
         : ArgumentExtractorBase<QMailMessageKey>(a) {}
 
     QVariantList id() const { return idValues<QMailMessageKey>(); }
@@ -1155,8 +1155,8 @@ public:
 
     QVariantList previousParentFolderId() const { return idValues<QMailFolderKey>(); }
 
-    QVariant contentScheme() const 
-    { 
+    QVariant contentScheme() const
+    {
         // Any colons in the field will be stored in escaped format
         QString value(escape(QMailStoreSql::extractValue<QString>(arg.valueList.first()), QChar::fromLatin1(':')));
 
@@ -1168,8 +1168,8 @@ public:
         return value;
     }
 
-    QVariant contentIdentifier() const 
-    { 
+    QVariant contentIdentifier() const
+    {
         // Any colons in the field will be stored in escaped format
         QString value(escape(QMailStoreSql::extractValue<QString>(arg.valueList.first()), QChar::fromLatin1(':')));
 
@@ -1208,7 +1208,7 @@ void appendWhereValues<QMailMessageKey::ArgumentType>(const QMailMessageKey::Arg
     const MessageKeyArgumentExtractor extractor(a);
 
     switch (a.property)
-    { 
+    {
     case QMailMessageKey::Id:
         if (a.valueList.count() < IdLookupThreshold) {
             values += extractor.id();
@@ -1332,7 +1332,7 @@ void appendWhereValues<QMailMessageKey::ArgumentType>(const QMailMessageKey::Arg
 class AccountRecord : public RecordExtractorBase<QMailAccountKey::Property>
 {
 public:
-    AccountRecord(const QSqlRecord &r) 
+    AccountRecord(const QSqlRecord &r)
         : RecordExtractorBase<QMailAccountKey::Property>(r) {}
 
     QMailAccountId id() const { return QMailAccountId(value<quint64>(QMailAccountKey::Id)); }
@@ -1375,8 +1375,8 @@ public:
 
     QVariant messageType() const { return intValue(); }
 
-    QVariant fromAddress() const 
-    { 
+    QVariant fromAddress() const
+    {
         QString value(QMailStoreSql::extractValue<QString>(arg.valueList.first()));
 
         // This test will be converted to a LIKE test, for all comparators
@@ -1763,7 +1763,7 @@ QString buildOrderClause(const ArgumentListType &list, const QString &alias)
 
 QString operatorString(QMailKey::Comparator op, bool multipleArgs = false, bool patternMatch = false, bool bitwiseMultiples = false)
 {
-    switch (op) 
+    switch (op)
     {
     case Equal:
         return QLatin1String(multipleArgs ? " IN " : (patternMatch ? " LIKE " : " = "));
@@ -1798,7 +1798,7 @@ QString operatorString(QMailKey::Comparator op, bool multipleArgs = false, bool 
 
 QString combineOperatorString(QMailKey::Combiner op)
 {
-    switch (op) 
+    switch (op)
     {
     case And:
         return QLatin1String(" AND ");
@@ -1901,7 +1901,7 @@ QString whereClauseItem<QMailAccountKey>(const QMailAccountKey &, const QMailAcc
                     q << " FROM mailaccountcustom " << nestedAlias << " WHERE name=? COLLATE NOCASE )";
                 } else {
                     q << qualifiedName("id", alias) << " IN ( SELECT " << qualifiedName("id", nestedAlias); q << " FROM mailaccountcustom " << nestedAlias;
-                    q << " WHERE " << qualifiedName("name", nestedAlias) << "=? COLLATE NOCASE AND " 
+                    q << " WHERE " << qualifiedName("name", nestedAlias) << "=? COLLATE NOCASE AND "
                       << qualifiedName("value", nestedAlias) << operatorString(a.op, false) << "? COLLATE NOCASE )";
                 }
             }
@@ -1941,7 +1941,7 @@ QString whereClauseItem<QMailMessageKey>(const QMailMessageKey &key, const QMail
         bool noCase(caseInsensitiveProperty(a.property));
 
         QString expression = columnExpression(columnName, a.op, a.valueList, patternMatching, bitwise, noCase);
-        
+
         switch(a.property)
         {
         case QMailMessageKey::Id:
@@ -2034,7 +2034,7 @@ QString whereClauseItem<QMailMessageKey>(const QMailMessageKey &key, const QMail
                     q << " FROM mailmessagecustom " << nestedAlias << " WHERE name=? COLLATE NOCASE )";
                 } else {
                     q << qualifiedName("id", alias) << " IN ( SELECT " << qualifiedName("id", nestedAlias); q << " FROM mailmessagecustom " << nestedAlias;
-                    q << " WHERE " << qualifiedName("name", nestedAlias) << "=? COLLATE NOCASE AND " 
+                    q << " WHERE " << qualifiedName("name", nestedAlias) << "=? COLLATE NOCASE AND "
                       << qualifiedName("value", nestedAlias) << operatorString(a.op, false) << "? COLLATE NOCASE )";
                 }
             }
@@ -2113,7 +2113,7 @@ QString whereClauseItem<QMailFolderKey>(const QMailFolderKey &key, const QMailFo
         bool noCase(caseInsensitiveProperty(a.property));
 
         QString expression = columnExpression(columnName, a.op, a.valueList, false, bitwise, noCase);
-        
+
         switch (a.property)
         {
         case QMailFolderKey::Id:
@@ -2188,7 +2188,7 @@ QString whereClauseItem<QMailFolderKey>(const QMailFolderKey &key, const QMailFo
                     q << " FROM mailfoldercustom " << nestedAlias << " WHERE name=? COLLATE NOCASE )";
                 } else {
                     q << qualifiedName("id", alias) << " IN ( SELECT " << qualifiedName("id", nestedAlias); q << " FROM mailfoldercustom " << nestedAlias;
-                    q << " WHERE " << qualifiedName("name", nestedAlias) << "=? COLLATE NOCASE AND " 
+                    q << " WHERE " << qualifiedName("name", nestedAlias) << "=? COLLATE NOCASE AND "
                       << qualifiedName("value", nestedAlias) << operatorString(a.op, false) << "? COLLATE NOCASE )";
                 }
             }
@@ -2303,14 +2303,14 @@ QString whereClauseItem<QMailThreadKey>(const QMailThreadKey &, const QMailThrea
 
 template<typename KeyType, typename ArgumentListType, typename KeyListType, typename CombineType>
 QString buildWhereClause(const KeyType &key,
-                         const ArgumentListType &args, 
-                         const KeyListType &subKeys, 
-                         CombineType combine, 
-                         bool negated, 
+                         const ArgumentListType &args,
+                         const KeyListType &subKeys,
+                         CombineType combine,
+                         bool negated,
                          bool nested,
                          bool firstClause,
-                         const QString &alias, 
-                         const QString &field, 
+                         const QString &alias,
+                         const QString &field,
                          const QMailStoreSql& store)
 {
     QString whereClause;
@@ -2332,12 +2332,12 @@ QString buildWhereClause(const KeyType &key,
 
         for (typename KeyListType::const_reference subkey : subKeys) {
             QString nestedWhere(store.buildWhereClause(QMailStoreSql::Key(subkey, alias), true));
-            if (!nestedWhere.isEmpty()) 
+            if (!nestedWhere.isEmpty())
                 s << op << " (" << nestedWhere << ") ";
 
             op = logicalOpString;
-        }       
-    }       
+        }
+    }
 
     // Finalise the where clause
     if (!whereClause.isEmpty()) {
@@ -2385,7 +2385,7 @@ public:
 };
 
 QMailStoreSql::Transaction::Transaction(QMailStoreSql* d)
-    : m_d(d), 
+    : m_d(d),
       m_initted(false),
       m_committed(false)
 {
@@ -2988,13 +2988,13 @@ QSqlQuery QMailStoreSql::prepare(const QString& sql)
 
                     switch (type) {
                     case 1:
-                        id = var.value<QMailMessageId>().toULongLong(); 
+                        id = var.value<QMailMessageId>().toULongLong();
                         break;
                     case 2:
-                        id = var.value<QMailFolderId>().toULongLong(); 
+                        id = var.value<QMailFolderId>().toULongLong();
                         break;
                     case 3:
-                        id = var.value<QMailAccountId>().toULongLong(); 
+                        id = var.value<QMailAccountId>().toULongLong();
                         break;
                     default:
                         qWarning() << "Unable to extract ID value from valuelist!";
@@ -3010,7 +3010,7 @@ QSqlQuery QMailStoreSql::prepare(const QString& sql)
                     QSqlQuery insertQuery(*database());
                     insertQuery.prepare(QString::fromLatin1("INSERT INTO %1 VALUES (?)").arg(tableName));
                     insertQuery.addBindValue(idValues);
-                    if (!insertQuery.execBatch()) { 
+                    if (!insertQuery.execBatch()) {
                         setQueryError(insertQuery.lastError(), QLatin1String("Failed to populate integer temporary table"), queryText(insertQuery));
                         qWarning() << "Unable to prepare query:" << sql;
                         return QSqlQuery();
@@ -3025,7 +3025,7 @@ QSqlQuery QMailStoreSql::prepare(const QString& sql)
                     QSqlQuery insertQuery(*database());
                     insertQuery.prepare(QString::fromLatin1("INSERT INTO %1 VALUES (?)").arg(tableName));
                     insertQuery.addBindValue(idValues);
-                    if (!insertQuery.execBatch()) { 
+                    if (!insertQuery.execBatch()) {
                         setQueryError(insertQuery.lastError(), QLatin1String("Failed to populate varchar temporary table"), queryText(insertQuery));
                         qWarning() << "Unable to prepare query:" << sql;
                         return QSqlQuery();
@@ -3052,7 +3052,7 @@ bool QMailStoreSql::execute(QSqlQuery& query, bool batch)
         return false;
     }
 
-#ifdef QMAILSTORE_LOG_SQL 
+#ifdef QMAILSTORE_LOG_SQL
     qMailLog(Messaging) << "(" << pid << ")" << qPrintable(queryText(query));
 #endif
 
@@ -3071,7 +3071,7 @@ bool QMailStoreSql::commit()
         qWarning() << "(" << pid << ")" << "Transaction does not exist at commit!";
         qWarning() << "Transaction does not exist at commit!";
     }
-    
+
     if (!database()->commit()) {
         setQueryError(database()->lastError(), QLatin1String("Failed to commit transaction"));
         return false;
@@ -3092,7 +3092,7 @@ void QMailStoreSql::rollback()
         qWarning() << "(" << pid << ")" << "Transaction does not exist at rollback!";
         qWarning() << "Transaction does not exist at rollback!";
     }
-    
+
     inTransaction = false;
 
     if (!database()->rollback()) {
@@ -3415,7 +3415,7 @@ void QMailStoreSql::extractMessageMetaData(const QSqlRecord& r,
             break;
         }
     }
-    
+
     if (unloadedProperties) {
         // This message is not completely loaded
         metaData->setStatus(QMailMessage::UnloadedData, true);
@@ -3508,7 +3508,7 @@ QString QMailStoreSql::buildOrderClause(const Key& key) const
     } else if (key.isType<QMailAccountSortKey>() && withAccountTables) {
         const QMailAccountSortKey &sortKey(key.key<QMailAccountSortKey>());
         return ::buildOrderClause(sortKey.arguments(), key.alias());
-    } 
+    }
 
     return QString();
 }
@@ -3870,7 +3870,7 @@ bool QMailStoreSql::executeFile(QFile &file)
     // read assuming utf8 encoding.
     QTextStream ts(&file);
     ts.setAutoDetectUnicode(true);
-    
+
     QString sql = parseSql(ts);
     while (result && !sql.isEmpty()) {
         QSqlQuery query(*database());
@@ -4460,7 +4460,7 @@ QString QMailStoreSql::parseSql(QTextStream& ts)
         if (line.trimmed ().length () == 0)
             continue;
         qry += line;
-        
+
         if (line.contains(QChar::fromLatin1(';')) == false)
             qry += QChar::fromLatin1(' ');
         else
@@ -4538,7 +4538,7 @@ bool QMailStoreSql::addAccount(QMailAccount *account,
                                QMailAccountIdList *addedAccountIds)
 {
     return repeatedly<WriteAccess>(bind(&QMailStoreSql::attemptAddAccount, this,
-                                        account, config, 
+                                        account, config,
                                         addedAccountIds,
                                         std::placeholders::_1, std::placeholders::_2),
                                    QLatin1String("add account"));
@@ -4556,9 +4556,9 @@ bool QMailStoreSql::setAccountStandardFolders(const QMailAccountId &id,
 bool QMailStoreSql::addFolder(QMailFolder *folder,
                               QMailFolderIdList *addedFolderIds,
                               QMailAccountIdList *modifiedAccountIds)
-{   
+{
     return repeatedly<WriteAccess>(bind(&QMailStoreSql::attemptAddFolder, this,
-                                        folder, 
+                                        folder,
                                         addedFolderIds, modifiedAccountIds,
                                         std::placeholders::_1, std::placeholders::_2),
                                    QLatin1String("add folder"));
@@ -4640,7 +4640,7 @@ bool QMailStoreSql::addMessages(const QList<QMailMessageMetaData *> &messages,
         QString identifier;
         QStringList references;
 
-        if (!repeatedly<WriteAccess>(bind(func, this, 
+        if (!repeatedly<WriteAccess>(bind(func, this,
                                           metaData, cref(identifier), cref(references),
                                           &out,
                                           std::placeholders::_1, std::placeholders::_2),
@@ -4688,7 +4688,7 @@ bool QMailStoreSql::removeFolders(const QMailFolderKey &key,
 
 
     return repeatedly<WriteAccess>(bind(&QMailStoreSql::attemptRemoveFolders, this,
-                                        cref(key), option, 
+                                        cref(key), option,
                                         &out,
                                         std::placeholders::_1, std::placeholders::_2),
                                    QLatin1String("remove folders"));
@@ -5320,7 +5320,7 @@ bool QMailStoreSql::repeatedly(FunctionType func, const QString &description, Tr
                 setLastError(errorType(AccessType()));
             }
             return false;
-        } else { 
+        } else {
             // result == DatabaseFailure
             if (queryError() == Sqlite3BusyErrorNumber) {
                 if (attemptCount < MaxAttempts) {
@@ -5489,8 +5489,8 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptAddAccount(QMailAccount *acco
         QString properties(QLatin1String("type,name,emailaddress,status,signature,lastsynchronized,iconpath"));
         QString values(QLatin1String("?,?,?,?,?,?,?"));
         QVariantList propertyValues;
-        propertyValues << static_cast<int>(account->messageType()) 
-                       << account->name() 
+        propertyValues << static_cast<int>(account->messageType())
+                       << account->name()
                        << account->fromAddress().toString(true)
                        << account->status()
                        << account->signature()
@@ -5686,7 +5686,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptAddFolder(QMailFolder *folder
             //add records for each ancestor folder
             QSqlQuery query(simpleQuery(QLatin1String("INSERT INTO mailfolderlinks "
                                                       "SELECT DISTINCT id,? FROM mailfolderlinks WHERE descendantid=?"),
-                                        QVariantList() << folder->id().toULongLong() 
+                                        QVariantList() << folder->id().toULongLong()
                                                        << folder->parentFolderId().toULongLong(),
                                         QLatin1String("mailfolderlinks insert ancestors")));
             if (query.lastError().type() != QSqlError::NoError)
@@ -5696,7 +5696,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptAddFolder(QMailFolder *folder
         {
             // Our direct parent is also an ancestor
             QSqlQuery query(simpleQuery(QLatin1String("INSERT INTO mailfolderlinks VALUES (?,?)"),
-                                        QVariantList() << folder->parentFolderId().toULongLong() 
+                                        QVariantList() << folder->parentFolderId().toULongLong()
                                                        << folder->id().toULongLong(),
                                         QLatin1String("mailfolderlinks insert parent")));
             if (query.lastError().type() != QSqlError::NoError)
@@ -5710,7 +5710,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptAddFolder(QMailFolder *folder
         folder->setId(QMailFolderId()); //revert the id
         return DatabaseFailure;
     }
-   
+
     addedFolderIds->append(insertId);
     if (folder->parentAccountId().isValid())
         modifiedAccountIds->append(folder->parentAccountId());
@@ -6222,11 +6222,11 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptUpdateAccount(QMailAccount *a
     if (account) {
         QString properties(QLatin1String("type=?, name=?, emailaddress=?, status=?, signature=?, lastsynchronized=?, iconpath=?"));
         QVariantList propertyValues;
-        propertyValues << static_cast<int>(account->messageType()) 
+        propertyValues << static_cast<int>(account->messageType())
                        << account->name()
                        << account->fromAddress().toString(true)
                        << account->status()
-                       << account->signature()                       
+                       << account->signature()
                        << QMailTimeStamp(account->lastSynchronized()).toLocalTime()
                        << account->iconPath();
 
@@ -6345,7 +6345,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptUpdateAccount(QMailAccount *a
                 const QString &service = it.key();
                 const QVariantList &fields = it.value();
                 const QVariantList &values = vit.value();
-                
+
                 QString sql(QLatin1String("INSERT INTO mailaccountconfig (id,service,name,value) VALUES (%1,'%2',?,?)"));
                 QSqlQuery query(batchQuery(sql.arg(QString::number(id.toULongLong())).arg(service),
                                            QVariantList() << QVariant(fields) << QVariant(values),
@@ -6443,7 +6443,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptUpdateFolder(QMailFolder *fol
         if (query.lastError().type() != QSqlError::NoError)
             return DatabaseFailure;
     }
-    
+
     if (folder->customFieldsModified()) {
         AttemptResult result = updateCustomFields(folder->id().toULongLong(), folder->customFields(), QLatin1String("mailfoldercustom"));
         if (result != Success)
@@ -6488,7 +6488,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptUpdateFolder(QMailFolder *fol
             //add links to the new parent
             QSqlQuery query(simpleQuery(QLatin1String("INSERT INTO mailfolderlinks "
                                                       "SELECT DISTINCT id,? FROM mailfolderlinks WHERE descendantid=?"),
-                                        QVariantList() << folder->id().toULongLong() 
+                                        QVariantList() << folder->id().toULongLong()
                                                        << folder->parentFolderId().toULongLong(),
                                         QLatin1String("mailfolderlinks insert ancestors")));
             if (query.lastError().type() != QSqlError::NoError)
@@ -6540,7 +6540,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptUpdateFolder(QMailFolder *fol
             }
         }
     }
-        
+
     if (commitOnSuccess && !t.commit()) {
         qWarning() << "Could not commit folder update to database";
         return DatabaseFailure;
@@ -6822,7 +6822,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptUpdateMessage(QMailMessageMet
                         return DatabaseFailure;
                 }
             }
-            
+
             // Remove any missing message/ancestor references associated with this message
 
             {
@@ -7073,7 +7073,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptUpdateMessagesMetaData(const 
         qWarning() << "Updating of messages IDs is not supported";
         return Failure;
     }
-    
+
     QMailMessageKey::Properties properties(props);
 
     if (properties & QMailMessageKey::ParentFolderId) {
@@ -7298,7 +7298,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptPurgeMessageRemovalRecords(co
             bindValues << uidValues;
         }
 
-        QSqlQuery query(simpleQuery(sql, 
+        QSqlQuery query(simpleQuery(sql,
                                     bindValues,
                                     QLatin1String("purgeMessageRemovalRecord info query")));
         if (query.lastError().type() != QSqlError::NoError)
@@ -7600,7 +7600,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptAccountConfiguration(const QM
             if (extractValue<int>(query.value(0)) == 0)
                 return Failure;
         }
-    } 
+    }
 
     result->setId(id);
     result->setModified(false);
@@ -7728,7 +7728,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptMessage(const QString &uid, c
     AttemptResult attemptResult = attemptMessageId(uid, accountId, &id, lock);
     if (attemptResult != Success)
         return attemptResult;
-            
+
     if (id != 0) {
         return attemptMessage(QMailMessageId(id), result, lock);
     }
@@ -7771,7 +7771,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptMessageMetaData(const QString
     AttemptResult attemptResult = attemptMessageId(uid, accountId, &id, lock);
     if (attemptResult != Success)
         return attemptResult;
-            
+
     if (id != 0) {
         return attemptMessageMetaData(QMailMessageId(id), result, lock);
     }
@@ -8007,7 +8007,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptRegisterStatusBit(const QStri
     int highest = 0;
 
     {
-        // Find the highest 
+        // Find the highest
         QSqlQuery query(simpleQuery(QLatin1String("SELECT MAX(statusbit) FROM mailstatusflags WHERE context=?"),
                                     QVariantList() << context,
                                     QLatin1String("mailstatusflags register select")));
@@ -8172,9 +8172,9 @@ QMailStoreSql::AttemptResult QMailStoreSql::messagePredecessor(QMailMessageMetaD
                                                       ")"
                                                   ")"
                                                   "ORDER BY stamp DESC"),
-                                    QVariantList() << metaData->id().toULongLong() 
-                                                    << metaData->parentAccountId().toULongLong() 
-                                                    << metaData->date().toLocalTime() 
+                                    QVariantList() << metaData->id().toULongLong()
+                                                    << metaData->parentAccountId().toULongLong()
+                                                    << metaData->date().toLocalTime()
                                                     << baseSubject,
                                     QLatin1String("messagePredecessor mailmessages select query")));
         if (query.lastError().type() != QSqlError::NoError)
@@ -8288,7 +8288,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::identifyAncestors(const QMailMessage
            }
         }
     }
-    
+
     if (predecessorId.isValid()) {
         ancestorIds->append(predecessorId);
     }
@@ -8495,7 +8495,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::registerSubject(const QString &baseS
         if (query.next())
             subjectId = extractValue<quint64>(query.value(0));
     }
-    
+
     if (subjectId == 0) {
         QSqlQuery query(simpleQuery(QLatin1String("INSERT INTO mailsubjects (basesubject) VALUES (?)"),
                                     QVariantList() << baseSubject,
@@ -8520,7 +8520,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::registerSubject(const QString &baseS
         if (query.next())
             count = extractValue<int>(query.value(0));
     }
-    
+
     if (count == 0) {
         QSqlQuery query(simpleQuery(QLatin1String("INSERT INTO mailthreadsubjects (threadid,subjectid) SELECT parentthreadid,? FROM mailmessages WHERE id=?"),
                                     QVariantList() << subjectId << messageId,
@@ -8565,8 +8565,8 @@ QMailStoreSql::AttemptResult QMailStoreSql::registerSubject(const QString &baseS
 
 bool QMailStoreSql::checkPreconditions(const QMailFolder& folder, bool update)
 {
-    //if the parent is valid, check that it exists 
-    //if the account is valid, check that is exists 
+    //if the parent is valid, check that it exists
+    //if the account is valid, check that is exists
 
     if(!update)
     {
@@ -8576,7 +8576,7 @@ bool QMailStoreSql::checkPreconditions(const QMailFolder& folder, bool update)
             return false;
         }
     }
-    else 
+    else
     {
         if(!folder.id().isValid())
         {
@@ -8737,7 +8737,7 @@ bool QMailStoreSql::deleteMessages(const QMailMessageKey& key,
                                    QMailAccountIdList& modifiedAccountIds)
 {
     QMailMessageIdList deletedMessageIds;
-    
+
     QString elements = QString::fromLatin1("id,mailfile,parentaccountid,parentfolderid,parentthreadid");
     if (option == QMailStore::CreateRemovalRecord)
         elements += QLatin1String(",serveruid");
@@ -8757,16 +8757,16 @@ bool QMailStoreSql::deleteMessages(const QMailMessageKey& key,
         bool noMessages = true;
         while (query.next()) {
             QMailMessageId messageId(extractValue<quint64>(query.value(0)));
- 
+
             // Deletion handling logic for this message has already been executed in this transaction
             if (outDeletedMessageIds.contains(messageId))
                 continue;
-            
+
             noMessages = false;
-            
+
             deletedMessageIds.append(messageId);
             outDeletedMessageIds.append(messageId);
-            
+
             QString contentUri(extractValue<QString>(query.value(1)));
             if (!contentUri.isEmpty())
                 expiredContent.append(contentUri);
@@ -8790,7 +8790,7 @@ bool QMailStoreSql::deleteMessages(const QMailMessageKey& key,
                 removalFolderIds.append(folderId.toULongLong());
             }
         }
-            
+
         // No messages? Then we're already done
         if (noMessages)
             return true;
@@ -9046,7 +9046,7 @@ bool QMailStoreSql::deleteFolders(const QMailFolderKey& key,
         }
 
         // No folders? Then we're already done
-        if (noFolders) 
+        if (noFolders)
             return true;
     }
 
@@ -9165,7 +9165,7 @@ bool QMailStoreSql::deleteAccounts(const QMailAccountKey& key,
 
     // Create a key to select folders from the accounts to be deleted
     QMailFolderKey foldersKey(QMailFolderKey::parentAccountId(ids));
-    
+
     // Delete all the folders contained by the accounts we're deleting
     if (!deleteFolders(foldersKey, option, deletedFolderIds, deletedMessageIds, deletedThreadIds, expiredContent, updatedMessageIds, modifiedFolderIds, modifiedThreadIds, modifiedAccountIds))
         return false;

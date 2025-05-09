@@ -94,7 +94,7 @@ static QByteArray cramMd5Response(const QByteArray &nonce, const QByteArray &nam
 /*!
     Returns true if the protocol should immediately switch to using TLS encryption;
     otherwise returns false.
-    The use of encryption may be preferred depending on the service whose configuration 
+    The use of encryption may be preferred depending on the service whose configuration
     is described by \a svcCfg, and the service's reported \a capabilities.
 */
 bool QMailAuthenticator::useEncryption(const QMailServiceConfiguration &svcCfg, const QStringList &capabilities)
@@ -149,8 +149,8 @@ QByteArray QMailAuthenticator::getAuthentication(const QMailServiceConfiguration
     Returns the response string that should be reported as the response to a
     service's \a challenge, for the the service desribed by \a svcCfg.
 
-    If the protocol invoking the challenge-response resolution requires 
-    encoding for the challenge-response tokens (such as Base64), the challenge 
+    If the protocol invoking the challenge-response resolution requires
+    encoding for the challenge-response tokens (such as Base64), the challenge
     should be decoded before invocation, and the result should be encoded for
     transmission.
 */

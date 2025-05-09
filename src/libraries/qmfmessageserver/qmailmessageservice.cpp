@@ -63,7 +63,7 @@ public:
                 insert(iface->key(), iface);
         }
     }
-    
+
 private:
     QMailPluginManager _manager;
 };
@@ -90,7 +90,7 @@ QMailMessageServicePlugin *mapping(const QString &key)
     \brief The QMailMessageServiceFactory class creates objects implementing the QMailMessageService interface.
 
     The QMailMessageServiceFactory class creates objects that provide messaging services to the
-    messageserver daemon.  The factory allows implementations to be loaded from plugin libraries, 
+    messageserver daemon.  The factory allows implementations to be loaded from plugin libraries,
     and to be retrieved and instantiated by name.
 
     To create a new service that can be created via the QMailMessageServiceFactory, derive from the
@@ -102,7 +102,7 @@ QMailMessageServicePlugin *mapping(const QString &key)
 
 /*!
     \enum QMailMessageServiceFactory::ServiceType
-    
+
     This enum type is used to differentiate between the types of services that QMailMessageServiceFactory can manage.
 
     \value Any      Any type of service.
@@ -150,7 +150,7 @@ bool QMailMessageServiceFactory::supports(const QString &key, QMailMessage::Mess
 }
 
 /*!
-    Returns a new instance of the service identified by \a key, associating it with the 
+    Returns a new instance of the service identified by \a key, associating it with the
     account identified by \a accountId.
 */
 QMailMessageService *QMailMessageServiceFactory::createService(const QString &key, const QMailAccountId &accountId)
@@ -179,7 +179,7 @@ QMailMessageServiceConfigurator *QMailMessageServiceFactory::createServiceConfig
 
     \brief The QMailMessageServicePluginInterface class defines the interface to plugins that provide messaging services.
 
-    The QMailMessageServicePluginInterface class defines the interface to message service plugins.  Plugins will 
+    The QMailMessageServicePluginInterface class defines the interface to message service plugins.  Plugins will
     typically inherit from QMailMessageServicePlugin rather than this class.
 
     \sa QMailMessageServicePlugin, QMailMessageService, QMailMessageServiceFactory
@@ -226,7 +226,7 @@ QMailMessageServiceConfigurator *QMailMessageServicePluginInterface::createServi
 
     The QMailMessageServicePlugin class provides a base class for plugin classes that provide messaging service
     functionality.  Classes that inherit QMailMessageServicePlugin need to provide overrides of the
-    \l {QMailMessageServicePlugin::key()}{key}, \l {QMailMessageServicePlugin::supports()}{supports} and 
+    \l {QMailMessageServicePlugin::key()}{key}, \l {QMailMessageServicePlugin::supports()}{supports} and
     \l {QMailMessageServicePlugin::createService()}{createService} member functions.
 
     \sa QMailMessageServicePluginInterface, QMailMessageService, QMailMessageServiceFactory
@@ -265,7 +265,7 @@ typedef QList<ErrorMap> ErrorSet;
 
 static ErrorMap socketErrorInit()
 {
-    static const ErrorEntry map[] = 
+    static const ErrorEntry map[] =
     {
         { QAbstractSocket::ConnectionRefusedError, QT_TRANSLATE_NOOP( "QMailServiceAction",  "Connection refused" ) },
         { QAbstractSocket::RemoteHostClosedError, QT_TRANSLATE_NOOP( "QMailServiceAction",  "Remote host closed the connection" ) },
@@ -286,7 +286,7 @@ static ErrorMap socketErrorInit()
 
 static ErrorMap mailErrorInit()
 {
-    static const ErrorEntry map[] = 
+    static const ErrorEntry map[] =
     {
         { QMailServiceAction::Status::ErrNotImplemented, QT_TRANSLATE_NOOP( "QMailServiceAction", "This function is not currently supported.") },
         { QMailServiceAction::Status::ErrFrameworkFault, QT_TRANSLATE_NOOP( "QMailServiceAction", "Framework error occurred.") },
@@ -388,15 +388,15 @@ QMailMessageSourcePrivate::QMailMessageSourcePrivate(QMailMessageService *servic
     \class QMailMessageSource
     \ingroup libmessageserver
 
-    \brief The QMailMessageSource class defines the interface to objects that provide access to externally sourced 
+    \brief The QMailMessageSource class defines the interface to objects that provide access to externally sourced
     messages to the messageserver.
 
     The Qt Extended messageserver uses the QMailMessageSource interface to cooperate with components loaded
     from plugin libraries, that act as sources of messaging data for the messaging framework.  Instances of
     QMailMessageSource are not created directly by the messageserver, but are exported by QMailMessageService
     objects via their \l{QMailMessageService::source()}{source} function.
-    
-    \sa QMailMessageService, QMailStore 
+
+    \sa QMailMessageService, QMailStore
 */
 
 /*!
@@ -425,17 +425,17 @@ QMailStore::MessageRemovalOption QMailMessageSource::messageRemovalOption() cons
 }
 
 /*!
-    Retrieve the list of folders available for the 
-    account \a accountId.  If \a folderId is valid, only the identified folder is 
+    Retrieve the list of folders available for the
+    account \a accountId.  If \a folderId is valid, only the identified folder is
     searched for child folders; otherwise the search begins at the root of the
-    account.  If \a descending is true, the search should also recursively search 
+    account.  If \a descending is true, the search should also recursively search
     for child folders within folders discovered during the search.
 
-    The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and 
-    QMailFolder::serverUndiscoveredCount() properties will be updated for each 
-    folder that is searched for child folders; these properties are not updated 
+    The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and
+    QMailFolder::serverUndiscoveredCount() properties will be updated for each
+    folder that is searched for child folders; these properties are not updated
     for folders that are merely discovered by searching.
-    
+
     Return true if an operation is initiated.
 
     \sa retrieveMessageList(), retrieveMessageLists()
@@ -452,33 +452,33 @@ bool QMailMessageSource::retrieveFolderList(const QMailAccountId &accountId, con
 
 /*!
     Retrieve the list of messages available for the account \a accountId.
-    If \a folderId is valid, then only messages within that folder should be retrieved; otherwise 
-    messages within all folders in the account should be retrieved, and the lastSynchronized() time 
-    of the account updated.  If \a minimum is non-zero, then that value will be used to restrict the 
+    If \a folderId is valid, then only messages within that folder should be retrieved; otherwise
+    messages within all folders in the account should be retrieved, and the lastSynchronized() time
+    of the account updated.  If \a minimum is non-zero, then that value will be used to restrict the
     number of messages to be retrieved from each folder; otherwise, all messages will be retrieved.
-    
-    If \a sort is not empty, the external service will report the discovered messages in the 
-    ordering indicated by the sort criterion, if possible.  Services are not required to support 
+
+    If \a sort is not empty, the external service will report the discovered messages in the
+    ordering indicated by the sort criterion, if possible.  Services are not required to support
     this facility.
 
-    If a folder messages are being retrieved from contains at least \a minimum messages then the 
-    messageserver should ensure that at least \a minimum messages are available from the mail 
-    store for that folder; otherwise if the folder contains less than \a minimum messages the 
+    If a folder messages are being retrieved from contains at least \a minimum messages then the
+    messageserver should ensure that at least \a minimum messages are available from the mail
+    store for that folder; otherwise if the folder contains less than \a minimum messages the
     messageserver should ensure all the messages for that folder are available from the mail store.
     If a folder has messages locally available, then all previously undiscovered messages will be
     retrieved for that folder, even if that number exceeds \a minimum.
-    
-    The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and 
-    QMailFolder::serverUndiscoveredCount() properties will be updated for each folder 
+
+    The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and
+    QMailFolder::serverUndiscoveredCount() properties will be updated for each folder
     from which messages are retrieved.
-    
-    New messages will be added to the mail store as they are discovered, and 
-    marked with the \l QMailMessage::New status flag. Messages in folders inspected that 
-    are present in the mail store but found to be no longer available are marked with the 
-    \l QMailMessage::Removed status flag. The status flags of messages in folders inspected 
-    that are present in the mail store will be updated including the QMailMessage::Read and 
+
+    New messages will be added to the mail store as they are discovered, and
+    marked with the \l QMailMessage::New status flag. Messages in folders inspected that
+    are present in the mail store but found to be no longer available are marked with the
+    \l QMailMessage::Removed status flag. The status flags of messages in folders inspected
+    that are present in the mail store will be updated including the QMailMessage::Read and
     QMailMessage::Important flags.
-    
+
     Return true if an operation is initiated.
 
     \sa QMailAccount::lastSynchronized(), retrieveMessageLists()
@@ -496,33 +496,33 @@ bool QMailMessageSource::retrieveMessageList(const QMailAccountId &accountId, co
 
 /*!
     Retrieve the list of messages available for the account \a accountId.
-    If \a folderIds is not empty, then only messages within those folders should be retrieved and 
-    the lastSynchronized() time of the account updated; otherwise 
-    no messages should be retrieved. If \a minimum is non-zero, then that value will be used to restrict the 
+    If \a folderIds is not empty, then only messages within those folders should be retrieved and
+    the lastSynchronized() time of the account updated; otherwise
+    no messages should be retrieved. If \a minimum is non-zero, then that value will be used to restrict the
     number of messages to be retrieved from each folder; otherwise, all messages will be retrieved.
-    
-    If \a sort is not empty, the external service will report the discovered messages in the 
-    ordering indicated by the sort criterion, if possible.  Services are not required to support 
+
+    If \a sort is not empty, the external service will report the discovered messages in the
+    ordering indicated by the sort criterion, if possible.  Services are not required to support
     this facility.
 
-    If a folder messages are being retrieved from contains at least \a minimum messages then the 
-    messageserver should ensure that at least \a minimum messages are available from the mail 
-    store for that folder; otherwise if the folder contains less than \a minimum messages the 
+    If a folder messages are being retrieved from contains at least \a minimum messages then the
+    messageserver should ensure that at least \a minimum messages are available from the mail
+    store for that folder; otherwise if the folder contains less than \a minimum messages the
     messageserver should ensure all the messages for that folder are available from the mail store.
     If a folder has messages locally available, then all previously undiscovered messages will be
     retrieved for that folder, even if that number exceeds \a minimum.
-    
-    The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and 
-    QMailFolder::serverUndiscoveredCount() properties will be updated for each folder 
+
+    The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and
+    QMailFolder::serverUndiscoveredCount() properties will be updated for each folder
     from which messages are retrieved.
-    
-    New messages will be added to the mail store as they are discovered, and 
-    marked with the \l QMailMessage::New status flag. Messages in folders inspected that 
-    are present in the mail store but found to be no longer available are marked with the 
-    \l QMailMessage::Removed status flag. The status flags of messages in folders inspected 
-    that are present in the mail store will be updated including the QMailMessage::Read and 
+
+    New messages will be added to the mail store as they are discovered, and
+    marked with the \l QMailMessage::New status flag. Messages in folders inspected that
+    are present in the mail store but found to be no longer available are marked with the
+    \l QMailMessage::Removed status flag. The status flags of messages in folders inspected
+    that are present in the mail store will be updated including the QMailMessage::Read and
     QMailMessage::Important flags.
-    
+
     Return true if an operation is initiated.
 
     \sa QMailAccount::lastSynchronized(), retrieveMessageList()
@@ -541,16 +541,16 @@ bool QMailMessageSource::retrieveMessageLists(const QMailAccountId &accountId, c
 /*
     Requests that the message server retrieve new messages for the account \a accountId in the
     folders specified by \a folderIds.
-    
+
     If a folder inspected has been previously inspected then new mails in that folder will
     be retrieved, otherwise the most recent message in that folder, if any, will be retrieved.
-    
+
     This function is intended for use by protocol plugins to retrieve new messages when
     a push notification is received from the remote server.
-    
+
     Detection of deleted messages, and flag updates for messages in the mail store will
     not necessarily be performed.
-    
+
 */
 bool QMailMessageSource::retrieveNewMessages(const QMailAccountId &accountId, const QMailFolderIdList &folderIds)
 {
@@ -562,19 +562,19 @@ bool QMailMessageSource::retrieveNewMessages(const QMailAccountId &accountId, co
 
     Retrieve data regarding each of the messages listed in \a ids.
 
-    If \a spec is \l QMailRetrievalAction::Flags, then the message server should detect if 
+    If \a spec is \l QMailRetrievalAction::Flags, then the message server should detect if
     the messages identified by \a ids have been marked as read or have been removed.
     Messages that have been read will be marked with the \l QMailMessage::ReadElsewhere flag, and
     messages that have been removed will be marked with the \l QMailMessage::Removed status flag.
 
-    If \a spec is \l QMailRetrievalAction::MetaData, then the message server should 
+    If \a spec is \l QMailRetrievalAction::MetaData, then the message server should
     retrieve the meta data of the each message listed in \a ids.
-    
-    If \a spec is \l QMailRetrievalAction::Content, then the message server should 
+
+    If \a spec is \l QMailRetrievalAction::Content, then the message server should
     retrieve the entirety of each message listed in \a ids.
-    
-    The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and 
-    QMailFolder::serverUndiscoveredCount() properties should be updated for each folder 
+
+    The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and
+    QMailFolder::serverUndiscoveredCount() properties should be updated for each folder
     from which messages are retrieved.
 
     Return true if an operation is initiated.
@@ -592,9 +592,9 @@ bool QMailMessageSource::retrieveMessages(const QMailMessageIdList &ids, QMailRe
     Invoked by the message server to initiate a message part retrieval operation.
 
     Retrieve the content of the message part indicated by the location \a partLocation.
-    
-    The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and 
-    QMailFolder::serverUndiscoveredCount() properties should be updated for the folder 
+
+    The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and
+    QMailFolder::serverUndiscoveredCount() properties should be updated for the folder
     from which the part is retrieved.
 
     Return true if an operation is initiated.
@@ -613,8 +613,8 @@ bool QMailMessageSource::retrieveMessagePart(const QMailMessagePart::Location &p
     Retrieve a portion of the content of the message identified by \a messageId, ensuring
     that at least \a minimum bytes are available in the mail store.
 
-    The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and 
-    QMailFolder::serverUndiscoveredCount() properties should be updated for the folder 
+    The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and
+    QMailFolder::serverUndiscoveredCount() properties should be updated for the folder
     from which the message is retrieved.
 
     Return true if an operation is initiated.
@@ -631,11 +631,11 @@ bool QMailMessageSource::retrieveMessageRange(const QMailMessageId &messageId, u
 /*!
     Invoked by the message server to initiate a message part range retrieval operation.
 
-    Retrieve a portion of the content of the message part indicated by the location 
+    Retrieve a portion of the content of the message part indicated by the location
     \a partLocation, ensuring that at least \a minimum bytes are available in the mail store.
 
-    The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and 
-    QMailFolder::serverUndiscoveredCount() properties should be updated for the folder 
+    The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and
+    QMailFolder::serverUndiscoveredCount() properties should be updated for the folder
     from which the part is retrieved.
 
     Return true if an operation is initiated.
@@ -652,20 +652,20 @@ bool QMailMessageSource::retrieveMessagePartRange(const QMailMessagePart::Locati
 /*!
     Invoked by the message server to initiate a retrieval operation.
 
-    Retrieve all folders and meta data for all messages available for the account \a accountId. 
+    Retrieve all folders and meta data for all messages available for the account \a accountId.
 
     All folders within the account should be discovered and searched for child folders.
     The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and
-    QMailFolder::serverUndiscoveredCount() properties should be updated for each folder 
+    QMailFolder::serverUndiscoveredCount() properties should be updated for each folder
     in the account, and the lastSynchronized() time of the account updated.
 
-    New messages should be added to the mail store in meta data form as they are discovered, 
+    New messages should be added to the mail store in meta data form as they are discovered,
     and marked with the \l QMailMessage::New status flag.  Messages that are present
-    in the mail store but found to be no longer available should be marked with the 
-    \l QMailMessage::Removed status flag.  
+    in the mail store but found to be no longer available should be marked with the
+    \l QMailMessage::Removed status flag.
 
     Return true if an operation is initiated.
-    
+
     \sa QMailAccount::lastSynchronized(), retrieveFolderList(), retrieveMessageList(), retrieveMessageLists(), synchronize()
 */
 bool QMailMessageSource::retrieveAll(const QMailAccountId &accountId)
@@ -679,7 +679,7 @@ bool QMailMessageSource::retrieveAll(const QMailAccountId &accountId)
 /*!
     Invoked by the message server to initiate an export operation.
 
-    Update the external server with any changes to message status that have been 
+    Update the external server with any changes to message status that have been
     effected on the local device for account \a accountId.
 
     Return true if an operation is initiated.
@@ -697,21 +697,21 @@ bool QMailMessageSource::exportUpdates(const QMailAccountId &accountId)
 /*!
     Invoked by the message server to initiate a synchronization operation.
 
-    Synchronize the set of known folder and message identifiers with those currently 
+    Synchronize the set of known folder and message identifiers with those currently
     available for the account identified by \a accountId.
     Newly discovered messages should have their meta data retrieved,
     and local changes to message status should be exported to the external server.
 
-    New messages should be added to the mail store in meta data form as they are discovered, 
+    New messages should be added to the mail store in meta data form as they are discovered,
     and marked with the \l QMailMessage::New status flag.  Messages that are present
-    in the mail store but found to be no longer available should be marked with the 
-    \l QMailMessage::Removed status flag.  
+    in the mail store but found to be no longer available should be marked with the
+    \l QMailMessage::Removed status flag.
 
-    The folder structure of the account should be synchronized with that available from 
-    the external service.  The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and 
+    The folder structure of the account should be synchronized with that available from
+    the external service.  The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and
     QMailFolder::serverUndiscoveredCount() properties should be updated for each folder, and
     the lastSynchronized() time of the account updated.
-     
+
     Return true if an operation is initiated.
 
     \sa QMailAccount::lastSynchronized(), retrieveAll(), exportUpdates()
@@ -781,8 +781,8 @@ bool QMailMessageSource::moveMessages(const QMailMessageIdList &ids, const QMail
 /*!
     Invoked by the message server to initiate a message flag operation.
 
-    Modify each message listed in \a ids such that the status flags set in \a setMask are set, 
-    and the status flags set in \a unsetMask are unset.  If further changes are implied by 
+    Modify each message listed in \a ids such that the status flags set in \a setMask are set,
+    and the status flags set in \a unsetMask are unset.  If further changes are implied by
     modification of the flags (including message movement or deletion), thse actions should
     also be performed by the service.
 
@@ -891,8 +891,8 @@ bool QMailMessageSource::moveFolder(const QMailFolderId &folderId, const QMailFo
 /*!
     Invoked by the message server to initiate a remote message search operation.
 
-    Search the remote server for messages that match the search criteria encoded by 
-    \a searchCriteria.  If \a bodyText is non-empty, then messages containing the 
+    Search the remote server for messages that match the search criteria encoded by
+    \a searchCriteria.  If \a bodyText is non-empty, then messages containing the
     specified string will also be matched.  Messages whose content is already present on
     the local device should not be retrieved from the remote server.
 
@@ -902,11 +902,11 @@ bool QMailMessageSource::moveFolder(const QMailFolderId &folderId, const QMailFo
     matches in the ordering indicated by the sort criterion, if possible.
 
     Messages matching the search criteria should be added to the mail store in
-    meta data form marked with the \l QMailMessage::New status flag, and 
+    meta data form marked with the \l QMailMessage::New status flag, and
     progressively reported via matchingMessageIds().
 
     Returns true if a search operation is initiated.
-    
+
     \sa matchingMessageIds(), retrieveMessages()
 */
 bool QMailMessageSource::searchMessages(const QMailMessageKey &searchCriteria, const QString &bodyText, quint64 limit, const QMailMessageSortKey &sort)
@@ -923,8 +923,8 @@ bool QMailMessageSource::searchMessages(const QMailMessageKey &searchCriteria, c
 /*!
     Invoked by the message server to initiate a remote message search operation.
 
-    Search the remote server for messages that match the search criteria encoded by 
-    \a searchCriteria.  If \a bodyText is non-empty, then messages containing the 
+    Search the remote server for messages that match the search criteria encoded by
+    \a searchCriteria.  If \a bodyText is non-empty, then messages containing the
     specified string will also be matched.  Messages whose content is already present on
     the local device should not be retrieved from the remote server.
 
@@ -932,11 +932,11 @@ bool QMailMessageSource::searchMessages(const QMailMessageKey &searchCriteria, c
     matches in the ordering indicated by the sort criterion, if possible.
 
     Messages matching the search criteria should be added to the mail store in
-    meta data form marked with the \l QMailMessage::New status flag, and 
+    meta data form marked with the \l QMailMessage::New status flag, and
     progressively reported via matchingMessageIds().
 
     Return true if a search operation is initiated.
-    
+
     \sa matchingMessageIds(), retrieveMessages()
 */
 bool QMailMessageSource::searchMessages(const QMailMessageKey &searchCriteria, const QString &bodyText, const QMailMessageSortKey &sort)
@@ -952,8 +952,8 @@ bool QMailMessageSource::searchMessages(const QMailMessageKey &searchCriteria, c
 /*!
     Invoked by the message server to initiate a remote message count operation.
 
-    Search the remote server to count messages that match the search criteria encoded by 
-    \a searchCriteria.  If \a bodyText is non-empty, then messages containing the 
+    Search the remote server to count messages that match the search criteria encoded by
+    \a searchCriteria.  If \a bodyText is non-empty, then messages containing the
     specified string will also be matched and counted.
 
     Returns true if the counting operation is initiated.
@@ -987,13 +987,13 @@ bool QMailMessageSource::cancelSearch()
 /*!
     Invoked by the message server to initiate a message preparation operation.
 
-    Prepare each message listed in \a ids for transmission by resolving any external 
+    Prepare each message listed in \a ids for transmission by resolving any external
     references into URLs, and updating the reference in the associated location.
 
     Messages successfully prepared for transmission should be progressively reported via messagesPrepared().
 
     Return true if an operation is initiated.
-    
+
     \sa messagesPrepared()
 */
 bool QMailMessageSource::prepareMessages(const QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > &ids)
@@ -1013,7 +1013,7 @@ bool QMailMessageSource::prepareMessages(const QList<QPair<QMailMessagePart::Loc
     Any responses resulting from the action should be progressively reported via protocolResponse().
 
     Return true if an operation is initiated.
-    
+
     \sa protocolResponse()
 */
 bool QMailMessageSource::protocolRequest(const QMailAccountId &accountId, const QString &request, const QVariantMap &data)
@@ -1065,7 +1065,7 @@ bool QMailMessageSource::protocolRequest(const QMailAccountId &accountId, const 
 /*!
     \fn void QMailMessageSource::remainingMessagesCount(uint number);
 
-    Signal emitted by the source to report the \a number of messages matching the current search criteria 
+    Signal emitted by the source to report the \a number of messages matching the current search criteria
     remaining on the remote server; that is not retrieved to the device.
 
     Only emitted for remote searches.
@@ -1088,7 +1088,7 @@ bool QMailMessageSource::protocolRequest(const QMailAccountId &accountId, const 
 /*!
     \fn void QMailMessageSource::protocolResponse(const QString &response, const QVariantMap &data);
 
-    Signal emitted by the source to report the response \a response resulting from a 
+    Signal emitted by the source to report the response \a response resulting from a
     protocol-specific request, with any associated \a data.
 */
 
@@ -1222,7 +1222,7 @@ bool QMailMessageSource::modifyMessageFlags(const QMailMessageIdList &ids, quint
             emit messagesFlagged(ids);
             return true;
         }
-    } 
+    }
 
     return false;
 }
@@ -1249,10 +1249,10 @@ QMailMessageSinkPrivate::QMailMessageSinkPrivate(QMailMessageService *service)
     services to the messageserver.
 
     The Qt Extended messageserver uses the QMailMessageSink interface to cooperate with components loaded
-    from plugin libraries, that act as external transmitters of messaging data for the messaging framework.  
-    Instances of QMailMessageSink are not created directly by the messageserver, but are exported by 
+    from plugin libraries, that act as external transmitters of messaging data for the messaging framework.
+    Instances of QMailMessageSink are not created directly by the messageserver, but are exported by
     QMailMessageService objects via their \l{QMailMessageService::sink()}{sink} function.
-    
+
     \sa QMailMessageService
 */
 
@@ -1309,7 +1309,7 @@ void QMailMessageSink::notImplemented()
     \fn void QMailMessageSink::messagesFailedTransmission(const QMailMessageIdList &ids, QMailServiceAction::Status::ErrorCode error);
 
     Signal emitted by the sink to report the failure of an attempt at transmission of the messages listed in \a ids.
-    
+
     The failure is of type \a error.
 */
 
@@ -1323,16 +1323,16 @@ void QMailMessageSink::notImplemented()
     from plugin libraries.
 
     QMailMessageService provides the interface through which the message server daemon communicates with
-    components that provide message access and transmission services.  The components are loaded from plugin 
-    libraries; the message server process remains ignorant of the messages types they deal with, and the 
+    components that provide message access and transmission services.  The components are loaded from plugin
+    libraries; the message server process remains ignorant of the messages types they deal with, and the
     protocols they use to perform their tasks.
 
     The QMailMessageService class provides the signals and functions that message server uses to receive
-    information about the actions of messaging service components.  It also provides the 
-    \l{QMailMessageService::source()}{source} and \l{QMailMessageService::sink()}{sink} functions that 
+    information about the actions of messaging service components.  It also provides the
+    \l{QMailMessageService::source()}{source} and \l{QMailMessageService::sink()}{sink} functions that
     the message server uses to acquire access to the functionality that the service may implement.
 
-    Subclasses of QMailMessageService are instantiated by the message server process, one for each 
+    Subclasses of QMailMessageService are instantiated by the message server process, one for each
     enabled account that is configured to use that service.  The QMailMessageService interface does
     not cater for concurrent actions; each instance may only service a single request at any given
     time.  The message server process provides request queueing so that QMailMessageService objects
@@ -1411,7 +1411,7 @@ QMailMessageSink &QMailMessageService::sink() const
     \fn bool QMailMessageService::requiresReregistration() const;
 
     Returns true if requests to reregister the service should be honored; otherwise returns false.
-    
+
     An attempt to reregister the service is made when the account for which this service is configured is modified, or when an action associated with the service expires.
 */
 
@@ -1421,16 +1421,16 @@ QMailMessageSink &QMailMessageService::sink() const
     Invoked by the message server to attempt cancellation of any request currently in progress.
     Return true to indicate cancellation of the request attempt.
 */
-    
+
 /*!
     \fn bool QMailMessageService::cancelOperation(QMailServiceAction::Status::ErrorCode code, const QString &text)
 
     Invoked by the message server to attempt cancellation of any request currently in progress.
     Return true to indicate cancellation of the request attempt.
-    
+
     The error type is \a code, and the error is described by \a text.
 */
-    
+
 /*!
     \fn void QMailMessageService::availabilityChanged(bool available);
 
@@ -1438,7 +1438,7 @@ QMailMessageSink &QMailMessageService::sink() const
 
     \sa available()
 */
-    
+
 /*!
     \fn void QMailMessageService::connectivityChanged(QMailServiceAction::Connectivity connectivity);
 
@@ -1447,7 +1447,7 @@ QMailMessageSink &QMailMessageService::sink() const
 
     Emitting this signal will reset the expiry timer for a service operation in progress.
 */
-    
+
 /*!
     \fn void QMailMessageService::activityChanged(QMailServiceAction::Activity activity);
 
@@ -1456,7 +1456,7 @@ QMailMessageSink &QMailMessageService::sink() const
 
     Emitting this signal will reset the expiry timer for a service operation in progress.
 */
-    
+
 /*!
     \fn void QMailMessageService::statusChanged(const QMailServiceAction::Status status);
 
@@ -1465,7 +1465,7 @@ QMailMessageSink &QMailMessageService::sink() const
 
     Emitting this signal will reset the expiry timer for a service operation in progress.
 */
-    
+
 /*!
     \fn void QMailMessageService::progressChanged(uint progress, uint total);
 
@@ -1474,7 +1474,7 @@ QMailMessageSink &QMailMessageService::sink() const
 
     Emitting this signal will reset the expiry timer for a service operation in progress.
 */
-    
+
 /*!
     \fn void QMailMessageService::actionCompleted(bool success);
 
@@ -1483,7 +1483,7 @@ QMailMessageSink &QMailMessageService::sink() const
 
 /*!
     Emits the statusChanged() signal with the Status object constructed from \a code, \a text, \a accountId, \a folderId, \a messageId and \a action.
-    
+
     If possible, a standardized error message is determined from \a code, and prepended to the error message.
 */
 void QMailMessageService::updateStatus(QMailServiceAction::Status::ErrorCode code, const QString &text, const QMailAccountId &accountId, const QMailFolderId &folderId, const QMailMessageId &messageId, quint64 action)
@@ -2126,9 +2126,9 @@ bool QMailMessageService::cancelOperation(QMailServiceAction::Status::ErrorCode 
     \fn void QMailMessageSource::messagesDeleted(const QMailMessageIdList &ids, quint64 action)
 
     \overload
-    
+
     Concurrent version of messagesDeleted() signal.
-    
+
     The generating request has identifier \a action.
 */
 
@@ -2136,9 +2136,9 @@ bool QMailMessageService::cancelOperation(QMailServiceAction::Status::ErrorCode 
     \fn void QMailMessageSource::messagesCopied(const QMailMessageIdList &ids, quint64 action)
 
     \overload
-    
+
     Concurrent version of messagesCopied() signal.
-    
+
     The generating request has identifier \a action.
 */
 
@@ -2146,9 +2146,9 @@ bool QMailMessageService::cancelOperation(QMailServiceAction::Status::ErrorCode 
     \fn void QMailMessageSource::messagesMoved(const QMailMessageIdList &ids, quint64 action)
 
     \overload
-    
+
     Concurrent version of messagesMoved() signal.
-    
+
     The generating request has identifier \a action.
 */
 
@@ -2156,9 +2156,9 @@ bool QMailMessageService::cancelOperation(QMailServiceAction::Status::ErrorCode 
     \fn void QMailMessageSource::messagesFlagged(const QMailMessageIdList &ids, quint64 action)
 
     \overload
-    
+
     Concurrent version of messagesFlagged() signal.
-    
+
     The generating request has identifier \a action.
 */
 
@@ -2166,9 +2166,9 @@ bool QMailMessageService::cancelOperation(QMailServiceAction::Status::ErrorCode 
     \fn void QMailMessageSource::matchingMessageIds(const QMailMessageIdList &ids, quint64 action)
 
     \overload
-    
+
     Concurrent version of matchingMessageIds() signal.
-    
+
     The generating request has identifier \a action.
 */
 
@@ -2176,9 +2176,9 @@ bool QMailMessageService::cancelOperation(QMailServiceAction::Status::ErrorCode 
     \fn void QMailMessageSource::remainingMessagesCount(uint number, quint64 action)
 
     \overload
-    
+
     Concurrent version of remainingMessagesCount() signal.
-    
+
     The generating request has identifier \a action.
 */
 
@@ -2186,9 +2186,9 @@ bool QMailMessageService::cancelOperation(QMailServiceAction::Status::ErrorCode 
     \fn void QMailMessageSource::messagesCount(uint number, quint64 action)
 
     \overload
-    
+
     Concurrent version of messagesCount() signal.
-    
+
     The generating request has identifier \a action.
 */
 
@@ -2196,9 +2196,9 @@ bool QMailMessageService::cancelOperation(QMailServiceAction::Status::ErrorCode 
     \fn void QMailMessageSource::messagesPrepared(const QMailMessageIdList &ids, quint64 action)
 
     \overload
-    
+
     Concurrent version of messagesPrepared() signal.
-    
+
     The generating request has identifier \a action.
 */
 
@@ -2206,9 +2206,9 @@ bool QMailMessageService::cancelOperation(QMailServiceAction::Status::ErrorCode 
     \fn void QMailMessageSource::protocolResponse(const QString &response, const QVariantMap &data, quint64 action)
 
     \overload
-    
+
     Concurrent version of protocolResponse() signal.
-    
+
     The generating request has identifier \a action.
 */
 
@@ -2216,9 +2216,9 @@ bool QMailMessageService::cancelOperation(QMailServiceAction::Status::ErrorCode 
     \fn void QMailMessageSource::newMessagesAvailable(quint64 action)
 
     \overload
-    
+
     Concurrent version of newMessagesAvailable() signal.
-    
+
     The generating request has identifier \a action.
 */
 
@@ -2226,9 +2226,9 @@ bool QMailMessageService::cancelOperation(QMailServiceAction::Status::ErrorCode 
     \fn void QMailMessageSink::messagesTransmitted(const QMailMessageIdList &ids, quint64 action)
 
     \overload
-    
+
     Concurrent version of messagesTransmitted() signal.
-    
+
     The generating request has identifier \a action.
 */
 
@@ -2236,9 +2236,9 @@ bool QMailMessageService::cancelOperation(QMailServiceAction::Status::ErrorCode 
     \fn void QMailMessageSink::messagesFailedTransmission(const QMailMessageIdList &ids, QMailServiceAction::Status::ErrorCode error, quint64 action)
 
     \overload
-    
+
     Concurrent version of messagesFailedTransmission() signal.
-    
+
     The generating request has identifier \a action.
 */
 
@@ -2246,9 +2246,9 @@ bool QMailMessageService::cancelOperation(QMailServiceAction::Status::ErrorCode 
     \fn void QMailMessageService::cancelOperation(quint64 action)
 
     \overload
-    
+
     Concurrent version of cancelOperation().
-    
+
     The request to be cancelled has identifier \a action.
 */
 
@@ -2256,9 +2256,9 @@ bool QMailMessageService::cancelOperation(QMailServiceAction::Status::ErrorCode 
     \fn void QMailMessageService::activityChanged(QMailServiceAction::Activity activity, quint64 action)
 
     \overload
-    
+
     Concurrent version of activityChanged() signal.
-    
+
     The generating request has identifier \a action.
 */
 
@@ -2266,9 +2266,9 @@ bool QMailMessageService::cancelOperation(QMailServiceAction::Status::ErrorCode 
     \fn void QMailMessageService::statusChanged(const QMailServiceAction::Status status, quint64 action)
 
     \overload
-    
+
     Concurrent version of statusChanged() signal.
-    
+
     The generating request has identifier \a action.
 */
 
@@ -2276,9 +2276,9 @@ bool QMailMessageService::cancelOperation(QMailServiceAction::Status::ErrorCode 
     \fn void QMailMessageService::progressChanged(uint progress, uint total, quint64 action)
 
     \overload
-    
+
     Concurrent version of progressChanged() signal.
-    
+
     The generating request has identifier \a action.
 */
 
@@ -2286,9 +2286,9 @@ bool QMailMessageService::cancelOperation(QMailServiceAction::Status::ErrorCode 
     \fn void QMailMessageService::actionCompleted(bool success, quint64 action)
 
     \overload
-    
+
     Concurrent version of actionCompleted() signal.
-    
+
     The generating request has identifier \a action.
 */
 
@@ -2298,23 +2298,23 @@ bool QMailMessageService::cancelOperation(QMailServiceAction::Status::ErrorCode 
     Returns true if the service supports concurrent servicing of requests;
     otherwise returns false.
 
-    By default QMailMessageService objects are only expected to service a 
+    By default QMailMessageService objects are only expected to service a
     single request at a time. The message server will queue requests as
     necessary and dispatch them when the service is available.
-    
+
     However if a service implementation is able to handle multiple requests
     in parallel then it should override this function returning true.
 */
-                                                                           
+
 static int reservedPushConnections = 0;
 
 /*!
     \fn int QMailMessageService::reservePushConnections(int connections)
 
     Attempts to reserve push \a connections, returns the number of connections reserved.
-    
+
     Used by protocol pugins to limit RAM used by the message server.
-    
+
     \sa QMail::maximumPushConnections(), releasePushConnections()
 */
 int QMailMessageService::reservePushConnections(int connections)
@@ -2343,4 +2343,4 @@ void QMailMessageService::releasePushConnections(int connections)
     }
 }
 
-                                                                           
+

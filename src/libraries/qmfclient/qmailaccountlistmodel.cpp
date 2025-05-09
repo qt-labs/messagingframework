@@ -152,27 +152,27 @@ QMailAccountIdList::iterator QMailAccountListModelPrivate::lowerBound(const QMai
 
 
 /*!
-  \class QMailAccountListModel 
+  \class QMailAccountListModel
 
   \preliminary
-  \ingroup messaginglibrary 
-  \brief The QMailAccountListModel class provides access to a list of stored accounts. 
+  \ingroup messaginglibrary
+  \brief The QMailAccountListModel class provides access to a list of stored accounts.
 
   The QMailAccountListModel presents a list of all the accounts currently stored in
   the message store. By using the setKey() and sortKey() functions it is possible to have the model
   represent specific user filtered subsets of accounts sorted in a particular order.
 
   The QMailAccountListModel is a descendant of QAbstractListModel, so it is suitable for use with
-  the Qt View classes such as QListView to visually represent lists of accounts. 
+  the Qt View classes such as QListView to visually represent lists of accounts.
 
   The model listens for changes to the underlying storage system and sychronizes its contents based on
   the setSynchronizeEnabled() setting.
- 
-  Accounts can be extracted from the view with the idFromIndex() function and the resultant id can be 
-  used to load an account from the store. 
+
+  Accounts can be extracted from the view with the idFromIndex() function and the resultant id can be
+  used to load an account from the store.
 
   For filters or sorting not provided by the QMailAccountListModel it is recommended that
-  QSortFilterProxyModel is used to wrap the model to provide custom sorting and filtering. 
+  QSortFilterProxyModel is used to wrap the model to provide custom sorting and filtering.
 
   \sa QMailAccount, QSortFilterProxyModel
 */
@@ -180,13 +180,13 @@ QMailAccountIdList::iterator QMailAccountListModelPrivate::lowerBound(const QMai
 /*!
   \enum QMailAccountListModel::Roles
 
-  Represents common display roles of an account. These roles are used to display common account elements 
+  Represents common display roles of an account. These roles are used to display common account elements
   in a view and its attached delegates.
 
-  \value NameTextRole The name of the account 
-  \value MessageTypeRole The type of the account 
-  \value MessageSourcesRole The list of message sources for the account 
-  \value MessageSinksRole The list of message sinks for the account 
+  \value NameTextRole The name of the account
+  \value MessageTypeRole The type of the account
+  \value MessageSourcesRole The list of message sources for the account
+  \value MessageSinksRole The list of message sinks for the account
 */
 
 /*!
@@ -273,7 +273,7 @@ QVariant QMailAccountListModel::data(const QModelIndex& index, int role) const
 
 QMailAccountKey QMailAccountListModel::key() const
 {
-    return d->key; 
+    return d->key;
 }
 
 /*!
@@ -281,7 +281,7 @@ QMailAccountKey QMailAccountListModel::key() const
     If the key is empty, the model lists all the accounts from the database.
 */
 
-void QMailAccountListModel::setKey(const QMailAccountKey& key) 
+void QMailAccountListModel::setKey(const QMailAccountKey& key)
 {
     beginResetModel();
     d->key = key;
@@ -300,11 +300,11 @@ QMailAccountSortKey QMailAccountListModel::sortKey() const
 
 /*!
     Sets the QMailAccountSortKey used to sort the contents of the model to \a sortKey.
-    If the sort key is invalid, no sorting is applied to the model contents and accounts 
+    If the sort key is invalid, no sorting is applied to the model contents and accounts
     are displayed in the order in which they were added into the database.
 */
 
-void QMailAccountListModel::setSortKey(const QMailAccountSortKey& sortKey) 
+void QMailAccountListModel::setSortKey(const QMailAccountSortKey& sortKey)
 {
     beginResetModel();
     d->sortKey = sortKey;
@@ -323,12 +323,12 @@ void QMailAccountListModel::accountsAdded(const QMailAccountIdList& ids)
     //TODO change this code to use our own searching and insertion routines
     //for more control
     //use id sorted indexes
-    
+
     if (!d->populated) {
         d->populate();
         return;
     }
-    
+
     QMailAccountKey idKey = QMailAccountKey::id(ids) & QMailAccountKey::id(d->idList, QMailDataComparator::Excludes);
     const QMailAccountIdList results = QMailStore::instance()->queryAccounts(d->key & idKey);
     if (results.isEmpty())

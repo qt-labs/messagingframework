@@ -70,7 +70,7 @@ GenericViewer::GenericViewer(QWidget* parent)
     browser->addAction(richTextModeAction);
     connect(richTextModeAction, SIGNAL(triggered(bool)),
             this, SLOT(triggered(bool)));
- 
+
 }
 
 QWidget* GenericViewer::widget() const
@@ -103,8 +103,8 @@ QMailViewerFactory::PresentationType GenericViewer::presentation() const
     return QMailViewerFactory::StandardPresentation;
 }
 
-QList<QMailMessage::ContentType> GenericViewer::types() const 
-{ 
+QList<QMailMessage::ContentType> GenericViewer::types() const
+{
     return QList<QMailMessage::ContentType>() << QMailMessage::PlainTextContent
                                               << QMailMessage::RichTextContent
                                               << QMailMessage::ImageContent

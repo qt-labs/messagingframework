@@ -57,7 +57,7 @@ Q_GLOBAL_STATIC(EmailComposerInterface, composerInterface);
     message to edit, via the \l {QMailComposerInterface::compose()}{compose()} function.
     A client can query whether the composer object is empty with the
     \l {QMailComposerInterface::isEmpty()}{isEmpty()} function, and extract the
-    composed message with the \l {QMailComposerInterface::message()}{message()} function.  The current 
+    composed message with the \l {QMailComposerInterface::message()}{message()} function.  The current
     state of composition can be cleared with the \l {QMailComposerInterface::clear()}{clear()} function.
 
     The composer object should emit the \l {QMailComposerInterface::changed()}{changed()} signal
@@ -194,9 +194,9 @@ QList<QAction*> QMailComposerInterface::actions() const
 */
 
 /*!
-    \fn void QMailComposerInterface::compose(QMailMessage::ResponseType type, 
+    \fn void QMailComposerInterface::compose(QMailMessage::ResponseType type,
                                              const QMailMessage& source = QMailMessage(),
-                                             const QMailMessagePart::Location& sourceLocation = QMailMessagePart::Location(), 
+                                             const QMailMessagePart::Location& sourceLocation = QMailMessagePart::Location(),
                                              QMailMessage::MessageType messageType = QMailMessage::AnyType)
 
     Directs the composer to compose a message, of the form required for the response type \a type.
@@ -258,7 +258,7 @@ QString QMailComposerInterface::status() const
     \fn void QMailComposerInterface::statusChanged(const QString &status)
 
     Signal that is emitted when the message composition state has changed, to a new
-    state described by \a status. For example, when transitioning from message body 
+    state described by \a status. For example, when transitioning from message body
     composition to message details composition in a multi-page composer.
 
     \sa status(), cancel(), changed()

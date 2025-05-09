@@ -61,7 +61,7 @@ void ServiceActionQueue::executeNextCommand()
     }
     _running = true;
     ServiceActionCommand *command(_commands.first());
-    QObject::connect(command->action(), SIGNAL(activityChanged(QMailServiceAction::Activity)), 
+    QObject::connect(command->action(), SIGNAL(activityChanged(QMailServiceAction::Activity)),
                      this, SLOT(activityChanged(QMailServiceAction::Activity)));
     command->execute();
 }
@@ -78,7 +78,7 @@ void ServiceActionQueue::activityChanged(QMailServiceAction::Activity activity)
 
 void ServiceActionQueue::clear()
 {
-    for(int i = 0; i < _commands.size(); ++i) { 
+    for(int i = 0; i < _commands.size(); ++i) {
         delete _commands.takeFirst();
         ++i;
     }

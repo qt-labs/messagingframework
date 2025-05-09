@@ -69,7 +69,7 @@ QString defaultPath()
 
 QString randomString(int length)
 {
-    if (length <= 0) 
+    if (length <= 0)
         return QString();
 
     QString str;
@@ -305,7 +305,7 @@ QMailStore::ErrorCode QmfStorageManager::ensureDurability(const QList<QString> &
     Q_UNUSED(identifiers)
 #if !defined(QMF_NO_DURABILITY) && !defined(QMF_NO_SYNCHRONOUS_DB)
     // Durability is not disabled
-    
+
     // Can't just sync identifiers, also must sync message parts
 #if defined(Q_OS_WIN)
             qWarning() << "Unable to call sync in ensureDurability.";
@@ -551,7 +551,7 @@ QString QmfStorageManager::messageFilePath(const QString &fileName, const QMailA
 
 QString QmfStorageManager::messagePartFilePath(const QMailMessagePart &part, const QString &fileName)
 {
-    return messagePartDirectory(fileName) + '/' + part.location().toString(false); 
+    return messagePartDirectory(fileName) + '/' + part.location().toString(false);
 }
 
 QString QmfStorageManager::messagePartUndecodedFilePath(const QMailMessagePart &part, const QString &fileName)

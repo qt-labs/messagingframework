@@ -90,18 +90,18 @@ public:
 };
 
 namespace {
-    
+
     struct FlagInfo
     {
         FlagInfo(const QStringList &flagNames, quint64 flag, QMailFolder::StandardFolder standardFolder, quint64 messageFlag)
             : _flagNames(flagNames), _flag(flag), _standardFolder(standardFolder), _messageFlag(messageFlag) {}
-        
+
         QStringList _flagNames;
         quint64 _flag;
         QMailFolder::StandardFolder _standardFolder;
         quint64 _messageFlag;
     };
-    
+
     static void setFolderFlags(QMailAccount *account, QMailFolder *folder, const QString &flags, bool setStandardFlags)
     {
         // Set permitted flags
@@ -113,7 +113,7 @@ namespace {
             qWarning() << "setFolderFlags must be called on folder in store " << folder->id();
             return;
         }
-        
+
         if (!setStandardFlags)
             return;
 
@@ -124,7 +124,7 @@ namespace {
             << FlagInfo(QStringList() << "\\Trash", QMailFolder::Trash, QMailFolder::TrashFolder, QMailMessage::Trash)
             << FlagInfo(QStringList() << "\\Sent", QMailFolder::Sent, QMailFolder::SentFolder, QMailMessage::Sent)
             << FlagInfo(QStringList() << "\\Spam" << "\\Junk", QMailFolder::Junk, QMailFolder::JunkFolder, QMailMessage::Junk);
-        
+
         for (int i = 0; i < flagInfoList.count(); ++i) {
             QStringList flagNames(flagInfoList[i]._flagNames);
             quint64 flag(flagInfoList[i]._flag);
@@ -159,7 +159,7 @@ namespace {
                     }
                 }
                 if (!oldFolderId.isValid() || (oldFolderId != folder->id())) {
-                    account->setStandardFolder(standardFolder, folder->id());                
+                    account->setStandardFolder(standardFolder, folder->id());
                     if (!QMailStore::instance()->updateAccount(account)) {
                         qWarning() << "Unable to update account" << account->id() << "to set flag" << flagNames;
                     }
@@ -269,7 +269,7 @@ void IdleProtocol::idleContinuation(ImapCommand command, const QString &type)
     if (command == IMAP_Idle) {
         if (type == QString("idling")) {
             qMailLog(IMAP) << objectName() << "IDLE: Idle connection established.";
-            
+
             // We are now idling
             _timeoutTimer.stop();
             connect(_client, &ImapClient::renewPushEmail,
@@ -278,11 +278,11 @@ void IdleProtocol::idleContinuation(ImapCommand command, const QString &type)
             _client->setIdlingForFolder(_folder.id());
         } else if (type == QString("newmail")) {
             qMailLog(IMAP) << objectName() << "IDLE: new mail event occurred";
-            // A new mail event occurred during idle 
+            // A new mail event occurred during idle
             emit idleNewMailNotification(_folder.id());
         } else if (type == QString("flagschanged")) {
             qMailLog(IMAP) << objectName() << "IDLE: flags changed event occurred";
-            // A flags changed event occurred during idle 
+            // A flags changed event occurred during idle
             emit idleFlagsChangedNotification(_folder.id());
         } else {
             qWarning("idleContinuation: unknown continuation event");
@@ -299,7 +299,7 @@ void IdleProtocol::idleCommandTransition(const ImapCommand command, const Operat
         _client->setIdlingForFolder(_folder.id());
         return;
     }
-    
+
     QMailAccountConfiguration config(_client->account());
     switch( command ) {
         case IMAP_Init:
@@ -579,7 +579,7 @@ void ImapClient::checkCommandResponse(ImapCommand command, OperationStatus statu
             }
         }
     }
-    
+
     switch (command) {
         case IMAP_Full:
             qFatal( "Logic error, IMAP_Full" );
@@ -593,7 +593,7 @@ void ImapClient::checkCommandResponse(ImapCommand command, OperationStatus statu
         default:
             break;
     }
-    
+
 }
 
 void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
@@ -610,7 +610,7 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
             _protocol.sendCapability();
             break;
         }
-        
+
         case IMAP_Capability:
         {
             if (_protocol.authenticated()) {
@@ -648,13 +648,13 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
             }
             break;
         }
-        
+
         case IMAP_Idle_Continuation:
         {
             logIn();
             break;
         }
-        
+
         case IMAP_StartTLS:
         {
             // Check capabilities for encrypted mode
@@ -664,7 +664,7 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
 
         case IMAP_Login:
         {
-            // After logging in server capabilities reported may change  so we need to request 
+            // After logging in server capabilities reported may change  so we need to request
             // capabilities again, unless already received in an unsolicited response
             if (!_protocol.receivedCapabilities()) {
                 emit updateStatus( tr("Checking capabilities" ) );
@@ -769,7 +769,7 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
                     // See how this compares to the local mailstore count
                     updateFolderCountStatus(&folder);
                 }
-                
+
                 QString supportsForwarded(properties.permanentFlags.contains("$Forwarded", Qt::CaseInsensitive) ? "true" : QString());
                 if (folder.customField("qmf-supports-forwarded") != supportsForwarded) {
                     if (supportsForwarded.isEmpty()) {
@@ -827,16 +827,16 @@ void ImapClient::mailboxListed(const QString &flags, const QString &path)
         if (boxId.isValid()) {
             // This element already exists
             if (mailboxPath == path) {
-                QMailFolder folder(boxId); 
-                QMailFolder folderOriginal(folder); 
+                QMailFolder folder(boxId);
+                QMailFolder folderOriginal(folder);
                 setFolderFlags(&account, &folder, flags, _protocol.capabilities().contains("XLIST"));
-                
+
                 if (folder.status() != folderOriginal.status()) {
                     if (!QMailStore::instance()->updateFolder(&folder)) {
                         qWarning() << "Unable to update folder for account:" << folder.parentAccountId() << "path:" << folder.path();
                     }
                 }
-                
+
                 _strategyContext->mailboxListed(folder, flags);
             }
 
@@ -871,7 +871,7 @@ void ImapClient::mailboxListed(const QString &flags, const QString &path)
             QString path(folder.path());
             QString baseFolder(_strategyContext->baseFolder());
 
-            if (baseFolder.isEmpty() || 
+            if (baseFolder.isEmpty() ||
                 (path.startsWith(baseFolder, Qt::CaseInsensitive) && (path.length() == baseFolder.length())) ||
                 (path.startsWith(baseFolder + _protocol.delimiter(), Qt::CaseInsensitive))) {
                 if (!QMailStore::instance()->addFolder(&folder)) {
@@ -890,7 +890,7 @@ void ImapClient::mailboxListed(const QString &flags, const QString &path)
 
             setFolderFlags(&account, &folder, folderFlags, _protocol.capabilities().contains("XLIST")); // requires valid folder.id()
             _strategyContext->mailboxListed(folder, folderFlags);
-            
+
             if (!QMailStore::instance()->updateFolder(&folder)) {
                 qWarning() << "Unable to update folder for account:" << folder.parentAccountId() << "path:" << folder.path();
             }
@@ -912,22 +912,22 @@ void ImapClient::messageFetched(QMailMessage& mail, const QString &detachedFilen
         mail.setParentFolderId(properties.id);
 
         if (properties.status & QMailFolder::Incoming) {
-            mail.setStatus(QMailMessage::Incoming, true); 
+            mail.setStatus(QMailMessage::Incoming, true);
         }
         if (properties.status & QMailFolder::Outgoing) {
-            mail.setStatus(QMailMessage::Outgoing, true); 
+            mail.setStatus(QMailMessage::Outgoing, true);
         }
         if (properties.status & QMailFolder::Drafts) {
-            mail.setStatus(QMailMessage::Draft, true); 
+            mail.setStatus(QMailMessage::Draft, true);
         }
         if (properties.status & QMailFolder::Sent) {
-            mail.setStatus(QMailMessage::Sent, true); 
+            mail.setStatus(QMailMessage::Sent, true);
         }
         if (properties.status & QMailFolder::Trash) {
-            mail.setStatus(QMailMessage::Trash, true); 
+            mail.setStatus(QMailMessage::Trash, true);
         }
         if (properties.status & QMailFolder::Junk) {
-            mail.setStatus(QMailMessage::Junk, true); 
+            mail.setStatus(QMailMessage::Junk, true);
         }
         mail.setStatus(QMailMessage::CalendarInvitation, mail.hasCalendarInvitation());
         mail.setStatus(QMailMessage::HasSignature, (QMailCryptographicService::findSignedContainer(&mail) != 0));
@@ -940,7 +940,7 @@ void ImapClient::messageFetched(QMailMessage& mail, const QString &detachedFilen
         int serverUid(ImapProtocol::uid(mail.serverUid()).toUInt(&ok2));
         if (ok1 && ok2 && clientMax && (serverUid < clientMax)) {
             // older message
-            mail.setStatus(QMailMessage::NoNotification, true); 
+            mail.setStatus(QMailMessage::NoNotification, true);
         }
 
     } else {
@@ -1281,7 +1281,7 @@ void ImapClient::dataFetched(const QString &uid, const QString &section, const Q
             if (totalSize >= mail->contentSize()) {
                 // We have all the data for this message body
                 mail->setStatus(QMailMessage::ContentAvailable, true);
-            } 
+            }
 
         } else {
             // This is data for a sub-part of the message
@@ -1538,7 +1538,7 @@ void ImapClient::cancelTransfer(QMailServiceAction::Status::ErrorCode code, cons
 void ImapClient::retrieveOperationCompleted()
 {
     deactivateConnection();
-    
+
     // This retrieval may have been asynchronous
     emit allMessagesReceived();
 
@@ -1595,7 +1595,7 @@ QMailFolderId ImapClient::mailboxId(const QString &path) const
     QMailFolderIdList folderIds = QMailStore::instance()->queryFolders(QMailFolderKey::parentAccountId(_accountId) & QMailFolderKey::path(path));
     if (folderIds.count() == 1)
         return folderIds.first();
-    
+
     return QMailFolderId();
 }
 
@@ -1719,7 +1719,7 @@ void ImapClient::monitor(const QMailFolderIdList &mailboxIds)
             _waitingForIdleFolderIds.removeOne(id);
         }
     }
-    
+
     QMailAccountConfiguration config(account());
     ImapConfiguration imapCfg(config);
     if (!_protocol.supportsCapability("IDLE")

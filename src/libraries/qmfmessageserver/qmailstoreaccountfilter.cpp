@@ -56,7 +56,7 @@ public:
 
     void registerConnection(const QMetaMethod &signal, const QMailAccountId &id, QMailStoreAccountFilter *filter);
     void deregisterConnection(const QMetaMethod &signal, const QMailAccountId &id, QMailStoreAccountFilter *filter);
-    
+
 private slots:
     void accountsUpdated(const QMailAccountIdList& ids);
     void accountContentsModified(const QMailAccountIdList& ids);
@@ -73,7 +73,7 @@ private slots:
 
     void messageRemovalRecordsAdded(const QMailAccountIdList& ids);
     void messageRemovalRecordsRemoved(const QMailAccountIdList& ids);
-    
+
 private:
     typedef QMap<QMailAccountId, QSet<QMailStoreAccountFilter*> > ConnectionType;
 
@@ -132,7 +132,7 @@ void QMailStoreEvents::deregisterConnection(const QMetaMethod &signal, const QMa
         }
     }
 }
-    
+
 void QMailStoreEvents::accountsUpdated(const QMailAccountIdList& ids)
 {
     static const QMetaMethod signal = QMetaMethod::fromSignal(&QMailStoreAccountFilter::accountUpdated);
@@ -324,7 +324,7 @@ QMap<QMailAccountId, QMailFolderIdList> QMailStoreEvents::accountFolders(const Q
 
     foreach (const QMailAccountId &accountId, accounts) {
         QMap<QMailAccountId, QMailFolderIdList>::iterator it = map.insert(accountId, QMailFolderIdList());
-        
+
         // Find which of these folders belong to this account
         foreach (const QMailFolderId &id, QMailStore::instance()->queryFolders(QMailFolderKey::id(ids) & QMailFolderKey::parentAccountId(accountId)))
             it.value().append(id);

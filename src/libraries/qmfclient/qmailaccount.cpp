@@ -143,29 +143,29 @@ public:
     method by which they are sent and received.  An account can be configured
     to support one more message sources, from which messages are imported into
     the mail store, and one or more message sinks by which messages are transmitted
-    to external messaging services.  Although an account can support multiple 
+    to external messaging services.  Although an account can support multiple
     sources or sinks, this facility is for grouping those that are logically equivalent;
-    for example, using one of multiple connectivity options to retrieve messages from 
+    for example, using one of multiple connectivity options to retrieve messages from
     the same external server.
 
     The QMailAccount class is used for accessing properties of the account related
-    to dealing with the account's folders and messages, rather than for modifying 
-    the account itself.  The QMailAccountConfiguration class allows for the configuration 
+    to dealing with the account's folders and messages, rather than for modifying
+    the account itself.  The QMailAccountConfiguration class allows for the configuration
     details of the account itself to be modified.  A newly created account must also
     have a QMailAccountConfiguration defined, in order to be used for the transfer of
     messages.
 
     QMailAccount allows the communications properties of the account to be tested.
     The \l{QMailAccount::MessageSource}{MessageSource} status flag indicates that the
-    account acts a source of incoming messages, and the 
+    account acts a source of incoming messages, and the
     \l{QMailAccount::MessageSink}{MessageSink} status flag indicates that the account
-    provides a mechanism for transmitting outgoing messages.  The messageSources() and 
-    messageSinks() functions return the protocol tags for each message source or message 
-    sink implementation configured for the account.  These tags can be used to identify 
+    provides a mechanism for transmitting outgoing messages.  The messageSources() and
+    messageSinks() functions return the protocol tags for each message source or message
+    sink implementation configured for the account.  These tags can be used to identify
     the implementation details of the account if necessary:
 
-    \code 
-    void someFunction(const QMailMessage &message) 
+    \code
+    void someFunction(const QMailMessage &message)
     {
         QMailAccount msgAccount(message.parentAccountId());
         if (msgAccount.messageSources().contains("imap4", Qt::CaseInsensitive)) {
@@ -175,11 +175,11 @@ public:
     }
     \endcode
 
-    The QMailAccount class also provides functions which help clients to access 
-    the resources of the account.  The mailboxes() function returns a list of 
+    The QMailAccount class also provides functions which help clients to access
+    the resources of the account.  The mailboxes() function returns a list of
     each folder associated with the account, while the mailbox() function
-    allows a mailbox to be located by name.  The deletedMessages() and serverUids() 
-    functions are primarily used in synchronizing the account's contents with 
+    allows a mailbox to be located by name.  The deletedMessages() and serverUids()
+    functions are primarily used in synchronizing the account's contents with
     those present on an external server.
 
     \sa QMailAccountConfiguration, QMailStore::account()
@@ -188,7 +188,7 @@ public:
 /*!
     \variable QMailAccount::SynchronizationEnabled
 
-    The status mask needed for testing the value of the registered status flag named 
+    The status mask needed for testing the value of the registered status flag named
     \c "SynchronizationEnabled" against the result of QMailAccount::status().
 
     This flag indicates that an account should be synchronized against an external message source.
@@ -197,7 +197,7 @@ public:
 /*!
     \variable QMailAccount::Synchronized
 
-    The status mask needed for testing the value of the registered status flag named 
+    The status mask needed for testing the value of the registered status flag named
     \c "Synchronized" against the result of QMailAccount::status().
 
     This flag indicates that an account has been synchronized by a synchronization operation.
@@ -206,7 +206,7 @@ public:
 /*!
     \variable QMailAccount::AppendSignature
 
-    The status mask needed for testing the value of the registered status flag named 
+    The status mask needed for testing the value of the registered status flag named
     \c "AppendSignature" against the result of QMailAccount::status().
 
     This flag indicates that an account has been configured to append a signature block to outgoing messages.
@@ -215,7 +215,7 @@ public:
 /*!
     \variable QMailAccount::UserEditable
 
-    The status mask needed for testing the value of the registered status flag named 
+    The status mask needed for testing the value of the registered status flag named
     \c "UserEditable" against the result of QMailAccount::status().
 
     This flag indicates that the account's configuration may be modified by the user.
@@ -224,7 +224,7 @@ public:
 /*!
     \variable QMailAccount::UserRemovable
 
-    The status mask needed for testing the value of the registered status flag named 
+    The status mask needed for testing the value of the registered status flag named
     \c "UserRemovable" against the result of QMailAccount::status().
 
     This flag indicates that the account may be removed by the user.
@@ -233,10 +233,10 @@ public:
 /*!
     \variable QMailAccount::PreferredSender
 
-    The status mask needed for testing the value of the registered status flag named 
+    The status mask needed for testing the value of the registered status flag named
     \c "PreferredSender" against the result of QMailAccount::status().
 
-    This flag indicates that the account is the user's preferred account for sending the 
+    This flag indicates that the account is the user's preferred account for sending the
     type of message that the account creates.
 
     \sa QMailAccount::messageType()
@@ -245,7 +245,7 @@ public:
 /*!
     \variable QMailAccount::MessageSource
 
-    The status mask needed for testing the value of the registered status flag named 
+    The status mask needed for testing the value of the registered status flag named
     \c "MessageSink" against the result of QMailAccount::status().
 
     This flag indicates that the account has been configured to act as a source of incoming messages.
@@ -254,7 +254,7 @@ public:
 /*!
     \variable QMailAccount::CanRetrieve
 
-    The status mask needed for testing the value of the registered status flag named 
+    The status mask needed for testing the value of the registered status flag named
     \c "CanRetrieve" against the result of QMailAccount::status().
 
     This flag indicates that the account has been sufficiently configured that an attempt to
@@ -264,7 +264,7 @@ public:
 /*!
     \variable QMailAccount::MessageSink
 
-    The status mask needed for testing the value of the registered status flag named 
+    The status mask needed for testing the value of the registered status flag named
     \c "MessageSink" against the result of QMailAccount::status().
 
     This flag indicates that the account has been configured to act as a transmitter of outgoing messages.
@@ -273,7 +273,7 @@ public:
 /*!
     \variable QMailAccount::CanTransmit
 
-    The status mask needed for testing the value of the registered status flag named 
+    The status mask needed for testing the value of the registered status flag named
     \c "CanTransmit" against the result of QMailAccount::status().
 
     This flag indicates that the account has been sufficiently configured that an attempt to
@@ -283,7 +283,7 @@ public:
 /*!
     \variable QMailAccount::Enabled
 
-    The status mask needed for testing the value of the registered status flag named 
+    The status mask needed for testing the value of the registered status flag named
     \c "Enabled" against the result of QMailAccount::status().
 
     This flag indicates that the account has been marked as suitable for use by the messaging server.
@@ -292,7 +292,7 @@ public:
 /*!
     \variable QMailAccount::CanReferenceExternalData
 
-    The status mask needed for testing the value of the registered status flag named 
+    The status mask needed for testing the value of the registered status flag named
     \c "CanReferenceExternalData" against the result of QMailAccount::status().
 
     This flag indicates that the account can contain messages that reference data in other messages.
@@ -303,7 +303,7 @@ public:
 /*!
     \variable QMailAccount::CanTransmitViaReference
 
-    The status mask needed for testing the value of the registered status flag named 
+    The status mask needed for testing the value of the registered status flag named
     \c "CanTransmitViaReference" against the result of QMailAccount::status().
 
     This flag indicates that the account can be used to transmit messages that contain references.
@@ -314,7 +314,7 @@ public:
 /*!
     \variable QMailAccount::CanCreateFolders
 
-    The status mask needed for testing the value of the registered status flag named 
+    The status mask needed for testing the value of the registered status flag named
     \c "CanCreateFolders" against the result of QMailAccount::status().
 
     This flag indicates that top level folders can be created for the account.
@@ -341,7 +341,7 @@ public:
 
     This flag indicates that the remote server associated with the account supports
     server based searching.
-    
+
     \sa QMailSearchAction::searchMessages()
 */
 
@@ -481,7 +481,7 @@ void QMailAccount::setSignature(const QString &str)
 
 /*!
     Returns the time the account was last succesfully synchronized.
-    
+
     Should be updated by QMailRetrievalAction::retrieveMessageList() when an account is synchronized.
 
     \sa setLastSynchronized(), QMailRetrievalAction::retrieveMessageList()
@@ -550,7 +550,7 @@ QStringList QMailAccount::messageSinks() const
     return d->_sinks;
 }
 
-/*! 
+/*!
     Returns the folder configured for the standard folder role \a folder for this account, if there is one.
 
     \sa setStandardFolder()
@@ -564,7 +564,7 @@ QMailFolderId QMailAccount::standardFolder(QMailFolder::StandardFolder folder) c
     return QMailFolderId();
 }
 
-/*! 
+/*!
     Sets the folder configured for the standard folder role \a folder for this account to \a folderId.
 
     \sa standardFolder()
@@ -604,7 +604,7 @@ void QMailAccount::setIconPath(const QString &iconPath)
     d->_iconPath = iconPath;
 }
 
-/*! 
+/*!
     Returns the map of standard folders configured for this account.
 
     \sa standardFolder(), setStandardFolder()
@@ -614,7 +614,7 @@ const QMap<QMailFolder::StandardFolder, QMailFolderId> &QMailAccount::standardFo
     return d->_standardFolders;
 }
 
-/*! 
+/*!
     Returns the status value for the account.
 
     \sa setStatus(), statusMask()
@@ -624,7 +624,7 @@ quint64 QMailAccount::status() const
     return d->_status;
 }
 
-/*! 
+/*!
     Sets the status value for the account to \a newStatus.
 
     \sa status(), statusMask()
@@ -634,7 +634,7 @@ void QMailAccount::setStatus(quint64 newStatus)
     d->_status = newStatus;
 }
 
-/*! 
+/*!
     Sets the status flags indicated in \a mask to \a set.
 
     \sa status(), statusMask()
@@ -647,7 +647,7 @@ void QMailAccount::setStatus(quint64 mask, bool set)
         d->_status &= ~mask;
 }
 
-/*! 
+/*!
     Returns the value recorded in the custom field named \a name.
 
     \sa setCustomField(), customFields()
@@ -657,7 +657,7 @@ QString QMailAccount::customField(const QString &name) const
     return d->customField(name);
 }
 
-/*! 
+/*!
     Sets the value of the custom field named \a name to \a value.
 
     \sa customField(), customFields()
@@ -667,7 +667,7 @@ void QMailAccount::setCustomField(const QString &name, const QString &value)
     d->setCustomField(name, value);
 }
 
-/*! 
+/*!
     Sets the account to contain the custom fields in \a fields.
 
     \sa setCustomField(), customFields()
@@ -677,7 +677,7 @@ void QMailAccount::setCustomFields(const QMap<QString, QString> &fields)
     d->setCustomFields(fields);
 }
 
-/*! 
+/*!
     Removes the custom field named \a name.
 
     \sa customField(), customFields()
@@ -687,7 +687,7 @@ void QMailAccount::removeCustomField(const QString &name)
     d->removeCustomField(name);
 }
 
-/*! 
+/*!
     Returns the map of custom fields stored in the account.
 
     \sa customField(), setCustomField()
@@ -710,7 +710,7 @@ void QMailAccount::setCustomFieldsModified(bool set)
 }
 
 /*!
-    Returns the status bitmask needed to test the result of QMailAccount::status() 
+    Returns the status bitmask needed to test the result of QMailAccount::status()
     against the QMailAccount status flag registered with the identifier \a flagName.
 
     \sa status(), QMailStore::accountStatusMask()

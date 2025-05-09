@@ -42,7 +42,7 @@
 
 #undef compress // defined in Qt's zconf.h and clashing with ImapTransport::transport()
 
-/* From RFC4978 The IMAP COMPRESS:   
+/* From RFC4978 The IMAP COMPRESS:
    "When using the zlib library (see [RFC1951]), the functions
    deflateInit2(), deflate(), inflateInit2(), and inflate() suffice to
    implement this extension.  The windowBits value must be in the range
@@ -50,7 +50,7 @@
    deflateParams() can be used to improve compression rate and resource
    use.  The Z_FULL_FLUSH argument to deflate() can be used to clear the
    dictionary (the receiving peer does not need to do anything)."
-   
+
    Total zlib mem use is 176KB plus a 'few kilobytes' per connection that uses COMPRESS:
    96KB for deflate, 24KB for 3x8KB buffers, 32KB plus a 'few' kilobytes for inflate.
 */
@@ -80,8 +80,8 @@ Rfc1951Compressor::Rfc1951Compressor(int chunkSize)
     _zStream.opaque = Z_NULL;
 
     bool ok(deflateInit2(&_zStream,
-                          Z_DEFAULT_COMPRESSION, 
-                          Z_DEFLATED, 
+                          Z_DEFAULT_COMPRESSION,
+                          Z_DEFLATED,
                           -(MAX_WBITS-2), // 32KB // MAX_WBITS == 15 (zconf.h) MEM128KB
                           MAX_MEM_LEVEL-2 , // 64KB // MAX_MEM_LEVEL = 9 (zconf.h) MEM256KB
                           Z_DEFAULT_STRATEGY) == Z_OK);
@@ -98,7 +98,7 @@ bool Rfc1951Compressor::write(QDataStream *out, QByteArray *in)
 {
     _zStream.next_in = reinterpret_cast<Bytef*>(in->data());
     _zStream.avail_in = in->size();
-    
+
     do {
         _zStream.next_out = reinterpret_cast<Bytef*>(_buffer);
         _zStream.avail_out = _chunkSize;
@@ -191,7 +191,7 @@ QByteArray Rfc1951Decompressor::readLine()
     if (eolPos == -1) {
         return QByteArray();
     }
-    
+
     QByteArray result = _output.left(eolPos + 1);
     _output = _output.mid(eolPos + 1);
     return result;

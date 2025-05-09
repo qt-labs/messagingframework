@@ -156,7 +156,7 @@ m_removeButton(new QToolButton(this))
     m_removeButton->setFocusPolicy(Qt::NoFocus);
 
     setFocusPolicy(Qt::StrongFocus);
-    
+
     m_recipientEdit->setCompleter(sentFolderCompleter());
 }
 
@@ -452,8 +452,8 @@ Dictionary::Dictionary()
 class SpellingHighlighter : public QSyntaxHighlighter
 {
     Q_OBJECT
-    
-public:    
+
+public:
     SpellingHighlighter(QTextEdit *parent) :QSyntaxHighlighter(parent) {};
 
 protected:
@@ -791,7 +791,7 @@ QMailMessage EmailComposerInterface::message() const
                 const QMailMessagePart &existingPart(referencedMessage.partAt(partLocation));
 
                 QMailMessageContentDisposition existingDisposition(existingPart.contentDisposition());
-                
+
                 QMailMessageContentDisposition disposition(QMailMessageContentDisposition::Inline);
                 disposition.setFilename(existingDisposition.filename());
                 disposition.setSize(existingDisposition.size());
@@ -1000,7 +1000,7 @@ void EmailComposerInterface::create(const QMailMessage& sourceMail)
     //set the details
     setDetails(sourceMail);
 
-    m_sourceStatus = sourceMail.status(); 
+    m_sourceStatus = sourceMail.status();
     if (!sourceMail.id().isValid()) {
         // This is a new message
         m_sourceStatus |= QMailMessage::LocalOnly;
@@ -1101,7 +1101,7 @@ void EmailComposerInterface::respond(QMailMessage::ResponseType type, const QMai
 
             // Add only the single relevant part
             QMailMessageContentDisposition disposition(QMailMessageContentDisposition::Attachment);
-            
+
             const QMailMessagePart &sourcePart(source.partAt(partLocation));
             if (viaReference) {
                 mail.appendPart(QMailMessagePart::fromPartReference(partLocation, disposition, sourcePart.contentType(), sourcePart.transferEncoding()));
@@ -1110,7 +1110,7 @@ void EmailComposerInterface::respond(QMailMessage::ResponseType type, const QMai
                 QByteArray partData(sourcePart.body().data(QMailMessageBody::Decoded));
                 mail.appendPart(QMailMessagePart::fromData(partData, disposition, sourcePart.contentType(), sourcePart.transferEncoding()));
             }
-            
+
             bodyText = forwardBlock + '\n' + originalText;
             textPart = -1;
         } else {

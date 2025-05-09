@@ -128,8 +128,8 @@ private:
 private:
     enum TransferStatus
     {
-        Init, CapabilityTest, Capabilities, 
-        StartTLS, TLS, Connected, Auth, 
+        Init, CapabilityTest, Capabilities,
+        StartTLS, TLS, Connected, Auth,
         RequestUids, Uidl, UidList,
         RequestSizes, List, SizeList,
         RequestMessage, Retr, Top, MessageDataRetr, MessageDataTop,

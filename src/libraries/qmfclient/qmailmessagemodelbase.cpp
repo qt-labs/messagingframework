@@ -38,7 +38,7 @@
 
 namespace {
 
-QString messageAddressText(const QMailMessageMetaData& m, bool incoming) 
+QString messageAddressText(const QMailMessageMetaData& m, bool incoming)
 {
     //message sender or recipients
     if ( incoming ) {
@@ -88,7 +88,7 @@ QMailMessageModelImplementation::~QMailMessageModelImplementation()
     \class QMailMessageModelBase
 
     \preliminary
-    \ingroup messaginglibrary 
+    \ingroup messaginglibrary
     \brief The QMailMessageModelBase class provides an interface to a model containing messages.
 
     The QMailMessageModelBase presents a model of all the messages currently stored in
@@ -96,17 +96,17 @@ QMailMessageModelImplementation::~QMailMessageModelImplementation()
     represent specific user-filtered subsets of messages, sorted in a particular order.
 
     The QMailMessageModelBase is a descendant of QAbstractListModel, so it is suitable for use with
-    the Qt View classes such as QListView and QTreeView to visually present groups of messages. 
+    the Qt View classes such as QListView and QTreeView to visually present groups of messages.
 
     The model listens for changes reported by the QMailStore, and automatically synchronizes
-    its content with that of the store.  This behaviour can be optionally or temporarily disabled 
+    its content with that of the store.  This behaviour can be optionally or temporarily disabled
     by calling the setIgnoreMailStoreUpdates() function.
 
-    Messages can be extracted from the view with the idFromIndex() function and the resultant id can be 
-    used to load a message from the store. 
+    Messages can be extracted from the view with the idFromIndex() function and the resultant id can be
+    used to load a message from the store.
 
     For filters or sorting not provided by the QMailMessageModelBase it is recommended that
-    QSortFilterProxyModel is used to wrap the model to provide custom sorting and filtering. 
+    QSortFilterProxyModel is used to wrap the model to provide custom sorting and filtering.
 
     \sa QMailMessage, QSortFilterProxyModel
 */
@@ -114,22 +114,22 @@ QMailMessageModelImplementation::~QMailMessageModelImplementation()
 /*!
     \enum QMailMessageModelBase::Roles
 
-    Represents common display roles of a message. These roles are used to display common message elements 
+    Represents common display roles of a message. These roles are used to display common message elements
     in a view and its attached delegates.
 
-    \value MessageAddressTextRole 
-        The address text of a message. This a can represent a name if the address is tied to a contact in the addressbook and 
+    \value MessageAddressTextRole
+        The address text of a message. This a can represent a name if the address is tied to a contact in the addressbook and
         represents either the incoming or outgoing address depending on the message direction.
-    \value MessageSubjectTextRole  
+    \value MessageSubjectTextRole
         The subject of a message. For-non email messages this may represent the body text of a message.
-    \value MessageFilterTextRole 
+    \value MessageFilterTextRole
         The MessageAddressTextRole concatenated with the MessageSubjectTextRole. This can be used by filtering classes to filter
-        messages based on the text of these commonly displayed roles. 
+        messages based on the text of these commonly displayed roles.
     \value MessageTimeStampTextRole
         The timestamp of a message. "Received" or "Sent" is prepended to the timestamp string depending on the message direction.
     \value MessageSizeTextRole
         The size of a message, formatted as text.
-    \value MessageBodyTextRole  
+    \value MessageBodyTextRole
         The body of a message represented as text.
     \value MessageIdRole
         The QMailMessageId value identifying the message.
@@ -280,17 +280,17 @@ bool QMailMessageModelBase::setData(const QModelIndex& index, const QVariant& va
 */
 QMailMessageKey QMailMessageModelBase::key() const
 {
-    return impl()->key(); 
+    return impl()->key();
 }
 
 /*!
     Sets the QMailMessageKey used to populate the contents of the model to \a key.
-    If the key is empty, the model is populated with all the messages from the 
+    If the key is empty, the model is populated with all the messages from the
     database.
-    
+
     \sa modelChanged()
 */
-void QMailMessageModelBase::setKey(const QMailMessageKey& key) 
+void QMailMessageModelBase::setKey(const QMailMessageKey& key)
 {
     impl()->setKey(key);
     fullRefresh(true);
@@ -308,10 +308,10 @@ QMailMessageSortKey QMailMessageModelBase::sortKey() const
     Sets the QMailMessageSortKey used to sort the contents of the model to \a sortKey.
     If the sort key is invalid, no sorting is applied to the model contents and messages
     are displayed in the order in which they were added into the database.
-    
+
     \sa modelChanged()
 */
-void QMailMessageModelBase::setSortKey(const QMailMessageSortKey& sortKey) 
+void QMailMessageModelBase::setSortKey(const QMailMessageSortKey& sortKey)
 {
     // We need a sort key defined, to preserve the ordering in DB records for addition/removal events
     impl()->setSortKey(sortKey.isEmpty() ? QMailMessageSortKey::id() : sortKey);
@@ -347,9 +347,9 @@ int QMailMessageModelBase::totalCount() const
     return impl()->totalCount();
 }
 
-/*! 
+/*!
     \fn QModelIndex QMailMessageModelBase::generateIndex(int row, int column, void *ptr)
-    \internal 
+    \internal
 */
 
 /*! \internal */
@@ -425,7 +425,7 @@ QModelIndex QMailMessageModelBase::indexFromId(const QMailMessageId& id) const
 }
 
 /*!
-    Returns true if the model has been set to ignore updates emitted by 
+    Returns true if the model has been set to ignore updates emitted by
     the mail store; otherwise returns false.
 */
 bool QMailMessageModelBase::ignoreMailStoreUpdates() const
@@ -436,13 +436,13 @@ bool QMailMessageModelBase::ignoreMailStoreUpdates() const
 /*!
     Sets whether or not mail store updates are ignored to \a ignore.
 
-    If ignoring updates is set to true, the model will ignore updates reported 
-    by the mail store.  If set to false, the model will automatically synchronize 
+    If ignoring updates is set to true, the model will ignore updates reported
+    by the mail store.  If set to false, the model will automatically synchronize
     its content in reaction to updates reported by the mail store.
 
-    If updates are ignored, signals such as rowInserted and dataChanged will not 
+    If updates are ignored, signals such as rowInserted and dataChanged will not
     be emitted; instead, the modelReset signal will be emitted when the model is
-    later changed to stop ignoring mail store updates, and detailed change 
+    later changed to stop ignoring mail store updates, and detailed change
     information will not be accessible.
 */
 void QMailMessageModelBase::setIgnoreMailStoreUpdates(bool ignore)
@@ -452,7 +452,7 @@ void QMailMessageModelBase::setIgnoreMailStoreUpdates(bool ignore)
 }
 
 /*! \internal */
-void QMailMessageModelBase::fullRefresh(bool changed) 
+void QMailMessageModelBase::fullRefresh(bool changed)
 {
     beginResetModel();
     impl()->reset();

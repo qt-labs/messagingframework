@@ -58,7 +58,7 @@ class SmtpService::Sink : public QMailMessageSink
     Q_OBJECT
 
 public:
-    Sink(SmtpService *service) 
+    Sink(SmtpService *service)
         : QMailMessageSink(service),
           _service(service)
     {

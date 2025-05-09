@@ -372,7 +372,7 @@ void QMailServiceActionPrivate::emitChanges()
     requested action.  The \l errorCode reflects the overall state, and may be supplemented
     by a description in \l text.
 
-    If \l errorCode is not equal to \l ErrNoError, then each of \l accountId, \l folderId and 
+    If \l errorCode is not equal to \l ErrNoError, then each of \l accountId, \l folderId and
     \l messageId may have been set to a valid identifier, if pertinent to the situation.
 */
 
@@ -405,31 +405,31 @@ void QMailServiceActionPrivate::emitChanges()
 */
 
 /*! \variable QMailServiceAction::Status::errorCode
-    
+
     Describes the error condition encountered by the action.
 */
 
 /*! \variable QMailServiceAction::Status::text
-    
+
     Provides a human-readable description of the error condition in \l errorCode.
 */
 
 /*! \variable QMailServiceAction::Status::accountId
-    
+
     If relevant to the \l errorCode, contains the ID of the associated account.
 */
 
 /*! \variable QMailServiceAction::Status::folderId
-    
+
     If relevant to the \l errorCode, contains the ID of the associated folder.
 */
 
 /*! \variable QMailServiceAction::Status::messageId
-    
+
     If relevant to the \l errorCode, contains the ID of the associated message.
 */
 
-/*! 
+/*!
     \fn QMailServiceAction::Status::Status()
 
     Constructs a status object with \l errorCode set to \l{QMailServiceAction::Status::ErrNoError}{ErrNoError}.
@@ -439,14 +439,14 @@ QMailServiceAction::Status::Status()
 {
 }
 
-/*! 
+/*!
     \fn QMailServiceAction::Status::Status(ErrorCode c, const QString &t, const QMailAccountId &a, const QMailFolderId &f, const QMailMessageId &m)
 
-    Constructs a status object with 
-    \l errorCode set to \a c, 
-    \l text set to \a t, 
-    \l accountId set to \a a, 
-    \l folderId set to \a f and 
+    Constructs a status object with
+    \l errorCode set to \a c,
+    \l text set to \a t,
+    \l accountId set to \a a,
+    \l folderId set to \a f and
     \l messageId set to \a m.
 */
 QMailServiceAction::Status::Status(ErrorCode c, const QString &t, const QMailAccountId &a,
@@ -459,7 +459,7 @@ QMailServiceAction::Status::Status(ErrorCode c, const QString &t, const QMailAcc
 {
 }
 
-/*! 
+/*!
     \fn QMailServiceAction::Status::Status(const Status&)
 
     Constructs a status object which is a copy of \a other.
@@ -483,11 +483,11 @@ QMailServiceAction::Status& QMailServiceAction::Status::operator=(const QMailSer
     return *this;
 }
 
-/*! 
+/*!
     \fn QMailServiceAction::Status::serialize(Stream&) const
-    \internal 
+    \internal
 */
-template <typename Stream> 
+template <typename Stream>
 void QMailServiceAction::Status::serialize(Stream &stream) const
 {
     stream << errorCode;
@@ -500,11 +500,11 @@ void QMailServiceAction::Status::serialize(Stream &stream) const
 template void QMailServiceAction::Status::serialize(QDataStream &) const;
 template void QMailServiceAction::Status::serialize(QDBusArgument &) const;
 
-/*! 
+/*!
     \fn QMailServiceAction::Status::deserialize(Stream&)
-    \internal 
+    \internal
 */
-template <typename Stream> 
+template <typename Stream>
 void QMailServiceAction::Status::deserialize(Stream &stream)
 {
     stream >> errorCode;
@@ -525,32 +525,32 @@ template void QMailServiceAction::Status::deserialize(const QDBusArgument &);
 
     \brief The QMailServiceAction class provides the interface for requesting actions from external message services.
 
-    QMailServiceAction provides the mechanisms for messaging clients to request actions from 
+    QMailServiceAction provides the mechanisms for messaging clients to request actions from
     external services, and to receive information in response.  The details of requests
     differ for each derived action, and the specific data returned is also variable.  However,
-    all actions present the same interface for communicating status, connectivity and 
+    all actions present the same interface for communicating status, connectivity and
     progress information.
 
     All actions communicate changes in their operational state by emitting the activityChanged()
     signal.  If the execution of the action requires connectivity to an external service, then
     changes in connectivity state are emitted via the connectivityChanged() signal.  Some actions
-    are able to provide progress information as they execute; these changes are reported via the 
+    are able to provide progress information as they execute; these changes are reported via the
     progressChanged() signal.  If error conditions are encountered, the statusChanged() signal is
     emitted to report the new status.
 
     A user may attempt to cancel an operation after it has been initiated.  The cancelOperation()
     slot is provided for this purpose.
 
-    A QMailServiceAction instance supports only a single request at any time. Attempting 
-    to initiate an operation on a QMailServiceAction instace while another operation is already 
+    A QMailServiceAction instance supports only a single request at any time. Attempting
+    to initiate an operation on a QMailServiceAction instace while another operation is already
     in progress for that action is not supported.
-    
-    An application may however use multiple QMailServiceAction instances to send independent 
-    requests concurrently. Each QMailServiceAction instance will report only the changes 
-    pertaining to the request that instance delivered.  Whether or not concurrent requests are 
-    concurrently serviced by the messageserver depends on whether those requests must be 
+
+    An application may however use multiple QMailServiceAction instances to send independent
+    requests concurrently. Each QMailServiceAction instance will report only the changes
+    pertaining to the request that instance delivered.  Whether or not concurrent requests are
+    concurrently serviced by the messageserver depends on whether those requests must be
     serviced by the same QMailMessageService instance.
-    
+
     \sa QMailMessageService
 */
 
@@ -579,7 +579,7 @@ template void QMailServiceAction::Status::deserialize(const QDBusArgument &);
 /*!
     \fn QMailServiceAction::connectivityChanged(QMailServiceAction::Connectivity c)
 
-    This signal is emitted when the connectivity status of the service performing 
+    This signal is emitted when the connectivity status of the service performing
     the action changes, with the new state described by \a c.
 
     \sa connectivity()
@@ -691,8 +691,8 @@ void QMailServiceAction::cancelOperation()
 }
 
 /*!
-    Set the current status so that 
-    \l{QMailServiceAction::Status::errorCode} errorCode is set to \a c and 
+    Set the current status so that
+    \l{QMailServiceAction::Status::errorCode} errorCode is set to \a c and
     \l{QMailServiceAction::Status::text} text is set to \a t.
 */
 void QMailServiceAction::setStatus(QMailServiceAction::Status::ErrorCode c, const QString &t)
@@ -702,11 +702,11 @@ void QMailServiceAction::setStatus(QMailServiceAction::Status::ErrorCode c, cons
 }
 
 /*!
-    Set the current status so that 
-    \l{QMailServiceAction::Status::errorCode} errorCode is set to \a c, 
+    Set the current status so that
+    \l{QMailServiceAction::Status::errorCode} errorCode is set to \a c,
     \l{QMailServiceAction::Status::text} text is set to \a t,
-    \l{QMailServiceAction::Status::accountId} accountId is set to \a a, 
-    \l{QMailServiceAction::Status::folderId} folderId is set to \a f and 
+    \l{QMailServiceAction::Status::accountId} accountId is set to \a a,
+    \l{QMailServiceAction::Status::folderId} folderId is set to \a f and
     \l{QMailServiceAction::Status::messageId} messageId is set to \a m.
 */
 void QMailServiceAction::setStatus(QMailServiceAction::Status::ErrorCode c, const QString &t,
@@ -853,7 +853,7 @@ void QMailRetrievalActionPrivate::synchronize(const QMailAccountId &accountId, u
     QMailRetrieveFolderListCommand *retrieveFolderListCommand
             = new QMailRetrieveFolderListCommand(retrieveFolderListAction->d_func(), accountId);
     appendSubAction(retrieveFolderListAction, QSharedPointer<QMailServiceActionCommand>(retrieveFolderListCommand));
-    
+
     QMailRetrievalAction *retrieveMessageListAction = new QMailRetrievalAction();
     QMailRetrieveMessageListCommand *retrieveMessageListCommand
             = new QMailRetrieveMessageListCommand(retrieveMessageListAction->d_func(), accountId, minimum);
@@ -886,7 +886,7 @@ void QMailRetrievalActionPrivate::retrievalCompleted(quint64 action)
     The retrieveFolderList() function allows a client to retrieve the list of folders available for an account.
     The retrieveMessageList() and retrieveMessageLists() functions allows a client to retrieve a subset of messages available for an account or folder.
 
-    The retrieveMessages() function allows a client to retrieve the flags, meta data or content of a 
+    The retrieveMessages() function allows a client to retrieve the flags, meta data or content of a
     specific list of messages.
 
     The retrieveMessageRange() functions allows a portion of a message's content to be retrieved, rather than
@@ -895,21 +895,21 @@ void QMailRetrievalActionPrivate::retrievalCompleted(quint64 action)
     The retrieveMessagePart() function allows a specific part of a multi-part message to be retrieved.
     The retrieveMessagePartRange() function allows a portion of a specific part of a multi-part message to be retrieved.
 
-    The exportUpdates() function allows a client to push local changes such as message-read notifications 
+    The exportUpdates() function allows a client to push local changes such as message-read notifications
     and pending disconnected operations to the external server.
-    
-    All of these functions require the device to be online, they may initiate communication 
+
+    All of these functions require the device to be online, they may initiate communication
     with external servers.
 
-    A QMailRetrievalAction instance supports only a single request at any time. Attempting 
-    to initiate an operation on a QMailRetrievalAction instace while another operation is already 
+    A QMailRetrievalAction instance supports only a single request at any time. Attempting
+    to initiate an operation on a QMailRetrievalAction instace while another operation is already
     in progress for that action is not supported.
-    
-    An application may however use multiple QMailRetrievalAction instances to send independent 
-    requests concurrently. Each QMailServiceAction instance will report only the changes 
-    pertaining to the request that instance delivered.  Whether or not concurrent requests are 
-    concurrently serviced by the messageserver depends on whether those requests must be 
-    serviced by the same QMailMessageService instance.    
+
+    An application may however use multiple QMailRetrievalAction instances to send independent
+    requests concurrently. Each QMailServiceAction instance will report only the changes
+    pertaining to the request that instance delivered.  Whether or not concurrent requests are
+    concurrently serviced by the messageserver depends on whether those requests must be
+    serviced by the same QMailMessageService instance.
 */
 
 /*!
@@ -924,7 +924,7 @@ void QMailRetrievalActionPrivate::retrievalCompleted(quint64 action)
                         For example, this may mean skipping the attachments.
 */
 
-/*! 
+/*!
     Constructs a new retrieval action object with the supplied \a parent.
 */
 QMailRetrievalAction::QMailRetrievalAction(QObject *parent)
@@ -938,18 +938,18 @@ QMailRetrievalAction::~QMailRetrievalAction()
 }
 
 /*!
-    Requests that the message server retrieve the list of folders available for the 
-    account \a accountId.  If \a folderId is valid, only the identified folder is 
+    Requests that the message server retrieve the list of folders available for the
+    account \a accountId.  If \a folderId is valid, only the identified folder is
     searched for child folders; otherwise the search begins at the root of the
-    account.  If \a descending is true, the search should also recursively search 
+    account.  If \a descending is true, the search should also recursively search
     for child folders within folders discovered during the search.
 
-    The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and 
-    QMailFolder::serverUndiscoveredCount() properties will be updated for each 
-    folder that is searched for child folders; these properties are not updated 
+    The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and
+    QMailFolder::serverUndiscoveredCount() properties will be updated for each
+    folder that is searched for child folders; these properties are not updated
     for folders that are merely discovered by searching.
-    
-    This function requires the device to be online, it may initiate communication 
+
+    This function requires the device to be online, it may initiate communication
     with external servers.
 
     \sa retrieveMessageList(),  retrieveMessageLists()
@@ -963,34 +963,34 @@ void QMailRetrievalAction::retrieveFolderList(const QMailAccountId &accountId, c
 
 /*!
     Requests that the message server retrieve the list of messages available for the account \a accountId.
-    If \a folderId is valid, then only messages within that folder should be retrieved; otherwise 
-    messages within all folders in the account should be retrieved, and the lastSynchronized() time 
-    of the account updated.  If \a minimum is non-zero, then that value will be used to restrict the 
+    If \a folderId is valid, then only messages within that folder should be retrieved; otherwise
+    messages within all folders in the account should be retrieved, and the lastSynchronized() time
+    of the account updated.  If \a minimum is non-zero, then that value will be used to restrict the
     number of messages to be retrieved from each folder.
-    
-    If \a sort is not empty, the external service will report the discovered messages in the 
-    ordering indicated by the sort criterion, if possible.  Services are not required to support 
+
+    If \a sort is not empty, the external service will report the discovered messages in the
+    ordering indicated by the sort criterion, if possible.  Services are not required to support
     this facility.
 
-    If a folder messages are being retrieved from contains at least \a minimum messages then the 
-    messageserver should ensure that at least \a minimum messages are available from the mail 
-    store for that folder; otherwise if the folder contains less than \a minimum messages the 
+    If a folder messages are being retrieved from contains at least \a minimum messages then the
+    messageserver should ensure that at least \a minimum messages are available from the mail
+    store for that folder; otherwise if the folder contains less than \a minimum messages the
     messageserver should ensure all the messages for that folder are available from the mail store.
     If a folder has messages locally available, then all previously undiscovered messages will be
     retrieved for that folder, even if that number exceeds \a minimum.
-    
-    The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and 
-    QMailFolder::serverUndiscoveredCount() properties will be updated for each folder 
+
+    The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and
+    QMailFolder::serverUndiscoveredCount() properties will be updated for each folder
     from which messages are retrieved.
-    
-    New messages will be added to the mail store as they are discovered, and 
-    marked with the \l QMailMessage::New status flag. Messages in folders inspected that 
-    are present in the mail store but found to be no longer available are marked with the 
-    \l QMailMessage::Removed status flag. The status flags of messages in folders inspected 
-    that are present in the mail store will be updated including the QMailMessage::Read and 
+
+    New messages will be added to the mail store as they are discovered, and
+    marked with the \l QMailMessage::New status flag. Messages in folders inspected that
+    are present in the mail store but found to be no longer available are marked with the
+    \l QMailMessage::Removed status flag. The status flags of messages in folders inspected
+    that are present in the mail store will be updated including the QMailMessage::Read and
     QMailMessage::Important flags.
-    
-    This function requires the device to be online, it may initiate communication 
+
+    This function requires the device to be online, it may initiate communication
     with external servers.
 
     \sa QMailAccount::lastSynchronized()
@@ -1004,34 +1004,34 @@ void QMailRetrievalAction::retrieveMessageList(const QMailAccountId &accountId, 
 
 /*!
     Requests that the message server retrieve the list of messages available for the account \a accountId.
-    If \a folderIds is not empty, then only messages within those folders should be retrieved and the 
-    lastSynchronized() time of the account updated; otherwise 
-    no messages should be retrieved, .  If \a minimum is non-zero, then that value will be used to restrict the 
+    If \a folderIds is not empty, then only messages within those folders should be retrieved and the
+    lastSynchronized() time of the account updated; otherwise
+    no messages should be retrieved, .  If \a minimum is non-zero, then that value will be used to restrict the
     number of messages to be retrieved from each folder.
-    
-    If \a sort is not empty, the external service will report the discovered messages in the 
-    ordering indicated by the sort criterion, if possible.  Services are not required to support 
+
+    If \a sort is not empty, the external service will report the discovered messages in the
+    ordering indicated by the sort criterion, if possible.  Services are not required to support
     this facility.
 
-    If a folder messages are being retrieved from contains at least \a minimum messages then the 
-    messageserver should ensure that at least \a minimum messages are available from the mail 
-    store for that folder; otherwise if the folder contains less than \a minimum messages the 
+    If a folder messages are being retrieved from contains at least \a minimum messages then the
+    messageserver should ensure that at least \a minimum messages are available from the mail
+    store for that folder; otherwise if the folder contains less than \a minimum messages the
     messageserver should ensure all the messages for that folder are available from the mail store.
     If a folder has messages locally available, then all previously undiscovered messages will be
     retrieved for that folder, even if that number exceeds \a minimum.
-    
-    The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and 
-    QMailFolder::serverUndiscoveredCount() properties will be updated for each folder 
+
+    The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and
+    QMailFolder::serverUndiscoveredCount() properties will be updated for each folder
     from which messages are retrieved.
-    
-    New messages will be added to the mail store as they are discovered, and 
-    marked with the \l QMailMessage::New status flag. Messages in folders inspected that 
-    are present in the mail store but found to be no longer available are marked with the 
-    \l QMailMessage::Removed status flag. The status flags of messages in folders inspected 
-    that are present in the mail store will be updated including the QMailMessage::Read and 
+
+    New messages will be added to the mail store as they are discovered, and
+    marked with the \l QMailMessage::New status flag. Messages in folders inspected that
+    are present in the mail store but found to be no longer available are marked with the
+    \l QMailMessage::Removed status flag. The status flags of messages in folders inspected
+    that are present in the mail store will be updated including the QMailMessage::Read and
     QMailMessage::Important flags.
-    
-    This function requires the device to be online, it may initiate communication 
+
+    This function requires the device to be online, it may initiate communication
     with external servers.
 
     \sa QMailAccount::lastSynchronized()
@@ -1054,15 +1054,15 @@ void QMailRetrievalAction::retrieveMessageLists(const QMailAccountId &accountId,
 /*
     Requests that the message server retrieve new messages for the account \a accountId in the
     folders specified by \a folderIds.
-    
+
     If a folder inspected has been previously inspected then new mails in that folder will
     be retrieved, otherwise the most recent message in that folder, if any, will be retrieved.
-    
+
     This function is intended for use by protocol plugins to retrieve new messages when
     a push notification event is received from the remote server.
-    
+
     Detection of deleted messages, and flag updates for messages in the mail store will
-    not necessarily be performed.    
+    not necessarily be performed.
 */
 void QMailRetrievalAction::retrieveNewMessages(const QMailAccountId &accountId, const QMailFolderIdList &folderIds)
 {
@@ -1089,24 +1089,24 @@ void QMailRetrievalAction::createStandardFolders(const QMailAccountId &accountId
 }
 
 /*!
-    Requests that the message server retrieve data regarding the messages identified by \a messageIds.  
+    Requests that the message server retrieve data regarding the messages identified by \a messageIds.
 
-    If \a spec is \l QMailRetrievalAction::Flags, then the message server should detect if 
+    If \a spec is \l QMailRetrievalAction::Flags, then the message server should detect if
     the messages identified by \a messageIds have been marked as read or have been removed.
     Messages that have been read will be marked with the \l QMailMessage::ReadElsewhere flag, and
     messages that have been removed will be marked with the \l QMailMessage::Removed status flag.
 
-    If \a spec is \l QMailRetrievalAction::MetaData, then the message server should 
+    If \a spec is \l QMailRetrievalAction::MetaData, then the message server should
     retrieve the meta data of the each message listed in \a messageIds.
-    
-    If \a spec is \l QMailRetrievalAction::Content, then the message server should 
+
+    If \a spec is \l QMailRetrievalAction::Content, then the message server should
     retrieve the entirety of each message listed in \a messageIds.
-    
-    The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and 
-    QMailFolder::serverUndiscoveredCount() properties will be updated for each folder 
+
+    The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and
+    QMailFolder::serverUndiscoveredCount() properties will be updated for each folder
     from which messages are retrieved.
 
-    This function requires the device to be online, it may initiate communication 
+    This function requires the device to be online, it may initiate communication
     with external servers.
 */
 void QMailRetrievalAction::retrieveMessages(const QMailMessageIdList &messageIds, RetrievalSpecification spec)
@@ -1116,14 +1116,14 @@ void QMailRetrievalAction::retrieveMessages(const QMailMessageIdList &messageIds
 }
 
 /*!
-    Requests that the message server retrieve the message part that is indicated by the 
+    Requests that the message server retrieve the message part that is indicated by the
     location \a partLocation.
-    
-    The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and 
-    QMailFolder::serverUndiscoveredCount() properties will be updated for the folder 
+
+    The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and
+    QMailFolder::serverUndiscoveredCount() properties will be updated for the folder
     from which the part is retrieved.
 
-    This function requires the device to be online, it may initiate communication 
+    This function requires the device to be online, it may initiate communication
     with external servers.
 */
 void QMailRetrievalAction::retrieveMessagePart(const QMailMessagePart::Location &partLocation)
@@ -1135,12 +1135,12 @@ void QMailRetrievalAction::retrieveMessagePart(const QMailMessagePart::Location 
 /*!
     Requests that the message server retrieve a subset of the message \a messageId, such that
     at least \a minimum bytes are available from the mail store.
-    
-    The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and 
-    QMailFolder::serverUndiscoveredCount() properties will be updated for the folder 
+
+    The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and
+    QMailFolder::serverUndiscoveredCount() properties will be updated for the folder
     from which the message is retrieved.
 
-    This function requires the device to be online, it may initiate communication 
+    This function requires the device to be online, it may initiate communication
     with external servers.
 */
 void QMailRetrievalAction::retrieveMessageRange(const QMailMessageId &messageId, uint minimum)
@@ -1150,18 +1150,18 @@ void QMailRetrievalAction::retrieveMessageRange(const QMailMessageId &messageId,
 }
 
 /*!
-    Requests that the message server retrieve a subset of the message part that is indicated 
-    by the location \a partLocation.  The messageserver should ensure that at least 
+    Requests that the message server retrieve a subset of the message part that is indicated
+    by the location \a partLocation.  The messageserver should ensure that at least
     \a minimum bytes are available from the mail store.
-    
+
     The total size of the part on the server is given by QMailMessagePart::contentDisposition().size(),
     the amount of the part available locally is given by QMailMessagePart::body().length().
-    
-    The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and 
-    QMailFolder::serverUndiscoveredCount() properties will be updated for the folder 
+
+    The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and
+    QMailFolder::serverUndiscoveredCount() properties will be updated for the folder
     from which the part is retrieved.
 
-    This function requires the device to be online, it may initiate communication 
+    This function requires the device to be online, it may initiate communication
     with external servers.
 */
 void QMailRetrievalAction::retrieveMessagePartRange(const QMailMessagePart::Location &partLocation, uint minimum)
@@ -1172,21 +1172,21 @@ void QMailRetrievalAction::retrieveMessagePartRange(const QMailMessagePart::Loca
 
 /*!
     \deprecated
-  
-    Requests that the message server retrieve all folders and meta data for messages available 
+
+    Requests that the message server retrieve all folders and meta data for messages available
     for the account \a accountId.
-    
+
     All folders within the account will be discovered and searched for child folders.
-    The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and 
-    QMailFolder::serverUndiscoveredCount() properties will be updated for each folder 
+    The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and
+    QMailFolder::serverUndiscoveredCount() properties will be updated for each folder
     in the account.
 
     Meta data will be retrieved for every message found in the account.
-    New messages will be added to the mail store as they are retrieved, and 
-    marked with the \l QMailMessage::New status flag.  Messages that are no longer 
-    available will be marked with the \l QMailMessage::Removed status flag.  
+    New messages will be added to the mail store as they are retrieved, and
+    marked with the \l QMailMessage::New status flag.  Messages that are no longer
+    available will be marked with the \l QMailMessage::Removed status flag.
 
-    This function requires the device to be online, it may initiate communication 
+    This function requires the device to be online, it may initiate communication
     with external servers.
 
     \sa retrieveFolderList(), retrieveMessageList(), retrieveMessageLists()
@@ -1198,15 +1198,15 @@ void QMailRetrievalAction::retrieveAll(const QMailAccountId &accountId)
 }
 
 /*!
-    Requests that the message server update the external server with changes that have 
+    Requests that the message server update the external server with changes that have
     been effected on the local device for account \a accountId.
-    Local changes to \l QMailMessage::Read, and \l QMailMessage::Important message status 
+    Local changes to \l QMailMessage::Read, and \l QMailMessage::Important message status
     flags should be exported to the external server, messages that have been removed
-    using the \l QMailStore::CreateRemovalRecord option should be removed from the 
+    using the \l QMailStore::CreateRemovalRecord option should be removed from the
     external server, and any flag, copy or move operations that have been applied
     using \l QMailDisconnected should be applied to the external server.
 
-    This function requires the device to be online, it may initiate communication 
+    This function requires the device to be online, it may initiate communication
     with external servers.
 */
 void QMailRetrievalAction::exportUpdates(const QMailAccountId &accountId)
@@ -1224,26 +1224,26 @@ void QMailRetrievalAction::exportUpdates(const QMailAccountId &accountId)
 
 /*!
     \deprecated
-  
-    Requests that the message server synchronize the set of known folder and message 
+
+    Requests that the message server synchronize the set of known folder and message
     identifiers with those currently available for the account identified by \a accountId.
-    Newly discovered messages should have their meta data retrieved, messages that have been 
-    removed locally using the \l QMailStore::CreateRemovalRecord option should be removed 
+    Newly discovered messages should have their meta data retrieved, messages that have been
+    removed locally using the \l QMailStore::CreateRemovalRecord option should be removed
     from the external server.
-    
-    Changes to the \l QMailMessage::Read, and \l QMailMessage::Important status flags of a 
+
+    Changes to the \l QMailMessage::Read, and \l QMailMessage::Important status flags of a
     message should be exported to the external server, and the status flags of the message
     should be updated to reflect any changes to the message on the external server.
 
-    New messages will be added to the mail store as they are discovered, and 
-    marked with the \l QMailMessage::New status flag.  Messages that are no longer 
-    available will be marked with the \l QMailMessage::Removed status flag.  
+    New messages will be added to the mail store as they are discovered, and
+    marked with the \l QMailMessage::New status flag.  Messages that are no longer
+    available will be marked with the \l QMailMessage::Removed status flag.
 
-    The folder structure of the account will be synchronized with that available from 
-    the external server.  The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and 
+    The folder structure of the account will be synchronized with that available from
+    the external server.  The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and
     QMailFolder::serverUndiscoveredCount() properties will be updated for each folder.
 
-    This function requires the device to be online, it may initiate communication 
+    This function requires the device to be online, it may initiate communication
     with external servers.
 
     \sa retrieveFolderList(), retrieveMessageList(), retrieveMessageLists(), exportUpdates()
@@ -1256,18 +1256,18 @@ void QMailRetrievalAction::synchronizeAll(const QMailAccountId &accountId)
 
 
 /*!
-    Essentially performs the same functions as calling exportUpdates(), retrieveFolderList() 
-    and retrieveMessageList() consecutively using the given \a accountId and \a minimum, but 
-    may perform optimizations such as retrieving the folder list at the same time as 
-    retrieving messages, and retrieving messages in multiple folder simultaneously by using 
+    Essentially performs the same functions as calling exportUpdates(), retrieveFolderList()
+    and retrieveMessageList() consecutively using the given \a accountId and \a minimum, but
+    may perform optimizations such as retrieving the folder list at the same time as
+    retrieving messages, and retrieving messages in multiple folder simultaneously by using
     multiple connections to the server.
-    
+
     On a successful synchronization the lastSynchronized() value of the account should be updated.
 
-    This function requires the device to be online, it may initiate communication 
+    This function requires the device to be online, it may initiate communication
     with external servers.
 
-    \sa exportUpdates(), retrieveMessageList(), retrieveFolderList(), QMailAccount::lastSynchronized() 
+    \sa exportUpdates(), retrieveMessageList(), retrieveFolderList(), QMailAccount::lastSynchronized()
 */
 void QMailRetrievalAction::synchronize(const QMailAccountId &accountId, uint minimum)
 {
@@ -1279,9 +1279,9 @@ void QMailRetrievalAction::synchronize(const QMailAccountId &accountId, uint min
 /*!
     \fn QMailRetrievalAction::defaultMinimum()
 
-    Default minimum argument clients and protocol plugins should use when 
-    retrieving messages. Maybe be used by protocol plugins to determine if 
-    either new messages are being retrieved or if more messages are being 
+    Default minimum argument clients and protocol plugins should use when
+    retrieving messages. Maybe be used by protocol plugins to determine if
+    either new messages are being retrieved or if more messages are being
     retrieved.
 
     \sa retrieveMessageList()
@@ -1360,17 +1360,17 @@ void QMailTransmitActionPrivate::handleTransmissionCompleted(quint64 action)
     The send() slot requests that the message server transmit each identified message to the
     external service associated with each messages' account.
 
-    A QMailTransmitAction instance supports only a single request at any time. Attempting 
-    to initiate an operation on a QMailTransmitAction instace while another operation is already 
+    A QMailTransmitAction instance supports only a single request at any time. Attempting
+    to initiate an operation on a QMailTransmitAction instace while another operation is already
     in progress for that action is not supported.
-    
-    An application may however use multiple QMailTransmitAction instances to send independent 
-    requests concurrently. Each QMailServiceAction instance will report only the changes 
-    pertaining to the request that instance delivered.  Whether or not concurrent requests are 
-    concurrently serviced by the messageserver depends on whether those requests must be 
+
+    An application may however use multiple QMailTransmitAction instances to send independent
+    requests concurrently. Each QMailServiceAction instance will report only the changes
+    pertaining to the request that instance delivered.  Whether or not concurrent requests are
+    concurrently serviced by the messageserver depends on whether those requests must be
     serviced by the same QMailMessageService instance.
-    
-    Note: the slots exported by QMailTransmitAction are expected to change in future releases, as 
+
+    Note: the slots exported by QMailTransmitAction are expected to change in future releases, as
     the message server is extended to provide a finer-grained interface for message transmission.
 */
 
@@ -1413,7 +1413,7 @@ QMailTransmitAction::~QMailTransmitAction()
 
     Any message successfully transmitted will be moved to the account's Sent folder.
 
-    This function requires the device to be online, it may initiate communication 
+    This function requires the device to be online, it may initiate communication
     with external servers.
 */
 void QMailTransmitAction::transmitMessages(const QMailAccountId &accountId)
@@ -1458,7 +1458,7 @@ QMailStorageActionPrivate::QMailStorageActionPrivate(QMailStorageAction *i)
 void QMailStorageActionPrivate::onlineDeleteMessagesHelper(const QMailMessageIdList &ids)
 {
     _server->onlineDeleteMessages(newAction(), ids, QMailStore::CreateRemovalRecord);
-    // Successful as long as ids have been deleted, 
+    // Successful as long as ids have been deleted,
     // this action doesn't have to be the one to have deleted them
     _ids.clear();
     emitChanges();
@@ -1654,7 +1654,7 @@ void QMailStorageActionPrivate::moveToStandardFolder(const QMailMessageIdList& i
 void QMailStorageActionPrivate::moveToFolder(const QMailMessageIdList& ids, const QMailFolderId& folderId)
 {
     _server->moveToFolder(newAction(), ids, folderId);
-                
+
     _ids = ids;
     emitChanges();
 }
@@ -1754,22 +1754,22 @@ void QMailStorageActionPrivate::storageActionCompleted(quint64 action)
     storage of messages within external message services.
 
     QMailStorageAction provides the mechanism for messaging clients to request that the message
-    server move or copy messages within an external message service.  The storage action object 
+    server move or copy messages within an external message service.  The storage action object
     reports on the progress and outcome of its activities via the signals inherited from QMailServiceAction.
 
-    The onlineCopyMessages() slot requests that the message server create a copy of each identified 
-    message in the nominated destination folder.  The onlineMoveMessages() slot requests that the 
-    message server move each identified message from its current location to the nominated destination 
+    The onlineCopyMessages() slot requests that the message server create a copy of each identified
+    message in the nominated destination folder.  The onlineMoveMessages() slot requests that the
+    message server move each identified message from its current location to the nominated destination
     folder.  Messages cannot be moved or copied between accounts.
-    
-    A QMailStorageAction instance supports only a single request at any time. Attempting 
-    to initiate an operation on a QMailStorageAction instace while another operation is already 
+
+    A QMailStorageAction instance supports only a single request at any time. Attempting
+    to initiate an operation on a QMailStorageAction instace while another operation is already
     in progress for that action is not supported.
-    
-    An application may however use multiple QMailStorageAction instances to send independent 
-    requests concurrently. Each QMailServiceAction instance will report only the changes 
-    pertaining to the request that instance delivered.  Whether or not concurrent requests are 
-    concurrently serviced by the messageserver depends on whether those requests must be 
+
+    An application may however use multiple QMailStorageAction instances to send independent
+    requests concurrently. Each QMailServiceAction instance will report only the changes
+    pertaining to the request that instance delivered.  Whether or not concurrent requests are
+    concurrently serviced by the messageserver depends on whether those requests must be
     serviced by the same QMailMessageService instance.
 */
 
@@ -1787,10 +1787,10 @@ QMailStorageAction::~QMailStorageAction()
 }
 
 /*!
-    Requests that the message server delete the messages listed in \a ids, both from the local device 
-    and the external message source.  Whether the external messages resources are actually removed is 
+    Requests that the message server delete the messages listed in \a ids, both from the local device
+    and the external message source.  Whether the external messages resources are actually removed is
     at the discretion of the relevant QMailMessageSource object.
-    
+
     This function requires the device to be online, it may initiate communication with external servers.
 */
 void QMailStorageAction::onlineDeleteMessages(const QMailMessageIdList &ids)
@@ -1809,7 +1809,7 @@ void QMailStorageAction::discardMessages(const QMailMessageIdList &ids)
 }
 
 /*!
-    Requests that the message server create a new copy of each message listed in \a ids within the folder 
+    Requests that the message server create a new copy of each message listed in \a ids within the folder
     identified by \a destinationId.
 
     This function requires the device to be online, it may initiate communication with external servers.
@@ -1821,7 +1821,7 @@ void QMailStorageAction::onlineCopyMessages(const QMailMessageIdList &ids, const
 }
 
 /*!
-    Requests that the message server move each message listed in \a ids from its current location 
+    Requests that the message server move each message listed in \a ids from its current location
     to the folder identified by \a destinationId.
 
     This function requires the device to be online, it may initiate communication with external servers.
@@ -1841,7 +1841,7 @@ void QMailStorageAction::onlineMoveMessages(const QMailMessageIdList &ids, const
     changes, such as moving or deleting messages.
 
     This function requires the device to be online, it may initiate communication with external servers.
-    
+
     \sa QMailMessage::setStatus(), QMailStore::updateMessagesMetaData()
 */
 void QMailStorageAction::onlineFlagMessagesAndMoveToStandardFolder(const QMailMessageIdList &ids, quint64 setMask,
@@ -1891,8 +1891,8 @@ void QMailStorageAction::updateMessages(const QMailMessageList &messages)
 }
 
 /*!
-    Requests that the message server updates the meta data of the existing 
-    messages in the message store, to match each of the messages listed in 
+    Requests that the message server updates the meta data of the existing
+    messages in the message store, to match each of the messages listed in
     \a messages.
 
     The messages will be updated asynchronously.
@@ -1918,13 +1918,13 @@ QMailMessageIdList QMailStorageAction::messagesUpdated() const
 
 /*!
     Asynchronously deletes the messages in \a mailList, messages
-    will be removed locally from the device, and if necessary information needed 
+    will be removed locally from the device, and if necessary information needed
     to delete messages from an external server is recorded.
 
     Deleting messages using this slot does not initiate communication with any external
-    server; Deletion from the external server will occur when 
+    server; Deletion from the external server will occur when
     QMailRetrievalAction::exportUpdates is called successfully.
-    
+
     \sa QMailStore::removeMessage()
 */
 void QMailStorageAction::deleteMessages(const QMailMessageIdList& mailList)
@@ -1935,11 +1935,11 @@ void QMailStorageAction::deleteMessages(const QMailMessageIdList& mailList)
 
 /*!
     Asynchronous version of QMailDisconnected::rollBackUpdates()
-    
-    Rolls back all disconnected move and copy operations that have been applied to the 
-    message store since the most recent synchronization of the message with the account 
+
+    Rolls back all disconnected move and copy operations that have been applied to the
+    message store since the most recent synchronization of the message with the account
     specified by \a mailAccountId.
-    
+
     \sa QMailDisconnected::updatesOutstanding()
 */
 void QMailStorageAction::rollBackUpdates(const QMailAccountId &mailAccountId)
@@ -1951,11 +1951,11 @@ void QMailStorageAction::rollBackUpdates(const QMailAccountId &mailAccountId)
 /*!
     Asynchronous version of QMailDisconnected::moveToStandardFolder()
 
-    Disconnected moves the list of messages identified by \a ids into the standard folder \a standardFolder, setting standard 
+    Disconnected moves the list of messages identified by \a ids into the standard folder \a standardFolder, setting standard
     folder flags as appropriate.
-    
+
     The move operation will be propagated to the server by a successful call to QMailRetrievalAction::exportUpdates().
-            
+
     \sa QMailDisconnected::moveToStandardFolder()
 */
 void QMailStorageAction::moveToStandardFolder(const QMailMessageIdList& ids, QMailFolder::StandardFolder standardFolder)
@@ -1967,13 +1967,13 @@ void QMailStorageAction::moveToStandardFolder(const QMailMessageIdList& ids, QMa
 /*!
     Asynchronous version of QMailDisconnected::moveToFolder()
 
-    Disconnected moves the list of messages identified by \a ids into the folder identified by \a folderId, setting standard 
+    Disconnected moves the list of messages identified by \a ids into the folder identified by \a folderId, setting standard
     folder flags as appropriate.
 
     Moving to another account is not supported.
 
     The move operation will be propagated to the server by a successful call to QMailRetrievalAction::exportUpdates().
-    
+
     \sa QMailDisconnected::moveToFolder()
 */
 void QMailStorageAction::moveToFolder(const QMailMessageIdList& ids, const QMailFolderId& folderId)
@@ -1985,13 +1985,13 @@ void QMailStorageAction::moveToFolder(const QMailMessageIdList& ids, const QMail
 /*!
     Asynchronous version of QMailDisconnected::flagMessages()
 
-    Disconnected flags the list of messages identified by \a ids, setting the flags specified by the bit mask \a setMask 
+    Disconnected flags the list of messages identified by \a ids, setting the flags specified by the bit mask \a setMask
     to on and setting the flags set by the bit mask \a unsetMask to off.
-    
+
     For example this function may be used to mark messages as important.
 
     The flagging operation will be propagated to the server by a successful call to QMailRetrievalAction::exportUpdates().
-            
+
     \sa QMailDisconnected::flagMessages(), QMailStorageAction::moveToFolder(), QMailStorageAction::moveToStandardFolder()
 */
 void QMailStorageAction::flagMessages(const QMailMessageIdList& ids, quint64 setMask, quint64 unsetMask)
@@ -2005,7 +2005,7 @@ void QMailStorageAction::flagMessages(const QMailMessageIdList& ids, quint64 set
 
     Updates all QMailMessages identified by the key \a key to move the messages back to the
     previous folder they were contained by.
-        
+
     \sa QMailDisconnected::restoreToPreviousFolder()
 */
 void QMailStorageAction::restoreToPreviousFolder(const QMailMessageKey& key)
@@ -2021,7 +2021,7 @@ void QMailStorageAction::restoreToPreviousFolder(const QMailMessageKey& key)
     otherwise the folder will be have no parent and will be created at the highest level.
 
     This function requires the device to be online, it may initiate communication with external servers.
-    
+
     \sa onlineDeleteFolder()
 */
 void QMailStorageAction::onlineCreateFolder(const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId)
@@ -2034,7 +2034,7 @@ void QMailStorageAction::onlineCreateFolder(const QString &name, const QMailAcco
     Requests that the message server rename the folder identified by \a folderId to \a name.
 
     This function requires the device to be online, it may initiate communication with external servers.
-    
+
     \sa onlineCreateFolder(), onlineMoveFolder()
 */
 void QMailStorageAction::onlineRenameFolder(const QMailFolderId &folderId, const QString &name)
@@ -2188,14 +2188,14 @@ void QMailSearchActionPrivate::finaliseSearch()
     the message content is held locally, and on the external server for messages whose content
     has not been retrieved (provided the external service provides a search facility).
 
-    A QMailSearchAction instance supports only a single request at any time. Attempting 
-    to initiate an operation on a QMailSearchAction instace while another operation is already 
+    A QMailSearchAction instance supports only a single request at any time. Attempting
+    to initiate an operation on a QMailSearchAction instace while another operation is already
     in progress for that action is not supported.
-    
-    An application may however use multiple QMailSearchAction instances to send independent 
-    requests concurrently. Each QMailServiceAction instance will report only the changes 
-    pertaining to the request that instance delivered.  Whether or not concurrent requests are 
-    concurrently serviced by the messageserver depends on whether those requests must be 
+
+    An application may however use multiple QMailSearchAction instances to send independent
+    requests concurrently. Each QMailServiceAction instance will report only the changes
+    pertaining to the request that instance delivered.  Whether or not concurrent requests are
+    concurrently serviced by the messageserver depends on whether those requests must be
     serviced by the same QMailMessageService instance.
 */
 
@@ -2231,13 +2231,13 @@ QMailSearchAction::~QMailSearchAction()
 /*!
     Requests that the message server identify all messages that match the criteria
     specified by \a filter.  If \a bodyText is non-empty then messages that
-    contain the supplied text in their content will also be identified.  
+    contain the supplied text in their content will also be identified.
 
     If \a spec is \l{QMailSearchAction::Remote}{Remote}, then the device must be,
-    online and an external service will be requested to perform the search for 
-    messages not stored locally. 
+    online and an external service will be requested to perform the search for
+    messages not stored locally.
 
-    If \a sort is not empty, the external service will return matching messages in 
+    If \a sort is not empty, the external service will return matching messages in
     the ordering indicated by the sort criterion if possible.
 */
 void QMailSearchAction::searchMessages(const QMailMessageKey &filter, const QString &bodyText,
@@ -2250,15 +2250,15 @@ void QMailSearchAction::searchMessages(const QMailMessageKey &filter, const QStr
 /*!
     Requests that the message server identify all messages that match the criteria
     specified by \a filter.  If \a bodyText is non-empty then messages that
-    contain the supplied text in their content will also be identified.  
+    contain the supplied text in their content will also be identified.
 
     If \a spec is \l{QMailSearchAction::Remote}{Remote}, then the device must be,
-    online and an external service will be requested to perform the search for 
-    messages not stored locally. 
+    online and an external service will be requested to perform the search for
+    messages not stored locally.
 
-    A maximum of \a limit messages will be retrieved from the remote server. 
+    A maximum of \a limit messages will be retrieved from the remote server.
 
-    If \a sort is not empty, the external service will return matching messages in 
+    If \a sort is not empty, the external service will return matching messages in
     the ordering indicated by the sort criterion if possible.
 */
 void QMailSearchAction::searchMessages(const QMailMessageKey &filter, const QString &bodyText,
@@ -2270,11 +2270,11 @@ void QMailSearchAction::searchMessages(const QMailMessageKey &filter, const QStr
 
 /*!
     Requests that the message server count all messages that match the criteria
-    specified by \a filter, both local and on remote servers.  If \a bodyText 
-    is non-empty then messages that contain the supplied text in their content 
+    specified by \a filter, both local and on remote servers.  If \a bodyText
+    is non-empty then messages that contain the supplied text in their content
     will also be matched and counted.
-    
-    This function requires the device to be online, it may initiate communication 
+
+    This function requires the device to be online, it may initiate communication
     with external servers.
 */
 void QMailSearchAction::countMessages(const QMailMessageKey &filter, const QString &bodyText)
@@ -2323,7 +2323,7 @@ uint QMailSearchAction::messagesCount() const
 }
 
 /*!
-    Returns a key matching messages that are temporary messages existing only as 
+    Returns a key matching messages that are temporary messages existing only as
     the result of a search action.
 */
 QMailMessageKey QMailSearchAction::temporaryKey()
@@ -2381,7 +2381,7 @@ QMailActionInfoPrivate::QMailActionInfoPrivate(const QMailActionData &data, QMai
     init();
     _progress = data.progressCurrent();
     _total = data.progressTotal();
-    _status = QMailServiceAction::Status(QMailServiceAction::Status::ErrorCode(data.errorCode()), 
+    _status = QMailServiceAction::Status(QMailServiceAction::Status::ErrorCode(data.errorCode()),
                                          data.text(), data.accountId(), data.folderId(), data.messageId());
     setAction(data.id());
 }
@@ -2806,9 +2806,9 @@ void QMailProtocolActionPrivate::handleProtocolRequestCompleted(quint64 action)
     invoke that operation by passing appropriately formatted data to the service via the
     protocolRequest() slot.
 
-    If the service is able to provide the requested service, and extract the necessary 
+    If the service is able to provide the requested service, and extract the necessary
     data from the received input, it should perform the requested operation.  If any
-    output is produced, it may be passed back to the client application via the 
+    output is produced, it may be passed back to the client application via the
     protocolResponse() signal.
 */
 

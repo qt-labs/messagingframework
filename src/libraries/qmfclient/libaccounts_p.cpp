@@ -990,7 +990,7 @@ bool LibAccountManager::updateSharedAccount(QMailAccount *account,
                 const QString &service = it.key();
                 const QVariantList &fields = it.value();
                 const QVariantList &values = vit.value();
-                
+
                 QVariantList::const_iterator field = fields.begin();
                 QVariantList::const_iterator value = values.begin();
 

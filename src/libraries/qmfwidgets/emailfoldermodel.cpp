@@ -410,7 +410,7 @@ QIcon EmailFolderModel::emailFolderIcon(EmailFolderMessageSet *item) const
 FolderModel::StatusText EmailFolderModel::standardFolderStatusText(EmailStandardFolderMessageSet *item) const
 {
     QMailFolder::StandardFolder standardType(item->standardFolderType());
-    if ((standardType != QMailFolder::TrashFolder) && 
+    if ((standardType != QMailFolder::TrashFolder) &&
         (standardType != QMailFolder::DraftsFolder) &&
         (standardType != QMailFolder::OutboxFolder)) {
         // No special handling

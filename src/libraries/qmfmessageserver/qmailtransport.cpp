@@ -79,7 +79,7 @@ private:
     qint64 written;
 };
 
-QMailTransport::Socket::Socket(QObject *parent) 
+QMailTransport::Socket::Socket(QObject *parent)
     : BaseSocketType(parent),
       written(0)
 {
@@ -121,7 +121,7 @@ qint64 QMailTransport::Socket::bytesSinceMark() const
     QMailTransport implements a TLS and SSL enabled socket, whose incoming data can
     be processed one line of text at a time.
 
-    QMailTransport provides the ability to count the bytes written via the socket, 
+    QMailTransport provides the ability to count the bytes written via the socket,
     which is useful when data is inserted into a stream layered above the socket.
 */
 
@@ -313,7 +313,7 @@ bool QMailTransport::isEncrypted() const
 {
     if (mConnected)
         return (mailEncryption() != Encrypt_NONE);
-        
+
     return false;
 }
 
@@ -494,29 +494,29 @@ QMailTransport::EncryptType QMailTransport::mailEncryption() const
 
 /*!
     \fn void QMailTransport::connected(QMailTransport::EncryptType encryptType);
-    
+
     This signal is emitted when a connection is achieved, with the encryption type \a encryptType.
 */
 
 /*!
     \fn void QMailTransport::readyRead();
-    
-    This signal is emitted once every time new data is available for reading from the device. 
-    It will only be emitted again once new data is available, such as when a new payload of 
-    network data has arrived on your network socket, or when a new block of data has been 
+
+    This signal is emitted once every time new data is available for reading from the device.
+    It will only be emitted again once new data is available, such as when a new payload of
+    network data has arrived on your network socket, or when a new block of data has been
     appended to your device.
 */
 
 /*!
     \fn void QMailTransport::bytesWritten(qint64 transmitted);
-    
-    This signal is emitted every time a payload of data has been written to the device. 
+
+    This signal is emitted every time a payload of data has been written to the device.
     The \a transmitted argument is set to the number of bytes that were written in this payload.
 */
 
 /*!
     \fn void QMailTransport::errorOccurred(int status, QString text);
-    
+
     This signal is emitted when an error is encountered.
     The value of \a status corresponds to a value of QSslSocket::SocketError, and \a text
     contains a textual annotation where possible.
@@ -524,7 +524,7 @@ QMailTransport::EncryptType QMailTransport::mailEncryption() const
 
 /*!
     \fn void QMailTransport::updateStatus(const QString &status);
-    
+
     This signal is emitted when a change in status is reported.  The new status is described by \a status.
 */
 

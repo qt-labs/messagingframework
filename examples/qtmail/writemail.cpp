@@ -386,7 +386,7 @@ bool WriteMail::prepareComposer(QMailMessage::MessageType type, const QMailAccou
             return false;
         }
     }
-    
+
     reset();
 
     if (type == QMailMessage::AnyType) {

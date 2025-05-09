@@ -35,14 +35,14 @@
     \class QMailFolderFwd
     \preliminary
     \brief The QMailFolderFwd class declares an enumeration used by QMailFolder.
-   
-    QMailFolderFwd allows QMailFolder::PredefinedFolderId 
+
+    QMailFolderFwd allows QMailFolder::PredefinedFolderId
     to be used without including all of \c qmailfolder.h.
 */
 
 /*!
     \enum QMailFolderFwd::PredefinedFolderId
-    
+
     This enum type is used to declare predefined folders.
 
     \value LocalStorageFolderId   Identifier for the folder of messages not related to an external account, e.g. messages in the outbox.

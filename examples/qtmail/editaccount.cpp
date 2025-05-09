@@ -240,7 +240,7 @@ void EditAccount::accept()
 #endif
 
     foreach (const QString& service, config->services()) {
-        if (!currentServices.contains(service)) 
+        if (!currentServices.contains(service))
             config->removeServiceConfiguration(service);
     }
 
@@ -283,7 +283,7 @@ void EditAccount::selectService(int type, int index)
         // Any previous constraints are now invalid
         for (int i = 0; i < ServiceTypesCount; ++i) {
             if (i != type) {
-                // Return the selection options to the full configured set 
+                // Return the selection options to the full configured set
                 QStringList permissibleServices = extantKeys[i];
                 if (!permissibleServices.isEmpty() && !effectingConstraints) {
                     effectingConstraints = true;

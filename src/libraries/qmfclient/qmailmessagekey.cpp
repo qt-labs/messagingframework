@@ -56,8 +56,8 @@ using namespace QMailKey;
     \ingroup messaginglibrary
 
     A QMailMessageKey is composed of a message property, an optional comparison operator
-    and a comparison value. The QMailMessageKey class is used in conjunction with the 
-    QMailStore::queryMessages() and QMailStore::countMessages() functions to filter results 
+    and a comparison value. The QMailMessageKey class is used in conjunction with the
+    QMailStore::queryMessages() and QMailStore::countMessages() functions to filter results
     which meet the criteria defined by the key.
 
     QMailMessageKeys can be combined using the logical operators (&), (|) and (~) to
@@ -127,7 +127,7 @@ using namespace QMailKey;
 
 /*!
     \typedef QMailMessageKey::ArgumentType
-    
+
     Defines the type used to represent a single criterion of a message filter.
 
     Synonym for QMailKeyArgument<QMailMessageKey::Property>.
@@ -136,7 +136,7 @@ using namespace QMailKey;
 /*!
     Creates a QMailMessageKey without specifying matching parameters.
 
-    A default-constructed key (one for which isEmpty() returns true) matches all messages. 
+    A default-constructed key (one for which isEmpty() returns true) matches all messages.
 
     \sa isEmpty()
 */
@@ -155,7 +155,7 @@ QMailMessageKey::QMailMessageKey(Property p, const QVariant& value, QMailKey::Co
 {
 }
 
-/*! 
+/*!
     \fn QMailMessageKey::QMailMessageKey(const ListType &, Property, QMailKey::Comparator)
     \internal
 */
@@ -183,7 +183,7 @@ QMailMessageKey::~QMailMessageKey()
 /*!
     Returns a key that is the logical NOT of the value of this key.
 
-    If this key is empty, the result will be a non-matching key; if this key is 
+    If this key is empty, the result will be a non-matching key; if this key is
     non-matching, the result will be an empty key.
 
     \sa isEmpty(), isNonMatching()
@@ -222,13 +222,13 @@ const QMailMessageKey& QMailMessageKey::operator&=(const QMailMessageKey& other)
     Performs a logical OR with this key and the key \a other and assigns the result
     to this key.
 */
-const QMailMessageKey& QMailMessageKey::operator|=(const QMailMessageKey& other) 
+const QMailMessageKey& QMailMessageKey::operator|=(const QMailMessageKey& other)
 {
     return QMailMessageKeyPrivate::orAssign(*this, other);
 }
 
 /*!
-    Returns \c true if the value of this key is the same as the key \a other. Returns 
+    Returns \c true if the value of this key is the same as the key \a other. Returns
     \c false otherwise.
 */
 bool QMailMessageKey::operator==(const QMailMessageKey& other) const
@@ -255,11 +255,11 @@ const QMailMessageKey& QMailMessageKey::operator=(const QMailMessageKey& other)
 }
 
 /*!
-    Returns true if the key remains empty after default construction; otherwise returns false. 
+    Returns true if the key remains empty after default construction; otherwise returns false.
 
     An empty key matches all messages.
 
-    The result of combining an empty key with a non-empty key is the original non-empty key. 
+    The result of combining an empty key with a non-empty key is the original non-empty key.
     This is true regardless of whether the combination is formed by an AND or an OR operation.
 
     The result of combining two empty keys is an empty key.
@@ -288,7 +288,7 @@ bool QMailMessageKey::isNonMatching() const
     return d->isNonMatching();
 }
 
-/*! 
+/*!
     Returns true if the key's criteria should be negated in application.
 */
 bool QMailMessageKey::isNegated() const
@@ -297,7 +297,7 @@ bool QMailMessageKey::isNegated() const
 }
 
 /*!
-    Returns the QVariant representation of this QMailMessageKey. 
+    Returns the QVariant representation of this QMailMessageKey.
 */
 QMailMessageKey::operator QVariant() const
 {
@@ -320,7 +320,7 @@ const QmfList<QMailMessageKey> &QMailMessageKey::subKeys() const
     return d->subKeys;
 }
 
-/*! 
+/*!
     Returns the combiner used to combine arguments or sub keys of this QMailMessageKey.
 */
 QMailKey::Combiner QMailMessageKey::combiner() const

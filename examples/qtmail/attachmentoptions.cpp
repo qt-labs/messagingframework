@@ -152,7 +152,7 @@ private:
 ImageDisplay::ImageDisplay(QWidget* parent)
     : QDialog(parent),
       _size(parent->size()),
-      _area(new QScrollArea(this)), 
+      _area(new QScrollArea(this)),
       _sizeToFit(new QAction(tr("Size to fit"), this)),
       _sizeDefault(new QAction(tr("Default size"), this)),
       _sizeActual(new QAction(tr("Actual size"), this)),
@@ -468,7 +468,7 @@ void AttachmentOptions::setAttachment(const QMailMessagePart& msgPart)
     _document->setVisible(isDocument);
 
     if (isRetrievable) {
-        // We can't forward this part unless the account supports transmission by reference 
+        // We can't forward this part unless the account supports transmission by reference
         QMailMessageMetaData metaData(_part->location().containingMessageId());
         QMailAccount originAccount(metaData.parentAccountId());
 
@@ -544,7 +544,7 @@ void AttachmentOptions::viewAttachment()
 
                 // We need to invoke the associated app
                 QContent content(tempFile->fileName());
-                
+
                 // Ensure the associated app doesn't create a document from this temporary file
                 content.setType(mt.id());
                 content.setName(_part->displayName());

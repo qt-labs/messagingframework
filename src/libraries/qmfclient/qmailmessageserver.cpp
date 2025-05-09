@@ -125,11 +125,11 @@ QMailMessageServerPrivate::~QMailMessageServerPrivate()
 
     QMF client messaging applications can send and receive messages of various types by
     communicating with the MessageServer.  The MessageServer
-    is a separate process, communicating with clients via inter-process messages.  
+    is a separate process, communicating with clients via inter-process messages.
     QMailMessageServer acts as a proxy object for the server process, providing an
-    interface for communicating with the MessageServer by the use of signals and slots 
-    in the client process.  It provides Qt signals corresponding to messages received from 
-    the MessageServer application, and Qt slots which send messages to the MessageServer 
+    interface for communicating with the MessageServer by the use of signals and slots
+    in the client process.  It provides Qt signals corresponding to messages received from
+    the MessageServer application, and Qt slots which send messages to the MessageServer
     when invoked.
 
     For most messaging client applications, the QMailServiceAction objects offer a simpler
@@ -141,17 +141,17 @@ QMailMessageServerPrivate::~QMailMessageServerPrivate()
     formulated to contain the desired content.  These messages should be stored to the
     mail store, within the Outbox folder configured for the parent account.
 
-    An instance of QMailTransmitAction should be used to request transmission of the 
+    An instance of QMailTransmitAction should be used to request transmission of the
     outgoing messages.
 
     \section1 Retrieving Messages
 
     There are a variety of mechanisms for retrieving messages, at various levels of
-    granularity.  In all cases, retrieved messages are added directly to the mail 
+    granularity.  In all cases, retrieved messages are added directly to the mail
     store by the message server, from where clients can retrieve their meta data or
     content.
 
-    An instance of QMailRetrievalAction should be used to request retrieval of 
+    An instance of QMailRetrievalAction should be used to request retrieval of
     folders and messages.
 
     \sa QMailServiceAction, QMailStore
@@ -167,7 +167,7 @@ QMailMessageServerPrivate::~QMailMessageServerPrivate()
 /*!
     \fn void QMailMessageServer::connectivityChanged(quint64 action, QMailServiceAction::Connectivity connectivity);
 
-    Emitted whenever the MessageServer has a change in connectivity while servicing the request 
+    Emitted whenever the MessageServer has a change in connectivity while servicing the request
     identified by \a action.  The new server connectivity status is described by \a connectivity.
 */
 
@@ -181,7 +181,7 @@ QMailMessageServerPrivate::~QMailMessageServerPrivate()
 /*!
     \fn void QMailMessageServer::progressChanged(quint64 action, uint progress, uint total);
 
-    Emitted when the progress of the request identified by \a action changes; 
+    Emitted when the progress of the request identified by \a action changes;
     \a total indicates the extent of the operation to be performed, \a progress indicates the current degree of completion.
 */
 
@@ -205,7 +205,7 @@ QMailMessageServerPrivate::~QMailMessageServerPrivate()
 
     Emitted when a failed attempt has been made to transmit messages identified by \a list to the external server,
     in response to the request identified by \a action.
-    
+
     The error is described by \a error.
 
     \sa transmitMessages()
@@ -231,7 +231,7 @@ QMailMessageServerPrivate::~QMailMessageServerPrivate()
 /*!
     \fn void QMailMessageServer::messagesCopied(quint64 action, const QMailMessageIdList& list);
 
-    Emitted when the messages identified by \a list have been copied to the destination 
+    Emitted when the messages identified by \a list have been copied to the destination
     folder on the external service, in response to the request identified by \a action.
 
     \sa onlineCopyMessages()
@@ -240,7 +240,7 @@ QMailMessageServerPrivate::~QMailMessageServerPrivate()
 /*!
     \fn void QMailMessageServer::messagesMoved(quint64 action, const QMailMessageIdList& list);
 
-    Emitted when the messages identified by \a list have been moved to the destination 
+    Emitted when the messages identified by \a list have been moved to the destination
     folder on the external service, in response to the request identified by \a action.
 
     \sa moveToFolder(), moveToStandardFolder(), onlineMoveMessages()
@@ -308,7 +308,7 @@ QMailMessageServerPrivate::~QMailMessageServerPrivate()
 /*!
     \fn void QMailMessageServer::matchingMessageIds(quint64 action, const QMailMessageIdList& ids);
 
-    Emitted by the search operation identified by \a action; 
+    Emitted by the search operation identified by \a action;
     \a ids contains the list of message identifiers located by the search.
 
     \sa searchMessages()
@@ -317,7 +317,7 @@ QMailMessageServerPrivate::~QMailMessageServerPrivate()
 /*!
     \fn void QMailMessageServer::remainingMessagesCount(quint64 action, uint count);
 
-    Emitted by search operation identified by \a action; 
+    Emitted by search operation identified by \a action;
     Returns the \a count of matching messages remaining on the remote server, that is the count
     of messages that will not be retrieved from the remote server to the device.
 
@@ -329,7 +329,7 @@ QMailMessageServerPrivate::~QMailMessageServerPrivate()
 /*!
     \fn void QMailMessageServer::messagesCount(quint64 action, uint count);
 
-    Emitted by search operation identified by \a action; 
+    Emitted by search operation identified by \a action;
     Returns the \a count of matching messages on the remote server.
 
     Only applicable for remote searches.
@@ -357,14 +357,14 @@ QMailMessageServerPrivate::~QMailMessageServerPrivate()
 /*!
     \fn void QMailMessageServer::actionsListed(const QMailActionDataList &list);
 
-    Emitted when a list of running actions has been retrieved from the server. 
+    Emitted when a list of running actions has been retrieved from the server.
     The list of running actions is described by \a list.
 */
 
 /*!
     \fn void QMailMessageServer::actionStarted(QMailActionData data)
 
-    Emitted when the action described by \a data has been started on the 
+    Emitted when the action described by \a data has been started on the
     messageserver.
 */
 
@@ -440,9 +440,9 @@ void QMailMessageServer::registerTypes()
     account identified by \a accountId that are currently in the Outbox folder.
     The request has the identifier \a action.
 
-    This function requires the device to be online, it may initiate communication 
+    This function requires the device to be online, it may initiate communication
     with external servers.
-    
+
     \sa transmissionCompleted()
 */
 void QMailMessageServer::transmitMessages(quint64 action, const QMailAccountId &accountId)
@@ -470,7 +470,7 @@ void QMailMessageServer::transmitMessage(quint64 action, const QMailMessageId &m
 
     The request has the identifier \a action.
 
-    This function requires the device to be online, it may initiate communication 
+    This function requires the device to be online, it may initiate communication
     with external servers.
 
     \sa retrievalCompleted()
@@ -482,19 +482,19 @@ void QMailMessageServer::retrieveFolderList(quint64 action, const QMailAccountId
 
 /*!
     Requests that the message server retrieve the list of messages available for the account \a accountId.
-    If \a folderId is valid, then only messages within that folder should be retrieved; otherwise 
-    messages within all folders in the account should be retrieved. If a folder messages are being 
-    retrieved from contains at least \a minimum messages then the messageserver should ensure that at 
+    If \a folderId is valid, then only messages within that folder should be retrieved; otherwise
+    messages within all folders in the account should be retrieved. If a folder messages are being
+    retrieved from contains at least \a minimum messages then the messageserver should ensure that at
     least \a minimum messages are available from the mail store for that folder; otherwise if the
-    folder contains less than \a minimum messages the messageserver should ensure all the messages for 
+    folder contains less than \a minimum messages the messageserver should ensure all the messages for
     that folder are available from the mail store.
-    
-    If \a sort is not empty, the external service will 
+
+    If \a sort is not empty, the external service will
     discover the listed messages in the ordering indicated by the sort criterion, if possible.
 
     The request has the identifier \a action.
 
-    This function requires the device to be online, it may initiate communication 
+    This function requires the device to be online, it may initiate communication
     with external servers.
 
     \sa retrievalCompleted()
@@ -506,19 +506,19 @@ void QMailMessageServer::retrieveMessageList(quint64 action, const QMailAccountI
 
 /*!
     Requests that the messageserver retrieve the list of messages available for the account \a accountId.
-    If \a folderIds is not empty, then only messages within those folders should be retrieved; otherwise 
-    no messages should be retrieved. If a folder messages are being 
-    retrieved from contains at least \a minimum messages then the messageserver should ensure that at 
+    If \a folderIds is not empty, then only messages within those folders should be retrieved; otherwise
+    no messages should be retrieved. If a folder messages are being
+    retrieved from contains at least \a minimum messages then the messageserver should ensure that at
     least \a minimum messages are available from the mail store for that folder; otherwise if the
-    folder contains less than \a minimum messages the messageserver should ensure all the messages for 
+    folder contains less than \a minimum messages the messageserver should ensure all the messages for
     that folder are available from the mail store.
-    
-    If \a sort is not empty, the external service will 
+
+    If \a sort is not empty, the external service will
     discover the listed messages in the ordering indicated by the sort criterion, if possible.
 
     The request has the identifier \a action.
 
-    This function requires the device to be online, it may initiate communication 
+    This function requires the device to be online, it may initiate communication
     with external servers.
 
     \sa retrievalCompleted()
@@ -531,19 +531,19 @@ void QMailMessageServer::retrieveMessageLists(quint64 action, const QMailAccount
 /*!
     Requests that the message server retrieve new messages for the account \a accountId in the
     folders specified by \a folderIds.
-    
+
     If a folder inspected has been previously inspected then new mails in that folder will
     be retrieved, otherwise the most recent message in that folder, if any, will be retrieved.
-    
+
     This function is intended for use by protocol plugins to retrieve new messages when
     a push notification event is received from the remote server.
-    
+
     Detection of deleted messages, and flag updates for messages in the mail store will
     not necessarily be performed.
 
     The request has the identifier \a action.
 
-    This function requires the device to be online, it may initiate communication 
+    This function requires the device to be online, it may initiate communication
     with external servers.
 
     \sa retrievalCompleted()
@@ -563,7 +563,7 @@ void QMailMessageServer::retrieveNewMessages(quint64 action, const QMailAccountI
     the account \a accountId the service action will still complete successfully, clients
     must use local standard folders only in this case.
 
-    This function requires the device to be online, it may initiate communication 
+    This function requires the device to be online, it may initiate communication
     with external servers.
 
     \sa retrieveFolderList
@@ -574,23 +574,23 @@ void QMailMessageServer::createStandardFolders(quint64 action, const QMailAccoun
 }
 
 /*!
-    Requests that the message server retrieve data regarding the messages identified by \a messageIds.  
+    Requests that the message server retrieve data regarding the messages identified by \a messageIds.
 
-    If \a spec is \l QMailRetrievalAction::Flags, then the message server should detect if 
-    the read or important status of messages identified by \a messageIds has changed on the server 
+    If \a spec is \l QMailRetrievalAction::Flags, then the message server should detect if
+    the read or important status of messages identified by \a messageIds has changed on the server
     or if the messages have been removed on the server.
-    The \l QMailMessage::ReadElsewhere, \l QMailMessage::ImportantElsewhere and \l QMailMessage::Removed 
+    The \l QMailMessage::ReadElsewhere, \l QMailMessage::ImportantElsewhere and \l QMailMessage::Removed
     status flags of messages will be updated to reflect the status of the message on the server.
 
-    If \a spec is \l QMailRetrievalAction::MetaData, then the message server should 
+    If \a spec is \l QMailRetrievalAction::MetaData, then the message server should
     retrieve the meta data of the each message listed in \a messageIds.
-    
-    If \a spec is \l QMailRetrievalAction::Content, then the message server should 
+
+    If \a spec is \l QMailRetrievalAction::Content, then the message server should
     retrieve the entirety of each message listed in \a messageIds.
 
     The request has the identifier \a action.
 
-    This function requires the device to be online, it may initiate communication 
+    This function requires the device to be online, it may initiate communication
     with external servers.
 
     \sa retrievalCompleted()
@@ -601,12 +601,12 @@ void QMailMessageServer::retrieveMessages(quint64 action, const QMailMessageIdLi
 }
 
 /*!
-    Requests that the message server retrieve the message part that is indicated by the 
+    Requests that the message server retrieve the message part that is indicated by the
     location \a partLocation.
 
     The request has the identifier \a action.
 
-    This function requires the device to be online, it may initiate communication 
+    This function requires the device to be online, it may initiate communication
     with external servers.
 
     \sa retrievalCompleted()
@@ -621,7 +621,7 @@ void QMailMessageServer::retrieveMessagePart(quint64 action, const QMailMessageP
     at least \a minimum bytes are available from the mail store.
     The request has the identifier \a action.
 
-    This function requires the device to be online, it may initiate communication 
+    This function requires the device to be online, it may initiate communication
     with external servers.
 
     \sa retrievalCompleted()
@@ -632,12 +632,12 @@ void QMailMessageServer::retrieveMessageRange(quint64 action, const QMailMessage
 }
 
 /*!
-    Requests that the message server retrieve a subset of the message part that is indicated by 
-    the location \a partLocation.  The messageserver should ensure that at least \a minimum 
+    Requests that the message server retrieve a subset of the message part that is indicated by
+    the location \a partLocation.  The messageserver should ensure that at least \a minimum
     bytes are available from the mail store.
     The request has the identifier \a action.
 
-    This function requires the device to be online, it may initiate communication 
+    This function requires the device to be online, it may initiate communication
     with external servers.
 
     \sa retrievalCompleted()
@@ -648,11 +648,11 @@ void QMailMessageServer::retrieveMessagePartRange(quint64 action, const QMailMes
 }
 
 /*!
-    Requests that the message server retrieve the meta data for all messages available 
+    Requests that the message server retrieve the meta data for all messages available
     for the account \a accountId.
     The request has the identifier \a action.
 
-    This function requires the device to be online, it may initiate communication 
+    This function requires the device to be online, it may initiate communication
     with external servers.
 
     \sa retrievalCompleted()
@@ -663,15 +663,15 @@ void QMailMessageServer::retrieveAll(quint64 action, const QMailAccountId &accou
 }
 
 /*!
-    Requests that the message server update the external server with changes that have 
+    Requests that the message server update the external server with changes that have
     been effected on the local device for account \a accountId.
-    Local changes to \l QMailMessage::Read, and \l QMailMessage::Important message status 
+    Local changes to \l QMailMessage::Read, and \l QMailMessage::Important message status
     flags should be exported to the external server, and messages that have been removed
-    using the \l QMailStore::CreateRemovalRecord option should be removed from the 
+    using the \l QMailStore::CreateRemovalRecord option should be removed from the
     external server.
     The request has the identifier \a action.
 
-    This function requires the device to be online, it may initiate communication 
+    This function requires the device to be online, it may initiate communication
     with external servers.
 
     \sa retrievalCompleted()
@@ -682,18 +682,18 @@ void QMailMessageServer::exportUpdates(quint64 action, const QMailAccountId &acc
 }
 
 /*!
-    Requests that the message server synchronize the messages and folders in the account 
+    Requests that the message server synchronize the messages and folders in the account
     identified by \a accountId.
 
     Newly discovered messages should have their meta data retrieved,
-    local changes to \l QMailMessage::Read, and \l QMailMessage::Important message status 
+    local changes to \l QMailMessage::Read, and \l QMailMessage::Important message status
     flags should be exported to the external server, and messages that have been removed
-    locally using the \l QMailStore::CreateRemovalRecord option should be removed from the 
+    locally using the \l QMailStore::CreateRemovalRecord option should be removed from the
     external server.
 
     The request has the identifier \a action.
 
-    This function requires the device to be online, it may initiate communication 
+    This function requires the device to be online, it may initiate communication
     with external servers.
 
     \sa retrievalCompleted()
@@ -704,12 +704,12 @@ void QMailMessageServer::synchronize(quint64 action, const QMailAccountId &accou
 }
 
 /*!
-    Requests that the MessageServer create a copy of each message listed in \a mailList 
+    Requests that the MessageServer create a copy of each message listed in \a mailList
     in the folder identified by \a destinationId.
-    
+
     The request has the identifier \a action.
 
-    This function requires the device to be online, it may initiate communication 
+    This function requires the device to be online, it may initiate communication
     with external servers.
 */
 void QMailMessageServer::onlineCopyMessages(quint64 action, const QMailMessageIdList& mailList, const QMailFolderId &destinationId)
@@ -718,12 +718,12 @@ void QMailMessageServer::onlineCopyMessages(quint64 action, const QMailMessageId
 }
 
 /*!
-    Requests that the MessageServer move each message listed in \a mailList from its 
+    Requests that the MessageServer move each message listed in \a mailList from its
     current location to the folder identified by \a destinationId.
 
     The request has the identifier \a action.
 
-    This function requires the device to be online, it may initiate communication 
+    This function requires the device to be online, it may initiate communication
     with external servers.
 */
 void QMailMessageServer::onlineMoveMessages(quint64 action, const QMailMessageIdList& mailList, const QMailFolderId &destinationId)
@@ -736,13 +736,13 @@ void QMailMessageServer::onlineMoveMessages(quint64 action, const QMailMessageId
     the status flags set in \a setMask, and unsetting the status flags set in \a unsetMask.
     The request has the identifier \a action.
 
-    The protocol must ensure that the local message records are appropriately modified, 
-    although the external changes may be buffered and effected at the next invocation 
+    The protocol must ensure that the local message records are appropriately modified,
+    although the external changes may be buffered and effected at the next invocation
     of exportUpdates().
 
     The request has the identifier \a action.
 
-    This function requires the device to be online, it may initiate communication 
+    This function requires the device to be online, it may initiate communication
     with external servers.
 */
 void QMailMessageServer::onlineFlagMessagesAndMoveToStandardFolder(quint64 action, const QMailMessageIdList& mailList, quint64 setMask, quint64 unsetMask)
@@ -783,7 +783,7 @@ void QMailMessageServer::updateMessages(quint64 action, const QMailMessageMetaDa
 
     The request has the identifier \a action.
 
-    This function requires the device to be online, it may initiate communication 
+    This function requires the device to be online, it may initiate communication
     with external servers.
 
     \sa onlineDeleteFolder()
@@ -799,7 +799,7 @@ void QMailMessageServer::onlineCreateFolder(quint64 action, const QString &name,
 
     The request has the identifier \a action.
 
-    This function requires the device to be online, it may initiate communication 
+    This function requires the device to be online, it may initiate communication
     with external servers.
 
     \sa onlineCreateFolder()
@@ -815,7 +815,7 @@ void QMailMessageServer::onlineRenameFolder(quint64 action, const QMailFolderId 
 
     The request has the identifier \a action.
 
-    This function requires the device to be online, it may initiate communication 
+    This function requires the device to be online, it may initiate communication
     with external servers.
 
     \sa onlineCreateFolder(), onlineRenameFolder(), onlineMoveFolder()
@@ -854,14 +854,14 @@ void QMailMessageServer::cancelTransfer(quint64 action)
 
 /*!
     Requests that the MessageServer delete the messages in \a mailList from the external
-    server, if necessary for the relevant message type.  
-    
-    If \a option is 
+    server, if necessary for the relevant message type.
+
+    If \a option is
     \l{QMailStore::CreateRemovalRecord}{CreateRemovalRecord} then a QMailMessageRemovalRecord
     will be created in the mail store for each deleted message. In this case
-    the function requires the device to be online, it may initiate communication 
+    the function requires the device to be online, it may initiate communication
     with external servers.
-    
+
     The request has the identifier \a action.
 
     \sa QMailStore::removeMessage()
@@ -873,13 +873,13 @@ void QMailMessageServer::onlineDeleteMessages(quint64 action, const QMailMessage
 
 /*!
     Requests that the MessageServer delete the messages in \a mailList, messages
-    will be removed locally from the device, and if necessary information needed 
+    will be removed locally from the device, and if necessary information needed
     to delete messages from an external server is recorded.
 
     Deleting messages using this slot does not initiate communication with any external
-    server; Deletion from the external server will occur when 
+    server; Deletion from the external server will occur when
     QMailRetrievalAction::exportUpdates is called successfully.
-    
+
     The request has the identifier \a action.
 
     \sa QMailStore::removeMessage()
@@ -891,13 +891,13 @@ void QMailMessageServer::deleteMessages(quint64 action, const QMailMessageIdList
 
 /*!
     Asynchronous version of QMailDisconnected::rollBackUpdates()
-    
-    Rolls back all disconnected move and copy operations that have been applied to the 
-    message store since the most recent synchronization of the message with the account 
+
+    Rolls back all disconnected move and copy operations that have been applied to the
+    message store since the most recent synchronization of the message with the account
     specified by \a mailAccountId.
-    
+
     The request has the identifier \a action.
-    
+
     \sa QMailDisconnected::updatesOutstanding()
 */
 void QMailMessageServer::rollBackUpdates(quint64 action, const QMailAccountId &mailAccountId)
@@ -908,11 +908,11 @@ void QMailMessageServer::rollBackUpdates(quint64 action, const QMailAccountId &m
 /*!
     Asynchronous version of QMailDisconnected::moveToStandardFolder()
 
-    Disconnected moves the list of messages identified by \a ids into the standard folder \a standardFolder, setting standard 
+    Disconnected moves the list of messages identified by \a ids into the standard folder \a standardFolder, setting standard
     folder flags as appropriate.
-    
+
     The move operation will be propagated to the server by a successful call to QMailRetrievalAction::exportUpdates().
-            
+
     The request has the identifier \a action.
 
     \sa QMailDisconnected::moveToStandardFolder()
@@ -925,15 +925,15 @@ void QMailMessageServer::moveToStandardFolder(quint64 action, const QMailMessage
 /*!
     Asynchronous version of QMailDisconnected::moveToFolder()
 
-    Disconnected moves the list of messages identified by \a ids into the folder identified by \a folderId, setting standard 
+    Disconnected moves the list of messages identified by \a ids into the folder identified by \a folderId, setting standard
     folder flags as appropriate.
 
     Moving to another account is not supported.
 
     The move operation will be propagated to the server by a successful call to QMailRetrievalAction::exportUpdates().
-    
+
     The request has the identifier \a action.
-    
+
     \sa QMailDisconnected::moveToFolder()
 */
 void QMailMessageServer::moveToFolder(quint64 action, const QMailMessageIdList& ids, const QMailFolderId& folderId)
@@ -944,15 +944,15 @@ void QMailMessageServer::moveToFolder(quint64 action, const QMailMessageIdList& 
 /*!
     Asynchronous version of QMailDisconnected::flagMessages()
 
-    Disconnected flags the list of messages identified by \a ids, setting the flags specified by the bit mask \a setMask 
+    Disconnected flags the list of messages identified by \a ids, setting the flags specified by the bit mask \a setMask
     to on and setting the flags set by the bit mask \a unsetMask to off.
-    
+
     For example this function may be used to mark messages as important.
 
     The flagging operation will be propagated to the server by a successful call to QMailRetrievalAction::exportUpdates().
-            
+
     The request has the identifier \a action.
-    
+
     \sa QMailDisconnected::flagMessages()
 */
 void QMailMessageServer::flagMessages(quint64 action, const QMailMessageIdList& ids, quint64 setMask, quint64 unsetMask)
@@ -965,9 +965,9 @@ void QMailMessageServer::flagMessages(quint64 action, const QMailMessageIdList& 
 
     Updates all QMailMessages identified by the key \a key to move the messages back to the
     previous folder they were contained by.
-        
+
     The request has the identifier \a action.
-    
+
     \sa QMailDisconnected::restoreToPreviousFolder(), QMailMessageServer::moveToFolder(), QMailMessageServer::moveToStandardFolder()
 */
 void QMailMessageServer::restoreToPreviousFolder(quint64 action, const QMailMessageKey& key)
@@ -977,18 +977,18 @@ void QMailMessageServer::restoreToPreviousFolder(quint64 action, const QMailMess
 
 /*!
     Requests that the MessageServer search for messages that meet the criteria encoded
-    in \a filter.  If \a bodyText is non-empty, messages containing the specified text 
-    in their content will also be matched.  If \a spec is 
+    in \a filter.  If \a bodyText is non-empty, messages containing the specified text
+    in their content will also be matched.  If \a spec is
     \l{QMailSearchAction::Remote}{Remote} then the MessageServer will extend the search
     to consider messages held at external servers that are not present on the local device.
-    If \a sort is not empty, the external service will return matching messages in 
+    If \a sort is not empty, the external service will return matching messages in
     the ordering indicated by the sort criterion if possible.
 
     The identifiers of all matching messages are returned via matchingMessageIds() signals.
 
     The request has the identifier \a action.
 
-    If a remote search is specified then this function requires the device to be online, 
+    If a remote search is specified then this function requires the device to be online,
     it may initiate communication with external servers.
 
     \sa matchingMessageIds(), messagesCount(), remainingMessagesCount()
@@ -1000,21 +1000,21 @@ void QMailMessageServer::searchMessages(quint64 action, const QMailMessageKey& f
 
 /*!
     Requests that the MessageServer search for messages that meet the criteria encoded
-    in \a filter.  If \a bodyText is non-empty, messages containing the specified text 
-    in their content will also be matched.  If \a spec is 
+    in \a filter.  If \a bodyText is non-empty, messages containing the specified text
+    in their content will also be matched.  If \a spec is
     \l{QMailSearchAction::Remote}{Remote} then the MessageServer will extend the search
     to consider messages held at external servers that are not present on the local device.
 
     A maximum of \a limit messages will be retrieved from the remote server.
 
-    If \a sort is not empty, the external service will return matching messages in 
+    If \a sort is not empty, the external service will return matching messages in
     the ordering indicated by the sort criterion if possible.
 
     The identifiers of all matching messages are returned via matchingMessageIds() signals.
 
     The request has the identifier \a action.
 
-    If a remote search is specified then this function requires the device to be online, 
+    If a remote search is specified then this function requires the device to be online,
     it may initiate communication with external servers.
 
     \sa matchingMessageIds(), messagesCount(), remainingMessagesCount()
@@ -1025,15 +1025,15 @@ void QMailMessageServer::searchMessages(quint64 action, const QMailMessageKey& f
 }
 
 /*!
-    Requests that the MessageServer counts the number of messages that match the criteria 
-    specified by \a filter by on the device and remote servers.  If \a bodyText is non-empty, 
+    Requests that the MessageServer counts the number of messages that match the criteria
+    specified by \a filter by on the device and remote servers.  If \a bodyText is non-empty,
     messages containing the specified text in their content will also be matched.
 
     The count of all matching messages is returned via a messagesCount() signal.
 
     The request has the identifier \a action.
 
-    This function requires the device to be online, it may initiate communication 
+    This function requires the device to be online, it may initiate communication
     with external servers.
 
     \sa messagesCount()
@@ -1103,7 +1103,7 @@ Q_IMPLEMENT_USER_METATYPE_TYPEDEF(QMailMessageCountMap, QMailMessageCountMap)
     \fn void QMailMessageServer::messagesAdded(quint64 action, const QMailMessageIdList& ids);
 
     Signal that is emitted when messages have been asynchronously added to the message store.
-    
+
     \a action is the identifier of the request that caused the messages to be added, and \a ids
     is a list of identifiers of messages that have been added.
 

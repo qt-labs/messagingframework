@@ -81,7 +81,7 @@
     hashHaystack <<= 1
 #endif
 
-static int insensitiveIndexOf(const QByteArray& target, const QByteArray &source, int from, int off, int len) 
+static int insensitiveIndexOf(const QByteArray& target, const QByteArray &source, int from, int off, int len)
 {
 #ifndef USE_FANCY_MATCH_ALGORITHM
     const char* const matchBegin = target.constData();
@@ -107,7 +107,7 @@ static int insensitiveIndexOf(const QByteArray& target, const QByteArray &source
             const char* searchIt = it;
             const char* matchIt = matchBegin + 1;
 
-            do 
+            do
             {
                 if (matchIt == matchEnd)
                     return ((it - 1) - begin);
@@ -200,10 +200,10 @@ private:
 
 QMap<QString, LongStringFileMapping::QFileMapping> LongStringFileMapping::fileMap;
 
-template <typename Stream> 
+template <typename Stream>
 Stream& operator<<(Stream &stream, const LongStringFileMapping& mapping) { mapping.serialize(stream); return stream; }
 
-template <typename Stream> 
+template <typename Stream>
 Stream& operator>>(Stream &stream, LongStringFileMapping& mapping) { mapping.deserialize(stream); return stream; }
 
 LongStringFileMapping::LongStringFileMapping()
@@ -311,13 +311,13 @@ const QByteArray LongStringFileMapping::toQByteArray() const
     return QByteArray::fromRawData(buffer, len);
 }
 
-template <typename Stream> 
+template <typename Stream>
 void LongStringFileMapping::serialize(Stream &stream) const
 {
     stream << filename;
 }
 
-template <typename Stream> 
+template <typename Stream>
 void LongStringFileMapping::deserialize(Stream &stream)
 {
     stream >> filename;
@@ -361,30 +361,30 @@ private:
     int len;
 };
 
-template <typename Stream> 
+template <typename Stream>
 Stream& operator<<(Stream &stream, const LongStringPrivate& ls) { ls.serialize(stream); return stream; }
 
-template <typename Stream> 
+template <typename Stream>
 Stream& operator>>(Stream &stream, LongStringPrivate& ls) { ls.deserialize(stream); return stream; }
 
 LongStringPrivate::LongStringPrivate()
     : mapping(0),
-      offset(0), 
-      len(0) 
+      offset(0),
+      len(0)
 {
 }
 
 LongStringPrivate::LongStringPrivate(const QByteArray& ba)
     : mapping(0),
       data(ba),
-      offset(0), 
-      len(data.length()) 
+      offset(0),
+      len(data.length())
 {
 }
 
 LongStringPrivate::LongStringPrivate(const QString& filename)
     : mapping(new LongStringFileMapping(filename)),
-      offset(0), 
+      offset(0),
       len(mapping->length())
 {
 }
@@ -508,7 +508,7 @@ QTextStream* LongStringPrivate::textStream() const
     return new QTextStream(input);
 }
 
-template <typename Stream> 
+template <typename Stream>
 void LongStringPrivate::serialize(Stream &stream) const
 {
     bool usesMapping(mapping != 0);
@@ -523,7 +523,7 @@ void LongStringPrivate::serialize(Stream &stream) const
     stream << len;
 }
 
-template <typename Stream> 
+template <typename Stream>
 void LongStringPrivate::deserialize(Stream &stream)
 {
     bool usesMapping;
@@ -638,13 +638,13 @@ QTextStream* LongString::textStream() const
     return d->textStream();
 }
 
-template <typename Stream> 
+template <typename Stream>
 void LongString::serialize(Stream &stream) const
 {
     d->serialize(stream);
 }
 
-template <typename Stream> 
+template <typename Stream>
 void LongString::deserialize(Stream &stream)
 {
     d->deserialize(stream);

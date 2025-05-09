@@ -78,7 +78,7 @@ public:
 
 private:
     void init() const;
-    
+
     int indexOf(const QMailMessageId& id) const;
 
     bool addMessages(const QMailMessageIdList &ids);
@@ -123,10 +123,10 @@ QMailMessageListModelPrivate::~QMailMessageListModelPrivate()
 
 QMailMessageKey QMailMessageListModelPrivate::key() const
 {
-    return _key; 
+    return _key;
 }
 
-void QMailMessageListModelPrivate::setKey(const QMailMessageKey& key) 
+void QMailMessageListModelPrivate::setKey(const QMailMessageKey& key)
 {
     _key = key;
 }
@@ -136,7 +136,7 @@ QMailMessageSortKey QMailMessageListModelPrivate::sortKey() const
    return _sortKey;
 }
 
-void QMailMessageListModelPrivate::setSortKey(const QMailMessageSortKey& sortKey) 
+void QMailMessageListModelPrivate::setSortKey(const QMailMessageSortKey& sortKey)
 {
     _sortKey = sortKey;
 }
@@ -391,7 +391,7 @@ bool QMailMessageListModelPrivate::processMessagesUpdated(const QMailMessageIdLi
     if (!updateMessages(ids)) {
         return false;
     }
-    
+
     return true;
 }
 
@@ -512,7 +512,7 @@ bool QMailMessageListModelPrivate::processMessagesRemoved(const QMailMessageIdLi
     }
 
     init();
-    
+
     // Find if and where these messages should be removed from
     if (!removeMessages(ids)) {
         return false;
@@ -530,7 +530,7 @@ bool QMailMessageListModelPrivate::removeMessages(const QMailMessageIdList &ids)
             removeIndices.append(index);
         }
     }
-    
+
     // Sort the indices to yield ascending order (they must be deleted in descending order!)
     std::sort(removeIndices.begin(), removeIndices.end());
 
@@ -605,17 +605,17 @@ int QMailMessageListModelPrivate::indexOf(const QMailMessageId& id) const
 
 
 /*!
-    \class QMailMessageListModel 
+    \class QMailMessageListModel
 
     \preliminary
-    \ingroup messaginglibrary 
-    \brief The QMailMessageListModel class provides access to a list of stored messages. 
+    \ingroup messaginglibrary
+    \brief The QMailMessageListModel class provides access to a list of stored messages.
 
     The QMailMessageListModel presents a list of all the messages currently stored in
-    the message store. By using the setKey() and sortKey() functions it is possible to 
+    the message store. By using the setKey() and sortKey() functions it is possible to
     have the model represent specific user filtered subsets of messages sorted in a particular order.
 
-    The QMailMessageListModel does not represent the hierarchical links between messages 
+    The QMailMessageListModel does not represent the hierarchical links between messages
     implied by conversation threads.  The model flattens the structure of messages such
     that they can be presented as a one-dimensional list.
 */

@@ -67,11 +67,11 @@ class QMailMessageBody;
 class QMF_EXPORT QMailMessageBodyFwd
 {
 public:
-    enum TransferEncoding 
+    enum TransferEncoding
     {
         NoEncoding = 0,
-        SevenBit = 1, 
-        EightBit = 2, 
+        SevenBit = 1,
+        EightBit = 2,
         Base64 = 3,
         QuotedPrintable = 4,
         Binary = 5
@@ -96,7 +96,7 @@ class QMailMessagePartContainer;
 class QMF_EXPORT QMailMessagePartContainerFwd
 {
 public:
-    enum MultipartType 
+    enum MultipartType
     {
         MultipartNone = 0,
         MultipartSigned = 1,
@@ -122,7 +122,7 @@ public:
         PartReference
     };
 };
-        
+
 class QMailMessageMetaData;
 
 class QMF_EXPORT QMailMessageMetaDataFwd
@@ -162,7 +162,7 @@ public:
 
     enum ResponseType {
         NoResponse          = 0,
-        Reply               = 1, 
+        Reply               = 1,
         ReplyToAll          = 2,
         Forward             = 3,
         ForwardPart         = 4,
@@ -187,7 +187,7 @@ public:
         StorageFormat = 2,
         TransmissionFormat = 3,
         IdentityFormat = 4
-    }; 
+    };
 
     enum ChunkType {
         Text = 0,

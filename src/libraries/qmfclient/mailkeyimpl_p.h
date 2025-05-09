@@ -49,7 +49,7 @@
 #include <QStringList>
 #include "qmflist.h"
 
-template<typename Key> 
+template<typename Key>
 class MailKeyImpl : public QSharedData
 {
 public:
@@ -92,7 +92,7 @@ public:
 };
 
 
-template<typename Key> 
+template<typename Key>
 MailKeyImpl<Key>::MailKeyImpl()
     : QSharedData(),
       combiner(QMailKey::None),
@@ -100,7 +100,7 @@ MailKeyImpl<Key>::MailKeyImpl()
 {
 }
 
-template<typename Key> 
+template<typename Key>
 MailKeyImpl<Key>::MailKeyImpl(Property p, const QVariant &value, QMailKey::Comparator c)
     : QSharedData(),
       combiner(QMailKey::None),
@@ -108,9 +108,9 @@ MailKeyImpl<Key>::MailKeyImpl(Property p, const QVariant &value, QMailKey::Compa
 {
     arguments.append(Argument(p, c, value));
 }
-      
-template<typename Key> 
-template<typename ListType> 
+
+template<typename Key>
+template<typename ListType>
 MailKeyImpl<Key>::MailKeyImpl(const ListType &list, Property p, QMailKey::Comparator c)
     : QSharedData(),
       combiner(QMailKey::None),
@@ -135,8 +135,8 @@ MailKeyImpl<Key>::MailKeyImpl(const ListType &list, Property p, QMailKey::Compar
         arguments.append(Argument(list, p, c));
     }
 }
-      
-template<typename Key> 
+
+template<typename Key>
 Key MailKeyImpl<Key>::negate(const Key &self)
 {
     if (self.isEmpty()) {
@@ -170,7 +170,7 @@ Key MailKeyImpl<Key>::negate(const Key &self)
     return result;
 }
 
-template<typename Key> 
+template<typename Key>
 Key MailKeyImpl<Key>::andCombine(const Key &self, const Key &other)
 {
     if (self.isNonMatching()) {
@@ -191,13 +191,13 @@ Key MailKeyImpl<Key>::andCombine(const Key &self, const Key &other)
         result.d->arguments = self.d->arguments + other.d->arguments;
     } else {
         result.d->subKeys.append(self);
-        result.d->subKeys.append(other); 
+        result.d->subKeys.append(other);
     }
 
-    return result;            
+    return result;
 }
 
-template<typename Key> 
+template<typename Key>
 Key MailKeyImpl<Key>::orCombine(const Key &self, const Key &other)
 {
     if (self.isNonMatching()) {
@@ -215,40 +215,40 @@ Key MailKeyImpl<Key>::orCombine(const Key &self, const Key &other)
         result.d->subKeys = self.d->subKeys + other.d->subKeys;
         result.d->arguments = self.d->arguments + other.d->arguments;
     } else {
-        result.d->subKeys.append(self);    
+        result.d->subKeys.append(self);
         result.d->subKeys.append(other);
     }
 
     return result;
 }
 
-template<typename Key> 
+template<typename Key>
 const Key& MailKeyImpl<Key>::andAssign(Key &self, const Key &other)
 {
     self = (self & other);
     return self;
 }
 
-template<typename Key> 
+template<typename Key>
 const Key& MailKeyImpl<Key>::orAssign(Key &self, const Key &other)
 {
     self = (self | other);
     return self;
 }
 
-template<typename Key> 
+template<typename Key>
 bool MailKeyImpl<Key>::operator==(const MailKeyImpl &other) const
 {
     return ((combiner == other.combiner) && (negated == other.negated) && (subKeys == other.subKeys) && (arguments == other.arguments));
 }
 
-template<typename Key> 
+template<typename Key>
 bool MailKeyImpl<Key>::isEmpty() const
 {
     return ((combiner == QMailKey::None) && (negated == false) && subKeys.isEmpty() && arguments.isEmpty());
 }
 
-template<typename Key> 
+template<typename Key>
 bool MailKeyImpl<Key>::isNonMatching() const
 {
     if ((arguments.count() == 1) &&
@@ -261,14 +261,14 @@ bool MailKeyImpl<Key>::isNonMatching() const
     return false;
 }
 
-template<typename Key> 
+template<typename Key>
 Key MailKeyImpl<Key>::nonMatchingKey()
 {
     return Key(Key::Id, IdType(), QMailKey::Equal);
 }
 
-template<typename Key> 
-template <typename Stream> 
+template<typename Key>
+template <typename Stream>
 void MailKeyImpl<Key>::serialize(Stream &stream) const
 {
     stream << static_cast<int>(combiner);
@@ -283,8 +283,8 @@ void MailKeyImpl<Key>::serialize(Stream &stream) const
         k.serialize(stream);
 }
 
-template<typename Key> 
-template <typename Stream> 
+template<typename Key>
+template <typename Stream>
 void MailKeyImpl<Key>::deserialize(Stream &stream)
 {
     int i = 0;

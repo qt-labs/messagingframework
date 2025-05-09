@@ -35,7 +35,7 @@
 #include <QTest>
 #include <qmailaddress.h>
 
-/* 
+/*
 Note: Any email addresses appearing in this test data must be example addresses,
 as defined by RFC 2606.  Therefore, they should use one of the following domains:
     *.example.{com|org|net}
@@ -106,189 +106,189 @@ void tst_QMailAddress::constructor1_data()
     QTest::addColumn<QString>("address");
     QTest::addColumn<QString>("to_string");
 
-    QTest::newRow("No angle brackets") 
+    QTest::newRow("No angle brackets")
         << true
-        << "wizard@oz.test" 
-        << "wizard@oz.test" 
-        << "wizard@oz.test" 
+        << "wizard@oz.test"
+        << "wizard@oz.test"
+        << "wizard@oz.test"
         << "wizard@oz.test";
 
-    QTest::newRow("preceding comment") 
+    QTest::newRow("preceding comment")
         << true
-        << "(Wizard of Oz) wizard@oz.test" 
-        << "(Wizard of Oz) wizard@oz.test" 
-        << "(Wizard of Oz) wizard@oz.test" 
+        << "(Wizard of Oz) wizard@oz.test"
+        << "(Wizard of Oz) wizard@oz.test"
+        << "(Wizard of Oz) wizard@oz.test"
         << "(Wizard of Oz) wizard@oz.test";
 
-    QTest::newRow("trailing comment") 
+    QTest::newRow("trailing comment")
         << true
         << "wizard@oz.test (Wizard of Oz)"
         << "wizard@oz.test (Wizard of Oz)"
         << "wizard@oz.test (Wizard of Oz)"
         << "wizard@oz.test (Wizard of Oz)";
 
-    QTest::newRow("intervening comment") 
+    QTest::newRow("intervening comment")
         << true
         << "wizard(Wizard of Oz)@oz.test"
         << "wizard(Wizard of Oz)@oz.test"
         << "wizard(Wizard of Oz)@oz.test"
         << "wizard(Wizard of Oz)@oz.test";
 
-    QTest::newRow("No address part") 
+    QTest::newRow("No address part")
         << false
-        << "Wizard Of Oz" 
-        << "Wizard Of Oz" 
-        << "Wizard Of Oz" 
+        << "Wizard Of Oz"
+        << "Wizard Of Oz"
+        << "Wizard Of Oz"
         << "Wizard Of Oz";
 
-    QTest::newRow("Left angle bracket") 
+    QTest::newRow("Left angle bracket")
         << true
-        << "<wizard@oz.test" 
-        << "wizard@oz.test" 
-        << "wizard@oz.test" 
+        << "<wizard@oz.test"
+        << "wizard@oz.test"
+        << "wizard@oz.test"
         << "wizard@oz.test";
 
-    QTest::newRow("Right angle bracket") 
+    QTest::newRow("Right angle bracket")
         << true
-        << "wizard@oz.test>" 
-        << "wizard@oz.test" 
-        << "wizard@oz.test" 
+        << "wizard@oz.test>"
+        << "wizard@oz.test"
+        << "wizard@oz.test"
         << "wizard@oz.test";
 
-    QTest::newRow("Two angle brackets") 
+    QTest::newRow("Two angle brackets")
         << true
-        << "Wizard Of Oz <wizard@oz.test>" 
+        << "Wizard Of Oz <wizard@oz.test>"
         << "Wizard Of Oz"
-        << "wizard@oz.test" 
+        << "wizard@oz.test"
         << "Wizard Of Oz <wizard@oz.test>";
 
-    QTest::newRow("Non-localhost non-conformant domain") 
+    QTest::newRow("Non-localhost non-conformant domain")
         << false
-        << "Wizard Of Oz <wizard@oz>" 
+        << "Wizard Of Oz <wizard@oz>"
         << "Wizard Of Oz"
-        << "wizard@oz" 
+        << "wizard@oz"
         << "Wizard Of Oz <wizard@oz>";
 
-    QTest::newRow("Localhost domain") 
+    QTest::newRow("Localhost domain")
         << true
-        << "Wizard Of Oz <wizard@localhost>" 
+        << "Wizard Of Oz <wizard@localhost>"
         << "Wizard Of Oz"
-        << "wizard@localhost" 
+        << "wizard@localhost"
         << "Wizard Of Oz <wizard@localhost>";
 
-    QTest::newRow("Upper-case address characters") 
+    QTest::newRow("Upper-case address characters")
         << true
-        << "Wizard Of Oz <WiZarD@Oz.tEsT>" 
+        << "Wizard Of Oz <WiZarD@Oz.tEsT>"
         << "Wizard Of Oz"
-        << "WiZarD@Oz.tEsT" 
+        << "WiZarD@Oz.tEsT"
         << "Wizard Of Oz <WiZarD@Oz.tEsT>";
 
-    QTest::newRow("Quoted name") 
+    QTest::newRow("Quoted name")
         << true
-        << "\"Wizard Of Oz\" <wizard@oz.test>" 
+        << "\"Wizard Of Oz\" <wizard@oz.test>"
         << "Wizard Of Oz"
-        << "wizard@oz.test" 
+        << "wizard@oz.test"
         << "\"Wizard Of Oz\" <wizard@oz.test>";
 
-    QTest::newRow("Trailing garbage") 
+    QTest::newRow("Trailing garbage")
         << true
-        << "Wizard Of Oz <wizard@oz.test> crap" 
+        << "Wizard Of Oz <wizard@oz.test> crap"
         << "Wizard Of Oz"
-        << "wizard@oz.test" 
+        << "wizard@oz.test"
         << "Wizard Of Oz <wizard@oz.test>";
 
-    QTest::newRow("Trailing type specifier") 
+    QTest::newRow("Trailing type specifier")
         << true
-        << "Wizard Of Oz <wizard@oz.test>/TYPE=unknown" 
+        << "Wizard Of Oz <wizard@oz.test>/TYPE=unknown"
         << "Wizard Of Oz"
-        << "wizard@oz.test" 
+        << "wizard@oz.test"
         << "Wizard Of Oz <wizard@oz.test> /TYPE=unknown";
 
-    QTest::newRow("With whitespace") 
+    QTest::newRow("With whitespace")
         << true
         << "  \t \"Wizard Of Oz\"\t\t\n \r <wizard@oz.test>  \r\r \t"
         << "Wizard Of Oz"
-        << "wizard@oz.test" 
+        << "wizard@oz.test"
         << "\"Wizard Of Oz\" <wizard@oz.test>";
 
-    QTest::newRow("'(' needs quoting") 
+    QTest::newRow("'(' needs quoting")
         << true
         << "\"Wizard (Of Oz\" <wizard@oz.test>"
         << "Wizard (Of Oz"
         << "wizard@oz.test"
         << "\"Wizard (Of Oz\" <wizard@oz.test>";
 
-    QTest::newRow("')' needs quoting") 
+    QTest::newRow("')' needs quoting")
         << true
         << "\"Wizard) Of Oz\" <wizard@oz.test>"
         << "Wizard) Of Oz"
         << "wizard@oz.test"
         << "\"Wizard) Of Oz\" <wizard@oz.test>";
 
-    QTest::newRow("Comments don't need quoting") 
+    QTest::newRow("Comments don't need quoting")
         << true
         << "Wizard (Of Oz) <wizard@oz.test>"
         << "Wizard (Of Oz)"
         << "wizard@oz.test"
         << "Wizard (Of Oz) <wizard@oz.test>";
 
-    QTest::newRow("Nested Comments don't need quoting") 
+    QTest::newRow("Nested Comments don't need quoting")
         << true
         << "Wizard ((Of) Oz) <wizard@oz.test>"
         << "Wizard ((Of) Oz)"
         << "wizard@oz.test"
         << "Wizard ((Of) Oz) <wizard@oz.test>";
 
-    QTest::newRow("Mismatched Comments need quoting") 
+    QTest::newRow("Mismatched Comments need quoting")
         << true
         << "\"Wizard ((Of Oz)\" <wizard@oz.test>"
         << "Wizard ((Of Oz)"
         << "wizard@oz.test"
         << "\"Wizard ((Of Oz)\" <wizard@oz.test>";
 
-    QTest::newRow("Non-Comments need quoting") 
+    QTest::newRow("Non-Comments need quoting")
         << true
         << "\"Wizard )Of Oz(\" <wizard@oz.test>"
         << "Wizard )Of Oz("
         << "wizard@oz.test"
         << "\"Wizard )Of Oz(\" <wizard@oz.test>";
 
-    QTest::newRow("'<' and '>' need quoting") 
+    QTest::newRow("'<' and '>' need quoting")
         << true
         << "\"Wizard <Of Oz>\" <wizard@oz.test>"
         << "Wizard <Of Oz>"
         << "wizard@oz.test"
         << "\"Wizard <Of Oz>\" <wizard@oz.test>";
 
-    QTest::newRow("'[' and ']' need quoting") 
+    QTest::newRow("'[' and ']' need quoting")
         << true
         << "\"Wizard [Of Oz]\" <wizard@oz.test>"
         << "Wizard [Of Oz]"
         << "wizard@oz.test"
         << "\"Wizard [Of Oz]\" <wizard@oz.test>";
 
-    QTest::newRow("'@' needs quoting") 
+    QTest::newRow("'@' needs quoting")
         << true
         << "\"Wizard at SETI@Home\" <wizard@seti.test>"
         << "Wizard at SETI@Home"
         << "wizard@seti.test"
         << "\"Wizard at SETI@Home\" <wizard@seti.test>";
 
-    QTest::newRow("';' and ':' need quoting") 
+    QTest::newRow("';' and ':' need quoting")
         << true
         << "\"Wizard;Wizard of Oz:\" <wizard@oz.test>"
         << "Wizard;Wizard of Oz:"
         << "wizard@oz.test"
         << "\"Wizard;Wizard of Oz:\" <wizard@oz.test>";
 
-    QTest::newRow("',' needs quoting") 
+    QTest::newRow("',' needs quoting")
         << true
         << "\"Wizard, Of Oz\" <wizard@oz.test>"
         << "Wizard, Of Oz"
         << "wizard@oz.test"
         << "\"Wizard, Of Oz\" <wizard@oz.test>";
 
-    QTest::newRow("'.' needs quoting") 
+    QTest::newRow("'.' needs quoting")
         << true
         << "\"O. Wizard\" <wizard@oz.test>"
         << "O. Wizard"
@@ -364,7 +364,7 @@ void tst_QMailAddress::constructor1_data()
 
 void tst_QMailAddress::constructor1()
 {
-    QFETCH( QString, from ); 
+    QFETCH( QString, from );
 
     QMailAddress addr(from);
     QTEST( addr.isEmailAddress(), "valid_email_address" );
@@ -383,7 +383,7 @@ void tst_QMailAddress::constructor2_data()
     QTest::addColumn<QString>("address");
     QTest::addColumn<QString>("to_string");
 
-    QTest::newRow("No name") 
+    QTest::newRow("No name")
         << QString()
         << "wizard@oz.test"
         << true
@@ -391,7 +391,7 @@ void tst_QMailAddress::constructor2_data()
         << "wizard@oz.test"
         << "wizard@oz.test";
 
-    QTest::newRow("Empty name") 
+    QTest::newRow("Empty name")
         << ""
         << "wizard@oz.test"
         << true
@@ -399,7 +399,7 @@ void tst_QMailAddress::constructor2_data()
         << "wizard@oz.test"
         << "wizard@oz.test";
 
-    QTest::newRow("No address") 
+    QTest::newRow("No address")
         << "Wizard Of Oz"
         << QString()
         << false
@@ -407,7 +407,7 @@ void tst_QMailAddress::constructor2_data()
         << QString()
         << "Wizard Of Oz";
 
-    QTest::newRow("Empty address") 
+    QTest::newRow("Empty address")
         << "Wizard Of Oz"
         << ""
         << false
@@ -415,55 +415,55 @@ void tst_QMailAddress::constructor2_data()
         << QString()
         << "Wizard Of Oz";
 
-    QTest::newRow("Name and address") 
-        << "Wizard Of Oz" 
+    QTest::newRow("Name and address")
+        << "Wizard Of Oz"
         << "wizard@oz.test"
         << true
-        << "Wizard Of Oz" 
+        << "Wizard Of Oz"
         << "wizard@oz.test"
         << "Wizard Of Oz <wizard@oz.test>";
 
     QTest::newRow("Upper-case address characters")
-        << "Wizard Of Oz" 
+        << "Wizard Of Oz"
         << "WIzARd@oZ.TesT"
         << true
-        << "Wizard Of Oz" 
+        << "Wizard Of Oz"
         << "WIzARd@oZ.TesT"
         << "Wizard Of Oz <WIzARd@oZ.TesT>";
 
-    QTest::newRow("Quoted name") 
-        << "\"Wizard Of Oz\"" 
+    QTest::newRow("Quoted name")
+        << "\"Wizard Of Oz\""
         << "wizard@oz.test"
         << true
-        << "Wizard Of Oz" 
+        << "Wizard Of Oz"
         << "wizard@oz.test"
         << "\"Wizard Of Oz\" <wizard@oz.test>";
 
-    QTest::newRow("Non-localhost non-conformant domain") 
+    QTest::newRow("Non-localhost non-conformant domain")
         << "Wizard Of Oz"
-        << "wizard@oz" 
+        << "wizard@oz"
         << false
         << "Wizard Of Oz"
-        << "wizard@oz" 
+        << "wizard@oz"
         << "Wizard Of Oz <wizard@oz>";
 
-    QTest::newRow("Localhost domain") 
+    QTest::newRow("Localhost domain")
         << "Wizard Of Oz"
-        << "wizard@localhost" 
+        << "wizard@localhost"
         << true
         << "Wizard Of Oz"
-        << "wizard@localhost" 
+        << "wizard@localhost"
         << "Wizard Of Oz <wizard@localhost>";
 
-    QTest::newRow("With trailing type specifier") 
-        << "Wizard Of Oz" 
+    QTest::newRow("With trailing type specifier")
+        << "Wizard Of Oz"
         << "wizard@oz.test /TYPE=email"
         << true
-        << "Wizard Of Oz" 
+        << "Wizard Of Oz"
         << "wizard@oz.test"
         << "Wizard Of Oz <wizard@oz.test> /TYPE=email";
 
-    QTest::newRow("'(' needs quoting") 
+    QTest::newRow("'(' needs quoting")
         << "Wizard (Of Oz"
         << "<wizard@oz.test>"
         << true
@@ -471,7 +471,7 @@ void tst_QMailAddress::constructor2_data()
         << "wizard@oz.test"
         << "\"Wizard (Of Oz\" <wizard@oz.test>";
 
-    QTest::newRow("')' needs quoting") 
+    QTest::newRow("')' needs quoting")
         << "Wizard) Of Oz"
         << "<wizard@oz.test>"
         << true
@@ -479,7 +479,7 @@ void tst_QMailAddress::constructor2_data()
         << "wizard@oz.test"
         << "\"Wizard) Of Oz\" <wizard@oz.test>";
 
-    QTest::newRow("Comments don't need quoting") 
+    QTest::newRow("Comments don't need quoting")
         << "Wizard (Of Oz)"
         << "wizard@oz.test"
         << true
@@ -487,7 +487,7 @@ void tst_QMailAddress::constructor2_data()
         << "wizard@oz.test"
         << "Wizard (Of Oz) <wizard@oz.test>";
 
-    QTest::newRow("Nested Comments don't need quoting") 
+    QTest::newRow("Nested Comments don't need quoting")
         << "Wizard ((Of) Oz)"
         << "wizard@oz.test"
         << true
@@ -495,7 +495,7 @@ void tst_QMailAddress::constructor2_data()
         << "wizard@oz.test"
         << "Wizard ((Of) Oz) <wizard@oz.test>";
 
-    QTest::newRow("Mismatched Comments need quoting") 
+    QTest::newRow("Mismatched Comments need quoting")
         << "Wizard ((Of Oz)"
         << "wizard@oz.test"
         << true
@@ -503,7 +503,7 @@ void tst_QMailAddress::constructor2_data()
         << "wizard@oz.test"
         << "\"Wizard ((Of Oz)\" <wizard@oz.test>";
 
-    QTest::newRow("Non-Comments need quoting") 
+    QTest::newRow("Non-Comments need quoting")
         << "Wizard )Of Oz("
         << "wizard@oz.test"
         << true
@@ -511,7 +511,7 @@ void tst_QMailAddress::constructor2_data()
         << "wizard@oz.test"
         << "\"Wizard )Of Oz(\" <wizard@oz.test>";
 
-    QTest::newRow("'<' and '>' need quoting") 
+    QTest::newRow("'<' and '>' need quoting")
         << "Wizard <Of Oz>"
         << "wizard@oz.test"
         << true
@@ -519,7 +519,7 @@ void tst_QMailAddress::constructor2_data()
         << "wizard@oz.test"
         << "\"Wizard <Of Oz>\" <wizard@oz.test>";
 
-    QTest::newRow("'[' and ']' need quoting") 
+    QTest::newRow("'[' and ']' need quoting")
         << "Wizard [Of Oz]"
         << "wizard@oz.test"
         << true
@@ -527,7 +527,7 @@ void tst_QMailAddress::constructor2_data()
         << "wizard@oz.test"
         << "\"Wizard [Of Oz]\" <wizard@oz.test>";
 
-    QTest::newRow("'@' needs quoting") 
+    QTest::newRow("'@' needs quoting")
         << "Wizard at SETI@Home"
         << "wizard@seti.test"
         << true
@@ -535,7 +535,7 @@ void tst_QMailAddress::constructor2_data()
         << "wizard@seti.test"
         << "\"Wizard at SETI@Home\" <wizard@seti.test>";
 
-    QTest::newRow("':' and ';' need quoting") 
+    QTest::newRow("':' and ';' need quoting")
         << "Wizard:Wizard of Oz;"
         << "wizard@oz.test"
         << true
@@ -543,7 +543,7 @@ void tst_QMailAddress::constructor2_data()
         << "wizard@oz.test"
         << "\"Wizard:Wizard of Oz;\" <wizard@oz.test>";
 
-    QTest::newRow("',' needs quoting") 
+    QTest::newRow("',' needs quoting")
         << "Wizard, Of Oz"
         << "wizard@oz.test"
         << true
@@ -551,7 +551,7 @@ void tst_QMailAddress::constructor2_data()
         << "wizard@oz.test"
         << "\"Wizard, Of Oz\" <wizard@oz.test>";
 
-    QTest::newRow("'.' needs quoting") 
+    QTest::newRow("'.' needs quoting")
         << "O. Wizard"
         << "wizard@oz.test"
         << true
@@ -783,47 +783,47 @@ void tst_QMailAddress::groupMembers_data()
     */
 
     QTest::newRow("Group ctor1")
-        << "Wizard Group:Wizard Of Oz <wizard@oz.test>, Rincewind <wizzard@uu.edu.example>;" 
+        << "Wizard Group:Wizard Of Oz <wizard@oz.test>, Rincewind <wizzard@uu.edu.example>;"
         << QString()
         << QString()
         << "Wizard Group"
-        << "Wizard Of Oz <wizard@oz.test>, Rincewind <wizzard@uu.edu.example>" 
+        << "Wizard Of Oz <wizard@oz.test>, Rincewind <wizzard@uu.edu.example>"
         << "Wizard Group: Wizard Of Oz <wizard@oz.test>, Rincewind <wizzard@uu.edu.example>;"
         << true
-        << ( QStringList() << "Wizard Of Oz" << "Rincewind" ) 
+        << ( QStringList() << "Wizard Of Oz" << "Rincewind" )
         << ( QStringList() << "wizard@oz.test" << "wizzard@uu.edu.example" );
 
     QTest::newRow("Group ctor2")
         << QString()
         << "Wizard Group"
-        << "Wizard Of Oz <wizard@oz.test>, Rincewind <wizzard@uu.edu.example>" 
+        << "Wizard Of Oz <wizard@oz.test>, Rincewind <wizzard@uu.edu.example>"
         << "Wizard Group"
-        << "Wizard Of Oz <wizard@oz.test>, Rincewind <wizzard@uu.edu.example>" 
+        << "Wizard Of Oz <wizard@oz.test>, Rincewind <wizzard@uu.edu.example>"
         << "Wizard Group: Wizard Of Oz <wizard@oz.test>, Rincewind <wizzard@uu.edu.example>;"
         << true
-        << ( QStringList() << "Wizard Of Oz" << "Rincewind" ) 
+        << ( QStringList() << "Wizard Of Oz" << "Rincewind" )
         << ( QStringList() << "wizard@oz.test" << "wizzard@uu.edu.example" );
 
     QTest::newRow("Group with quoted member names ctor1")
-        << "Wizard Group: \"Wizard Of Oz\" <wizard@oz.test>, \"Rincewind\" <wizzard@uu.edu.example>;" 
+        << "Wizard Group: \"Wizard Of Oz\" <wizard@oz.test>, \"Rincewind\" <wizzard@uu.edu.example>;"
         << QString()
         << QString()
         << "Wizard Group"
-        << "\"Wizard Of Oz\" <wizard@oz.test>, \"Rincewind\" <wizzard@uu.edu.example>" 
+        << "\"Wizard Of Oz\" <wizard@oz.test>, \"Rincewind\" <wizzard@uu.edu.example>"
         << "Wizard Group: \"Wizard Of Oz\" <wizard@oz.test>, \"Rincewind\" <wizzard@uu.edu.example>;"
         << true
-        << ( QStringList() << "Wizard Of Oz" << "Rincewind" ) 
+        << ( QStringList() << "Wizard Of Oz" << "Rincewind" )
         << ( QStringList() << "wizard@oz.test" << "wizzard@uu.edu.example" );
 
     QTest::newRow("Group with quoted member names ctor2")
         << QString()
         << "Wizard Group"
-        << "\"Wizard Of Oz\" <wizard@oz.test>, \"Rincewind\" <wizzard@uu.edu.example>" 
+        << "\"Wizard Of Oz\" <wizard@oz.test>, \"Rincewind\" <wizzard@uu.edu.example>"
         << "Wizard Group"
-        << "\"Wizard Of Oz\" <wizard@oz.test>, \"Rincewind\" <wizzard@uu.edu.example>" 
+        << "\"Wizard Of Oz\" <wizard@oz.test>, \"Rincewind\" <wizzard@uu.edu.example>"
         << "Wizard Group: \"Wizard Of Oz\" <wizard@oz.test>, \"Rincewind\" <wizzard@uu.edu.example>;"
         << true
-        << ( QStringList() << "Wizard Of Oz" << "Rincewind" ) 
+        << ( QStringList() << "Wizard Of Oz" << "Rincewind" )
         << ( QStringList() << "wizard@oz.test" << "wizzard@uu.edu.example" );
 }
 
@@ -880,68 +880,68 @@ void tst_QMailAddress::isPhoneNumber_data()
     QTest::addColumn<QString>("address");
     QTest::addColumn<bool>("phoneNumber");
 
-    QTest::newRow("simple") 
+    QTest::newRow("simple")
         << "32199000" << true;
 
-    QTest::newRow("legal white space") 
+    QTest::newRow("legal white space")
         << "32 19 9000" << true;
 
-    QTest::newRow("area code") 
+    QTest::newRow("area code")
         << "(07) 3219 9000" << true;
 
-    QTest::newRow("country code") 
+    QTest::newRow("country code")
         << "+61 7 3219 9000" << true;
 
-    QTest::newRow("mobile") 
+    QTest::newRow("mobile")
         << "0404 444 444" << true;
 
-    QTest::newRow("dashed") 
+    QTest::newRow("dashed")
         << "1800-123-321" << true;
 
-    QTest::newRow("accepted chars") 
+    QTest::newRow("accepted chars")
         << "+01 2#3 45* 678X90" << true;
 
-    QTest::newRow("extension 1") 
+    QTest::newRow("extension 1")
         << "(07) 3219 9000 (x100)" << true;
 
-    QTest::newRow("extension 2") 
+    QTest::newRow("extension 2")
         << "(07) 3219 9000 (P100)" << true;
 
-    QTest::newRow("extension 3") 
+    QTest::newRow("extension 3")
         << "(07) 3219 9000 w100" << true;
 
-    QTest::newRow("extension 4") 
+    QTest::newRow("extension 4")
         << "(07) 3219 9000,100" << true;
 
     // Perhaps this should be parsed?
-    QTest::newRow("alphanumeric") 
+    QTest::newRow("alphanumeric")
         << "1800-Reverse" << false;
 
-    QTest::newRow("email") 
+    QTest::newRow("email")
         << "1800@123321" << false;
 
-    QTest::newRow("illegal white space 1") 
+    QTest::newRow("illegal white space 1")
         << " 3219\t9000" << false;
 
-    QTest::newRow("illegal white space 2") 
+    QTest::newRow("illegal white space 2")
         << " 3219\n9000" << false;
 
-    QTest::newRow("garbage 1") 
+    QTest::newRow("garbage 1")
         << "[1800 123 321]" << false;
 
-    QTest::newRow("garbage 2") 
+    QTest::newRow("garbage 2")
         << "1800 123 321:" << false;
 
-    QTest::newRow("garbage 3") 
+    QTest::newRow("garbage 3")
         << "1800_123_321" << false;
 
-    QTest::newRow("rejected chars 1") 
+    QTest::newRow("rejected chars 1")
         << "A" << false;
 
-    QTest::newRow("rejected chars 2") 
+    QTest::newRow("rejected chars 2")
         << "@" << false;
 
-    QTest::newRow("rejected chars 3") 
+    QTest::newRow("rejected chars 3")
         << "&" << false;
 }
 
@@ -958,31 +958,31 @@ void tst_QMailAddress::isEmailAddress_data()
     QTest::addColumn<QString>("address");
     QTest::addColumn<bool>("emailAddress");
 
-    QTest::newRow("simple") 
+    QTest::newRow("simple")
         << "fred@example.net" << true;
 
-    QTest::newRow("white space 1") 
+    QTest::newRow("white space 1")
         << " fred@example.net   " << true;
 
-    QTest::newRow("white space 2") 
+    QTest::newRow("white space 2")
         << "\t\n  \tfred@example.net\r \n" << true;
 
-    QTest::newRow("multi-part domain") 
+    QTest::newRow("multi-part domain")
         << "fred@mail-machine-1.example.net.au" << true;
 
-    QTest::newRow("multi-part name") 
+    QTest::newRow("multi-part name")
         << "fred.smith@example.net" << true;
 
-    QTest::newRow("short") 
+    QTest::newRow("short")
         << "x@y.zz" << true;
 
-    QTest::newRow("missing mailbox name") 
+    QTest::newRow("missing mailbox name")
         << "@example.net" << false;
 
-    QTest::newRow("missing domain") 
+    QTest::newRow("missing domain")
         << "fred@" << false;
 
-    QTest::newRow("single part domain") 
+    QTest::newRow("single part domain")
         << "fred@example" << false;
 }
 
@@ -1004,45 +1004,45 @@ void tst_QMailAddress::toStringList_data()
         << QStringList();
 
     QTest::newRow("Single plain address")
-        << ( QList<QMailAddress>() 
+        << ( QList<QMailAddress>()
                 << QMailAddress("wizard@oz.test") )
-        << ( QStringList() 
+        << ( QStringList()
                 << "wizard@oz.test" );
 
     QTest::newRow("Single named address")
-        << ( QList<QMailAddress>() 
+        << ( QList<QMailAddress>()
                 << QMailAddress("\"Wizard, Of Oz\" <wizard@oz.test>") )
-        << ( QStringList() 
+        << ( QStringList()
                 << "\"Wizard, Of Oz\" <wizard@oz.test>" );
 
     QTest::newRow("Single group address")
-        << ( QList<QMailAddress>() 
+        << ( QList<QMailAddress>()
                 << QMailAddress("Wizard Group: \"Wizard, Of Oz\" <wizard@oz.test>, Rincewind <wizzard@uu.edu.example>;") )
-        << ( QStringList() 
+        << ( QStringList()
                 << "Wizard Group: \"Wizard, Of Oz\" <wizard@oz.test>, Rincewind <wizzard@uu.edu.example>;" );
 
     QTest::newRow("Multiple named addressses")
-        << ( QList<QMailAddress>() 
+        << ( QList<QMailAddress>()
                 << QMailAddress("\"Wizard, Of Oz\" <wizard@oz.test>")
                 << QMailAddress("Rincewind <wizzard@uu.edu.example>") )
-        << ( QStringList() 
+        << ( QStringList()
                 << "\"Wizard, Of Oz\" <wizard@oz.test>"
                 << "Rincewind <wizzard@uu.edu.example>" );
 
     QTest::newRow("Multiple group addresses")
-        << ( QList<QMailAddress>() 
+        << ( QList<QMailAddress>()
                 << QMailAddress("Wizard Group: \"Wizard, Of Oz\" <wizard@oz.test>, Rincewind <wizzard@uu.edu.example>;")
                 << QMailAddress("Witch Group: Wicked Witch (East) <eastwitch@oz.test>, \"Wicked Witch, South\" <southwitch@oz.test>;") )
-        << ( QStringList() 
+        << ( QStringList()
                 << "Wizard Group: \"Wizard, Of Oz\" <wizard@oz.test>, Rincewind <wizzard@uu.edu.example>;"
                 << "Witch Group: Wicked Witch (East) <eastwitch@oz.test>, \"Wicked Witch, South\" <southwitch@oz.test>;" );
 
     QTest::newRow("Multiple mixed addresses")
-        << ( QList<QMailAddress>() 
+        << ( QList<QMailAddress>()
                 << QMailAddress("Wizard Group: \"Wizard, Of Oz\" <wizard@oz.test>, Rincewind <wizzard@uu.edu.example>;")
                 << QMailAddress("Dorothy <dot2000@kansas.test>")
                 << QMailAddress("Witch Group: Wicked Witch (East) <eastwitch@oz.test>, \"Wicked Witch, South\" <southwitch@oz.test>;") )
-        << ( QStringList() 
+        << ( QStringList()
                 << "Wizard Group: \"Wizard, Of Oz\" <wizard@oz.test>, Rincewind <wizzard@uu.edu.example>;"
                 << "Dorothy <dot2000@kansas.test>"
                 << "Witch Group: Wicked Witch (East) <eastwitch@oz.test>, \"Wicked Witch, South\" <southwitch@oz.test>;" );
@@ -1065,122 +1065,122 @@ void tst_QMailAddress::fromStringList1_data()
 
     QTest::newRow("Single plain address")
         << "wizard@oz.test"
-        << ( QList<QMailAddress>() 
+        << ( QList<QMailAddress>()
                 << QMailAddress("wizard@oz.test") );
 
     QTest::newRow("Single named address")
         << "\"Wizard, Of Oz\" <wizard@oz.test>"
-        << ( QList<QMailAddress>() 
+        << ( QList<QMailAddress>()
                 << QMailAddress("\"Wizard, Of Oz\" <wizard@oz.test>") );
 
     QTest::newRow("Single group address")
         << "Wizard Group: \"Wizard, Of Oz\" <wizard@oz.test>, Rincewind <wizzard@uu.edu.example>;"
-        << ( QList<QMailAddress>() 
+        << ( QList<QMailAddress>()
                 << QMailAddress("Wizard Group: \"Wizard, Of Oz\" <wizard@oz.test>, Rincewind <wizzard@uu.edu.example>;") );
 
     QTest::newRow("Multiple plain addressses, comma-separated")
-        << ( QStringList() 
+        << ( QStringList()
                 << "wizard@oz.test"
                 << "wizzard@uu.edu.example" ).join(QString(','))
-        << ( QList<QMailAddress>() 
+        << ( QList<QMailAddress>()
                 << QMailAddress("wizard@oz.test")
                 << QMailAddress("wizzard@uu.edu.example") );
 
     QTest::newRow("Multiple plain addressses, semicolon-separated")
-        << ( QStringList() 
+        << ( QStringList()
                 << "wizard@oz.test"
                 << "wizzard@uu.edu.example" ).join(QString(';'))
-        << ( QList<QMailAddress>() 
+        << ( QList<QMailAddress>()
                 << QMailAddress("wizard@oz.test")
                 << QMailAddress("wizzard@uu.edu.example") );
 
     QTest::newRow("Multiple plain addressses, whitespace-separated")
-        << ( QStringList() 
+        << ( QStringList()
                 << "wizard@oz.test"
                 << "wizzard@uu.edu.example" ).join(QString(' '))
-        << ( QList<QMailAddress>() 
+        << ( QList<QMailAddress>()
                 << QMailAddress("wizard@oz.test")
                 << QMailAddress("wizzard@uu.edu.example") );
 
     QTest::newRow("Multiple named addressses, comma-separated")
-        << ( QStringList() 
+        << ( QStringList()
                 << "\"Wizard, Of Oz\" <wizard@oz.test>"
                 << "Rincewind <wizzard@uu.edu.example>" ).join(QString(','))
-        << ( QList<QMailAddress>() 
+        << ( QList<QMailAddress>()
                 << QMailAddress("\"Wizard, Of Oz\" <wizard@oz.test>")
                 << QMailAddress("Rincewind <wizzard@uu.edu.example>") );
 
     QTest::newRow("Multiple named addressses, semicolon-separated")
-        << ( QStringList() 
+        << ( QStringList()
                 << "\"Wizard, Of Oz\" <wizard@oz.test>"
                 << "Rincewind <wizzard@uu.edu.example>" ).join(QString(';'))
-        << ( QList<QMailAddress>() 
+        << ( QList<QMailAddress>()
                 << QMailAddress("\"Wizard, Of Oz\" <wizard@oz.test>")
                 << QMailAddress("Rincewind <wizzard@uu.edu.example>") );
 
     QTest::newRow("Multiple named addressses, whitespace-separated")
-        << ( QStringList() 
+        << ( QStringList()
                 << "\"Wizard, Of Oz\" <wizard@oz.test>"
                 << "Rincewind <wizzard@uu.edu.example>" ).join(QString(' '))
-        << ( QList<QMailAddress>() 
+        << ( QList<QMailAddress>()
                 << QMailAddress("\"Wizard, Of Oz\" <wizard@oz.test>")
                 << QMailAddress("Rincewind <wizzard@uu.edu.example>") );
 
     QTest::newRow("Multiple group addresses, comma-separated")
-        << ( QStringList() 
+        << ( QStringList()
                 << "Wizard Group: \"Wizard, Of Oz\" <wizard@oz.test>, Rincewind <wizzard@uu.edu.example>;"
                 << "Witch Group: Wicked Witch (East) <eastwitch@oz.test>, \"Wicked Witch, South\" <southwitch@oz.test>;" ).join(QString(','))
-        << ( QList<QMailAddress>() 
+        << ( QList<QMailAddress>()
                 << QMailAddress("Wizard Group: \"Wizard, Of Oz\" <wizard@oz.test>, Rincewind <wizzard@uu.edu.example>;")
                 << QMailAddress("Witch Group: Wicked Witch (East) <eastwitch@oz.test>, \"Wicked Witch, South\" <southwitch@oz.test>;") );
 
     QTest::newRow("Multiple group addresses, semicolon-separated")
-        << ( QStringList() 
+        << ( QStringList()
                 << "Wizard Group: \"Wizard, Of Oz\" <wizard@oz.test>, Rincewind <wizzard@uu.edu.example>;"
                 << "Witch Group: Wicked Witch (East) <eastwitch@oz.test>, \"Wicked Witch, South\" <southwitch@oz.test>;" ).join(QString(';'))
-        << ( QList<QMailAddress>() 
+        << ( QList<QMailAddress>()
                 << QMailAddress("Wizard Group: \"Wizard, Of Oz\" <wizard@oz.test>, Rincewind <wizzard@uu.edu.example>;")
                 << QMailAddress("Witch Group: Wicked Witch (East) <eastwitch@oz.test>, \"Wicked Witch, South\" <southwitch@oz.test>;") );
 
     QTest::newRow("Multiple group addresses, whitespace-separated")
-        << ( QStringList() 
+        << ( QStringList()
                 << "Wizard Group: \"Wizard, Of Oz\" <wizard@oz.test>, Rincewind <wizzard@uu.edu.example>;"
                 << "Witch Group: Wicked Witch (East) <eastwitch@oz.test>, \"Wicked Witch, South\" <southwitch@oz.test>;" ).join(QString(' '))
-        << ( QList<QMailAddress>() 
+        << ( QList<QMailAddress>()
                 << QMailAddress("Wizard Group: \"Wizard, Of Oz\" <wizard@oz.test>, Rincewind <wizzard@uu.edu.example>;")
                 << QMailAddress("Witch Group: Wicked Witch (East) <eastwitch@oz.test>, \"Wicked Witch, South\" <southwitch@oz.test>;") );
 
     QTest::newRow("Multiple mixed addresses, comma-separated")
-        << ( QStringList() 
+        << ( QStringList()
                 << "Wizard Group: \"Wizard, Of Oz\" <wizard@oz.test>, Rincewind <wizzard@uu.edu.example>;"
                 << "gandalf@whitewizard.org"
                 << "Dorothy <dot2000@kansas.test>"
                 << "Witch Group: Wicked Witch (East) <eastwitch@oz.test>, \"Wicked Witch, South\" <southwitch@oz.test>;" ).join(QString(','))
-        << ( QList<QMailAddress>() 
+        << ( QList<QMailAddress>()
                 << QMailAddress("Wizard Group: \"Wizard, Of Oz\" <wizard@oz.test>, Rincewind <wizzard@uu.edu.example>;")
                 << QMailAddress("gandalf@whitewizard.org")
                 << QMailAddress("Dorothy <dot2000@kansas.test>")
                 << QMailAddress("Witch Group: Wicked Witch (East) <eastwitch@oz.test>, \"Wicked Witch, South\" <southwitch@oz.test>;") );
 
     QTest::newRow("Multiple mixed addresses, semicolon-separated")
-        << ( QStringList() 
+        << ( QStringList()
                 << "Wizard Group: \"Wizard, Of Oz\" <wizard@oz.test>, Rincewind <wizzard@uu.edu.example>;"
                 << "gandalf@whitewizard.org"
                 << "Dorothy <dot2000@kansas.test>"
                 << "Witch Group: Wicked Witch (East) <eastwitch@oz.test>, \"Wicked Witch, South\" <southwitch@oz.test>;" ).join(QString(';'))
-        << ( QList<QMailAddress>() 
+        << ( QList<QMailAddress>()
                 << QMailAddress("Wizard Group: \"Wizard, Of Oz\" <wizard@oz.test>, Rincewind <wizzard@uu.edu.example>;")
                 << QMailAddress("gandalf@whitewizard.org")
                 << QMailAddress("Dorothy <dot2000@kansas.test>")
                 << QMailAddress("Witch Group: Wicked Witch (East) <eastwitch@oz.test>, \"Wicked Witch, South\" <southwitch@oz.test>;") );
 
     QTest::newRow("Multiple mixed addresses, whitespace-separated")
-        << ( QStringList() 
+        << ( QStringList()
                 << "Wizard Group: \"Wizard, Of Oz\" <wizard@oz.test>, Rincewind <wizzard@uu.edu.example>;"
                 << "gandalf@whitewizard.org"
                 << "Dorothy <dot2000@kansas.test>"
                 << "Witch Group: Wicked Witch (East) <eastwitch@oz.test>, \"Wicked Witch, South\" <southwitch@oz.test>;" ).join(QString(' '))
-        << ( QList<QMailAddress>() 
+        << ( QList<QMailAddress>()
                 << QMailAddress("Wizard Group: \"Wizard, Of Oz\" <wizard@oz.test>, Rincewind <wizzard@uu.edu.example>;")
                 << QMailAddress("gandalf@whitewizard.org")
                 << QMailAddress("Dorothy <dot2000@kansas.test>")

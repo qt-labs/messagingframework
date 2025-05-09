@@ -168,7 +168,7 @@ void tst_QMailMessageBody::fromQByteArray_data()
     QByteArray source, input;
 
     source = "This is a simple test";
-    QTest::newRow("simple") 
+    QTest::newRow("simple")
         << source
         << QByteArray("text/plain")
         << QMailMessageBody::EightBit
@@ -178,7 +178,7 @@ void tst_QMailMessageBody::fromQByteArray_data()
 
     source = "This is a proper test with encoded input";
     input = encode(source, "ISO-8859-1",  QMailMessageBody::Base64);
-    QTest::newRow("encoded - base64") 
+    QTest::newRow("encoded - base64")
         << input
         << QByteArray("text/plain; charset=ISO-8859-1")
         << QMailMessageBody::Base64
@@ -187,7 +187,7 @@ void tst_QMailMessageBody::fromQByteArray_data()
         << source;
 
     input = encode(source, "ISO-8859-1",  QMailMessageBody::QuotedPrintable);
-    QTest::newRow("encoded - QP") 
+    QTest::newRow("encoded - QP")
         << input
         << QByteArray("text/plain; charset=ISO-8859-1")
         << QMailMessageBody::QuotedPrintable
@@ -196,7 +196,7 @@ void tst_QMailMessageBody::fromQByteArray_data()
         << source;
 
     source = "This is a proper test with unencoded input";
-    QTest::newRow("decoded - base64") 
+    QTest::newRow("decoded - base64")
         << source
         << QByteArray("text/plain; charset=ISO-8859-1")
         << QMailMessageBody::Base64
@@ -204,7 +204,7 @@ void tst_QMailMessageBody::fromQByteArray_data()
         << encode(source, QMailMessageBody::Base64)
         << source;
 
-    QTest::newRow("decoded - QP") 
+    QTest::newRow("decoded - QP")
         << source
         << QByteArray("text/plain; charset=ISO-8859-1")
         << QMailMessageBody::QuotedPrintable
@@ -215,7 +215,7 @@ void tst_QMailMessageBody::fromQByteArray_data()
 
 void tst_QMailMessageBody::fromQByteArray()
 {
-    QFETCH( QByteArray, input ); 
+    QFETCH( QByteArray, input );
     QFETCH( QByteArray, type );
     QFETCH( QMailMessageBody::TransferEncoding, encoding );
     QFETCH( QMailMessageBody::EncodingStatus, status );
@@ -236,22 +236,22 @@ void tst_QMailMessageBody::fromQString_data()
     QString source;
 
     source = "This is a simple test";
-    QTest::newRow("simple") 
+    QTest::newRow("simple")
         << source
         << QByteArray("text/plain; charset=UTF-8")
         << QMailMessageBody::EightBit
         << encode(source, "UTF-8", QMailMessageBody::EightBit)
         << source;
 
-    source = "This is a proper test"; 
-    QTest::newRow("basic - base64") 
+    source = "This is a proper test";
+    QTest::newRow("basic - base64")
         << source
         << QByteArray("text/plain; charset=UTF-8")
         << QMailMessageBody::Base64
         << encode(source, "UTF-8", QMailMessageBody::Base64)
         << source;
 
-    QTest::newRow("basic - QP") 
+    QTest::newRow("basic - QP")
         << source
         << QByteArray("text/plain; charset=UTF-8")
         << QMailMessageBody::QuotedPrintable
@@ -321,7 +321,7 @@ void tst_QMailMessageBody::fromFile_data()
 
     // Non-encoding tests
     string_source = "This is a simple test";
-    QTest::newRow("simple - QString") 
+    QTest::newRow("simple - QString")
         << string_source
         << QByteArray()
         << QByteArray("text/plain; charset=UTF-8")
@@ -333,7 +333,7 @@ void tst_QMailMessageBody::fromFile_data()
         << ( QStringList() << "text" << "plain" << "UTF-8" );
 
     bytearray_source = "This is a simple test";
-    QTest::newRow("simple - QByteArray") 
+    QTest::newRow("simple - QByteArray")
         << QString()
         << bytearray_source
         << QByteArray("text/plain")
@@ -345,8 +345,8 @@ void tst_QMailMessageBody::fromFile_data()
         << ( QStringList() << "text" << "plain" << QString() );
 
     // Encode with B64 and QP
-    string_source = "This is a proper test"; 
-    QTest::newRow("basic - string - base64") 
+    string_source = "This is a proper test";
+    QTest::newRow("basic - string - base64")
         << string_source
         << QByteArray()
         << QByteArray("text/plain; charset=UTF-8")
@@ -357,7 +357,7 @@ void tst_QMailMessageBody::fromFile_data()
         << string_source
         << ( QStringList() << "text" << "plain" << "UTF-8" );
 
-    QTest::newRow("basic - string - QP") 
+    QTest::newRow("basic - string - QP")
         << string_source
         << QByteArray()
         << QByteArray("text/plain; charset=UTF-8")
@@ -368,8 +368,8 @@ void tst_QMailMessageBody::fromFile_data()
         << string_source
         << ( QStringList() << "text" << "plain" << "UTF-8" );
 
-    bytearray_source = "This is a proper test"; 
-    QTest::newRow("basic - bytearray - base64") 
+    bytearray_source = "This is a proper test";
+    QTest::newRow("basic - bytearray - base64")
         << QString()
         << bytearray_source
         << QByteArray("text/plain; charset=ASCII")
@@ -380,7 +380,7 @@ void tst_QMailMessageBody::fromFile_data()
         << QString()
         << ( QStringList() << "text" << "plain" << "ASCII" );
 
-    QTest::newRow("basic - bytearray - base64 - encoded") 
+    QTest::newRow("basic - bytearray - base64 - encoded")
         << QString()
         << encode(bytearray_source, QMailMessageBody::Base64)
         << QByteArray("text/plain; charset=ASCII")
@@ -391,7 +391,7 @@ void tst_QMailMessageBody::fromFile_data()
         << QString()
         << ( QStringList() << "text" << "plain" << "ASCII" );
 
-    QTest::newRow("basic - bytearray - QP") 
+    QTest::newRow("basic - bytearray - QP")
         << QString()
         << bytearray_source
         << QByteArray("text/plain; charset=ASCII")
@@ -402,7 +402,7 @@ void tst_QMailMessageBody::fromFile_data()
         << QString()
         << ( QStringList() << "text" << "plain" << "ASCII" );
 
-    QTest::newRow("basic - bytearray - QP - encoded") 
+    QTest::newRow("basic - bytearray - QP - encoded")
         << QString()
         << encode(bytearray_source, QMailMessageBody::QuotedPrintable)
         << QByteArray("text/plain; charset=ASCII")
@@ -415,7 +415,7 @@ void tst_QMailMessageBody::fromFile_data()
 
     // Latin-1 Characters
     string_source = QString("Joh\361 D\366e");
-    QTest::newRow("Latin-1 - string - base64") 
+    QTest::newRow("Latin-1 - string - base64")
         << string_source
         << QByteArray()
         << QByteArray("text/other; charset=UTF-8")
@@ -426,7 +426,7 @@ void tst_QMailMessageBody::fromFile_data()
         << string_source
         << ( QStringList() << "text" << "other" << "UTF-8" );
 
-    QTest::newRow("Latin-1 - string - QP") 
+    QTest::newRow("Latin-1 - string - QP")
         << string_source
         << QByteArray()
         << QByteArray("text/other; charset=UTF-8")
@@ -438,7 +438,7 @@ void tst_QMailMessageBody::fromFile_data()
         << ( QStringList() << "text" << "other" << "UTF-8" );
 
     bytearray_source = QByteArray("Joh\361 D\366e");
-    QTest::newRow("Latin-1 - bytearray - base64") 
+    QTest::newRow("Latin-1 - bytearray - base64")
         << QString()
         << bytearray_source
         << QByteArray("text/plain; charset=ISO-8859-1")
@@ -449,7 +449,7 @@ void tst_QMailMessageBody::fromFile_data()
         << QString()
         << ( QStringList() << "text" << "plain" << "ISO-8859-1" );
 
-    QTest::newRow("Latin-1 - bytearray - base64 - encoded") 
+    QTest::newRow("Latin-1 - bytearray - base64 - encoded")
         << QString()
         << encode(bytearray_source, QMailMessageBody::Base64)
         << QByteArray("text/plain; charset=ISO-8859-1")
@@ -460,7 +460,7 @@ void tst_QMailMessageBody::fromFile_data()
         << QString()
         << ( QStringList() << "text" << "plain" << "ISO-8859-1" );
 
-    QTest::newRow("Latin-1 - bytearray - QP") 
+    QTest::newRow("Latin-1 - bytearray - QP")
         << QString()
         << bytearray_source
         << QByteArray("text/plain; charset=ISO-8859-1")
@@ -471,7 +471,7 @@ void tst_QMailMessageBody::fromFile_data()
         << QString()
         << ( QStringList() << "text" << "plain" << "ISO-8859-1" );
 
-    QTest::newRow("Latin-1 - bytearray - QP - encoded") 
+    QTest::newRow("Latin-1 - bytearray - QP - encoded")
         << QString()
         << encode(bytearray_source, QMailMessageBody::QuotedPrintable)
         << QByteArray("text/plain; charset=ISO-8859-1")
@@ -486,7 +486,7 @@ void tst_QMailMessageBody::fromFile_data()
     const QChar chars[] = { static_cast<char16_t>(0x0636), static_cast<char16_t>(0x0669),
                             static_cast<char16_t>(0x06a5), static_cast<char16_t>(0x06b4) };
     string_source = QString(chars, 4);
-    QTest::newRow("unicode - string - base64") 
+    QTest::newRow("unicode - string - base64")
         << string_source
         << QByteArray()
         << QByteArray("text/plain; charset=UTF-8")
@@ -497,7 +497,7 @@ void tst_QMailMessageBody::fromFile_data()
         << string_source
         << ( QStringList() << "text" << "plain" << "UTF-8" );
 
-    QTest::newRow("unicode - string - QP") 
+    QTest::newRow("unicode - string - QP")
         << string_source
         << QByteArray()
         << QByteArray("text/plain; charset=UTF-8")
@@ -522,8 +522,8 @@ void tst_QMailMessageBody::fromFile_data()
 
 void tst_QMailMessageBody::fromFile()
 {
-    QFETCH( QString, string_input ); 
-    QFETCH( QByteArray, bytearray_input ); 
+    QFETCH( QString, string_input );
+    QFETCH( QByteArray, bytearray_input );
     QFETCH( QByteArray, type );
     QFETCH( QMailMessageBody::TransferEncoding, encoding );
     QFETCH( QMailMessageBody::EncodingStatus, status );
@@ -583,14 +583,14 @@ void tst_QMailMessageBody::toFile_data()
 
     QString string_source = "This is a simple test";
 
-    QTest::newRow("string - decoded") 
+    QTest::newRow("string - decoded")
         << string_source
         << QByteArray()
         << QByteArray("text/plain; charset=UTF-8")
         << QMailMessageBody::Decoded
         << QByteArray();
 
-    QTest::newRow("string - encoded") 
+    QTest::newRow("string - encoded")
         << string_source
         << QByteArray()
         << QByteArray("text/plain; charset=UTF-8")
@@ -599,14 +599,14 @@ void tst_QMailMessageBody::toFile_data()
 
     QByteArray bytearray_source = "This is a simple test";
 
-    QTest::newRow("bytearray - decoded") 
+    QTest::newRow("bytearray - decoded")
         << QString()
         << bytearray_source
         << QByteArray("text/plain")
         << QMailMessageBody::Decoded
         << QByteArray();
 
-    QTest::newRow("bytearray - encoded") 
+    QTest::newRow("bytearray - encoded")
         << QString()
         << bytearray_source
         << QByteArray("text/plain")
@@ -616,14 +616,14 @@ void tst_QMailMessageBody::toFile_data()
     // Latin-1 Characters
     string_source = QString("Joh\361 D\366e");
 
-    QTest::newRow("Latin-1 - string - decoded") 
+    QTest::newRow("Latin-1 - string - decoded")
         << string_source
         << QByteArray()
         << QByteArray("text/other; charset=UTF-8")
         << QMailMessageBody::Decoded
         << QByteArray();
 
-    QTest::newRow("Latin-1 - string - encoded") 
+    QTest::newRow("Latin-1 - string - encoded")
         << string_source
         << QByteArray()
         << QByteArray("text/other; charset=UTF-8")
@@ -632,14 +632,14 @@ void tst_QMailMessageBody::toFile_data()
 
     bytearray_source = QByteArray("Joh\361 D\366e");
 
-    QTest::newRow("Latin-1 - bytearray - decoded") 
+    QTest::newRow("Latin-1 - bytearray - decoded")
         << QString()
         << bytearray_source
         << QByteArray("text/other; charset=ISO-8859-1")
         << QMailMessageBody::Decoded
         << QByteArray();
 
-    QTest::newRow("Latin-1 - bytearray - encoded") 
+    QTest::newRow("Latin-1 - bytearray - encoded")
         << QString()
         << bytearray_source
         << QByteArray("text/other; charset=ISO-8859-1")
@@ -651,14 +651,14 @@ void tst_QMailMessageBody::toFile_data()
                             static_cast<char16_t>(0x06a5), static_cast<char16_t>(0x06b4) };
     string_source = QString(chars, 4);
 
-    QTest::newRow("unicode - string - decoded") 
+    QTest::newRow("unicode - string - decoded")
         << string_source
         << QByteArray()
         << QByteArray("text/plain; charset=UTF-8")
         << QMailMessageBody::Decoded
         << QByteArray();
 
-    QTest::newRow("unicode - string - encoded") 
+    QTest::newRow("unicode - string - encoded")
         << string_source
         << QByteArray()
         << QByteArray("text/plain; charset=UTF-8")
@@ -668,8 +668,8 @@ void tst_QMailMessageBody::toFile_data()
 
 void tst_QMailMessageBody::toFile()
 {
-    QFETCH( QString, string_input ); 
-    QFETCH( QByteArray, bytearray_input ); 
+    QFETCH( QString, string_input );
+    QFETCH( QByteArray, bytearray_input );
     QFETCH( QByteArray, type );
     QFETCH( QMailMessageBody::EncodingFormat, format );
     QFETCH( QByteArray, bytearray_output );

@@ -176,7 +176,7 @@ protected slots:
     void retrieveMessagePortion(const QMailMessageMetaData& message, uint bytes);
     void retrieveMessagePart(const QMailMessagePart::Location& partLocation);
     void retrieveMessagePartPortion(const QMailMessagePart::Location& partLocation, uint bytes);
-   
+
     void rollBackUpdates(QMailAccountId accountId);
     void flagMessage(const QMailMessageId& id, quint64 setMask, quint64 unsetMask, const QString& description = QString("Updating message flags"));
 
@@ -354,7 +354,7 @@ private:
     QMailTransmitAction* transmitAction(const QString& description);
 
 private:
-    // Whether the initial action for the app was to view incoming messages 
+    // Whether the initial action for the app was to view incoming messages
     enum InitialAction { None = 0, IncomingMessages, NewMessages, View, Compose, Cleanup };
 
     bool filesRead;
@@ -443,7 +443,7 @@ private:
     QMailRetrievalAction* m_retrievalAction;
     QMailRetrievalAction* m_flagRetrievalAction;
     QMailRetrievalAction* m_exportAction;
-    QList<QMailStorageAction*> m_outboxActions; 
+    QList<QMailStorageAction*> m_outboxActions;
     QMailAccountIdList m_queuedExports;
     QList<QMailMessage> m_outboxingMessages;
 };

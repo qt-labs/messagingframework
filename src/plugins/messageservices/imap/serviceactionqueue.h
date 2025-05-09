@@ -53,7 +53,7 @@ protected:
 class ServiceActionQueue : public QObject
 {
     Q_OBJECT
-    
+
 public:
     ServiceActionQueue();
     void append(ServiceActionCommand *command);

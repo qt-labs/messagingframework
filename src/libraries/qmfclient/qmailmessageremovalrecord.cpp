@@ -37,12 +37,12 @@ class QMailMessageRemovalRecordPrivate : public QSharedData
 {
 public:
     QMailMessageRemovalRecordPrivate() : QSharedData() {}
-    QMailMessageRemovalRecordPrivate(const QMailAccountId& parentAccountId, 
+    QMailMessageRemovalRecordPrivate(const QMailAccountId& parentAccountId,
                                      const QString& serverUid,
                                      const QMailFolderId& parentFolderId)
-        : QSharedData(), 
-          parentAccountId(parentAccountId), 
-          serverUid(serverUid), 
+        : QSharedData(),
+          parentAccountId(parentAccountId),
+          serverUid(serverUid),
           parentFolderId(parentFolderId)
     {
     }
@@ -61,15 +61,15 @@ public:
     \preliminary
     \ingroup messaginglibrary
 
-    \brief The QMailMessageRemovalRecord class represents the record of a message which has been 
+    \brief The QMailMessageRemovalRecord class represents the record of a message which has been
     removed from the mail store.
 
-    QMailMessageRemovalRecord represents messages that have been previously removed, so that the 
+    QMailMessageRemovalRecord represents messages that have been previously removed, so that the
     message server can finalize its interest in the message with an external service, after
-    the message has been removed locally.  The removal record contains only the information 
+    the message has been removed locally.  The removal record contains only the information
     needed to identify the message to the external service.
 
-    Message removal records should be purged from the mail store once the message server has 
+    Message removal records should be purged from the mail store once the message server has
     finalized its interest in the message with the external service.
 
     \sa QMailStore::messageRemovalRecords(), QMailStore::purgeMessageRemovalRecords()

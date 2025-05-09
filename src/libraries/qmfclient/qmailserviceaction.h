@@ -71,7 +71,7 @@ public:
 
     class QMF_EXPORT Status
     {
-    public: 
+    public:
         enum ErrorCode {
             ErrNoError = 0,
             ErrorCodeMinimum = 1024,
@@ -99,9 +99,9 @@ public:
         };
 
         Status();
-        Status(ErrorCode code, 
+        Status(ErrorCode code,
                const QString &text,
-               const QMailAccountId &accountId, 
+               const QMailAccountId &accountId,
                const QMailFolderId &folderId,
                const QMailMessageId &messageId);
 
@@ -335,7 +335,7 @@ class QMailActionObserverPrivate;
 class QMF_EXPORT QMailActionObserver : public QMailServiceAction
 {
     Q_OBJECT
-public:   
+public:
     QMailActionObserver(QObject *parent = Q_NULLPTR);
     virtual ~QMailActionObserver();
 

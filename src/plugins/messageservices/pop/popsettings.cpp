@@ -52,7 +52,7 @@ public:
 };
 
 PortValidator::PortValidator(QWidget *parent, const char *name)
-    : QValidator(parent) 
+    : QValidator(parent)
 {
     setObjectName(name);
 }

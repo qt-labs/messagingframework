@@ -179,12 +179,12 @@ QNetworkReply *ContentAccessManager::createRequest(Operation op, const QNetworkR
                 identifier = identifier.mid(1, identifier.length() - 2);
             }
 
-            // See if we have any data for this content identifier   
+            // See if we have any data for this content identifier
             QMap<QUrl, QPair<QByteArray, QString> >::iterator it = m_data.find(QUrl("cid:" + identifier));
             if (it == m_data.end()) {
                 it = m_data.find(QUrl("qmf-part:" + identifier));
             }
-            
+
             if (it != m_data.end()) {
                 return new ContentReply(this, &it.value().first, it.value().second);
             }
@@ -495,7 +495,7 @@ void BrowserWidget::displayPlainText(const QMailMessage* mail)
 {
     QString bodyText;
 
-    if ( (mail->status() & QMailMessage::Incoming) && 
+    if ( (mail->status() & QMailMessage::Incoming) &&
         !(mail->status() & QMailMessage::PartialContentAvailable) ) {
         if ( !(mail->status() & QMailMessage::Removed) ) {
             bodyText += '\n' + tr("Awaiting download") + '\n';
@@ -548,7 +548,7 @@ void BrowserWidget::displayPlainText(const QMailMessage* mail)
                 // If not specified, the first part is the start
                 QByteArray startCID = mail->contentType().parameter("start");
                 if (!startCID.isEmpty()) {
-                    for ( uint i = 1; i < mail->partCount(); i++ ) 
+                    for ( uint i = 1; i < mail->partCount(); i++ )
                         if (mail->partAt(i).contentID() == startCID) {
                             startPart = &mail->partAt(i);
                             break;
@@ -625,7 +625,7 @@ void BrowserWidget::displayPlainText(const QMailMessage* mail)
         text += '\n';
         text += bodyText;
     }
-    
+
     setPlainText(text);
 }
 
@@ -667,7 +667,7 @@ QString BrowserWidget::renderSimplePart(const QMailMessagePart& part)
 #else
         result = "<img src=\"" + partId + "\"></img>";
 #endif
-        
+
     } else {
         result = renderAttachment(part);
     }
@@ -679,7 +679,7 @@ QString BrowserWidget::renderAttachment(const QMailMessagePart& part)
 {
     QString partId = part.displayName().toHtmlEscaped();
 
-    QString attachmentTemplate = 
+    QString attachmentTemplate =
 "<hr><b>ATTACHMENT_TEXT</b>: <a href=\"attachment;ATTACHMENT_ACTION;ATTACHMENT_LOCATION\">NAME_TEXT</a>DISPOSITION<br>";
 
     attachmentTemplate = replaceLast(attachmentTemplate, "ATTACHMENT_TEXT", tr("Attachment"));
@@ -789,7 +789,7 @@ void BrowserWidget::displayHtml(const QMailMessage* mail)
     QString subjectText, bodyText;
     QList<TextPair> metadata;
 
-    // For SMS messages subject is the same as body, so for SMS don't 
+    // For SMS messages subject is the same as body, so for SMS don't
     // show the message text twice (same for IMs)
     if ((mail->messageType() != QMailMessage::Sms) && (mail->messageType() != QMailMessage::Instant))
         subjectText = mail->subject();
@@ -798,13 +798,13 @@ void BrowserWidget::displayHtml(const QMailMessage* mail)
     if (!from.isEmpty() && from != "\"\" <>") // ugh
         metadata.append(qMakePair(tr("From"), refMailTo( mail->from() )));
 
-    if (mail->to().count() > 0) 
+    if (mail->to().count() > 0)
         metadata.append(qMakePair(tr("To"), listRefMailTo( mail->to() )));
 
-    if (mail->cc().count() > 0) 
+    if (mail->cc().count() > 0)
         metadata.append(qMakePair(tr("CC"), listRefMailTo( mail->cc() )));
 
-    if (mail->bcc().count() > 0) 
+    if (mail->bcc().count() > 0)
         metadata.append(qMakePair(tr("BCC"), listRefMailTo( mail->bcc() )));
 
     if (!mail->replyTo().isNull())
@@ -816,10 +816,10 @@ void BrowserWidget::displayHtml(const QMailMessage* mail)
     metadata.append(qMakePair(tr("CalendarInvitation"), (mail->status() & QMailMessage::CalendarInvitation) ? QString("true") : QString("false")));
     metadata.append(qMakePair(tr("CalendarCancellation"), (mail->status() & QMailMessage::CalendarCancellation) ? QString("true") : QString("false")));
 
-    if ( (mail->status() & QMailMessage::Incoming) && 
+    if ( (mail->status() & QMailMessage::Incoming) &&
         !(mail->status() & QMailMessage::PartialContentAvailable) ) {
         if ( !(mail->status() & QMailMessage::Removed) ) {
-            bodyText = 
+            bodyText =
 "<b>WAITING_TEXT</b><br>"
 "SIZE_TEXT<br>"
 "<br>"
@@ -925,7 +925,7 @@ void BrowserWidget::displayHtml(const QMailMessage* mail)
 
     pageData += replaceLast(headerTemplate, "METADATA_TEXT", metadataText);
 
-    QString bodyTemplate = 
+    QString bodyTemplate =
  "<div align=left>BODY_TEXT</div>";
 
     pageData += replaceLast(bodyTemplate, "BODY_TEXT", bodyText);
@@ -1129,7 +1129,7 @@ QString BrowserWidget::handleReplies(const QString& txt) const
 
         if ( line.startsWith(">") ) {
             for (int x = 0; x < line.length(); x++) {
-                if ( line[x] == ' ') {  
+                if ( line[x] == ' ') {
                     // do nothing
                 } else if ( line[x] == '>' ) {
                     level++;
@@ -1232,8 +1232,8 @@ QString BrowserWidget::encodeUrlAndMail(const QString& txt)
                        "("                                      // either:
                             "localhost"                             // 'localhost'
                        "|"                                      // or:
-                            "(?:"                                   // one-or-more: 
-                            "[A-Za-z\\d]"                           // one: legal char, 
+                            "(?:"                                   // one-or-more:
+                            "[A-Za-z\\d]"                           // one: legal char,
                             "(?:"                                   // zero-or-one:
                                 "[A-Za-z\\d-]*[A-Za-z\\d]"              // (zero-or-more: (legal char or '-'), one: legal char)
                             ")?"                                    // end of optional group
@@ -1249,7 +1249,7 @@ QString BrowserWidget::encodeUrlAndMail(const QString& txt)
                             "/"                                 // beginning with a slash
                             "[A-Za-z\\d\\.\\!\\#\\$\\%\\'"      // containing any sequence of legal chars
                              "\\*\\+\\-\\/\\=\\?\\^\\_\\`"
-                             "\\{\\|\\}\\~\\&\\(\\)]*"       
+                             "\\{\\|\\}\\~\\&\\(\\)]*"
                        ")?");
     QRegularExpressionMatch urlMatch;
 
@@ -1271,8 +1271,8 @@ QString BrowserWidget::encodeUrlAndMail(const QString& txt)
         QRegularExpression *matchPattern = 0;
 
         // Which pattern has the first match?
-        if ((urlPos != -1) && 
-            ((addressPos == -1) || (addressPos >= urlPos)) && 
+        if ((urlPos != -1) &&
+            ((addressPos == -1) || (addressPos >= urlPos)) &&
             ((filePos == -1) || (filePos >= urlPos))) {
             matchPos = &urlPos;
             matchPattern = &urlPattern;
@@ -1304,7 +1304,7 @@ QString BrowserWidget::encodeUrlAndMail(const QString& txt)
 
             // Ensure that the host is not purely a number
             // Also ignore credentials with no scheme
-            if (scheme.isEmpty() && 
+            if (scheme.isEmpty() &&
                 ((host.indexOf(QRegularExpression("[^\\d\\.]")) == -1) || (!credentials.isEmpty()))) {
                 // Ignore this match
                 urlPos = txt.indexOf(urlPattern, urlPos + 1);

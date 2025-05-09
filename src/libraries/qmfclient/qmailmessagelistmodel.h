@@ -41,7 +41,7 @@ class QMailMessageListModelPrivate;
 
 class QMF_EXPORT QMailMessageListModel : public QMailMessageModelBase
 {
-    Q_OBJECT 
+    Q_OBJECT
 
 public:
     QMailMessageListModel(QObject* parent = Q_NULLPTR);

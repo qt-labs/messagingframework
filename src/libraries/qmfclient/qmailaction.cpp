@@ -54,7 +54,7 @@ public:
     QMailServerRequestType _requestType;
     uint _current;
     uint _total;
-    QMailServiceAction::Status _status;    
+    QMailServiceAction::Status _status;
 };
 
 QMailActionDataPrivate::QMailActionDataPrivate()
@@ -73,9 +73,9 @@ QMailActionDataPrivate::QMailActionDataPrivate(QMailActionId id, QMailServerRequ
      _total(t),
      _status(s)
 {
-}                                 
+}
 
-QMailActionDataPrivate::QMailActionDataPrivate(const QMailActionDataPrivate& other) 
+QMailActionDataPrivate::QMailActionDataPrivate(const QMailActionDataPrivate& other)
     : QSharedData(other)
 {
     _id = other._id;
@@ -102,13 +102,13 @@ bool QMailActionDataPrivate::operator==(const QMailActionDataPrivate& other) con
             _status.messageId == other._status.messageId);
 }
 
-template <typename Stream> 
+template <typename Stream>
 void QMailActionDataPrivate::serialize(Stream &stream) const
 {
     stream << _id << _requestType << _current << _total << _status;
 }
 
-template <typename Stream> 
+template <typename Stream>
 void QMailActionDataPrivate::deserialize(Stream &stream)
 {
     stream >> _id >> _requestType >> _current >> _total >> _status;
@@ -133,7 +133,7 @@ QMailActionData::QMailActionData()
 }
 
 /*!
-    Constructs a QMailActionData object with the given \a id, \a requestType, 
+    Constructs a QMailActionData object with the given \a id, \a requestType,
     current progress \a progressCurrent, total progress \a progressTotal,
     \a errorCode, \a text, \a accountId, \a folderId and \a messageId.
 */
@@ -255,21 +255,21 @@ bool QMailActionData::operator!= (const QMailActionData& other) const
     return !(d->operator==(*other.d));
 }
 
-/*! 
+/*!
     \fn QMailActionData::serialize(Stream&) const
-    \internal 
+    \internal
 */
-template <typename Stream> 
+template <typename Stream>
 void QMailActionData::serialize(Stream &stream) const
 {
     d->serialize(stream);
 }
 
-/*! 
+/*!
     \fn QMailActionData::deserialize(Stream&)
-    \internal 
+    \internal
 */
-template <typename Stream> 
+template <typename Stream>
 void QMailActionData::deserialize(Stream &stream)
 {
     d->deserialize(stream);

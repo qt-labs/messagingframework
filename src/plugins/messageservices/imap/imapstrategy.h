@@ -129,7 +129,7 @@ class ImapStrategy
 public:
     ImapStrategy() {}
     virtual ~ImapStrategy() {}
-    
+
     virtual void newConnection(ImapStrategyContextBase *context);
     virtual void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus) = 0;
 
@@ -264,7 +264,7 @@ protected:
     QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > _locations;
     bool _external;
 };
-    
+
 class ImapMessageListStrategy : public ImapStrategy
 {
 public:
@@ -319,7 +319,7 @@ class ImapFetchSelectedMessagesStrategy : public ImapMessageListStrategy
 public:
     ImapFetchSelectedMessagesStrategy() : _listSize(0), _totalRetrievalSize(0) {}
     virtual ~ImapFetchSelectedMessagesStrategy() {}
-    
+
     virtual void setOperation(ImapStrategyContextBase *context,
                               QMailRetrievalAction::RetrievalSpecification spec);
     void clearSelection() override;
@@ -418,7 +418,7 @@ protected:
     int _processable;
 };
 
-class ImapUpdateMessagesFlagsStrategy : public ImapFolderListStrategy 
+class ImapUpdateMessagesFlagsStrategy : public ImapFolderListStrategy
 {
 public:
     ImapUpdateMessagesFlagsStrategy() {}
@@ -455,7 +455,7 @@ private:
     QStringList _flaggedUids;
 };
 
-class ImapSynchronizeBaseStrategy : public ImapFolderListStrategy 
+class ImapSynchronizeBaseStrategy : public ImapFolderListStrategy
 {
 public:
     ImapSynchronizeBaseStrategy() : _ignoreSyncFlag(false) {}
@@ -578,7 +578,7 @@ public:
 
     ImapSynchronizeAllStrategy();
     virtual ~ImapSynchronizeAllStrategy() {}
-    
+
     void setOptions(Options options);
 
     void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus) override;
@@ -705,7 +705,7 @@ public:
 
     void newConnection(ImapStrategyContextBase *context) override;
     void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus) override;
-    
+
     void messageCopied(ImapStrategyContextBase *context, const QString &copiedUid, const QString &createdUid) override;
     void messageCreated(ImapStrategyContextBase *context, const QMailMessageId &id, const QString &createdUid) override;
     bool messageFetched(ImapStrategyContextBase *context, QMailMessage &message) override;
@@ -808,7 +808,7 @@ public:
     virtual void setMessageFlags(MessageFlags flags, bool set);
 
     void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus) override;
-    
+
 protected:
     virtual void handleUidStore(ImapStrategyContextBase *context);
 
@@ -829,7 +829,7 @@ public:
     void clearSelection() override;
 
     void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus) override;
-    
+
 protected:
     void handleUidStore(ImapStrategyContextBase *context) override;
     void handleClose(ImapStrategyContextBase *context) override;

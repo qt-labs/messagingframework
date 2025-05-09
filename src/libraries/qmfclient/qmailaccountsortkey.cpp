@@ -38,12 +38,12 @@
     \class QMailAccountSortKey
 
     \preliminary
-    \brief The QMailAccountSortKey class defines the parameters used for sorting a subset of 
+    \brief The QMailAccountSortKey class defines the parameters used for sorting a subset of
     queried accounts from the store.
     \ingroup messaginglibrary
 
-    A QMailAccountSortKey is composed of an account property to sort and a sort order. 
-    The QMailAccountSortKey class is used in conjunction with the QMailStore::query() 
+    A QMailAccountSortKey is composed of an account property to sort and a sort order.
+    The QMailAccountSortKey class is used in conjunction with the QMailStore::query()
     function to sort account results according to the criteria defined by the sort key.
 
     For example:
@@ -52,7 +52,7 @@
     QMailAccountSortKey sortNameKey(QMailAccountSortKey::name(Qt::Ascending));
     QMailAccountIdList results = QMailStore::instance()->query(sortNameKey);
     \endcode
-    
+
     \sa QMailStore
 */
 
@@ -71,16 +71,16 @@
 
 /*!
     \typedef QMailAccountSortKey::ArgumentType
-    
+
     Defines the type used to represent a single sort criterion of an account sort key.
 */
 
 /*!
     Create a QMailAccountSortKey with specifying matching parameters.
 
-    A default-constructed key (one for which isEmpty() returns true) sorts no folders. 
+    A default-constructed key (one for which isEmpty() returns true) sorts no folders.
 
-    The result of combining an empty key with a non-empty key is the same as the original 
+    The result of combining an empty key with a non-empty key is the same as the original
     non-empty key.
 
     The result of combining two empty keys is an empty key.
@@ -138,7 +138,7 @@ QMailAccountSortKey& QMailAccountSortKey::operator&=(const QMailAccountSortKey& 
 }
 
 /*!
-    Returns \c true if the value of this key is the same as the key \a other. Returns 
+    Returns \c true if the value of this key is the same as the key \a other. Returns
     \c false otherwise.
 */
 bool QMailAccountSortKey::operator==(const QMailAccountSortKey& other) const
@@ -152,7 +152,7 @@ bool QMailAccountSortKey::operator==(const QMailAccountSortKey& other) const
 */
 bool QMailAccountSortKey::operator!=(const QMailAccountSortKey& other) const
 {
-   return !(*this == other); 
+   return !(*this == other);
 }
 
 /*!

@@ -146,7 +146,7 @@ QString QMailContentManagerFactory::defaultScheme()
 
     if (list.contains(QLatin1String("qmfstoragemanager")))
         return QLatin1String("qmfstoragemanager");
-    else 
+    else
         return list.first();
 }
 
@@ -193,7 +193,7 @@ void QMailContentManagerFactory::clearContent()
     \brief The QMailContentManagerPluginInterface class defines the interface to plugins that provide message content management facilities.
     \ingroup messaginglibrary
 
-    The QMailContentManagerPluginInterface class defines the interface to message content manager plugins.  Plugins will 
+    The QMailContentManagerPluginInterface class defines the interface to message content manager plugins.  Plugins will
     typically inherit from QMailContentManagerPlugin rather than this class.
 
     \sa QMailContentManagerPlugin, QMailContentManager, QMailContentManagerFactory
@@ -278,20 +278,20 @@ QStringList QMailContentManagerPlugin::keys() const
     \l{QMailContentManager::role()}{Role} (the default). Storage content managers are used for saving and
     loading messages from the file system. The particular storage content managed used for a message is determined by
     the \l{QMailMessageMetaData::contentScheme()}{contentScheme} function of a QMailMessage object.  The identifier of
-    the message content is provided by the corresponding \l{QMailMessageMetaData::contentIdentifier()}{contentIdentifier} 
+    the message content is provided by the corresponding \l{QMailMessageMetaData::contentIdentifier()}{contentIdentifier}
     function; this property is provided for the use of the storage content manager code, and is opaque to the remainder of the
     system.
 
     If a storage content manager provides data to clients by creating references to file-backed memory
     mappings, then the content manager must ensure that those files remain valid.  The existing content
     within the file must not be modified, and the file must not be truncated.  If the content manager
-    updates the content of a message which is already exported using memory mappings, then the updated 
-    content should be stored to a new content location, and the message object updated with the new 
+    updates the content of a message which is already exported using memory mappings, then the updated
+    content should be stored to a new content location, and the message object updated with the new
     \l{QMailMessageMetaData::contentIdentifier()}{contentIdentifier} information.
 
     If a stored message contains parts whose content is only partially available (as defined by
-    QMailMessagePartContainer::partialContentAvailable() and QMailMessagePartContainer::contentAvailable()), 
-    the content manager must ensure that the partial data is returned to clients in the same transfer 
+    QMailMessagePartContainer::partialContentAvailable() and QMailMessagePartContainer::contentAvailable()),
+    the content manager must ensure that the partial data is returned to clients in the same transfer
     encoding that it was stored with.
 
     \sa QMailStore, QMailMessage
@@ -299,7 +299,7 @@ QStringList QMailContentManagerPlugin::keys() const
 
 /*!
     \enum QMailContentManager::DurabilityRequirement
-    
+
     This enum type is used to define the dequirement for durability in a content management request.
 
     \value EnsureDurability     The content manager should make the requested changes durable before reporting success.
@@ -331,8 +331,8 @@ QStringList QMailContentManagerPlugin::keys() const
 
     Returns \l{QMailStore::NoError}{NoError} to indicate success.
 
-    If \l{QMailMessageMetaData::contentIdentifier()}{contentIdentifier} is already populated at invocation, 
-    the content manager should determine whether the supplied identifier can be used.  If not, it should 
+    If \l{QMailMessageMetaData::contentIdentifier()}{contentIdentifier} is already populated at invocation,
+    the content manager should determine whether the supplied identifier can be used.  If not, it should
     use an alternate location and update \a message with the new identifier.
 
     If \a durability is \l{QMailContentManager::EnsureDurability}{EnsureDurability} then the content
@@ -345,17 +345,17 @@ QStringList QMailContentManagerPlugin::keys() const
 
     Notifies the content manager that \a message has been updated. If this is a storage content manager
     it should update the message content stored at the location indicated
-    by \l{QMailMessageMetaData::contentIdentifier()}{contentIdentifier}, to contain the current 
-    content of \a message.  
+    by \l{QMailMessageMetaData::contentIdentifier()}{contentIdentifier}, to contain the current
+    content of \a message.
     Returns \l{QMailStore::NoError}{NoError} to indicate successful update of the message content.
 
-    If the updated content is not stored to the existing location, the content manager should 
-    use an alternate location and update \a message with the new 
+    If the updated content is not stored to the existing location, the content manager should
+    use an alternate location and update \a message with the new
     \l{QMailMessageMetaData::contentIdentifier()}{contentIdentifier}.
 
-    The existing content should be removed if the update causes a new content identifier to 
-    be allocated.  If the previous content cannot be removed, but the update was otherwise 
-    successful, the content manager should return \l{QMailStore::ContentNotRemoved}{ContentNotRemoved} 
+    The existing content should be removed if the update causes a new content identifier to
+    be allocated.  If the previous content cannot be removed, but the update was otherwise
+    successful, the content manager should return \l{QMailStore::ContentNotRemoved}{ContentNotRemoved}
     to indicate that removal of the content should be retried at a later time.
 
     If \a durability is \l{QMailContentManager::EnsureDurability}{EnsureDurability} then the content
@@ -391,7 +391,7 @@ QStringList QMailContentManagerPlugin::keys() const
     Returns \l{QMailStore::NoError}{NoError} to indicate that the message content
     has been successfully removed.
 
-    If the content cannot be removed, the content manager should return 
+    If the content cannot be removed, the content manager should return
     \l{QMailStore::ContentNotRemoved}{ContentNotRemoved} to indicate that removal of the content
     should be retried at a later time.
 
@@ -402,7 +402,7 @@ QStringList QMailContentManagerPlugin::keys() const
     \fn QMailStore::ErrorCode QMailContentManager::load(const QString &identifier, QMailMessage *message)
 
     Requests that the storage content manager load the message content stored at the location indicated
-    by \a identifier into the message record \a message.  Returns \l{QMailStore::NoError}{NoError} to indicate that the message 
+    by \a identifier into the message record \a message.  Returns \l{QMailStore::NoError}{NoError} to indicate that the message
     content has been successfully loaded.
 
     If the identified content does not already exist, the content manager should return \l{QMailStore::InvalidId}{InvalidId}.

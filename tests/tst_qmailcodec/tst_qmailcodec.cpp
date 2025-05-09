@@ -481,7 +481,7 @@ void tst_QMailCodec::buffer_sizes_data()
 
     QTest::newRow("default buffer size")
         << MaxCharacters;
-       
+
     QTest::newRow("buffer size 19")
         << 19;
 
@@ -597,7 +597,7 @@ void tst_QMailCodec::embedded_newlines()
     QFETCH(QByteArray, binary_encoded);
     QFETCH(QString, binary_decoded);
     QFETCH(QByteArray, b64_encoded);
-   
+
     // Prevent cascading failures
     int originalBase64MaxLineLength = Base64MaxLineLength;
     Base64MaxLineLength = 76;

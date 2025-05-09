@@ -44,7 +44,7 @@
 
     \ingroup messaginglibrary
 
-    The QMailStore class is accessed through a singleton interface and provides functions 
+    The QMailStore class is accessed through a singleton interface and provides functions
     for adding, updating and deleting of QMailAccounts, QMailFolders, QMailThreads and
     QMailMessages on the message store.
 
@@ -53,7 +53,7 @@
     QMailAccountKey, QMailThreadKey and QMailMessageKey classes.
 
     If a QMailStore operation fails, the lastError() function will return an error code
-    value indicating the failure mode encountered.  A successful operation will set the 
+    value indicating the failure mode encountered.  A successful operation will set the
     lastError() result to QMailStore::NoError.
 
     Messaging accounts are represented by QMailAccountId objects.  The data associated with
@@ -62,9 +62,9 @@
     data used only by the messageserver and the protocol plugins it loads.
 
     Account objects are accessed via the account(), accountConfiguration(), countAccounts()
-    and queryAccounts() functions.  Accounts in the mail store can be manipulated via the 
+    and queryAccounts() functions.  Accounts in the mail store can be manipulated via the
     addAccount(), updateAccount() and removeAccount() functions.  Mail store manipulations
-    affecting accounts are reported via the accountsAdded(), accountsUpdated(), 
+    affecting accounts are reported via the accountsAdded(), accountsUpdated(),
     accountContentsModified() and accountsRemoved() signals.
 
     Thread (a.k.a. conversation) objects are accessed via the thread(), countThreads()
@@ -78,9 +78,9 @@
     Fixed logical groupings of message are modelled as folders, represented by QMailFolderId objects.
     The data associated with folders is held by instances of the QMailFolder class.
 
-    Folder objects are accessed via the folder(), countFolders() and queryFolders() functions.  
-    Folders in the mail store can be manipulated via the addFolder(), updateFolder() and 
-    removeFolder() functions.  Mail store manipulations affecting folders are reported via 
+    Folder objects are accessed via the folder(), countFolders() and queryFolders() functions.
+    Folders in the mail store can be manipulated via the addFolder(), updateFolder() and
+    removeFolder() functions.  Mail store manipulations affecting folders are reported via
     the foldersAdded(), foldersUpdated(), folderContentsModified() and foldersRemoved() signals.
 
     Messages in the mail store are represented by QMailMessageId objects.  The data associated
@@ -90,14 +90,14 @@
 
     Message objects are accessed via the message(), messageMetaData(), countMessages()
     and queryMessages() functions.  Additionally, the messagesMetaData() function can be
-    used to retrieve subsets of meta data pertaining to a set of messages.  Messages in 
-    the mail store can be manipulated via the addMessage(), updateMessage() and removeMessage() 
-    functions.  Multiple messages can have their meta data fields updated together via 
-    the updateMessagesMetaData() function.  Mail store manipulations affecting messages are 
-    reported via the messagesAdded(), messagesUpdated(), messageContentsModified() and 
+    used to retrieve subsets of meta data pertaining to a set of messages.  Messages in
+    the mail store can be manipulated via the addMessage(), updateMessage() and removeMessage()
+    functions.  Multiple messages can have their meta data fields updated together via
+    the updateMessagesMetaData() function.  Mail store manipulations affecting messages are
+    reported via the messagesAdded(), messagesUpdated(), messageContentsModified() and
     messagesRemoved() signals.
 
-    Messages that have been removed can be represented by removal records, which persist 
+    Messages that have been removed can be represented by removal records, which persist
     only to assist in keeping mail store content synchronized with the content of
     an external message source.  QMailMessageRemovalRecord objects can be accessed
     via the messageRemovalRecords() function.
@@ -125,10 +125,10 @@
 /*!
     \enum QMailStore::MessageRemovalOption
 
-    Defines whether or not a QMailMessageRemovalRecord is created upon message removal. 
+    Defines whether or not a QMailMessageRemovalRecord is created upon message removal.
 
-    \value NoRemovalRecord Do not create a QMailMessageRemovalRecord upon message removal. 
-    \value CreateRemovalRecord Create a QMailMessageRemovalRecord upon message removal. 
+    \value NoRemovalRecord Do not create a QMailMessageRemovalRecord upon message removal.
+    \value CreateRemovalRecord Create a QMailMessageRemovalRecord upon message removal.
 */
 
 /*!
@@ -192,7 +192,7 @@ QMailStore::ErrorCode QMailStore::lastError() const
 /*!
     Adds a new QMailAccount object \a account into the messsage store, with the
     configuration details optionally specified by \a config.
-    Returns \c true if the operation completed successfully, \c false otherwise. 
+    Returns \c true if the operation completed successfully, \c false otherwise.
 */
 bool QMailStore::addAccount(QMailAccount* account, QMailAccountConfiguration* config)
 {
@@ -209,7 +209,7 @@ bool QMailStore::addAccount(QMailAccount* account, QMailAccountConfiguration* co
 /*!
     Adds a new QMailFolder object \a folder into the message store, performing
     respective integrity checks. Returns \c true if the operation
-    completed successfully, \c false otherwise. 
+    completed successfully, \c false otherwise.
 */
 bool QMailStore::addFolder(QMailFolder* folder)
 {
@@ -247,7 +247,7 @@ bool QMailStore::addThread(QMailThread *t)
 /*!
     Adds a new QMailMessage object \a msg into the message store, performing
     respective integrity checks. Returns \c true if the operation
-    completed successfully, \c false otherwise. 
+    completed successfully, \c false otherwise.
 */
 bool QMailStore::addMessage(QMailMessage* msg)
 {
@@ -256,8 +256,8 @@ bool QMailStore::addMessage(QMailMessage* msg)
 
 /*!
     Adds a new QMailMessageMetaData object \a metaData into the message store, performing
-    respective integrity checks. Returns \c true if the operation completed 
-    successfully, \c false otherwise. 
+    respective integrity checks. Returns \c true if the operation completed
+    successfully, \c false otherwise.
 */
 bool QMailStore::addMessage(QMailMessageMetaData* metaData)
 {
@@ -266,8 +266,8 @@ bool QMailStore::addMessage(QMailMessageMetaData* metaData)
 
 /*!
     Adds a new QMailMessage object into the message store for each entry in
-    the list \a messages, performing all respective integrity checks. 
-    Returns \c true if the operation completed successfully, \c false otherwise. 
+    the list \a messages, performing all respective integrity checks.
+    Returns \c true if the operation completed successfully, \c false otherwise.
 */
 bool QMailStore::addMessages(const QList<QMailMessage*>& messages)
 {
@@ -299,7 +299,7 @@ bool QMailStore::addMessages(const QList<QMailMessage*>& messages)
 /*!
     Adds a new QMailMessageMetData object into the message store for each entry in
     the list \a messages, performing all respective integrity checks.
-    Returns \c true if the operation completed successfully, \c false otherwise. 
+    Returns \c true if the operation completed successfully, \c false otherwise.
 */
 bool QMailStore::addMessages(const QList<QMailMessageMetaData*>& messages)
 {
@@ -328,24 +328,24 @@ bool QMailStore::addMessages(const QList<QMailMessageMetaData*>& messages)
 }
 
 /*!
-    Removes a QMailAccount with QMailAccountId \a id from the store.  Also removes any 
+    Removes a QMailAccount with QMailAccountId \a id from the store.  Also removes any
     folder, message and message removal records associated with the removed account.
-    Returns \c true if the operation completed successfully, \c false otherwise. 
-    
-    Note: Using a QMailAccount instance after it has been removed from the store will 
+    Returns \c true if the operation completed successfully, \c false otherwise.
+
+    Note: Using a QMailAccount instance after it has been removed from the store will
     result in undefined behavior.
 */
-bool QMailStore::removeAccount(const QMailAccountId& id) 
+bool QMailStore::removeAccount(const QMailAccountId& id)
 {
     return removeAccounts(QMailAccountKey::id(id));
 }
 
 /*!
-    Removes all QMailAccounts identified by the key \a key from the store. Also removes 
+    Removes all QMailAccounts identified by the key \a key from the store. Also removes
     any folder, message and message removal records associated with the removed account.
-    Returns \c true if the operation completed successfully, \c false otherwise. 
+    Returns \c true if the operation completed successfully, \c false otherwise.
 
-    Note: Using a QMailAccount instance after it has been removed from the store will 
+    Note: Using a QMailAccount instance after it has been removed from the store will
     result in undefined behavior.
 */
 bool QMailStore::removeAccounts(const QMailAccountKey& key)
@@ -377,13 +377,13 @@ bool QMailStore::removeAccounts(const QMailAccountKey& key)
 }
 
 /*!
-    Removes a QMailFolder with QMailFolderId \a id from the message store. Also removes any 
-    sub-folders of the identified folder, and any messages contained in any of the 
-    folders removed.  If \a option is QMailStore::CreateRemovalRecord then removal 
+    Removes a QMailFolder with QMailFolderId \a id from the message store. Also removes any
+    sub-folders of the identified folder, and any messages contained in any of the
+    folders removed.  If \a option is QMailStore::CreateRemovalRecord then removal
     records will be created for each removed message.
-    Returns \c true if the operation completed successfully, \c false otherwise. 
+    Returns \c true if the operation completed successfully, \c false otherwise.
 
-    Note: Using a QMailFolder instance after it has been removed from the store will 
+    Note: Using a QMailFolder instance after it has been removed from the store will
     result in undefined behavior.
 */
 bool QMailStore::removeFolder(const QMailFolderId& id, QMailStore::MessageRemovalOption option)
@@ -398,11 +398,11 @@ bool QMailStore::removeFolder(const QMailFolderId& id, QMailStore::MessageRemova
 /*!
     Removes all QMailFolders identified by the key \a key from the message store. Also
     removes any sub-folders of the removed folders, and any messages contained in any of
-    the folders removed.  If \a option is QMailStore::CreateRemovalRecord then removal 
+    the folders removed.  If \a option is QMailStore::CreateRemovalRecord then removal
     records will be created for each removed message.
-    Returns \c true if the operation completed successfully, \c false otherwise. 
+    Returns \c true if the operation completed successfully, \c false otherwise.
 
-    Note: Using a QMailFolder instance after it has been removed from the store will 
+    Note: Using a QMailFolder instance after it has been removed from the store will
     result in undefined behavior.
 */
 bool QMailStore::removeFolders(const QMailFolderKey& key, QMailStore::MessageRemovalOption option)
@@ -475,12 +475,12 @@ bool QMailStore::removeThreads(const QMailThreadKey& key, QMailStore::MessageRem
 }
 
 /*!
-    Removes a QMailMessage with QMailMessageId \a id from the message store. If \a option is 
+    Removes a QMailMessage with QMailMessageId \a id from the message store. If \a option is
     QMailStore::CreateRemovalRecord then a removal record will be created for the
     removed message.
-    Returns \c true if the operation completed successfully, \c false otherwise. 
+    Returns \c true if the operation completed successfully, \c false otherwise.
 
-    Note: Using a QMailMessage instance after it has been removed from the store will 
+    Note: Using a QMailMessage instance after it has been removed from the store will
     result in undefined behavior.
 */
 bool QMailStore::removeMessage(const QMailMessageId& id, QMailStore::MessageRemovalOption option)
@@ -490,11 +490,11 @@ bool QMailStore::removeMessage(const QMailMessageId& id, QMailStore::MessageRemo
 
 /*!
     Removes all QMailMessages identified by the key \a key from the message store.
-    If \a option is QMailStore::CreateRemovalRecord then removal records will be 
+    If \a option is QMailStore::CreateRemovalRecord then removal records will be
     created for each removed message.
-    Returns \c true if the operation completed successfully, \c false otherwise. 
+    Returns \c true if the operation completed successfully, \c false otherwise.
 
-    Note: Using a QMailMessage instance after it has been removed from the store will 
+    Note: Using a QMailMessage instance after it has been removed from the store will
     result in undefined behavior.
 */
 bool QMailStore::removeMessages(const QMailMessageKey& key, QMailStore::MessageRemovalOption option)
@@ -525,9 +525,9 @@ bool QMailStore::removeMessages(const QMailMessageKey& key, QMailStore::MessageR
 }
 
 /*!
-    Updates the existing QMailAccount \a account on the store, with the 
+    Updates the existing QMailAccount \a account on the store, with the
     configuration details optionally specified by \a config.
-    Returns \c true if the operation completed successfully, \c false otherwise. 
+    Returns \c true if the operation completed successfully, \c false otherwise.
 */
 bool QMailStore::updateAccount(QMailAccount* account, QMailAccountConfiguration *config)
 {
@@ -543,7 +543,7 @@ bool QMailStore::updateAccount(QMailAccount* account, QMailAccountConfiguration 
 
 /*!
     Updates the configuration details of the referenced account to contain \a config.
-    Returns \c true if the operation completed successfully, \c false otherwise. 
+    Returns \c true if the operation completed successfully, \c false otherwise.
 
     \sa QMailAccountConfiguration::id()
 */
@@ -561,7 +561,7 @@ bool QMailStore::updateAccountConfiguration(QMailAccountConfiguration *config)
 
 /*!
     Updates the existing QMailFolder \a folder on the message store.
-    Returns \c true if the operation completed successfully, \c false otherwise. 
+    Returns \c true if the operation completed successfully, \c false otherwise.
 */
 bool QMailStore::updateFolder(QMailFolder* folder)
 {
@@ -608,7 +608,7 @@ bool QMailStore::updateFolder(QMailFolder* folder)
 
 /*!
     Updates the existing QMailMessage \a msg on the message store.
-    Returns \c true if the operation completed successfully, or \c false otherwise. 
+    Returns \c true if the operation completed successfully, or \c false otherwise.
 */
 bool QMailStore::updateMessage(QMailMessage* msg)
 {
@@ -617,7 +617,7 @@ bool QMailStore::updateMessage(QMailMessage* msg)
 
 /*!
     Updates the meta data of the existing message on the message store, to match \a metaData.
-    Returns \c true if the operation completed successfully, or \c false otherwise. 
+    Returns \c true if the operation completed successfully, or \c false otherwise.
 */
 bool QMailStore::updateMessage(QMailMessageMetaData* metaData)
 {
@@ -626,7 +626,7 @@ bool QMailStore::updateMessage(QMailMessageMetaData* metaData)
 
 /*!
     Updates the existing QMailMessage in the message store, for each message listed in \a messages.
-    Returns \c true if the operation completed successfully, or \c false otherwise. 
+    Returns \c true if the operation completed successfully, or \c false otherwise.
 */
 bool QMailStore::updateMessages(const QList<QMailMessage*>& messages)
 {
@@ -639,9 +639,9 @@ bool QMailStore::updateMessages(const QList<QMailMessage*>& messages)
 }
 
 /*!
-    Updates the meta data of the existing message in the message store, to match each 
+    Updates the meta data of the existing message in the message store, to match each
     of the messages listed in \a messages.
-    Returns \c true if the operation completed successfully, or \c false otherwise. 
+    Returns \c true if the operation completed successfully, or \c false otherwise.
 */
 bool QMailStore::updateMessages(const QList<QMailMessageMetaData*>& messages)
 {
@@ -690,7 +690,7 @@ bool QMailStore::updateMessages(const QList<QPair<QMailMessageMetaData*, QMailMe
     Updates the message properties defined in \a properties to match the respective element
     contained in the \a data, for all messages which match the criteria defined by \a key.
 
-    Returns \c true if the operation completed successfully, or \c false otherwise. 
+    Returns \c true if the operation completed successfully, or \c false otherwise.
 */
 bool QMailStore::updateMessagesMetaData(const QMailMessageKey& key,
                                         const QMailMessageKey::Properties& properties,
@@ -723,7 +723,7 @@ bool QMailStore::updateMessagesMetaData(const QMailMessageKey& key,
     Updates message status flags set in \a status according to \a set,
     for messages which match the criteria defined by \a key.
 
-    Returns \c true if the operation completed successfully, or \c false otherwise. 
+    Returns \c true if the operation completed successfully, or \c false otherwise.
 */
 bool QMailStore::updateMessagesMetaData(const QMailMessageKey& key, quint64 status, bool set)
 {
@@ -745,8 +745,8 @@ bool QMailStore::updateMessagesMetaData(const QMailMessageKey& key, quint64 stat
 }
 
 /*!
-    Returns the count of the number of accounts which pass the 
-    filtering criteria defined in QMailAccountKey \a key. If 
+    Returns the count of the number of accounts which pass the
+    filtering criteria defined in QMailAccountKey \a key. If
     key is empty a count of all accounts is returned.
 */
 int QMailStore::countAccounts(const QMailAccountKey& key) const
@@ -756,8 +756,8 @@ int QMailStore::countAccounts(const QMailAccountKey& key) const
 }
 
 /*!
-    Returns the count of the number of folders which pass the 
-    filtering criteria defined in QMailFolderKey \a key. If 
+    Returns the count of the number of folders which pass the
+    filtering criteria defined in QMailFolderKey \a key. If
     key is empty a count of all folders is returned.
 */
 int QMailStore::countFolders(const QMailFolderKey& key) const
@@ -778,8 +778,8 @@ int QMailStore::countThreads(const QMailThreadKey& key) const
 }
 
 /*!
-    Returns the count of the number of messages which pass the 
-    filtering criteria defined in QMailMessageKey \a key. If 
+    Returns the count of the number of messages which pass the
+    filtering criteria defined in QMailMessageKey \a key. If
     key is empty a count of all messages is returned.
 */
 int QMailStore::countMessages(const QMailMessageKey& key) const
@@ -789,8 +789,8 @@ int QMailStore::countMessages(const QMailMessageKey& key) const
 }
 
 /*!
-    Returns the total size of the messages which pass the 
-    filtering criteria defined in QMailMessageKey \a key. If 
+    Returns the total size of the messages which pass the
+    filtering criteria defined in QMailMessageKey \a key. If
     key is empty the total size of all messages is returned.
 */
 int QMailStore::sizeOfMessages(const QMailMessageKey& key) const
@@ -800,10 +800,10 @@ int QMailStore::sizeOfMessages(const QMailMessageKey& key) const
 }
 
 /*!
-    Returns the \l{QMailAccountId}s of accounts in the store. If \a key is not empty 
-    only accounts matching the parameters set by \a key will be returned, otherwise 
+    Returns the \l{QMailAccountId}s of accounts in the store. If \a key is not empty
+    only accounts matching the parameters set by \a key will be returned, otherwise
     all accounts identifiers will be returned.
-    If \a sortKey is not empty, the identifiers will be sorted by the parameters set 
+    If \a sortKey is not empty, the identifiers will be sorted by the parameters set
     by \a sortKey.
     If \a limit is non-zero, then no more than \a limit matching account IDs should be
     returned.
@@ -811,7 +811,7 @@ int QMailStore::sizeOfMessages(const QMailMessageKey& key) const
     from the returned list.
 
     Note: if the implementation cannot support the \a limit and \a offset parameters,
-    it should not attempt to perform a query where either of these values is non-zero; 
+    it should not attempt to perform a query where either of these values is non-zero;
     instead, it should return an empty list and set lastError() to QMailStore::NotYetImplemented.
 */
 const QMailAccountIdList QMailStore::queryAccounts(const QMailAccountKey& key,
@@ -824,10 +824,10 @@ const QMailAccountIdList QMailStore::queryAccounts(const QMailAccountKey& key,
 }
 
 /*!
-    Returns the \l{QMailFolderId}s of folders in the message store. If \a key is not empty 
-    only folders matching the parameters set by \a key will be returned, otherwise 
+    Returns the \l{QMailFolderId}s of folders in the message store. If \a key is not empty
+    only folders matching the parameters set by \a key will be returned, otherwise
     all folder identifiers will be returned.
-    If \a sortKey is not empty, the identifiers will be sorted by the parameters set 
+    If \a sortKey is not empty, the identifiers will be sorted by the parameters set
     by \a sortKey.
     If \a limit is non-zero, then no more than \a limit matching folder IDs should be
     returned.
@@ -835,7 +835,7 @@ const QMailAccountIdList QMailStore::queryAccounts(const QMailAccountKey& key,
     from the returned list.
 
     Note: if the implementation cannot support the \a limit and \a offset parameters,
-    it should not attempt to perform a query where either of these values is non-zero; 
+    it should not attempt to perform a query where either of these values is non-zero;
     instead, it should return an empty list and set lastError() to QMailStore::NotYetImplemented.
 */
 const QMailFolderIdList QMailStore::queryFolders(const QMailFolderKey& key,
@@ -848,10 +848,10 @@ const QMailFolderIdList QMailStore::queryFolders(const QMailFolderKey& key,
 }
 
 /*!
-    Returns the \l{QMailMessageId}s of messages in the message store. If \a key is not empty 
-    only messages matching the parameters set by \a key will be returned, otherwise 
+    Returns the \l{QMailMessageId}s of messages in the message store. If \a key is not empty
+    only messages matching the parameters set by \a key will be returned, otherwise
     all message identifiers will be returned.
-    If \a sortKey is not empty, the identifiers will be sorted by the parameters set 
+    If \a sortKey is not empty, the identifiers will be sorted by the parameters set
     by \a sortKey.
     If \a limit is non-zero, then no more than \a limit matching message IDs should be
     returned.
@@ -859,10 +859,10 @@ const QMailFolderIdList QMailStore::queryFolders(const QMailFolderKey& key,
     from the returned list.
 
     Note: if the implementation cannot support the \a limit and \a offset parameters,
-    it should not attempt to perform a query where either of these values is non-zero; 
+    it should not attempt to perform a query where either of these values is non-zero;
     instead, it should return an empty list and set lastError() to QMailStore::NotYetImplemented.
 */
-const QMailMessageIdList QMailStore::queryMessages(const QMailMessageKey& key, 
+const QMailMessageIdList QMailStore::queryMessages(const QMailMessageKey& key,
                                                    const QMailMessageSortKey& sortKey,
                                                    uint limit,
                                                    uint offset) const
@@ -967,12 +967,12 @@ QMailMessageMetaData QMailStore::messageMetaData(const QString& uid, const QMail
 }
 
 /*!
-    Retrieves a list of QMailMessageMetaData objects containing meta data elements specified by 
-    \a properties, for messages which match the criteria defined by \a key. If \a option is 
+    Retrieves a list of QMailMessageMetaData objects containing meta data elements specified by
+    \a properties, for messages which match the criteria defined by \a key. If \a option is
     \c ReturnAll then duplicate objects are included in the list; otherwise
     duplicate objects are excluded from the returned list.
 
-    Returns a list of QMailMessageMetaData objects if successfully completed, or an empty list for 
+    Returns a list of QMailMessageMetaData objects if successfully completed, or an empty list for
     an error or no data.
 
     Note: Custom fields cannot be queried by this function.
@@ -987,12 +987,12 @@ const QMailMessageMetaDataList QMailStore::messagesMetaData(const QMailMessageKe
 
 /*!
     Retrieves a list of QMailMessageRemovalRecord objects containing information about messages
-    that have been removed from local storage. Records are retrieved for messages whose account IDs 
+    that have been removed from local storage. Records are retrieved for messages whose account IDs
     match \a accountId and optionally, whose folder IDs match \a folderId.
-    This information is primarily for synchronization of local changes to remote message storage 
+    This information is primarily for synchronization of local changes to remote message storage
     services such as IMAP servers.
 
-    Returns a list of QMailMessageRemovalRecord objects if successfully completed, or an empty list for 
+    Returns a list of QMailMessageRemovalRecord objects if successfully completed, or an empty list for
     an error or no data.
 */
 const QMailMessageRemovalRecordList QMailStore::messageRemovalRecords(const QMailAccountId& accountId,
@@ -1033,11 +1033,11 @@ void QMailStore::unlock()
 }
 
 /*!
-    Erases message deletion records from the account with id \a accountId and 
+    Erases message deletion records from the account with id \a accountId and
     server uid listed in \a serverUids.  If serverUids is empty, all message deletion
     records for the specified account are deleted.
 
-    Returns \c true if the operation completed successfully, \c false otherwise. 
+    Returns \c true if the operation completed successfully, \c false otherwise.
 */
 bool QMailStore::purgeMessageRemovalRecords(const QMailAccountId& accountId, const QStringList& serverUids)
 {
@@ -1062,7 +1062,7 @@ bool QMailStore::registerAccountStatusFlag(const QString& name)
 }
 
 /*!
-    Returns the status bitmask needed to test the result of QMailAccount::status() 
+    Returns the status bitmask needed to test the result of QMailAccount::status()
     against the QMailAccount status flag registered with the identifier \a name.
 
     \sa registerAccountStatusFlag(), QMailAccount::statusMask()
@@ -1086,7 +1086,7 @@ bool QMailStore::registerFolderStatusFlag(const QString& name)
 }
 
 /*!
-    Returns the status bitmask needed to test the result of QMailFolder::status() 
+    Returns the status bitmask needed to test the result of QMailFolder::status()
     against the QMailFolder status flag registered with the identifier \a name.
 
     \sa registerFolderStatusFlag(), QMailFolder::statusMask()
@@ -1110,7 +1110,7 @@ bool QMailStore::registerMessageStatusFlag(const QString& name)
 }
 
 /*!
-    Returns the status bitmask needed to test the result of QMailMessage::status() 
+    Returns the status bitmask needed to test the result of QMailMessage::status()
     against the QMailMessage status flag registered with the identifier \a name.
 
     \sa registerMessageStatusFlag(), QMailMessage::statusMask()
@@ -1148,9 +1148,9 @@ void QMailStore::setTransmissionInProgress(const QMailAccountIdList &ids)
 /*!
     Forces any queued event notifications to immediately be synchronously emitted.
 
-    Any events occurring before flushIpcNotifications() is invoked will be processed by 
+    Any events occurring before flushIpcNotifications() is invoked will be processed by
     recipient processes before any IPC packets generated after the invocation.
-    
+
     \sa isIpcConnectionEstablished(), disconnectIpc(), reconnectIpc()
 */
 void QMailStore::flushIpcNotifications()
@@ -1160,9 +1160,9 @@ void QMailStore::flushIpcNotifications()
 
 /*!
     Returns true if a connection to the messageserver is established.
-    
+
     The messageserver is used to notify a QMF client in one process of changes
-    that have been made by QMF clients in other processes. For example 
+    that have been made by QMF clients in other processes. For example
     QMailStore::messagesAdded() signal, will inform a client in one process
     when a client in another process, such as the messageserver, has added
     messages to the message store.
@@ -1176,8 +1176,8 @@ bool QMailStore::isIpcConnectionEstablished() const
 
 /*!
     Disconnect from messageserver
-    
-    Useful for reducing battery consumption when the client application is not 
+
+    Useful for reducing battery consumption when the client application is not
     visible to the end user. Calling any getter functions like messages() for
     instance may result in incorrect content after a call to disconnect() since
     this store client will not be notified of any database change made by other
@@ -1203,7 +1203,7 @@ void QMailStore::reconnectIpc()
 }
 
 /*!
-    Returns true if the running process is in the act of emitting an asynchronous QMailStore 
+    Returns true if the running process is in the act of emitting an asynchronous QMailStore
     signal caused by another process.  This can only be true when called from a slot
     invoked by a QMailStore signal.
 */
@@ -1670,7 +1670,7 @@ QMailStore* QMailStore::instance()
 /*!
     \fn void QMailStore::messageRemovalRecordsAdded(const QMailAccountIdList& ids)
 
-    Signal that is emitted when QMailMessageRemovalRecords are added to the store, 
+    Signal that is emitted when QMailMessageRemovalRecords are added to the store,
     affecting the accounts listed in \a ids.
 
     \sa messageRemovalRecordsRemoved()
@@ -1679,7 +1679,7 @@ QMailStore* QMailStore::instance()
 /*!
     \fn void QMailStore::messageRemovalRecordsRemoved(const QMailAccountIdList& ids)
 
-    Signal that is emitted when QMailMessageRemovalRecords are removed from the store, 
+    Signal that is emitted when QMailMessageRemovalRecords are removed from the store,
     affecting the accounts listed in \a ids.
 
     \sa messageRemovalRecordsAdded()
@@ -1690,7 +1690,7 @@ QMailStore* QMailStore::instance()
 
     Signal that is emitted when the set of accounts currently retrieving from
     external sources is modified to \a ids.  Accounts listed in \a ids are likely
-    to be the source of numerous mail store signals; some clients may wish to 
+    to be the source of numerous mail store signals; some clients may wish to
     ignore updates associated with these accounts whilst they are engaged in retrieving.
 
     \sa transmissionInProgress()
@@ -1701,7 +1701,7 @@ QMailStore* QMailStore::instance()
 
     Signal that is emitted when the set of accounts currently transmitting to
     external sources is modified to \a ids.  Accounts listed in \a ids are likely
-    to be the source of numerous mail store signals; some clients may wish to 
+    to be the source of numerous mail store signals; some clients may wish to
     ignore updates associated with these accounts whilst they are engaged in transmitting.
 
     \sa retrievalInProgress()
@@ -1710,7 +1710,7 @@ QMailStore* QMailStore::instance()
 /*!
     \fn void QMailStore::messageDataAdded(const QMailMessageMetaDataList &data)
 
-    Signal that is emitted when messages are added to the mail store 
+    Signal that is emitted when messages are added to the mail store
     using addMessage(), addMessages() or an overload of one of these functions.
     \a data is a list of the metadata of the added messages.
 
@@ -1726,20 +1726,20 @@ QMailStore* QMailStore::instance()
 */
 
 /*!
-    \fn void QMailStore::messagePropertyUpdated(const QMailMessageIdList& ids, 
+    \fn void QMailStore::messagePropertyUpdated(const QMailMessageIdList& ids,
                                     const QMailMessageKey::Properties& properties,
                                     const QMailMessageMetaData& data);
 
-    Signal that is emitted when messages within the mail store are updated using 
+    Signal that is emitted when messages within the mail store are updated using
     \l {updateMessagesMetaData()}{updateMessagesMetaData(const QMailMessageKey&, const QMailMessageKey::Properties& properties, const QMailMessageMetaData& data)}.
-    \a ids is a list of ids of messages that have been updated, message properties defined in \a properties have been updated using 
+    \a ids is a list of ids of messages that have been updated, message properties defined in \a properties have been updated using
     the respective element contained in the \a data.
 */
 
 /*!
     \fn void QMailStore::messageStatusUpdated(const QMailMessageIdList& ids, quint64 status, bool set);
 
-    Signal that is emitted when messages within the mail store are updated using 
+    Signal that is emitted when messages within the mail store are updated using
     \l {updateMessagesMetaData()}{updateMessagesMetaData(const QMailMessageKey&, quint64, bool)}.
     \a ids is a list of ids of messages that have been updated, \a status is the status flags set according to \a set.
 */

@@ -105,7 +105,7 @@ bool MailSortKeyImpl<Key>::operator==(const MailSortKeyImpl& other) const
 template<typename Key>
 bool MailSortKeyImpl<Key>::operator!=(const MailSortKeyImpl& other) const
 {
-   return !(*this == other); 
+   return !(*this == other);
 }
 
 template<typename Key>
@@ -121,7 +121,7 @@ const QmfList<typename MailSortKeyImpl<Key>::Argument> &MailSortKeyImpl<Key>::ar
 }
 
 template<typename Key>
-template <typename Stream> 
+template <typename Stream>
 void MailSortKeyImpl<Key>::serialize(Stream &stream) const
 {
     stream << _arguments.count();
@@ -131,7 +131,7 @@ void MailSortKeyImpl<Key>::serialize(Stream &stream) const
 }
 
 template<typename Key>
-template <typename Stream> 
+template <typename Stream>
 void MailSortKeyImpl<Key>::deserialize(Stream &stream)
 {
     qsizetype i = 0;

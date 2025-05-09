@@ -41,7 +41,7 @@ class QMailMessageThreadedModelPrivate;
 
 class QMF_EXPORT QMailMessageThreadedModel : public QMailMessageModelBase
 {
-    Q_OBJECT 
+    Q_OBJECT
 
 public:
     QMailMessageThreadedModel(QObject* parent = Q_NULLPTR);

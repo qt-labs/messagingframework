@@ -47,13 +47,13 @@ public:
 
     int rowInParent() const { return _parent->_children.indexOf(*this); }
 
-    QMailMessageIdList childrenIds() const 
-    { 
-        QMailMessageIdList ids; 
+    QMailMessageIdList childrenIds() const
+    {
+        QMailMessageIdList ids;
         foreach (const QMailMessageThreadedModelItem &item, _children) {
             ids.append(item._id);
         }
-        
+
         return ids;
     }
 
@@ -138,8 +138,8 @@ private:
 
 
 QMailMessageThreadedModelPrivate::QMailMessageThreadedModelPrivate(QMailMessageThreadedModel& model,
-                                                                   const QMailMessageKey& key, 
-                                                                   const QMailMessageSortKey& sortKey, 
+                                                                   const QMailMessageKey& key,
+                                                                   const QMailMessageSortKey& sortKey,
                                                                    bool ignoreUpdates)
 :
     _model(model),
@@ -159,10 +159,10 @@ QMailMessageThreadedModelPrivate::~QMailMessageThreadedModelPrivate()
 
 QMailMessageKey QMailMessageThreadedModelPrivate::key() const
 {
-    return _key; 
+    return _key;
 }
 
-void QMailMessageThreadedModelPrivate::setKey(const QMailMessageKey& key) 
+void QMailMessageThreadedModelPrivate::setKey(const QMailMessageKey& key)
 {
     _key = key;
 }
@@ -172,7 +172,7 @@ QMailMessageSortKey QMailMessageThreadedModelPrivate::sortKey() const
    return _sortKey;
 }
 
-void QMailMessageThreadedModelPrivate::setSortKey(const QMailMessageSortKey& sortKey) 
+void QMailMessageThreadedModelPrivate::setSortKey(const QMailMessageSortKey& sortKey)
 {
     _sortKey = sortKey;
 }
@@ -354,7 +354,7 @@ bool QMailMessageThreadedModelPrivate::processMessagesAdded(const QMailMessageId
     if (!addMessages(ids)) {
         return false;
     }
-    
+
     if (!_initialised) {
         init();
     }
@@ -629,7 +629,7 @@ bool QMailMessageThreadedModelPrivate::updateMessages(const QMailMessageIdList &
     // Find the locations for removals
     removeMessages(removalIds, 0);
 
-    // TODO To prevent children being orphaned all messages in all conversations involving messages in 
+    // TODO To prevent children being orphaned all messages in all conversations involving messages in
     // TODO temporaryRemovalIds should be removed and then added.
     // Find the locations for those to be removed and any children IDs that need to be reinserted after removal
     QMailMessageIdList readditionIds;
@@ -651,7 +651,7 @@ bool QMailMessageThreadedModelPrivate::processMessagesRemoved(const QMailMessage
         _needSynchronize = true;
         return true;
     }
-    
+
     if (_key.isNonMatching()) {
         // No messages are relevant
         return true;
@@ -709,7 +709,7 @@ bool QMailMessageThreadedModelPrivate::removeMessages(const QMailMessageIdList &
             }
         }
     }
-    
+
     if (readditions) {
         *readditions = childIds.values();
     }
@@ -840,7 +840,7 @@ void QMailMessageThreadedModelPrivate::init() const
                 continue;
 
             QMailMessageId messageId(ids[i]);
-            
+
             QList<QMailMessageId> descendants;
 
             // Find the first message ancestor that is in our display set
@@ -866,7 +866,7 @@ void QMailMessageThreadedModelPrivate::init() const
                 }
 
                 if (descendants.indexOf(messageId) != -1) {
-                    qWarning() << "Conversation loop detected" << Q_FUNC_INFO << "messageId" << messageId << "descendants" << descendants; 
+                    qWarning() << "Conversation loop detected" << Q_FUNC_INFO << "messageId" << messageId << "descendants" << descendants;
                     insertParent = &_root;
                 }
                 if (insertParent != 0) {
@@ -888,7 +888,7 @@ void QMailMessageThreadedModelPrivate::init() const
                     container.insert(std::next(container.begin(), index), QMailMessageThreadedModelItem(messageId, insertParent));
                     _messageItem[messageId] = &(container[index]);
                     _currentIds.append(messageId);
-                    
+
                     if (descendants.isEmpty()) {
                         messageId = QMailMessageId();
                     } else {
@@ -946,17 +946,17 @@ QModelIndex QMailMessageThreadedModelPrivate::indexFromItem(const QMailMessageTh
 
 
 /*!
-    \class QMailMessageThreadedModel 
+    \class QMailMessageThreadedModel
 
     \preliminary
-    \ingroup messaginglibrary 
-    \brief The QMailMessageThreadedModel class provides access to a tree of stored messages. 
+    \ingroup messaginglibrary
+    \brief The QMailMessageThreadedModel class provides access to a tree of stored messages.
 
     The QMailMessageThreadedModel presents a tree of all the messages currently stored in
-    the message store. By using the setKey() and sortKey() functions it is possible to 
+    the message store. By using the setKey() and sortKey() functions it is possible to
     have the model represent specific user filtered subsets of messages sorted in a particular order.
 
-    The QMailMessageThreadedModel represents the hierarchical links between messages 
+    The QMailMessageThreadedModel represents the hierarchical links between messages
     implied by conversation threads.  The model presents messages as children of predecessor
     messages, where the parent is the nearest ancestor of the message that is present in
     the filtered set of messages.

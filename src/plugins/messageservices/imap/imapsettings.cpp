@@ -55,7 +55,7 @@ public:
 };
 
 PortValidator::PortValidator(QWidget *parent, const char *name)
-    : QValidator(parent) 
+    : QValidator(parent)
 {
     setObjectName(name);
 }
@@ -81,14 +81,14 @@ QValidator::State PortValidator::validate(QString &str, int &) const
 
 class PushFolderList : public QObject {
     Q_OBJECT
-    
+
 public:
     PushFolderList(QWidget *parent, QGridLayout *parentLayout);
     void setAccountId(const QMailAccountId &id);
     void addRow(const QString &s);
     void populate(const QStringList &pushFolderNames);
     QStringList folderNames();
-                                             
+
 public slots:
     void setHasFolders(bool hasFolders);
     void setPushEnabled(int pushEnabled);
@@ -223,7 +223,7 @@ void PushFolderList::selectFolder()
                 addRow("");
             }
         }
-        
+
     }
 }
 
@@ -364,7 +364,7 @@ void ImapSettings::displayConfiguration(const QMailAccount &account, const QMail
     imapJunkDir->setEnabled(hasFolders);
 
     pushCheckBox->setEnabled(hasFolders);
-    
+
     if (!config.services().contains(serviceKey)) {
         // New account
         mailUserInput->setText("");
@@ -419,7 +419,7 @@ void ImapSettings::displayConfiguration(const QMailAccount &account, const QMail
 
         pushFolders = imapConfig.pushFolders();
     }
-        
+
     if (pushFolderList) {
         pushFolderList->setHasFolders(hasFolders);
         pushFolderList->setPushEnabled(pushCheckBox->checkState());

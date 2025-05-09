@@ -138,7 +138,7 @@ void tst_QMailStore::addAccount()
     QMailAccount accountX(account1.id());
     QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
     QVERIFY(!accountX.id().isValid());
-    
+
     // Verify that addition is successful
     QCOMPARE(QMailStore::instance()->countAccounts(), 0);
     QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
@@ -253,7 +253,7 @@ void tst_QMailStore::addFolder()
     QCOMPARE(retrieved3.path(), QString("new folder 3"));
     QCOMPARE(retrieved3.parentFolderId(), newFolder2.id());
 
-    //delete root folder 
+    //delete root folder
 
     QVERIFY(QMailStore::instance()->removeFolder(newFolder3.id()));
     QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
@@ -754,7 +754,7 @@ void tst_QMailStore::updateFolder()
     //update a folder that does not exist in the db - fail
 
     QMailFolder bogusFolder("does not exist");
-    QVERIFY(!QMailStore::instance()->updateFolder(&bogusFolder)); 
+    QVERIFY(!QMailStore::instance()->updateFolder(&bogusFolder));
     QCOMPARE(QMailStore::instance()->lastError(), QMailStore::ConstraintFailure);
     QVERIFY(!bogusFolder.id().isValid());
 
@@ -775,7 +775,7 @@ void tst_QMailStore::updateFolder()
 
     QVERIFY(QMailStore::instance()->removeFolder(newFolder3.id()));
     QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
-    
+
     newFolder4.setParentFolderId(newFolder3.id());
     QVERIFY(!QMailStore::instance()->updateFolder(&newFolder4));
     QCOMPARE(QMailStore::instance()->lastError(), QMailStore::ConstraintFailure);
@@ -1087,7 +1087,7 @@ void tst_QMailStore::updateMessage()
     QVERIFY(message3.id().isValid());
     QCOMPARE(QMailStore::instance()->countMessages(), 2);
     QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
-    
+
     // Verify that retrieval yields matching result
     QMailMessage message4(message3.id());
     QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
@@ -1117,7 +1117,7 @@ void tst_QMailStore::updateMessage()
     }
     // Note: results may not be in any order
     QCOMPARE(tags.count(), 2);
-    foreach (const QString &value, QStringList() << "Play" << "Work") 
+    foreach (const QString &value, QStringList() << "Play" << "Work")
         QVERIFY(tags.contains(value));
 
     // Verify mass update
@@ -1182,7 +1182,7 @@ void tst_QMailStore::updateMessage()
     QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
     QCOMPARE(QMailStore::instance()->countMessages(key6), 2);
     QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
-    
+
     data.setParentFolderId(folder2.id());
 
     QVERIFY(QMailStore::instance()->updateMessagesMetaData(QMailMessageKey(), QMailMessageKey::ParentFolderId, data));
@@ -1393,7 +1393,7 @@ void tst_QMailStore::removeAccount()
         } else QFAIL(qPrintable(QString("no config for %1!").arg(service)));
     }
 
-    // Verify that removal is successful 
+    // Verify that removal is successful
     QVERIFY(QMailStore::instance()->removeAccount(account1.id()));
     QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
     QCOMPARE(QMailStore::instance()->countAccounts(), 0);
@@ -1450,7 +1450,7 @@ void tst_QMailStore::removeFolder()
     QCOMPARE(folder2.customFields(), folder1.customFields());
     QCOMPARE(folder2.customField("answer"), QString("Fido"));
 
-    // Verify that removal is successful 
+    // Verify that removal is successful
     QVERIFY(QMailStore::instance()->removeFolder(folder1.id()));
     QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
     QCOMPARE(QMailStore::instance()->countFolders(), 0);
@@ -1527,7 +1527,7 @@ void tst_QMailStore::removeMessage()
 		QCOMPARE(message2.customField("answer"), QString("Fido"));
 	}
 
-    // Verify that removal is successful 
+    // Verify that removal is successful
     QVERIFY(QMailStore::instance()->removeMessage(message1.id()));
     QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
     QCOMPARE(QMailStore::instance()->countMessages(), 0);
@@ -1665,7 +1665,7 @@ void tst_QMailStore::removeMessageWithInResponse()
     QVERIFY(message1.id().isValid());
     QCOMPARE(QMailStore::instance()->countMessages(), 1);
     QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
-    
+
     QMailMessage messageResponse;
     messageResponse.setParentAccountId(account.id());
     messageResponse.setParentFolderId(folder.id());
@@ -1676,7 +1676,7 @@ void tst_QMailStore::removeMessageWithInResponse()
     messageResponse.setFrom(QMailAddress("alice@example.org"));
     messageResponse.setBody(QMailMessageBody::fromData(QString("Hello"), QMailMessageContentType("text/plain"), QMailMessageBody::SevenBit));
     messageResponse.setStatus(QMailMessage::Incoming, true);
-    messageResponse.setStatus(QMailMessage::Read, true);    
+    messageResponse.setStatus(QMailMessage::Read, true);
 
     // Verify that addition is successful
     QVERIFY(!messageResponse.id().isValid());
@@ -1709,7 +1709,7 @@ void tst_QMailStore::removeMessageWithInResponse()
 		QCOMPARE(messageResponse2.parentFolderId(), messageResponse.parentFolderId());
         }
 
-    // Verify that removal is successful 
+    // Verify that removal is successful
     QVERIFY(QMailStore::instance()->removeMessage(message1.id()));
     QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
     QCOMPARE(QMailStore::instance()->countMessages(), 1);
@@ -1718,7 +1718,7 @@ void tst_QMailStore::removeMessageWithInResponse()
     QMailMessage message3(message1.id());
     QCOMPARE(QMailStore::instance()->lastError(), QMailStore::InvalidId);
     QVERIFY(!message3.id().isValid());
-    
+
     // Verify that the child message is orphaned correctly
     QMailMessage messageResponse3(messageResponse.id());
     QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);

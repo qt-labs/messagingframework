@@ -42,7 +42,7 @@ enum EqualityComparator
     NotEqual
 };
 
-enum InclusionComparator 
+enum InclusionComparator
 {
     Includes,
     Excludes

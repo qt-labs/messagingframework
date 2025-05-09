@@ -151,7 +151,7 @@ void PopClient::testConnection()
         operationFailed(QMailServiceAction::Status::ErrConfiguration, tr("Cannot open connection without POP server configuration"));
         return;
     }
-    
+
     createTransport();
 
     status = Init;
@@ -436,7 +436,7 @@ void PopClient::sendCommand(const char *data, int len)
         if (passExp.indexIn(logData) != -1) {
             logData = logData.left(passExp.matchedLength()) + "<password hidden>";
         }
-        
+
         qMailLog(POP) << "SEND:" << logData;
     }
 }
@@ -509,7 +509,7 @@ void PopClient::processResponse(const QString &response)
     case TLS:
     {
         if (response[0] != '+') {
-            // Unable to initiate TLS 
+            // Unable to initiate TLS
             operationFailed(QMailServiceAction::Status::ErrLoginFailed, "");
         } else {
             // Switch into encrypted mode and wait for encrypted connection event
@@ -872,7 +872,7 @@ void PopClient::nextAction()
     {
         PopConfiguration popCfg(config);
         if (popCfg.deleteRetrievedMailsFromServer()) {
-            // Now that sqlite WAL is used, make sure mail metadata is sync'd 
+            // Now that sqlite WAL is used, make sure mail metadata is sync'd
             // on device before removing mail from external mail server
             QMailStore::instance()->ensureDurability();
             int pos = msgPosFromUidl(messageUid);
@@ -1139,7 +1139,7 @@ void PopClient::uidlIntegrityCheck()
         // Does not seem possible to support it in a cross platform way.
         const bool partialPopRetrievalWorking = false;
         partialContent = false;
-        
+
         // Update partialContent status for the account
         if (additional && partialPopRetrievalWorking) {
             additional += gap;
@@ -1156,7 +1156,7 @@ void PopClient::createMail()
     QString detachedFile = dataStream->detach();
 
     qMailLog(POP) << qPrintable(QString("RECV: <%1 message bytes received>").arg(detachedSize));
-    
+
     QMailMessage *mail(new QMailMessage(QMailMessage::fromRfc2822File(detachedFile)));
     _bufferedMessages.append(mail);
 
@@ -1270,7 +1270,7 @@ void PopClient::retrieveOperationCompleted()
         if(!QMailStore::instance()->updateFolder(&folder))
             qWarning() << "Unable to update folder" << folder.id() << "to set PartialContent";
     }
-    
+
     if (!selected) {
         QMailAccount account(accountId());
         account.setLastSynchronized(QMailTimeStamp::currentDateTime());

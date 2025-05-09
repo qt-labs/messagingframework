@@ -158,7 +158,7 @@ void FolderView::itemExpanded(const QModelIndex &index)
             expandedFolders.insert(folderId);
             return;
         }
-        
+
         QMailAccountId accountId = folderModel->accountIdFromIndex(index);
         if (accountId.isValid()) {
             expandedAccounts.insert(accountId);

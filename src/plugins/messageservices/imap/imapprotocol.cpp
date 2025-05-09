@@ -58,7 +58,7 @@
 #endif
 
 // Pack both the source mailbox path and the numeric UID into the UID value
-// that we store for IMAP messages.  This will allow us find the owner 
+// that we store for IMAP messages.  This will allow us find the owner
 // mailbox, even if the UID is present in multiple nested mailboxes.
 
 static QString messageId(const QString& uid)
@@ -255,7 +255,7 @@ static QString messageFlagsToString(MessageFlags flags)
 {
     QStringList result;
 
-    // Note that \Recent flag is ignored as only the server is allowed to modify that flag 
+    // Note that \Recent flag is ignored as only the server is allowed to modify that flag
     if (flags != 0) {
         if (flags & MFlag_Deleted)
             result.append("\\Deleted");
@@ -355,7 +355,7 @@ private:
 class ImapState : public QObject
 {
     Q_OBJECT
-    
+
 public:
     ImapState(ImapCommand c, const QString &name)
         : mCommand(c), mName(name), mStatus(OpPending) {}
@@ -367,7 +367,7 @@ public:
     virtual QString transmit(ImapContext *) { return QString(); }
     virtual void enter(ImapContext *) {}
     virtual void leave(ImapContext *) { init(); }
-    
+
     virtual bool permitsPipelining() const { return false; }
 
     virtual bool continuationResponse(ImapContext *c, const QString &line);
@@ -437,8 +437,8 @@ bool ImapState::appendLiteralData(ImapContext *, const QString &)
     return true;
 }
 
-QString ImapState::error(const QString &line) 
-{ 
+QString ImapState::error(const QString &line)
+{
     return line;
 }
 
@@ -446,19 +446,19 @@ void ImapState::log(const QString &note)
 {
     QString result;
     switch (mStatus) {
-    case OpPending: 
+    case OpPending:
         result = "OpPending";
         break;
-    case OpFailed: 
+    case OpFailed:
         result = "OpFailed";
         break;
-    case OpOk: 
+    case OpOk:
         result = "OpOk";
         break;
-    case OpNo: 
+    case OpNo:
         result = "OpNo";
         break;
-    case OpBad: 
+    case OpBad:
         result = "OpBad";
         break;
     }
@@ -719,7 +719,7 @@ void CreateState::init()
 }
 
 QString CreateState::transmit(ImapContext *c)
-{  
+{
     const QMailFolderId &parent = _mailboxes.last().first;
     const QString &name = _mailboxes.last().second;
 
@@ -1003,7 +1003,7 @@ QString MoveState::buildNewPath(ImapContext *c, const QMailFolder &folder, const
 class ListState : public ImapState
 {
     Q_OBJECT
-    
+
 public:
     ListState() : ImapState(IMAP_List, "List") { ListState::init(); }
 
@@ -1016,7 +1016,7 @@ public:
     void leave(ImapContext *c) override;
     void untaggedResponse(ImapContext *c, const QString &line) override;
     void taggedResponse(ImapContext *c, const QString &line) override;
-    
+
 signals:
     void mailboxListed(const QString &flags, const QString &path);
 
@@ -1024,12 +1024,12 @@ private:
     struct ListParameters
     {
         ListParameters() : _xlist(false) {}
-        
+
         QString _reference;
         QString _mailbox;
         bool _xlist;
     };
-    
+
     // The list of reference/mailbox pairs we're listing (via multiple commands), in order
     QList<ListParameters> _parameters;
 };
@@ -1374,7 +1374,7 @@ void AppendState::taggedResponse(ImapContext *c, const QString &line)
             emit messageCreated(params.mMessageId, messageUid(params.mDestination.id(), match.captured(2)));
         }
     }
-    
+
     ImapState::taggedResponse(c, line);
 }
 
@@ -1555,7 +1555,7 @@ QString QResyncState::transmit(ImapContext *c)
     } else {
         cmd.append(" (CONDSTORE)");
     }
-    
+
     return c->sendCommand(cmd);
 }
 
@@ -1591,7 +1591,7 @@ void QResyncState::taggedResponse(ImapContext *c, const QString &line)
 }
 
 
-// Flag fetching, 
+// Flag fetching,
 // doesn't call createMail, instead updates properties.flagChanges
 class FetchFlagsState : public SelectedState
 {
@@ -1620,8 +1620,8 @@ void FetchFlagsState::setProperties(const QString &range, const QString &prefix)
     mPrefix = prefix;
 }
 
-void FetchFlagsState::init() 
-{ 
+void FetchFlagsState::init()
+{
     SelectedState::init();
     mChanges.clear();
 }
@@ -1636,12 +1636,12 @@ void FetchFlagsState::untaggedResponse(ImapContext *c, const QString &line)
         if (!uid.isEmpty()) {
             MessageFlags flags = 0;
             parseFlags(str, flags);
-            
+
             bool ok;
             int uidStripped = messageId(uid).toInt(&ok);
             if (!ok)
                 return;
-            
+
             mChanges.append(FlagChange(uid, flags));
             mReceivedMessages.add(uidStripped);
         }
@@ -2230,7 +2230,7 @@ public:
     void taggedResponse(ImapContext *c, const QString &line) override;
     void literalResponse(ImapContext *c, const QString &line) override;
     bool appendLiteralData(ImapContext *c, const QString &preceding) override;
-    
+
 signals:
     void downloadSize(const QString&, int);
     void nonexistentUid(const QString&);
@@ -2262,7 +2262,7 @@ private:
     int mCurrentIndex;
     QMap<QString, int> mParametersMap;
     int mLiteralIndex;
-    
+
     static QString fetchResponseElement(const QString &line);
 
     static const int MAX_LINES = 30;
@@ -2274,11 +2274,11 @@ UidFetchState::FetchParameters::FetchParameters()
       mNewMsgFlags(false),
       mNewMsgSize(0),
       mDataItems(0)
-{ 
+{
 }
 
-void UidFetchState::init() 
-{ 
+void UidFetchState::init()
+{
     SelectedState::init();
     mParametersMap.clear();
     mParameters.clear();
@@ -2298,7 +2298,7 @@ void UidFetchState::setUidList(const QString &uidList, FetchItemFlags flags)
     foreach (int uid, IntegerRegion::toList(uidList)) {
         mParametersMap.insert(QString::number(uid), appendIndex);
     }
-    
+
     if (mCurrentIndex == -1) {
         mCurrentIndex = 0;
     }
@@ -2405,7 +2405,7 @@ void UidFetchState::untaggedResponse(ImapContext *c, const QString &line)
                     return;
                 fp.mReceivedMessages.add(uid);
                 fp.mMessageLength = 0;
-                
+
                 // See what we can extract from the FETCH response
                 fp.mNewMsgFlags = 0;
                 if (fp.mDataItems & F_Flags) {
@@ -2467,8 +2467,8 @@ void UidFetchState::taggedResponse(ImapContext *c, const QString &line)
         foreach(const QString &uid, missingUids.toStringList()) {
             qWarning() << "Message not found " << uid;
             emit nonexistentUid(messageUid(c->mailbox().id, uid));
-        } 
-    } 
+        }
+    }
 
     SelectedState::taggedResponse(c, line);
 }
@@ -2693,7 +2693,7 @@ void UidCopyState::taggedResponse(ImapContext *c, const QString &line)
             }
         }
     }
-    
+
     SelectedState::taggedResponse(c, line);
 }
 
@@ -2893,7 +2893,7 @@ void CompressState::taggedResponse(ImapContext *c, const QString &line)
 class ImapContextFSM : public ImapContext
 {
 public:
-    ImapContextFSM(ImapProtocol *protocol); 
+    ImapContextFSM(ImapProtocol *protocol);
 
     UnconnectedState unconnectedState;
     InitState initState;
@@ -2956,12 +2956,12 @@ private:
 ImapContextFSM::ImapContextFSM(ImapProtocol *protocol)
     : ImapContext(protocol),
       mState(&unconnectedState)
-{ 
+{
     reset();
 }
 
 QString ImapContextFSM::sendCommandLiteral(const QString &cmd, uint length)
-{ 
+{
     QString tag(ImapContext::sendCommandLiteral(cmd, length));
 
     if (protocol()->capabilities().contains("LITERAL+")) {
@@ -2983,7 +2983,7 @@ void ImapContextFSM::reset()
     }
 
     mState->init();
-    mState = &unconnectedState;  
+    mState = &unconnectedState;
 }
 
 void ImapContextFSM::setState(ImapState* s)
@@ -3052,13 +3052,13 @@ ImapProtocol::ImapProtocol()
             this, SIGNAL(urlAuthorized(QString)));
     connect(&_fsm->appendState, SIGNAL(messageCreated(QMailMessageId, QString)),
             this, SIGNAL(messageCreated(QMailMessageId, QString)));
-    connect(&_fsm->uidFetchState, SIGNAL(downloadSize(QString, int)), 
+    connect(&_fsm->uidFetchState, SIGNAL(downloadSize(QString, int)),
             this, SIGNAL(downloadSize(QString, int)));
-    connect(&_fsm->uidFetchState, SIGNAL(nonexistentUid(QString)), 
+    connect(&_fsm->uidFetchState, SIGNAL(nonexistentUid(QString)),
             this, SIGNAL(nonexistentUid(QString)));
-    connect(&_fsm->uidStoreState, SIGNAL(messageStored(QString)), 
+    connect(&_fsm->uidStoreState, SIGNAL(messageStored(QString)),
             this, SIGNAL(messageStored(QString)));
-    connect(&_fsm->uidCopyState, SIGNAL(messageCopied(QString, QString)), 
+    connect(&_fsm->uidCopyState, SIGNAL(messageCopied(QString, QString)),
             this, SIGNAL(messageCopied(QString, QString)));
     connect(&_fsm->createState, SIGNAL(folderCreated(QString, bool)),
             this, SIGNAL(folderCreated(QString, bool)));
@@ -3698,7 +3698,7 @@ void ImapProtocol::nextAction(const QString &line)
             operationCompleted(_fsm->command(), _fsm->status());
             return;
         }
-        
+
         _fsm->taggedResponse(line);
         clearResponse();
 
@@ -3787,12 +3787,12 @@ QString ImapProtocol::url(const QMailMessagePart::Location &location, bool absol
                 result.append('@');
             }
             result.append(imapCfg.mailServer());
-            
+
             if (imapCfg.mailPort() != 143) {
                 result.append(':').append(QString::number(imapCfg.mailPort()));
             }
         }
-        
+
         result.append('/');
 
         if (QMailDisconnected::sourceFolderId(metaData).isValid()) {
@@ -3808,7 +3808,7 @@ QString ImapProtocol::url(const QMailMessagePart::Location &location, bool absol
         } else if (bodyOnly) {
             result.append("/;section=TEXT");
         }
-        
+
         if (!imapCfg.mailUserName().isEmpty()) {
             result.append(";urlauth=submit+");
             result.append(QUrl::toPercentEncoding(imapCfg.mailUserName()));
@@ -3851,7 +3851,7 @@ QString ImapProtocol::quoteString(const QString& input)
 
     if (!atomSpecials.match(input).hasMatch())
         return input;
-        
+
     // We need to quote this string because it is not an atom
     QString result(input);
 

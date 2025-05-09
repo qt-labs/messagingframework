@@ -38,12 +38,12 @@
     \class QMailMessageSortKey
 
     \preliminary
-    \brief The QMailMessageSortKey class defines the parameters used for sorting a subset of 
+    \brief The QMailMessageSortKey class defines the parameters used for sorting a subset of
     queried messages from the mail store.
     \ingroup messaginglibrary
 
-    A QMailMessageSortKey is composed of a message property to sort and a sort order. 
-    The QMailMessageSortKey class is used in conjunction with the QMailStore::queryMessages() 
+    A QMailMessageSortKey is composed of a message property to sort and a sort order.
+    The QMailMessageSortKey class is used in conjunction with the QMailStore::queryMessages()
     function to sort message results according to the criteria defined by the sort key.
 
     For example:
@@ -52,7 +52,7 @@
     QMailMessageSortKey sortKey(QMailMessageSortKey::timeStamp(Qt::DescendingOrder));
     QMailIdList results = QMailStore::instance()->queryMessages(QMailMessageKey(), sortKey);
     \endcode
-    
+
     \sa QMailStore, QMailMessageKey
 */
 
@@ -84,16 +84,16 @@
 
 /*!
     \typedef QMailMessageSortKey::ArgumentType
-    
+
     Defines the type used to represent a single sort criterion of a message sort key.
 */
 
 /*!
     Create a QMailMessageSortKey with specifying matching parameters.
 
-    A default-constructed key (one for which isEmpty() returns true) sorts no messages. 
+    A default-constructed key (one for which isEmpty() returns true) sorts no messages.
 
-    The result of combining an empty key with a non-empty key is the same as the original 
+    The result of combining an empty key with a non-empty key is the same as the original
     non-empty key.
 
     The result of combining two empty keys is an empty key.
@@ -150,7 +150,7 @@ QMailMessageSortKey& QMailMessageSortKey::operator&=(const QMailMessageSortKey& 
 }
 
 /*!
-    Returns \c true if the value of this key is the same as the key \a other. Returns 
+    Returns \c true if the value of this key is the same as the key \a other. Returns
     \c false otherwise.
 */
 bool QMailMessageSortKey::operator==(const QMailMessageSortKey& other) const
@@ -164,7 +164,7 @@ bool QMailMessageSortKey::operator==(const QMailMessageSortKey& other) const
 */
 bool QMailMessageSortKey::operator!=(const QMailMessageSortKey& other) const
 {
-   return !(*this == other); 
+   return !(*this == other);
 }
 
 /*!
@@ -392,6 +392,6 @@ QMailMessageSortKey QMailMessageSortKey::status(quint64 mask, Qt::SortOrder orde
     return QMailMessageSortKey(Status, order, mask);
 }
 
-        
+
 Q_IMPLEMENT_USER_METATYPE(QMailMessageSortKey)
 

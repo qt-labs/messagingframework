@@ -312,7 +312,7 @@ private:
 class QMailMoveCommand : public QMailServiceActionCommand
 {
 public:
-    QMailMoveCommand(QMailStorageActionPrivate *action, const QMailMessageIdList &ids, const QMailFolderId &destinationId) 
+    QMailMoveCommand(QMailStorageActionPrivate *action, const QMailMessageIdList &ids, const QMailFolderId &destinationId)
         : _action(action), _ids(ids), _folderId(destinationId) {}
     void execute() override { _action->onlineMoveMessages(_ids, _folderId); }
 

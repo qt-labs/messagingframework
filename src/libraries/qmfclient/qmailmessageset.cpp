@@ -46,7 +46,7 @@
     \preliminary
     \ingroup messaginglibrary
 
-    \brief The QMailMessageSetContainer class specifies the interface implemented by container 
+    \brief The QMailMessageSetContainer class specifies the interface implemented by container
     nodes in a QMailMessageSet tree hierarchy.
 
     QMailMessageSetContainer provides the management for a collection of contained nodes
@@ -54,7 +54,7 @@
     nodes, which must inherit from QMailMessageSet.
 */
 
-/*! 
+/*!
     \typedef QMailMessageSetContainer::ImplementationType
     \internal
 */
@@ -108,7 +108,7 @@ QMailMessageSet *QMailMessageSetContainer::at(int i) const
 }
 
 /*!
-    Returns the index within this container of the QMailMessageSet \a child, or -1 if it 
+    Returns the index within this container of the QMailMessageSet \a child, or -1 if it
     is not contained by this container object.
 
     \sa at()
@@ -134,7 +134,7 @@ void QMailMessageSetContainer::append(QMailMessageSet *child)
 }
 
 /*!
-    Informs the container that \a child has been modified, and the container 
+    Informs the container that \a child has been modified, and the container
     may need to be updated.
 */
 void QMailMessageSetContainer::update(QMailMessageSet *child)
@@ -189,7 +189,7 @@ void QMailMessageSetContainer::resyncState()
     }
 }
 
-/*! 
+/*!
     \fn QMailMessageSetContainer::model()
 
     Returns the model that owns this container.
@@ -198,7 +198,7 @@ void QMailMessageSetContainer::resyncState()
 
 /* QMailMessageSet */
 
-class QMailMessageSetPrivate : public QMailMessageSetContainerPrivate 
+class QMailMessageSetPrivate : public QMailMessageSetContainerPrivate
 {
 public:
     template<typename Subclass>
@@ -224,30 +224,30 @@ public:
 
     \brief The QMailMessageSet class represents a subset of the messages in the mail store.
 
-    QMailMessageSet provides a representation for a named subset of messages, specified 
+    QMailMessageSet provides a representation for a named subset of messages, specified
     by a QMailMessageKey selection criterion.
 
     QMailMessageSets are designed to be arranged in hierarchies, and each message set
     is a container for child message sets, implementing the QMailMessageSetContainer
-    interface.  Message sets are owned by QMailMessageSetModel instances, and the 
+    interface.  Message sets are owned by QMailMessageSetModel instances, and the
     index of a message set within the model can be retrieved using modelIndex().
 
-    The messageKey() function of each QMailMessageSet object can be used to provide 
+    The messageKey() function of each QMailMessageSet object can be used to provide
     the message selection filter for a QMailMessageListModel.  The descendantsMessageKey()
-    function can be used to provide a message selection filter matching all messages 
+    function can be used to provide a message selection filter matching all messages
     beneath this message set in the hierarchy.
 
     QMailMessageSet objects should not directly respond to events reported by the QMailStore;
-    instead, they should react to notifications of mail store events emitted by the 
+    instead, they should react to notifications of mail store events emitted by the
     QMailMessageSetModel to which they are attached.  Because the events they receive
     from the model may be filtered, QMailMessageSet instances must implement the
-    resyncState() function, resynchronizing their state with the current state of the 
+    resyncState() function, resynchronizing their state with the current state of the
     mail store.
 
     \sa QMailMessageSetModel
 */
 
-/*! 
+/*!
     \typedef QMailMessageSet::ImplementationType
     \internal
 */
@@ -288,14 +288,14 @@ QMailMessageSet::~QMailMessageSet()
 */
 
 /*!
-    Returns the QMailMessageKey that defines the messages found beneath this message set 
+    Returns the QMailMessageKey that defines the messages found beneath this message set
     in the hierarchy, not including the messages of this message set itself.
 */
 QMailMessageKey QMailMessageSet::descendantsMessageKey() const
 {
     // Default implementation: Or together the keys yielding the content of all
-    // our children.  
-    // Note: until QMailMessageKey's operators do automatic complexity reduction, 
+    // our children.
+    // Note: until QMailMessageKey's operators do automatic complexity reduction,
     // this will result in infeasibly complicated and repetitious queries...
 
     if (count() == 0)
@@ -318,7 +318,7 @@ QMailMessageKey QMailMessageSet::descendantsMessageKey() const
 */
 
 /*!
-    Returns the data element associated with the specified \a role and \a column, 
+    Returns the data element associated with the specified \a role and \a column,
     from the model that owns this message set.
 */
 QVariant QMailMessageSet::data(int role, int column)
@@ -361,11 +361,11 @@ class QMailFolderMessageSetPrivate : public QMailMessageSetPrivate
 public:
     QMailFolderMessageSetPrivate(QMailMessageSetContainer *container, const QMailFolderId &folderId, bool hierarchical)
         : QMailMessageSetPrivate(this, container),
-          _id(folderId), 
+          _id(folderId),
           _hierarchical(hierarchical)
     {
     }
-    
+
     QMailFolderId _id;
     bool _hierarchical;
     mutable QString _name;
@@ -381,15 +381,15 @@ public:
 
     \brief The QMailFolderMessageSet class represents a set of messages corresponding to the content of a QMailFolder.
 
-    QMailFolderMessageSet provides a representation for a named subset of messages, specified 
+    QMailFolderMessageSet provides a representation for a named subset of messages, specified
     by their parent QMailFolder.
 
     If the QMailFolderMessageSet is hierarchical(), then any folders contained by the
-    parent QMailFolder will automatically be managed as child QMailFolderMessageSets of 
+    parent QMailFolder will automatically be managed as child QMailFolderMessageSets of
     the parent QMailFolderMessageSet.
 */
 
-/*! 
+/*!
     \typedef QMailFolderMessageSet::ImplementationType
     \internal
 */
@@ -465,7 +465,7 @@ QString QMailFolderMessageSet::displayName() const
 }
 
 /*!
-    Returns the message key that defines the content of a QMailFolderMessageSet for the 
+    Returns the message key that defines the content of a QMailFolderMessageSet for the
     folder identified by \a id. If \a descendants is true, then the result is the key
     that defines the descendantMessageKey() content.
 */
@@ -598,11 +598,11 @@ class QMailAccountMessageSetPrivate : public QMailMessageSetPrivate
 public:
     QMailAccountMessageSetPrivate(QMailMessageSetContainer *container, const QMailAccountId &accountId, bool hierarchical)
         : QMailMessageSetPrivate(this, container),
-          _id(accountId), 
+          _id(accountId),
           _hierarchical(hierarchical)
     {
     }
-    
+
     QMailAccountId _id;
     bool _hierarchical;
     mutable QString _name;
@@ -618,11 +618,11 @@ public:
 
     \brief The QMailAccountMessageSet class represents a set of messages corresponding to the content of a QMailAccount.
 
-    QMailAccountMessageSet provides a representation for a named subset of messages, specified 
+    QMailAccountMessageSet provides a representation for a named subset of messages, specified
     by their parent QMailAccount.
 
     If the QMailAccountMessageSet is hierarchical(), then any folders contained by the
-    account will automatically be managed as child \l{QMailFolderMessageSet}s of the 
+    account will automatically be managed as child \l{QMailFolderMessageSet}s of the
     parent QMailAccountMessageSet.
 */
 
@@ -640,7 +640,7 @@ public:
     whose \l{QMailFolder::parentFolderId()}{parentFolderId} is empty.
 */
 QMailAccountMessageSet::QMailAccountMessageSet(QMailMessageSetContainer *container, const QMailAccountId &accountId, bool hierarchical)
-    : QMailMessageSet(new QMailAccountMessageSetPrivate(container, accountId, hierarchical), container) 
+    : QMailMessageSet(new QMailAccountMessageSetPrivate(container, accountId, hierarchical), container)
 {
 }
 
@@ -703,7 +703,7 @@ QString QMailAccountMessageSet::displayName() const
 }
 
 /*!
-    Returns the message key that defines the content of a QMailAccountMessageSet for the 
+    Returns the message key that defines the content of a QMailAccountMessageSet for the
     account identified by \a id.  If \a descendants is true, then the result is the key
     that defines the descendantMessageKey() content.
 */
@@ -862,8 +862,8 @@ public:
 
     \brief The QMailFilterMessageSet class represents a set of messages selected by a pre-determined filter criteria.
 
-    QMailFilterMessageSet provides a representation for a named subset of messages, specified 
-    by a set of criteria encoded into a QMailMessageKey object.  The properties of the 
+    QMailFilterMessageSet provides a representation for a named subset of messages, specified
+    by a set of criteria encoded into a QMailMessageKey object.  The properties of the
     QMailFilterMessageSet are mutable and can be changed after construction.
 */
 
@@ -874,7 +874,7 @@ public:
 
 /*!
     Constructs a QMailFilterMessageSet within the parent container \a container,
-    named \a name, whose message set is specified by the filter \a key, and with 
+    named \a name, whose message set is specified by the filter \a key, and with
     update minimization set to \a minimalUpdates.
 
     \sa setUpdatesMinimized()
@@ -932,10 +932,10 @@ bool QMailFilterMessageSet::updatesMinimized() const
     Sets update minimization to \a set.
 
     If update minimization is set to true, the QMailFilterMessageSet will only
-    emit the update() signal when the list of messages matching the filter key actually 
-    changes.  If update minimization is false, the update() signal will also be 
-    spuriously emitted; depending on the handling of that signal, this strategy 
-    may consume significantly less resources than are required to ensure minimal 
+    emit the update() signal when the list of messages matching the filter key actually
+    changes.  If update minimization is false, the update() signal will also be
+    spuriously emitted; depending on the handling of that signal, this strategy
+    may consume significantly less resources than are required to ensure minimal
     updates are emitted.
 
     \sa updatesMinimized()
@@ -1010,7 +1010,7 @@ void QMailFilterMessageSet::messagesUpdated(const QMailMessageIdList &ids)
                 modified = true;
             }
         }
-        
+
         if (!absentIds.isEmpty()) {
             // Add any messages that match our filter but aren't in our set
             absentIds.intersect(matchingIds);
@@ -1105,36 +1105,36 @@ public:
 
     \brief The QMailMessageSetModel class provides a model for a tree of QMailMessageSets.
 
-    QMailMessageSetModel provides a model containing sets of messages, arranged in a 
+    QMailMessageSetModel provides a model containing sets of messages, arranged in a
     tree structure.  Each node in the tree is a named entity that represents a set of
     messages, specified by a QMailMessageKey filter.  QMailMessageSetModel can be used
-    to construct a hierarchical tree of message folders, or other, more flexible ways of 
+    to construct a hierarchical tree of message folders, or other, more flexible ways of
     partitioning the set of messages into hierarchical groups.
 
-    QMailMessageSetModel inherits from QAbstractItemModel, so it is suitable for use 
+    QMailMessageSetModel inherits from QAbstractItemModel, so it is suitable for use
     with the Qt View classes such as QTreeView, to visually represent the hierarchical
     structure.
 
-    The model listens for change events emitted from the QMailStore, and automatically 
-    propagates these changes to attached views, unless the setIgnoreMailStoreUpdates() 
+    The model listens for change events emitted from the QMailStore, and automatically
+    propagates these changes to attached views, unless the setIgnoreMailStoreUpdates()
     function is used to disable this feature.
 
     To customize the display of QMailMessageSets, create a delegate that paints the
-    object as desired, using data elements accessed via the data() function.  
-    The data() function should be overridden by subclasses to support additional roles, 
+    object as desired, using data elements accessed via the data() function.
+    The data() function should be overridden by subclasses to support additional roles,
     or to customize the data displayed for existing roles.
 
     To define the content of a QMailMessageSetModel, derive classes from QMailMessageSet
-    which select your desired message sets, and add them to the model in the init() 
+    which select your desired message sets, and add them to the model in the init()
     member function.  The model is informed of the addition, removal and update events
     for message sets anywhere within the model, via the notification functions appended(),
-    removed() and updated().  Override these functions to perform any content management 
+    removed() and updated().  Override these functions to perform any content management
     tasks specific to your model.
 */
 
 /*!
     \enum QMailMessageSetModel::Roles
-    
+
     This enum type is used to define data elements used in common display roles when presenting message set objects.
 
     \value DisplayNameRole  The name of the message set for display purposes.
@@ -1181,7 +1181,7 @@ int QMailMessageSetModel::columnCount(const QModelIndex &) const
     return 1;
 }
 
-/*! 
+/*!
     Returns true if the model contains no child message set objects; otherwise returns false.
 */
 bool QMailMessageSetModel::isEmpty() const
@@ -1220,7 +1220,7 @@ QModelIndex QMailMessageSetModel::parent(const QModelIndex &index) const
 }
 
 /*!
-    Return the index of the message set associated with the account identified by 
+    Return the index of the message set associated with the account identified by
     \a id, if one exists.
 
     \sa accountIdFromIndex()
@@ -1235,7 +1235,7 @@ QModelIndex QMailMessageSetModel::indexFromAccountId(const QMailAccountId &id) c
 }
 
 /*!
-    Return the index of the message set associated with the folder identified by 
+    Return the index of the message set associated with the folder identified by
     \a id, if one exists.
 
     \sa folderIdFromIndex()
@@ -1250,7 +1250,7 @@ QModelIndex QMailMessageSetModel::indexFromFolderId(const QMailFolderId &id) con
 }
 
 /*!
-    Return the identifier of the account associated with the item at \a index, if that 
+    Return the identifier of the account associated with the item at \a index, if that
     item's type conforms to QMailAccountMessageSet.
 */
 QMailAccountId QMailMessageSetModel::accountIdFromIndex(const QModelIndex &index) const
@@ -1259,7 +1259,7 @@ QMailAccountId QMailMessageSetModel::accountIdFromIndex(const QModelIndex &index
 }
 
 /*!
-    Return the identifier of the folder associated with the item at \a index, if that 
+    Return the identifier of the folder associated with the item at \a index, if that
     item's type conforms to QMailFolderMessageSet.
 */
 QMailFolderId QMailMessageSetModel::folderIdFromIndex(const QModelIndex &index) const
@@ -1328,7 +1328,7 @@ QMailMessageSetModel *QMailMessageSetModel::model()
 }
 
 /*!
-    Returns true if the model has been set to ignore updates emitted by 
+    Returns true if the model has been set to ignore updates emitted by
     the mail store; otherwise returns false.
 */
 bool QMailMessageSetModel::ignoreMailStoreUpdates() const
@@ -1339,13 +1339,13 @@ bool QMailMessageSetModel::ignoreMailStoreUpdates() const
 /*!
     Sets whether or not mail store updates are ignored to \a ignore.
 
-    If ignoring updates is set to true, the model will ignore updates reported 
-    by the mail store.  If set to false, the model will automatically synchronize 
+    If ignoring updates is set to true, the model will ignore updates reported
+    by the mail store.  If set to false, the model will automatically synchronize
     its content in reaction to updates reported by the mail store.
 
-    If updates are ignored, signals such as rowInserted and dataChanged will not 
+    If updates are ignored, signals such as rowInserted and dataChanged will not
     be emitted; instead, the modelReset signal will be emitted when the model is
-    later changed to stop ignoring mail store updates, and detailed change 
+    later changed to stop ignoring mail store updates, and detailed change
     information will not be accessible.
 */
 void QMailMessageSetModel::setIgnoreMailStoreUpdates(bool ignore)
@@ -1511,7 +1511,7 @@ QMailFolderId QMailMessageSetModel::itemFolderId(QMailMessageSet *item) const
     return QMailFolderId();
 }
 
-/*! 
+/*!
     Updates the model's indexing information when \a item is appended to a container within the model.
 
     Override this function to perform any management tasks specific to a subclass of QMailMessageSetContainer.

@@ -57,8 +57,8 @@ Q_GLOBAL_STATIC(GenericViewer, genericViewerInstance);
     \l {QMailViewerInterface::setResource()}{setResource()} function.  The  \l {QMailViewerInterface::clear()}{clear()}
     function clears any message or resources previously set.
 
-    The viewer object should emit the \l {QMailViewerInterface::anchorClicked()}{anchorClicked()} signal if the user 
-    selects a link in the message.  If the message supports a concept of completion, then the 
+    The viewer object should emit the \l {QMailViewerInterface::anchorClicked()}{anchorClicked()} signal if the user
+    selects a link in the message.  If the message supports a concept of completion, then the
     \l {QMailViewerInterface::finished()}{finished()} signal should be emitted after the display has been completed.
 
     Rather than creating objects that implement the QMailViewerInterface directly, clients should create an object
@@ -112,21 +112,21 @@ Q_GLOBAL_STATIC(GenericViewer, genericViewerInstance);
 /*!
     \fn QMailViewerInterface::anchorClicked(const QUrl& link)
 
-    This signal is emitted when the user presses the select key while the display has the 
+    This signal is emitted when the user presses the select key while the display has the
     anchor \a link selected.
 */
 
 /*!
     \fn QMailViewerInterface::messageChanged(const QMailMessageId &id)
 
-    This signal is emitted by the viewer to report that it is now viewing a different message, 
+    This signal is emitted by the viewer to report that it is now viewing a different message,
     identified by \a id.
 */
 
 /*!
     \fn QMailViewerInterface::viewMessage(const QMailMessageId &id, QMailViewerFactory::PresentationType type)
 
-    This signal is emitted by the viewer to request a display of the message identified by \a id, 
+    This signal is emitted by the viewer to request a display of the message identified by \a id,
     using the presentation style \a type.
 */
 
@@ -139,14 +139,14 @@ Q_GLOBAL_STATIC(GenericViewer, genericViewerInstance);
 /*!
     \fn QMailViewerInterface::finished()
 
-    This signal is emitted when the display of the current mail message is completed.  This signal 
+    This signal is emitted when the display of the current mail message is completed.  This signal
     is emitted only for message types that define a concept of completion, such as SMIL slideshows.
 */
 
 /*!
     \fn QMailViewerInterface::retrieveMessage()
 
-    This signal is emitted by the viewer to initiate a message completion action.  
+    This signal is emitted by the viewer to initiate a message completion action.
     This is only meaningful if the message has not yet been completely retrieved.
 
     \sa QMailMessage::status(), QMailRetrievalAction::retrieveMessages()
@@ -181,7 +181,7 @@ QMailViewerInterface::QMailViewerInterface( QWidget *parent )
 {
 }
 
-/*! 
+/*!
     Destructs the QMailViewerInterface object.
 */
 QMailViewerInterface::~QMailViewerInterface()
@@ -210,7 +210,7 @@ void QMailViewerInterface::scrollToAnchor(const QString& link)
 */
 
 /*!
-    Allows the viewer object to handle the notification of the arrival of new messages, 
+    Allows the viewer object to handle the notification of the arrival of new messages,
     identified by \a list.
 
     Return true to indicate that the event has been handled, or false to let the caller handle
@@ -224,7 +224,7 @@ bool QMailViewerInterface::handleIncomingMessages( const QMailMessageIdList &lis
 }
 
 /*!
-    Allows the viewer object to handle the notification of the transmission of queued messages, 
+    Allows the viewer object to handle the notification of the transmission of queued messages,
     identified by \a list.
 
     Return true to indicate that the event has been handled, or false to let the caller handle
@@ -252,7 +252,7 @@ bool QMailViewerInterface::handleOutgoingMessages( const QMailMessageIdList &lis
 /*!
     \fn bool QMailViewerInterface::isSupported(QMailMessage::ContentType t, QMailViewerFactory::PresentationType pres) const
 
-    Returns true if the viewer can present a message containing data of content type \a t, using the 
+    Returns true if the viewer can present a message containing data of content type \a t, using the
     presentation type \a pres.
 */
 
@@ -262,9 +262,9 @@ bool QMailViewerInterface::handleOutgoingMessages( const QMailMessageIdList &lis
     Returns a list of the content types that can be presented by this viewer component.
 */
 
-/*! 
-    Supplies the viewer object with a resource that may be referenced by a mail message.  The resource 
-    identified as \a name will be displayed as the object \a value.  
+/*!
+    Supplies the viewer object with a resource that may be referenced by a mail message.  The resource
+    identified as \a name will be displayed as the object \a value.
 */
 void QMailViewerInterface::setResource(const QUrl& name, QVariant value)
 {
@@ -280,7 +280,7 @@ void QMailViewerInterface::setResource(const QUrl& name, QVariant value)
 
     \brief The QMailViewerFactory class creates objects implementing the QMailViewerInterface interface.
 
-    The QMailViewerFactory class creates objects that are able to display mail messages, and 
+    The QMailViewerFactory class creates objects that are able to display mail messages, and
     implement the QMailViewerInterface interface.  The factory chooses an implementation
     based on the type of message to be displayed.
 

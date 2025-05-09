@@ -92,7 +92,7 @@ public:
     bool isNonMatching() const;
     bool isNegated() const;
 
-    //for subqueries 
+    //for subqueries
     operator QVariant() const;
 
     const QmfList<ArgumentType> &arguments() const;

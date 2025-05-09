@@ -42,7 +42,7 @@
 /*!
     \enum QMailDataComparator::EqualityComparator
 
-    Defines the comparison operations that can be used to compare data elements 
+    Defines the comparison operations that can be used to compare data elements
     of QMailStore objects for equality and inequality. This is case sensitive.
 
     \value Equal Represents the '==' operator.
@@ -52,14 +52,14 @@
 /*!
     \enum QMailDataComparator::InclusionComparator
 
-    Defines the comparison operations that can be used to compare data elements 
+    Defines the comparison operations that can be used to compare data elements
     of QMailStore objects for inclusion or exclusion. This is case insensitive.
 
-    \value Includes Represents an operation in which an associated property is tested to 
+    \value Includes Represents an operation in which an associated property is tested to
                     determine whether it is equal to any of a supplied set of values.
                     Alternatively, it may be used to determine whether a single supplied
                     value is included within the associated QMailStore property.
-    \value Excludes Represents an operation in which an associated property is tested to 
+    \value Excludes Represents an operation in which an associated property is tested to
                     determine whether it is equal to none of a supplied set of values.
                     Alternatively, it may be used to determine whether a single supplied
                     value is not included within the associated QMailStore property.
@@ -68,7 +68,7 @@
 /*!
     \enum QMailDataComparator::RelationComparator
 
-    Defines the comparison operations that can be used to compare data elements 
+    Defines the comparison operations that can be used to compare data elements
     of QMailStore objects, according to a specific relation.
 
     \value LessThan Represents the '<' operator.
@@ -80,7 +80,7 @@
 /*!
     \enum QMailDataComparator::PresenceComparator
 
-    Defines the comparison operations that can be used to compare data elements 
+    Defines the comparison operations that can be used to compare data elements
     of QMailStore objects, according to presence or absence.
 
     \value Present Tests whether the specified property is present in the QMailStore object.

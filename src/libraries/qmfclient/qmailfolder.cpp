@@ -132,8 +132,8 @@ public:
     service, such as an IMAP account.
 
     A QMailFolder object has an optional parent of the same type, allowing folders
-    to be arranged in tree structures.  Messages may be associated with folders, 
-    allowing for simple classification and access by their 
+    to be arranged in tree structures.  Messages may be associated with folders,
+    allowing for simple classification and access by their
     \l{QMailMessage::parentFolderId()}{parentFolderId} property.
 
     \sa QMailMessage, QMailStore::folder()
@@ -142,7 +142,7 @@ public:
 /*!
     \variable QMailFolder::SynchronizationEnabled
 
-    The status mask needed for testing the value of the registered status flag named 
+    The status mask needed for testing the value of the registered status flag named
     \c "SynchronizationEnabled" against the result of QMailFolder::status().
 
     This flag indicates that a folder should be included during account synchronization.
@@ -151,7 +151,7 @@ public:
 /*!
     \variable QMailFolder::Synchronized
 
-    The status mask needed for testing the value of the registered status flag named 
+    The status mask needed for testing the value of the registered status flag named
     \c "Synchronized" against the result of QMailFolder::status().
 
     This flag indicates that a folder has been synchronized during account synchronization.
@@ -160,7 +160,7 @@ public:
 /*!
     \variable QMailFolder::PartialContent
 
-    The status mask needed for testing the value of the registered status flag named 
+    The status mask needed for testing the value of the registered status flag named
     \c "PartialContent" against the result of QMailFolder::status().
 
     This flag indicates that a folder contains a metadata record for only some of the messages known to exist at the external server.
@@ -169,7 +169,7 @@ public:
 /*!
     \variable QMailFolder::Removed
 
-    The status mask needed for testing the value of the registered status flag named 
+    The status mask needed for testing the value of the registered status flag named
     \c "Removed" against the result of QMailFolder::status().
 
     This flag indicates that a folder has been removed from the external server.
@@ -178,7 +178,7 @@ public:
 /*!
     \variable QMailFolder::Incoming
 
-    The status mask needed for testing the value of the registered status flag named 
+    The status mask needed for testing the value of the registered status flag named
     \c "Incoming" against the result of QMailFolder::status().
 
     This flag indicates that a folder contains messages that are incoming from the point of view of the account owner.
@@ -187,7 +187,7 @@ public:
 /*!
     \variable QMailFolder::Outgoing
 
-    The status mask needed for testing the value of the registered status flag named 
+    The status mask needed for testing the value of the registered status flag named
     \c "Outgoing" against the result of QMailFolder::status().
 
     This flag indicates that a folder contains messages that are outgoing from the point of view of the account owner.
@@ -196,7 +196,7 @@ public:
 /*!
     \variable QMailFolder::Sent
 
-    The status mask needed for testing the value of the registered status flag named 
+    The status mask needed for testing the value of the registered status flag named
     \c "Sent" against the result of QMailFolder::status().
 
     This flag indicates that a folder contains messages that were sent by the account owner.
@@ -205,7 +205,7 @@ public:
 /*!
     \variable QMailFolder::Trash
 
-    The status mask needed for testing the value of the registered status flag named 
+    The status mask needed for testing the value of the registered status flag named
     \c "Trash" against the result of QMailFolder::status().
 
     This flag indicates that a folder contains messages that have been marked as trash.
@@ -214,7 +214,7 @@ public:
 /*!
     \variable QMailFolder::Drafts
 
-    The status mask needed for testing the value of the registered status flag named 
+    The status mask needed for testing the value of the registered status flag named
     \c "Drafts" against the result of QMailFolder::status().
 
     This flag indicates that a folder contains messages that are drafts for potential transmission.
@@ -223,7 +223,7 @@ public:
 /*!
     \variable QMailFolder::Junk
 
-    The status mask needed for testing the value of the registered status flag named 
+    The status mask needed for testing the value of the registered status flag named
     \c "Junk" against the result of QMailFolder::status().
 
     This flag indicates that a folder contains messages that have been marked as junk.
@@ -232,7 +232,7 @@ public:
 /*!
     \variable QMailFolder::ChildCreationPermitted
 
-    The status mask needed for testing the value of the registered status flag named 
+    The status mask needed for testing the value of the registered status flag named
     \c "ChildCreationPermitted" against the result of QMailFolder::status().
 
     This flag indicates that creation of child folders of this folder is allowed.
@@ -241,7 +241,7 @@ public:
 /*!
     \variable QMailFolder::RenamePermitted
 
-    The status mask needed for testing the value of the registered status flag named 
+    The status mask needed for testing the value of the registered status flag named
     \c "RenamePermitted" against the result of QMailFolder::status().
 
     This flag indicates that the folder may be renamed.
@@ -250,7 +250,7 @@ public:
 /*!
     \variable QMailFolder::DeletionPermitted
 
-    The status mask needed for testing the value of the registered status flag named 
+    The status mask needed for testing the value of the registered status flag named
     \c "DeletionPermitted" against the result of QMailFolder::status().
 
     This flag indicates that the folder may be deleted.
@@ -259,7 +259,7 @@ public:
 /*!
     \variable QMailFolder::MessagesPermitted
 
-    The status mask needed for testing the value of the registered status flag named 
+    The status mask needed for testing the value of the registered status flag named
     \c "MessagesPermitted" against the result of QMailFolder::status().
 
     This flag indicates that the folder is allowed to contain messages.
@@ -268,10 +268,10 @@ public:
 /*!
     \variable QMailFolder::NonMail
 
-    The status mask needed for testing the value of the registered status flag named 
+    The status mask needed for testing the value of the registered status flag named
     \c "NonMail" against the result of QMailFolder::status().
 
-    This flag indicates that the folder contains only non mail items such as calendar 
+    This flag indicates that the folder contains only non mail items such as calendar
     and/or contacts items.
 */
 
@@ -330,7 +330,7 @@ QMailFolder::QMailFolder()
 
 /*!
   Constructor that creates a QMailFolder by loading the data from the message store as
-  specified by the QMailFolderId \a id. If the folder does not exist in the message store, 
+  specified by the QMailFolderId \a id. If the folder does not exist in the message store,
   then this constructor will create an empty and invalid QMailFolder.
 */
 
@@ -476,7 +476,7 @@ void QMailFolder::setParentAccountId(const QMailAccountId& id)
     d->parentAccountId = id;
 }
 
-/*! 
+/*!
     Returns the status value for the folder.
 
     \sa setStatus(), statusMask()
@@ -486,7 +486,7 @@ quint64 QMailFolder::status() const
     return d->status;
 }
 
-/*! 
+/*!
     Sets the status value for the folder to \a newStatus.
 
     \sa status(), statusMask()
@@ -496,7 +496,7 @@ void QMailFolder::setStatus(quint64 newStatus)
     d->status = newStatus;
 }
 
-/*! 
+/*!
     Sets the status flags indicated in \a mask to \a set.
 
     \sa status(), statusMask()
@@ -510,7 +510,7 @@ void QMailFolder::setStatus(quint64 mask, bool set)
 }
 
 /*!
-    Returns the status bitmask needed to test the result of QMailFolder::status() 
+    Returns the status bitmask needed to test the result of QMailFolder::status()
     against the QMailFolder status flag registered with the identifier \a flagName.
 
     \sa status(), QMailStore::folderStatusMask()
@@ -521,9 +521,9 @@ quint64 QMailFolder::statusMask(const QString &flagName)
 }
 
 
-/*! 
+/*!
     Returns the count of messages on the server for the folder.
-    
+
     The count is updated when an operation involving the folder is performed on the
     server, such as that requested by \l{QMailRetrievalAction::retrieveFolderList()}.
 
@@ -534,9 +534,9 @@ uint QMailFolder::serverCount() const
     return d->serverCount;
 }
 
-/*! 
+/*!
     Sets the count of messages on the server for the folder to \a count.
-    
+
     \sa serverCount(), setServerUnreadCount(), setServerUndiscoveredCount()
 */
 void QMailFolder::setServerCount(uint count)
@@ -544,10 +544,10 @@ void QMailFolder::setServerCount(uint count)
     d->serverCount = count;
 }
 
-/*! 
+/*!
     Returns the count of unread messages on the server for the folder.
     Unread messages have not had their content displayed by any client.
-    
+
     The count is updated when an operation involving the folder is performed on the
     server, such as that requested by \l{QMailRetrievalAction::retrieveFolderList()}.
 
@@ -558,10 +558,10 @@ uint QMailFolder::serverUnreadCount() const
     return d->serverUnreadCount;
 }
 
-/*! 
+/*!
     Sets the count of unread messages on the server for the folder to \a count.
     Unread messages have not had their content displayed by any client.
-    
+
     \sa serverUnreadCount(), setServerCount(), setServerUndiscoveredCount()
 */
 void QMailFolder::setServerUnreadCount(uint count)
@@ -569,10 +569,10 @@ void QMailFolder::setServerUnreadCount(uint count)
     d->serverUnreadCount = count;
 }
 
-/*! 
+/*!
     Returns the count of undiscovered messages on the server for the folder.
     Undiscovered messages are available at the server, but their meta data is not yet available on this client.
-    
+
     The count is updated when an operation involving the folder is performed on the
     server, such as that requested by \l{QMailRetrievalAction::retrieveFolderList()}.
 
@@ -583,10 +583,10 @@ uint QMailFolder::serverUndiscoveredCount() const
     return d->serverUndiscoveredCount;
 }
 
-/*! 
+/*!
     Sets the count of undiscovered messages on the server for the folder to \a count.
     Undiscovered messages are available at the server, but their meta data is not yet available on this client.
-    
+
     \sa serverUndiscoveredCount(), setServerCount(), setServerUnreadCount()
 */
 void QMailFolder::setServerUndiscoveredCount(uint count)
@@ -594,7 +594,7 @@ void QMailFolder::setServerUndiscoveredCount(uint count)
     d->serverUndiscoveredCount = count;
 }
 
-/*! 
+/*!
     Returns the value recorded in the custom field named \a name.
 
     \sa setCustomField(), customFields()
@@ -604,7 +604,7 @@ QString QMailFolder::customField(const QString &name) const
     return d->customField(name);
 }
 
-/*! 
+/*!
     Sets the value of the custom field named \a name to \a value.
 
     \sa customField(), customFields()
@@ -614,7 +614,7 @@ void QMailFolder::setCustomField(const QString &name, const QString &value)
     d->setCustomField(name, value);
 }
 
-/*! 
+/*!
     Sets the folder to contain the custom fields in \a fields.
 
     \sa setCustomField(), customFields()
@@ -624,7 +624,7 @@ void QMailFolder::setCustomFields(const QMap<QString, QString> &fields)
     d->setCustomFields(fields);
 }
 
-/*! 
+/*!
     Removes the custom field named \a name.
 
     \sa customField(), customFields()
@@ -634,7 +634,7 @@ void QMailFolder::removeCustomField(const QString &name)
     d->removeCustomField(name);
 }
 
-/*! 
+/*!
     Returns the map of custom fields stored in the folder.
 
     \sa customField(), setCustomField()

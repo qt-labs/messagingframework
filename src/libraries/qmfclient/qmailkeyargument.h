@@ -193,7 +193,7 @@ public:
     {
           valueList.append(v);
     }
-    
+
     template<typename ListType>
     QMailKeyArgument(const ListType& l, Property p, Comparator c)
         : property(p),
@@ -202,7 +202,7 @@ public:
         Q_FOREACH (typename ListType::const_reference v, l)
             valueList.append(v);
     }
-    
+
     bool operator==(const QMailKeyArgument<PropertyType, ComparatorType>& other) const
     {
         return property == other.property &&

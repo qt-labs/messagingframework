@@ -44,12 +44,12 @@
     \brief The QMailMessageClassifier class provides a simple mechanism for determining the
     type of content contained by a message.
 
-    QMailMessageClassifier inspects a message to determine what type of content it contains, 
+    QMailMessageClassifier inspects a message to determine what type of content it contains,
     according to the classification of \l{QMailMessageMetaDataFwd::ContentType}{QMailMessage::ContentType}.
 
-    Messages of type \l{QMailMessageMetaDataFwd::Email}{QMailMessage::Email} may be classified as having 
-    \l{QMailMessageMetaDataFwd::VoicemailContent}{QMailMessage::VoicemailContent} or 
-    \l{QMailMessageMetaDataFwd::VideomailContent}{QMailMessage::VideomailContent} content if their 
+    Messages of type \l{QMailMessageMetaDataFwd::Email}{QMailMessage::Email} may be classified as having
+    \l{QMailMessageMetaDataFwd::VoicemailContent}{QMailMessage::VoicemailContent} or
+    \l{QMailMessageMetaDataFwd::VideomailContent}{QMailMessage::VideomailContent} content if their
     \l{QMailMessage::from()} address matches any of those configured in the
     \c{QtProject/messageserver.conf} file.
 */
@@ -109,7 +109,7 @@ static QMailMessage::ContentType fromContentType(const QMailMessageContentType& 
 }
 
 /*!
-    Attempts to determine the type of content held within the message described by \a metaData, 
+    Attempts to determine the type of content held within the message described by \a metaData,
     if it is currently set to \l{QMailMessageMetaDataFwd::UnknownContent}{QMailMessageMetaData::UnknownContent}.
     If the content type is determined, the message metadata record is updated and true is returned.
 
@@ -156,7 +156,7 @@ bool QMailMessageClassifier::classifyMessage(QMailMessage& message)
         QMailMessagePartContainer::MultipartType multipartType(message.multipartType());
         QMailMessageContentType contentType(message.contentType());
 
-        // The content type is used to categorise the message more narrowly than 
+        // The content type is used to categorise the message more narrowly than
         // its transport categorisation
         QMailMessage::ContentType content = QMailMessage::UnknownContent;
 
@@ -179,7 +179,7 @@ bool QMailMessageClassifier::classifyMessage(QMailMessage& message)
                 content = fromContentType(contentType);
                 if (content == QMailMessage::UnknownContent) {
                     if (contentType.matches("text")) {
-                        // Assume some type of richer-than-plain text 
+                        // Assume some type of richer-than-plain text
                         content = QMailMessage::RichTextContent;
                     }
                 }
@@ -198,7 +198,7 @@ bool QMailMessageClassifier::classifyMessage(QMailMessage& message)
                 content = fromContentType(contentType);
                 if (content == QMailMessage::UnknownContent) {
                     if (contentType.matches("text")) {
-                        // Assume some type of richer-than-plain text 
+                        // Assume some type of richer-than-plain text
                         content = QMailMessage::RichTextContent;
                     }
                 }

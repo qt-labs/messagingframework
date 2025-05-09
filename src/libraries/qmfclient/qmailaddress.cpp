@@ -206,7 +206,7 @@ void AddressSeparator::process(QChar character, bool quoted, bool escaped, int c
            || character.isSpace()) &&
          !_inGroup && !quoted && !escaped && commentDepth == 0 ) {
         if (character.isSpace()) {
-            // We'll also attempt to separate on whitespace, but we need to append it to 
+            // We'll also attempt to separate on whitespace, but we need to append it to
             // the token to preserve the input data
             accept(character);
             _tokenCompleted = true;
@@ -308,7 +308,7 @@ void AddressListGenerator::complete(TokenType type, bool hardSeparator)
             QRegularExpression suffixPattern(QLatin1String("^\\s*/TYPE=.*$"));
             if (suffixPattern.match(_partial).hasMatch()) {
                 type = Suffix;
-            } 
+            }
             else {
                 // See if the token is a bare email address; otherwise it must be a name element
                 QRegularExpression emailPattern(QLatin1String("^") + QMailAddress::emailAddressPattern() + QLatin1String("$"));
@@ -377,7 +377,7 @@ void AddressListGenerator::processPending()
             if ((_pending.value(i - 1).first == Name) && ((type == Name) || (type == Group))) {
                 _pending.replace(i - 1, qMakePair(type, _pending.value(i - 1).second + _pending.value(i).second));
                 _pending.removeAt(i);
-            } 
+            }
             else {
                 ++i;
             }
@@ -629,7 +629,7 @@ void parseMailbox(QString& input, QString& name, QString& address, QString& suff
     {
         name = address = input.trimmed();
     }
-    else 
+    else
     {
         if (delimiters.first == -1)
         {
@@ -649,7 +649,7 @@ void parseMailbox(QString& input, QString& name, QString& address, QString& suff
         if (name.isEmpty()) {
             name = address;
         }
-    } 
+    }
 }
 
 }
@@ -703,7 +703,7 @@ QMailAddressPrivate::QMailAddressPrivate()
 {
 }
 
-QMailAddressPrivate::QMailAddressPrivate(const QString& addressText) 
+QMailAddressPrivate::QMailAddressPrivate(const QString& addressText)
     : _group(false),
       _searchCompleted(false)
 {
@@ -730,7 +730,7 @@ QMailAddressPrivate::QMailAddressPrivate(const QString& addressText)
     }
 }
 
-QMailAddressPrivate::QMailAddressPrivate(const QString& name, const QString& address) 
+QMailAddressPrivate::QMailAddressPrivate(const QString& name, const QString& address)
     : _group(false),
       _searchCompleted(false)
 {
@@ -764,7 +764,7 @@ void QMailAddressPrivate::setComponents(const QString& nameText, const QString& 
         _address.remove( charIndex, 1 );
 }
 
-QMailAddressPrivate::QMailAddressPrivate(const QMailAddressPrivate& other) 
+QMailAddressPrivate::QMailAddressPrivate(const QMailAddressPrivate& other)
     : QSharedData(other),
       _searchCompleted(false)
 {
@@ -868,13 +868,13 @@ QString QMailAddressPrivate::toString(bool forceDelimited) const
     return result;
 }
 
-template <typename Stream> 
+template <typename Stream>
 void QMailAddressPrivate::serialize(Stream &stream) const
 {
     stream << _name << _address << _suffix << _group;
 }
 
-template <typename Stream> 
+template <typename Stream>
 void QMailAddressPrivate::deserialize(Stream &stream)
 {
     _searchCompleted = false;
@@ -890,12 +890,12 @@ void QMailAddressPrivate::deserialize(Stream &stream)
 
     QMailAddress provides functions for splitting the address strings of messages into name and
     address components, and for combining the individual components into correctly formatted
-    address strings.  QMailAddress can be used to manipulate the address elements exposed by the 
+    address strings.  QMailAddress can be used to manipulate the address elements exposed by the
     QMailMessage class.
 
-    Address strings are expected to use the format "name_part '<'address_part'>'", where 
-    \i name_part describes a message sender or recipient and \i address_part defines the address 
-    at which they can be contacted.  The address component is not validated, so it can contain an 
+    Address strings are expected to use the format "name_part '<'address_part'>'", where
+    \i name_part describes a message sender or recipient and \i address_part defines the address
+    at which they can be contacted.  The address component is not validated, so it can contain an
     email address, phone number, or any other type of textual address representation.
 
     \sa QMailMessage
@@ -912,7 +912,7 @@ QMailAddress::QMailAddress()
 /*!
     Constructs a QMailAddress object, extracting the name and address components from \a addressText.
 
-    If \a addressText cannot be separated into name and address components, both name() and address() 
+    If \a addressText cannot be separated into name and address components, both name() and address()
     will return the entirety of \a addressText.
 
     \sa name(), address()
@@ -995,7 +995,7 @@ bool QMailAddress::isGroup() const
 }
 
 /*!
-    Returns a list containing the individual addresses that comprise the address group.  
+    Returns a list containing the individual addresses that comprise the address group.
     If the address is not a group address, an empty list is returned.
 
     \sa isGroup()
@@ -1057,7 +1057,7 @@ QStringList QMailAddress::toStringList(const QList<QMailAddress>& list, bool for
 }
 
 /*!
-    Returns a list containing a QMailAddress object constructed from each 
+    Returns a list containing a QMailAddress object constructed from each
     comma-separated address in \a list.
 */
 QList<QMailAddress> QMailAddress::fromStringList(const QString& list)
@@ -1066,7 +1066,7 @@ QList<QMailAddress> QMailAddress::fromStringList(const QString& list)
 }
 
 /*!
-    Returns a list containing a QMailAddress object constructed from each 
+    Returns a list containing a QMailAddress object constructed from each
     address string in \a list.
 */
 QList<QMailAddress> QMailAddress::fromStringList(const QStringList& list)
@@ -1119,7 +1119,7 @@ QString QMailAddress::phoneNumberPattern()
 /*! \internal */
 QString QMailAddress::emailAddressPattern()
 {
-    // Taken from: http://www.regular-expressions.info/email.html, but 
+    // Taken from: http://www.regular-expressions.info/email.html, but
     // modified to accept uppercase characters as well as lower-case
     // Also - RFC 1034 seems to prohibit domain name elements beginning
     // with digits, but they exist in practice...
@@ -1146,21 +1146,21 @@ QString QMailAddress::emailAddressPattern()
                           ")");                                  // end of alternation
 }
 
-/*! 
+/*!
     \fn QMailAddress::serialize(Stream&) const
-    \internal 
+    \internal
 */
-template <typename Stream> 
+template <typename Stream>
 void QMailAddress::serialize(Stream &stream) const
 {
     d->serialize(stream);
 }
 
-/*! 
+/*!
     \fn QMailAddress::deserialize(Stream&)
-    \internal 
+    \internal
 */
-template <typename Stream> 
+template <typename Stream>
 void QMailAddress::deserialize(Stream &stream)
 {
     d->deserialize(stream);

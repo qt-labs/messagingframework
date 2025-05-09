@@ -69,15 +69,15 @@ int QMF_EXPORT QuotedPrintableMaxLineLength = 74;
   must be used that provides a policy for mapping 8-bit data to and from 7-bit ASCII characters.
   This policy is implemented by overriding the encodeChunk() and decodeChunk() virtual functions.
 
-  Using the QMailCodec interface, data can be encoded or decoded from an input QDataStream to an 
+  Using the QMailCodec interface, data can be encoded or decoded from an input QDataStream to an
   output QDataStream, or for convenience, from an input QByteArray to an output QByteArray.
 
   If the data to be encoded is in unicode form, then the QMailCodec interface can be used to
   convert the data to ASCII via an intermediate QTextCodec, which converts the incoming text
   to a sequence of octets.  The QTextCodec used is specified by the name of the encoding
-  produced, or that decoded when decoding an ASCII input sequence.  QMailCodec provides functions 
+  produced, or that decoded when decoding an ASCII input sequence.  QMailCodec provides functions
   to encode from a QTextStream to a QDataStream, and to decode from a QDataStream to a QTextStream.
-  For convenience, it is also possible to encode a QString to a QByteArray, and to decode a 
+  For convenience, it is also possible to encode a QString to a QByteArray, and to decode a
   QByteArray to a QString.
 
   \sa QDataStream, QTextStream, QTextCodec
@@ -87,7 +87,7 @@ int QMF_EXPORT QuotedPrintableMaxLineLength = 74;
     \fn void QMailCodec::encodeChunk(QDataStream& out, const unsigned char* input, int length, bool finalChunk)
 
     Overridden by derived classes to perform an encoding operation.  The implementation function
-    must encode \a length 8-bit octets at the location \a input, writing the resulting ASCII characters 
+    must encode \a length 8-bit octets at the location \a input, writing the resulting ASCII characters
     to the stream \a out.  If \a finalChunk is false, further calls will be made to encodeChunk()
     with continued input data.  Otherwise, the encoding operation is complete.
 */
@@ -129,8 +129,8 @@ static void enumerateCodecs()
 }
 
 /*!
-    Writes the data read from the stream \a in to the stream \a out, as a sequence 
-    of 7-bit ASCII characters.  The unicode characters read from \a in are first 
+    Writes the data read from the stream \a in to the stream \a out, as a sequence
+    of 7-bit ASCII characters.  The unicode characters read from \a in are first
     encoded to the text encoding \a charset.
 
     \sa QTextCodec::codecForName()
@@ -145,8 +145,8 @@ void QMailCodec::encode(QDataStream& out, QTextStream& in, const QByteArray& cha
             QString chunk = in.read(MaxCharacters);
             QByteArray charsetEncoded = encoder->fromUnicode(chunk);
 
-            encodeChunk(out, 
-                        reinterpret_cast<const unsigned char*>(charsetEncoded.constData()), 
+            encodeChunk(out,
+                        reinterpret_cast<const unsigned char*>(charsetEncoded.constData()),
                         charsetEncoded.length(),
                         in.atEnd());
         }
@@ -155,8 +155,8 @@ void QMailCodec::encode(QDataStream& out, QTextStream& in, const QByteArray& cha
 }
 
 /*!
-    Writes the data read from the stream \a in to the stream \a out, converting from 
-    a sequence of 7-bit ASCII characters.  The characters read from \a in are 
+    Writes the data read from the stream \a in to the stream \a out, converting from
+    a sequence of 7-bit ASCII characters.  The characters read from \a in are
     decoded from the text encoding \a icharset to unicode.
 
     \sa QTextCodec::codecForName()
@@ -192,7 +192,7 @@ void QMailCodec::decode(QTextStream& out, QDataStream& in, const QByteArray& ich
 }
 
 /*!
-    Writes the data read from the stream \a in to the stream \a out, as a sequence 
+    Writes the data read from the stream \a in to the stream \a out, as a sequence
     of 7-bit ASCII characters.
 */
 void QMailCodec::encode(QDataStream& out, QDataStream& in)
@@ -208,7 +208,7 @@ void QMailCodec::encode(QDataStream& out, QDataStream& in)
 }
 
 /*!
-    Writes the data read from the stream \a in to the stream \a out, converting from 
+    Writes the data read from the stream \a in to the stream \a out, converting from
     a sequence of 7-bit ASCII characters.
 */
 void QMailCodec::decode(QDataStream& out, QDataStream& in)
@@ -263,7 +263,7 @@ QByteArray QMailCodec::bestCompatibleCharset(const QByteArray& charset, bool tra
     then the Latin-1 codec will be returned.
 
     Returns 0 if a codec could not be found.
-    
+
     \sa QMailCodec::autoDetectEncoding()
 */
 QTextCodec* QMailCodec::codecForName(const QByteArray& charset, bool translateAscii)
@@ -321,7 +321,7 @@ void QMailCodec::copy(QTextStream& out, QDataStream& in, const QByteArray& chars
 }
 
 /*!
-    Returns a QByteArray containing the string \a input, encoded to the text encoding \a charset 
+    Returns a QByteArray containing the string \a input, encoded to the text encoding \a charset
     and then to a sequence of 7-bit ASCII characters.
 
     \sa QTextCodec::codecForName()
@@ -343,8 +343,8 @@ QByteArray QMailCodec::encode(const QString& input, const QByteArray& charset)
 }
 
 /*!
-    Returns a QString containing characters decoded from the text encoding \a charset, which 
-    are decoded from the sequence of 7-bit ASCII characters read from \a input. 
+    Returns a QString containing characters decoded from the text encoding \a charset, which
+    are decoded from the sequence of 7-bit ASCII characters read from \a input.
 
     \sa QTextCodec::codecForName()
 */
@@ -361,7 +361,7 @@ QString QMailCodec::decode(const QByteArray& input, const QByteArray& charset)
 }
 
 /*!
-    Returns a QByteArray containing the octets from \a input, encoded to a sequence of 
+    Returns a QByteArray containing the octets from \a input, encoded to a sequence of
     7-bit ASCII characters.
 */
 QByteArray QMailCodec::encode(const QByteArray& input)
@@ -397,7 +397,7 @@ QByteArray QMailCodec::decode(const QByteArray& input)
 /*!
     Returns the charset of \a text using automatic detection; or an empty
     string if detection fails.
-    
+
     \sa QTextCodec::codecForName()
 */
 QString QMailCodec::autoDetectEncoding(const QByteArray& text)
@@ -462,15 +462,15 @@ static inline unsigned char base64Index(const char ascii)
 
   \ingroup messaginglibrary
 
-  The Base64 character mapping scheme maps arbitrary 8-bit values into a range of 64 printable 
-  characters from the 7-bit ASCII set.  The mapping scheme used is defined in 
-  \l{http://www.ietf.org/rfc/rfc2045.txt} {RFC 2045} (Multipurpose Internet Mail Extensions Part One). 
+  The Base64 character mapping scheme maps arbitrary 8-bit values into a range of 64 printable
+  characters from the 7-bit ASCII set.  The mapping scheme used is defined in
+  \l{http://www.ietf.org/rfc/rfc2045.txt} {RFC 2045} (Multipurpose Internet Mail Extensions Part One).
   This encoding is also defined as the '"B" encoding' for 'encoded words' in
-  \l{http://www.ietf.org/rfc/rfc2047.txt} {RFC 2047} (Multipurpose Internet Mail Extensions Part Three). 
+  \l{http://www.ietf.org/rfc/rfc2047.txt} {RFC 2047} (Multipurpose Internet Mail Extensions Part Three).
 
-  The Base64 scheme encodes every incoming octet regardless of its original value, and thus 
+  The Base64 scheme encodes every incoming octet regardless of its original value, and thus
   produces the same ratio of output length to input length for any input data sequence.  Since
-  Base64 encodes four output characters for every three input octets, it produces a 33% 
+  Base64 encodes four output characters for every three input octets, it produces a 33%
   increase in stream size when encoding.
 
   An instance of QMailBase64Codec contains state information about the encoding or decoding
@@ -490,7 +490,7 @@ static inline unsigned char base64Index(const char ascii)
 /*!
     \enum QMailBase64Codec::ContentType
 
-    This enumerated type is used to specify whether content is textual data or binary data. 
+    This enumerated type is used to specify whether content is textual data or binary data.
 
     \value Text     The data is textual data; newline sequences within the data will be converted during coding.
     \value Binary   The data is not textual, and does not contain newline sequences.
@@ -503,7 +503,7 @@ static inline unsigned char base64Index(const char ascii)
     between the local representation (for example, 0x0A on Unix) and the transmission standard
     representation (0x0D 0x0A). Otherwise, the data will be coded without modification.
 
-    The maximum number of encoded characters per output line can be specified as \a maximumLineLength.  
+    The maximum number of encoded characters per output line can be specified as \a maximumLineLength.
     If not specified, or specified to a non-positive value, a default value will be used.
 */
 QMailBase64Codec::QMailBase64Codec(ContentType content, int maximumLineLength)
@@ -553,7 +553,7 @@ void QMailBase64Codec::encodeChunk(QDataStream& out, const unsigned char* it, in
                 // We can accept one more input character than accounted for
                 lineEnd += 1;
             }
-            else 
+            else
             {
                 // We must replace this character with ASCII CRLF
                 *_encodeBufferOut++ = CarriageReturn;
@@ -561,11 +561,11 @@ void QMailBase64Codec::encodeChunk(QDataStream& out, const unsigned char* it, in
                 {
                     *_encodeBufferOut++ = LineFeed;
                 }
-                else 
+                else
                 {
                     trailingLF = true;
                 }
-            
+
                 // We can accept one fewer input character than expected, now
                 lineEnd -= 1;
             }
@@ -701,7 +701,7 @@ static const unsigned char* QuotedPrintableValues = reinterpret_cast<const unsig
 static bool requiresEscape(unsigned char input, QMailQuotedPrintableCodec::ConformanceType conformance, int charsRemaining)
 {
     // For both, we need to escape '=' and anything unprintable
-    bool escape = ((input > MaxPrintableRange) || 
+    bool escape = ((input > MaxPrintableRange) ||
                    ((input < MinPrintableRange) && (input != HorizontalTab) && (input != FormFeed)) ||
                    (input == Equals));
 
@@ -711,7 +711,7 @@ static bool requiresEscape(unsigned char input, QMailQuotedPrintableCodec::Confo
     if (!escape && (conformance == QMailQuotedPrintableCodec::Rfc2047))
     {
         // We can also ignore space, since it will become an underscore
-        if ((input != ExclamationMark) && (input != Asterisk) && (input != Plus) && 
+        if ((input != ExclamationMark) && (input != Asterisk) && (input != Plus) &&
             (input != Minus) && (input != Slash) && (input != Underscore) && (input != Space))
         {
             escape = !isalnum(input);
@@ -763,23 +763,23 @@ static inline unsigned char decodeCharacter(unsigned char value)
   \class QMailQuotedPrintableCodec
 
   \preliminary
-  \brief The QMailQuotedPrintableCodec class encodes or decodes between 8-bit data and 7-bit ASCII, 
+  \brief The QMailQuotedPrintableCodec class encodes or decodes between 8-bit data and 7-bit ASCII,
   using the 'quoted printable' character mapping scheme.
 
   \ingroup messaginglibrary
 
   The 'quoted printable' character mapping scheme maps arbitrary 8-bit values into 7-bit ASCII
   characters, by replacing values that cannot be directly represented with an escape sequence.
-  The mapping scheme used is defined in 
-  \l{http://www.ietf.org/rfc/rfc2045.txt} {RFC 2045} (Multipurpose Internet Mail Extensions Part One). 
+  The mapping scheme used is defined in
+  \l{http://www.ietf.org/rfc/rfc2045.txt} {RFC 2045} (Multipurpose Internet Mail Extensions Part One).
   A minor variation on the scheme is defined as the '"Q" encoding' for 'encoded words' in
-  \l{http://www.ietf.org/rfc/rfc2047.txt} {RFC 2047} (Multipurpose Internet Mail Extensions Part Three). 
+  \l{http://www.ietf.org/rfc/rfc2047.txt} {RFC 2047} (Multipurpose Internet Mail Extensions Part Three).
 
   The 'quoted printable' scheme encodes only those incoming octet values that cannot be directly
-  represented in ASCII, by replacing the input octet with a three-character sequence that encodes 
-  the numeric value of the original octet.  Therefore, the ratio of input length to output length 
-  for any input data sequence depends on the percentage of the input that corresponds to ASCII 
-  values, with ASCII-like encodings producing only small increases.  With an input data encoding 
+  represented in ASCII, by replacing the input octet with a three-character sequence that encodes
+  the numeric value of the original octet.  Therefore, the ratio of input length to output length
+  for any input data sequence depends on the percentage of the input that corresponds to ASCII
+  values, with ASCII-like encodings producing only small increases.  With an input data encoding
   such as Latin-1 (ISO-8859-1), the output maintains a reasonable degree of human-readability.
 
   An instance of QMailQuotedPrintableCodec contains state information about the encoding or decoding
@@ -788,7 +788,7 @@ static inline unsigned char decodeCharacter(unsigned char value)
   \code
   QByteArray asciiData = acquireInput();
 
-  // We know the data is text in Latin-1 encoding, so decode the data from 
+  // We know the data is text in Latin-1 encoding, so decode the data from
   // quoted printable ASCII encoding, and then decode from Latin-1 to unicode
   QMailQuotedPrintableCodec decoder(QMailQuotedPrintableCodec::Text, QMailQuotedPrintableCodec::Rfc2045);
   QString textData = decoder.decode(asciiData, "ISO-8859-1");
@@ -800,7 +800,7 @@ static inline unsigned char decodeCharacter(unsigned char value)
 /*!
     \enum QMailQuotedPrintableCodec::ContentType
 
-    This enumerated type is used to specify whether content is textual data or binary data. 
+    This enumerated type is used to specify whether content is textual data or binary data.
 
     \value Text     The data is textual data; newline sequences within the data will be converted during coding.
     \value Binary   The data is not textual, and does not contain newline sequences.
@@ -824,11 +824,11 @@ static inline unsigned char decodeCharacter(unsigned char value)
     representation (0x0D 0x0A). Otherwise, the data will be coded without modification.
 
     If \a conformance is QMailQuotedPrintableCodec::Rfc2047, then coding will use the mapping
-    scheme of the 
-    \l{http://www.ietf.org/rfc/rfc2047.txt} {RFC 2047} '"Q" encoding'; otherwise the scheme defined in 
+    scheme of the
+    \l{http://www.ietf.org/rfc/rfc2047.txt} {RFC 2047} '"Q" encoding'; otherwise the scheme defined in
     \l{http://www.ietf.org/rfc/rfc2045.txt} {RFC 2045} will be used.
 
-    The maximum number of encoded output characters per line can be specified as \a maximumLineLength.  
+    The maximum number of encoded output characters per line can be specified as \a maximumLineLength.
     If not specified, or specified to a non-positive value, a default value will be used.
 */
 QMailQuotedPrintableCodec::QMailQuotedPrintableCodec(ContentType content, ConformanceType conformance, int maximumLineLength)
@@ -836,7 +836,7 @@ QMailQuotedPrintableCodec::QMailQuotedPrintableCodec(ContentType content, Confor
       _conformance(conformance),
       _maximumLineLength(maximumLineLength)
 {
-    // We're allowed up to 76 chars per output line, but the RFC isn't really clear on 
+    // We're allowed up to 76 chars per output line, but the RFC isn't really clear on
     // whether this includes the '=' and '\n' of a soft line break, so we'll assume they're counted
     if (_maximumLineLength <= 0)
         _maximumLineLength = QuotedPrintableMaxLineLength;
@@ -870,7 +870,7 @@ void QMailQuotedPrintableCodec::encodeChunk(QDataStream& out, const unsigned cha
             {
                 // We have already encoded this character-sequence
             }
-            else 
+            else
             {
                 // We must replace this character with ascii CRLF
                 out << CarriageReturn << LineFeed;
@@ -891,7 +891,7 @@ void QMailQuotedPrintableCodec::encodeChunk(QDataStream& out, const unsigned cha
         // If we can't fit this character on the line, insert a line break
         if (charsRequired > _encodeLineCharsRemaining)
         {
-            lineBreak(out, &_encodeLineCharsRemaining, _maximumLineLength); 
+            lineBreak(out, &_encodeLineCharsRemaining, _maximumLineLength);
 
             // We may no longer need the encoding after the line break
             if (input == Space || (input == HorizontalTab && _conformance != Rfc2047))
@@ -911,7 +911,7 @@ void QMailQuotedPrintableCodec::encodeChunk(QDataStream& out, const unsigned cha
         _encodeLineCharsRemaining -= charsRequired;
 
         if ((_encodeLineCharsRemaining == 0) && !(finalChunk && (it == end)))
-            lineBreak(out, &_encodeLineCharsRemaining, _maximumLineLength); 
+            lineBreak(out, &_encodeLineCharsRemaining, _maximumLineLength);
 
         _encodeLastChar = input;
     }
@@ -991,7 +991,7 @@ void QMailQuotedPrintableCodec::decodeChunk(QDataStream& out, const char* it, in
                 }
             }
         }
-        else 
+        else
         {
             if ((input == CarriageReturn || input == LineFeed) && (_content == Text))
             {
@@ -1049,7 +1049,7 @@ static void writeStream(QDataStream& out, const char* it, int length)
 
   The pass-through codec is primarily useful when communicating with SMTP servers supporting the
   \l{http://www.ietf.org/rfc/rfc1652.txt} {RFC 1652} (8BITMIME) extension, which permits the exchange
-  of data without coding via 7-bit ASCII.  
+  of data without coding via 7-bit ASCII.
 
   A QMailPassThroughCodec can be instantiated directly, but is more likely to be used polymorphically:
 
@@ -1057,7 +1057,7 @@ static void writeStream(QDataStream& out, const char* it, int length)
   // Get an object to perform the encoding required for the current server
   QMailCodec* encoder = getCodecForServer(currentServer());
 
-  // If the codec returned is a QMailPassThroughCodec, the input data will 
+  // If the codec returned is a QMailPassThroughCodec, the input data will
   // be written to the output stream without encoding to 7-bit ASCII
   encoder->encode(outputStream, inputStream);
   \endcode
@@ -1097,8 +1097,8 @@ void QMailPassThroughCodec::decodeChunk(QDataStream& out, const char* it, int le
   \ingroup messaginglibrary
 
   The QMailLineEndingCodec allows client code to use the QMailCodec interface to encode textual data
-  from the local line-ending convention to the CR/LF convention required for SMTP transmission.  The 
-  codec will convert from single carriage return or single line feed line-endings to CR/LF pairs, or 
+  from the local line-ending convention to the CR/LF convention required for SMTP transmission.  The
+  codec will convert from single carriage return or single line feed line-endings to CR/LF pairs, or
   will preserve data already using the correct encoding.
 
   Decoded data will have CR/LF pairs converted to \c \n.
@@ -1140,7 +1140,7 @@ void QMailLineEndingCodec::encodeChunk(QDataStream& out, const unsigned char* it
                 // We have already encoded this character-sequence; skip the input
                 begin = (it + 1);
             }
-            else 
+            else
             {
                 // Write the preceding characters
                 if (it > begin)

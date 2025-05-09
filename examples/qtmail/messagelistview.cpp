@@ -594,7 +594,7 @@ void MessageListView::updateActions()
         setMoreButtonVisible(false);
         return;
     }
-    
+
     // We need to see if the folder status has changed
     bool partialContent(false);
     if (mFolderId.isValid()) {
@@ -607,7 +607,7 @@ void MessageListView::updateActions()
             partialContent = true;
         }
     }
-    
+
     setMoreButtonVisible(partialContent);
 }
 

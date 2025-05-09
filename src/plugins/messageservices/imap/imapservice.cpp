@@ -46,7 +46,7 @@
 #include <QCoreApplication>
 #include <typeinfo>
 
-namespace { 
+namespace {
 
 const QString serviceKey("imap4");
 
@@ -83,7 +83,7 @@ public:
         connect(_service->_client, SIGNAL(remainingMessagesCount(uint)), this, SIGNAL(remainingMessagesCount(uint)));
         connect(_service->_client, SIGNAL(messagesCount(uint)), this, SIGNAL(messagesCount(uint)));
     }
-    
+
     void setIntervalTimer(int interval)
     {
         _intervalTimer.stop();
@@ -245,7 +245,7 @@ bool ImapService::Source::retrieveMessageList(const QMailAccountId &accountId, c
     if (folderId.isValid()) {
         return retrieveMessageLists(accountId, QMailFolderIdList() << folderId, minimum, sort, true /* Full check */);
     }
-    
+
     return retrieveMessageLists(accountId, QMailFolderIdList(), minimum, sort, true /* Full check */);
 }
 
@@ -286,7 +286,7 @@ bool ImapService::Source::retrieveMessageLists(const QMailAccountId &accountId, 
     if (!sort.isEmpty()) {
         qWarning() << "IMAP Search sorting not yet implemented!";
     }
-    
+
     QMailFolderIdList folderIds;
     uint adjustedMinimum = minimum ? minimum : INT_MAX; // zero means retrieve all mail
     _service->_client->strategyContext()->retrieveMessageListStrategy.clearSelection();
@@ -388,7 +388,7 @@ bool ImapService::Source::retrieveMessagePart(const QMailMessagePart::Location &
         QTimer::singleShot(0, this, SLOT(retrievalCompleted()));
         return true;
     }
-    
+
     _service->_client->strategyContext()->selectedStrategy.clearSelection();
     _service->_client->strategyContext()->selectedStrategy.setOperation(_service->_client->strategyContext(), QMailRetrievalAction::Content);
     _service->_client->strategyContext()->selectedStrategy.selectedSectionsAppend(partLocation);
@@ -419,14 +419,14 @@ bool ImapService::Source::retrieveMessageRange(const QMailMessageId &messageId, 
         _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("No minimum specified"));
         return false;
     }
-    
+
     QMailMessage msg(messageId);
     if (msg.contentAvailable()) {
         // Already retrieved
         QTimer::singleShot(0, this, SLOT(retrievalCompleted()));
         return true;
     }
-    
+
     QMailMessagePart::Location location;
     location.setContainingMessageId(messageId);
 
@@ -470,7 +470,7 @@ bool ImapService::Source::retrieveMessagePartRange(const QMailMessagePart::Locat
         QTimer::singleShot(0, this, SLOT(retrievalCompleted()));
         return true;
     }
-    
+
     _service->_client->strategyContext()->selectedStrategy.clearSelection();
     _service->_client->strategyContext()->selectedStrategy.setOperation(_service->_client->strategyContext(), QMailRetrievalAction::Content);
     _service->_client->strategyContext()->selectedStrategy.selectedSectionsAppend(partLocation, minimum);
@@ -545,7 +545,7 @@ bool ImapService::Source::exportUpdates(const QMailAccountId &accountId)
         _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("No account specified"));
         return false;
     }
-    
+
     queueDisconnectedOperations(accountId);
 
     _service->_client->strategyContext()->exportUpdatesStrategy.clearSelection();
@@ -1061,7 +1061,7 @@ bool ImapService::Source::deleteFolder(const QMailFolderId &folderId)
     // Don't delete messages that the user has moved out of the folder
     QMailFolder folder(folderId);
     queueDisconnectedOperations(folder.parentAccountId());
-    
+
     //remove remote copy
     _service->_client->strategyContext()->deleteFolderStrategy.deleteFolder(folderId);
     appendStrategy(&_service->_client->strategyContext()->deleteFolderStrategy);
@@ -1336,7 +1336,7 @@ void ImapService::Source::retrievalCompleted()
             // Push email is successfully established for all push folders
             _service->_establishingPushEmail = false;
             _service->_pushRetry = ThirtySeconds;
-            qMailLog(Messaging) << "Push email established for account" << _service->_accountId 
+            qMailLog(Messaging) << "Push email established for account" << _service->_accountId
                                 << QMailAccount(_service->_accountId).name();
         }
         _queuedMailCheckInProgress = false;
@@ -1419,7 +1419,7 @@ void ImapService::Source::retrievalTerminated()
     if (_queuedMailCheckInProgress) {
         _queuedMailCheckInProgress = false;
     }
-    
+
     // Just give up if an error occurs
     _queuedFolders.clear();
     _queuedFoldersFullCheck.clear();
@@ -1461,7 +1461,7 @@ ImapService::ImapService(const QMailAccountId &accountId)
         enable();
     }
     connect(_restartPushEmailTimer, SIGNAL(timeout()), this, SLOT(restartPushEmail()));
-    connect(QMailStore::instance(), SIGNAL(accountsUpdated(const QMailAccountIdList&)), 
+    connect(QMailStore::instance(), SIGNAL(accountsUpdated(const QMailAccountIdList&)),
             this, SLOT(accountsUpdated(const QMailAccountIdList&)));
 }
 
@@ -1559,7 +1559,7 @@ void ImapService::accountsUpdated(const QMailAccountIdList &ids)
                         tr("Account disabled"));
         disable();
     }
-    
+
     _source->setIntervalTimer(imapCfg.checkInterval());
 }
 
@@ -1618,7 +1618,7 @@ void ImapService::restartPushEmail()
         initiatePushEmail();
     }
 }
-    
+
 void ImapService::initiatePushEmail()
 {
     _restartPushEmailTimer->stop();

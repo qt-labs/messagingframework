@@ -78,7 +78,7 @@ void tst_locks::cleanupTestCase()
 }
 
 void tst_locks::init()
-{    
+{
 
 }
 

@@ -82,7 +82,7 @@ class QMF_EXPORT QMailMessageModelBase : public QAbstractItemModel
     Q_OBJECT
 
 public:
-    enum Roles 
+    enum Roles
     {
         MessageAddressTextRole = Qt::UserRole,
         MessageSubjectTextRole,
@@ -136,7 +136,7 @@ Q_SIGNALS:
     void modelChanged();
 
 protected Q_SLOTS:
-    void messagesAdded(const QMailMessageIdList& ids); 
+    void messagesAdded(const QMailMessageIdList& ids);
     void messagesUpdated(const QMailMessageIdList& ids);
     void messagesRemoved(const QMailMessageIdList& ids);
 

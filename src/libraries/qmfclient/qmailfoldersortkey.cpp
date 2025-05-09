@@ -39,12 +39,12 @@
     \class QMailFolderSortKey
 
     \preliminary
-    \brief The QMailFolderSortKey class defines the parameters used for sorting a subset of 
+    \brief The QMailFolderSortKey class defines the parameters used for sorting a subset of
     queried folders from the mail store.
     \ingroup messaginglibrary
 
-    A QMailFolderSortKey is composed of a folder property to sort and a sort order. 
-    The QMailFolderSortKey class is used in conjunction with the QMailStore::queryFolders() 
+    A QMailFolderSortKey is composed of a folder property to sort and a sort order.
+    The QMailFolderSortKey class is used in conjunction with the QMailStore::queryFolders()
     function to sort folder results according to the criteria defined by the sort key.
 
     For example:
@@ -53,7 +53,7 @@
     QMailFolderSortKey sortKey(QMailFolderSortKey::path(Qt::Ascending));
     QMailIdList results = QMailStore::instance()->queryFolders(QMailFolderKey(), sortKey);
     \endcode
-    
+
     \sa QMailStore, QMailFolderKey
 */
 
@@ -75,16 +75,16 @@
 
 /*!
     \typedef QMailFolderSortKey::ArgumentType
-    
+
     Defines the type used to represent a single sort criterion of a folder sort key.
 */
 
 /*!
     Create a QMailFolderSortKey with specifying matching parameters.
 
-    A default-constructed key (one for which isEmpty() returns true) sorts no folders. 
+    A default-constructed key (one for which isEmpty() returns true) sorts no folders.
 
-    The result of combining an empty key with a non-empty key is the same as the original 
+    The result of combining an empty key with a non-empty key is the same as the original
     non-empty key.
 
     The result of combining two empty keys is an empty key.
@@ -141,7 +141,7 @@ QMailFolderSortKey& QMailFolderSortKey::operator&=(const QMailFolderSortKey& oth
 }
 
 /*!
-    Returns \c true if the value of this key is the same as the key \a other. Returns 
+    Returns \c true if the value of this key is the same as the key \a other. Returns
     \c false otherwise.
 */
 bool QMailFolderSortKey::operator==(const QMailFolderSortKey& other) const
@@ -155,7 +155,7 @@ bool QMailFolderSortKey::operator==(const QMailFolderSortKey& other) const
 */
 bool QMailFolderSortKey::operator!=(const QMailFolderSortKey& other) const
 {
-   return !(*this == other); 
+   return !(*this == other);
 }
 
 /*!

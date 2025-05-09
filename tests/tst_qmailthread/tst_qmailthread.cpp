@@ -423,7 +423,7 @@ void tst_qmailthread::cleanupTestCase()
 }
 
 void tst_qmailthread::init()
-{    
+{
 
 }
 

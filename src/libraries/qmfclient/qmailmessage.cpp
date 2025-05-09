@@ -145,7 +145,7 @@ static int insensitiveIndexOf(const QByteArray& content, const QByteArray& conta
             const char* searchIt = it;
             const char* matchIt = matchBegin + 1;
 
-            do 
+            do
             {
                 if (matchIt == matchEnd)
                     return ((it - 1) - begin);
@@ -265,7 +265,7 @@ static QMailMessageBody::TransferEncoding encodingForName(const QByteArray& name
 
 static const char* nameForEncoding(QMailMessageBody::TransferEncoding te)
 {
-    switch( te ) 
+    switch( te )
     {
         case QMailMessageBody::SevenBit:
             return "7bit";
@@ -286,7 +286,7 @@ static const char* nameForEncoding(QMailMessageBody::TransferEncoding te)
 
 static QMailCodec* codecForEncoding(QMailMessageBody::TransferEncoding te, bool textualData)
 {
-    switch( te ) 
+    switch( te )
     {
         case QMailMessageBody::NoEncoding:
         case QMailMessageBody::Binary:
@@ -307,10 +307,10 @@ static QMailCodec* codecForEncoding(QMailMessageBody::TransferEncoding te, bool 
                     QMailQuotedPrintableCodec::Rfc2045);
             } else {
                 return new QMailQuotedPrintableCodec(
-                    QMailQuotedPrintableCodec::Binary, 
+                    QMailQuotedPrintableCodec::Binary,
                     QMailQuotedPrintableCodec::Rfc2045);
             }
-            
+
         case QMailMessageBody::Base64:
             if (textualData) {
                 return new QMailBase64Codec(QMailBase64Codec::Text);
@@ -583,12 +583,12 @@ static QList<Token> tokenSequence(const QString& input)
 
     const QChar* it = input.constData();
     const QChar* const end = it + input.length();
-    if (it != end) 
+    if (it != end)
     {
         const QChar* token = it;
         EncodingTokenType state = ((*it) == QChar::fromLatin1('"') ? Quote : ((*it).isSpace() ? Whitespace : Word));
 
-        for (++it; it != end; ++it) 
+        for (++it; it != end; ++it)
         {
             if (!escaped && (*it == QChar::fromLatin1('\\')))
             {
@@ -720,7 +720,7 @@ static QByteArray encodeWordSequence(const QString& str, const QByteArray& chars
             result.append(' ');
         result.append(output);
     }
-    
+
     return result;
 }
 
@@ -773,8 +773,8 @@ static QString decodeParameter(const QByteArray& encodedParameter)
         return decodeParameterText(parameterFormat.captured(2).toLatin1(), parameterFormat.captured(1).toLatin1());
 
     // Treat the whole thing as input, and deafult the charset to ascii
-    // This is not required by the RFC, since the input is illegal.  But, it 
-    // seems ok since the parameter name has already indicated that the text 
+    // This is not required by the RFC, since the input is illegal.  But, it
+    // seems ok since the parameter name has already indicated that the text
     // should be encoded...
     return decodeParameterText(encodedParameter, "us-ascii");
 }
@@ -807,7 +807,7 @@ static QByteArray generateEncodedParameter(const QByteArray& charset, const QByt
     result.append('\'');
     result.append(lang);
     result.append('\'');
-    
+
     // Have a guess at how long the result will be
     result.reserve(result.length() + (2 * text.length()));
 
@@ -1124,7 +1124,7 @@ namespace findBody
         if (container.multipartType() == QMailMessagePart::MultipartSigned)
             return inMultipartSigned(container, ctx);
 
-        // Not implemented multipartTypes ... 
+        // Not implemented multipartTypes ...
         // default to handling like MultipartMixed
         return inMultipartMixed(container, ctx);
     }
@@ -1797,7 +1797,7 @@ bool QMailMessageHeaderFieldPrivate::operator== (const QMailMessageHeaderFieldPr
 {
     if (!insensitiveEqual(_id, other._id))
         return false;
-    
+
     if (_content != other._content)
         return false;
 
@@ -1878,7 +1878,7 @@ void QMailMessageHeaderFieldPrivate::setParameter(const QByteArray& name, const 
         _parameters.erase(matches.takeFirst());
     if (matches.count() == 1)
         it = matches.takeFirst();
-    
+
     // If the value is too long to fit on one line, break it into manageable pieces
     const int maxInputLength = 78 - 9 - param.length();
 
@@ -1912,7 +1912,7 @@ void QMailMessageHeaderFieldPrivate::setParameter(const QByteArray& name, const 
             }
         }
         else {
-            // Overwrite the remaining instance of the parameter, and place any 
+            // Overwrite the remaining instance of the parameter, and place any
             // following pieces immediately after
             int n = pieces.count() - 1;
             int initial = n;
@@ -2035,7 +2035,7 @@ QByteArray QMailMessageHeaderFieldPrivate::toString(bool includeName, bool prese
     if (includeName) {
         result = _id + ":";
     }
-    
+
     if (!_content.isEmpty()) {
         if (includeName)
             result += ' ';
@@ -2078,7 +2078,7 @@ static void outputHeaderPart(QDataStream& out, const QByteArray& inText, int* li
             QRegularExpressionMatchIterator it = whitespace.globalMatch(QLatin1String(text));
             do {
                 lastIndex = wsIndex;
-                if ((lastIndex > 0) 
+                if ((lastIndex > 0)
                    && ((text[lastIndex - 1] == ';') || (text[lastIndex - 1] == ','))) {
                     // Prefer to split after (possible) parameters and commas
                     preferredIndex = lastIndex;
@@ -2190,7 +2190,7 @@ QString QMailMessageHeaderFieldPrivate::decodedContent() const
     return result;
 }
 
-template <typename Stream> 
+template <typename Stream>
 void QMailMessageHeaderFieldPrivate::serialize(Stream &stream) const
 {
     stream << _id;
@@ -2199,7 +2199,7 @@ void QMailMessageHeaderFieldPrivate::serialize(Stream &stream) const
     stream << _parameters;
 }
 
-template <typename Stream> 
+template <typename Stream>
 void QMailMessageHeaderFieldPrivate::deserialize(Stream &stream)
 {
     stream >> _id;
@@ -2214,27 +2214,27 @@ void QMailMessageHeaderFieldPrivate::deserialize(Stream &stream)
 
     \preliminary
     \brief The QMailMessageHeaderField class encapsulates the parsing of message header fields.
-    
+
     \ingroup messaginglibrary
-   
-    QMailMessageHeaderField provides simplified access to the various components of the 
+
+    QMailMessageHeaderField provides simplified access to the various components of the
     header field, and allows the field content to be extracted in a standardized form.
 
-    The content of a header field may be formed of unstructured text, or it may have an 
-    internal structure.  If a structured field is specified, QMailMessageHeaderField assumes 
-    that the contained header field is structured in a format equivalent to that used for the 
-    RFC 2045 'Content-Type' and RFC 2183 'Content-Disposition' header fields.  If the field 
+    The content of a header field may be formed of unstructured text, or it may have an
+    internal structure.  If a structured field is specified, QMailMessageHeaderField assumes
+    that the contained header field is structured in a format equivalent to that used for the
+    RFC 2045 'Content-Type' and RFC 2183 'Content-Disposition' header fields.  If the field
     is unstructured, or conforms to a different structure, then the parameter() and parameters() functions
     will return empty results, and the setParameter() function will have no effect.
 
     QMailMessageHeaderField contains static functions to assist in creating correct
-    header field content, and presenting header field content.  The encodeWord() and 
+    header field content, and presenting header field content.  The encodeWord() and
     decodeWord() functions translate between plain text and the encoded-word specification
     defined in RFC 2045.  The encodeParameter() and decodeParameter() functions translate
     between plain text and the encoded-parameter format defined in RFC 2231.
 
     The removeWhitespace() function can be used to remove irrelevant whitespace characters
-    from a string, and the removeComments() function can remove any comment sequences 
+    from a string, and the removeComments() function can remove any comment sequences
     present, encododed according to the RFC 2822 specification.
 */
 
@@ -2257,9 +2257,9 @@ QMailMessageHeaderField::QMailMessageHeaderField()
 }
 
 /*!
-    Creates a message header field object from the data in \a text. If \a fieldType is 
-    QMailMessageHeaderField::StructuredField, then \a text will be parsed assuming a 
-    format equivalent to that used for the RFC 2045 'Content-Type' and 
+    Creates a message header field object from the data in \a text. If \a fieldType is
+    QMailMessageHeaderField::StructuredField, then \a text will be parsed assuming a
+    format equivalent to that used for the RFC 2045 'Content-Type' and
     RFC 2183 'Content-Disposition' header fields.
 */
 QMailMessageHeaderField::QMailMessageHeaderField(const QByteArray& text, FieldType fieldType)
@@ -2268,9 +2268,9 @@ QMailMessageHeaderField::QMailMessageHeaderField(const QByteArray& text, FieldTy
 }
 
 /*!
-    Creates a message header field object with the field id \a id and the content 
-    data in \a text.  If \a fieldType is QMailMessageHeaderField::StructuredField, 
-    then \a text will be parsed assuming a format equivalent to that used for the 
+    Creates a message header field object with the field id \a id and the content
+    data in \a text.  If \a fieldType is QMailMessageHeaderField::StructuredField,
+    then \a text will be parsed assuming a format equivalent to that used for the
     RFC 2045 'Content-Type' and RFC 2183 'Content-Disposition' header fields.
 */
 QMailMessageHeaderField::QMailMessageHeaderField(const QByteArray& id, const QByteArray& text, FieldType fieldType)
@@ -2325,7 +2325,7 @@ void QMailMessageHeaderField::setContent(const QByteArray& text)
 }
 
 /*!
-    Returns the value of the parameter with the name \a name.  
+    Returns the value of the parameter with the name \a name.
     Name comparisons are case-insensitive.
 */
 QByteArray QMailMessageHeaderField::parameter(const QByteArray& name) const
@@ -2334,7 +2334,7 @@ QByteArray QMailMessageHeaderField::parameter(const QByteArray& name) const
 }
 
 /*!
-    Sets the parameter with the name \a name to have the value \a value, if present; 
+    Sets the parameter with the name \a name to have the value \a value, if present;
     otherwise a new parameter is appended with the supplied properties.  If \a name
     ends with a single asterisk, the parameter will be flagged as encoded.
 
@@ -2346,8 +2346,8 @@ void QMailMessageHeaderField::setParameter(const QByteArray& name, const QByteAr
 }
 
 /*!
-    Returns true if the parameter with name \a name exists and is marked as encoded 
-    according to RFC 2231; otherwise returns false.  
+    Returns true if the parameter with name \a name exists and is marked as encoded
+    according to RFC 2231; otherwise returns false.
     Name comparisons are case-insensitive.
 */
 bool QMailMessageHeaderField::isParameterEncoded(const QByteArray& name) const
@@ -2375,9 +2375,9 @@ QList<QMailMessageHeaderField::ParameterType> QMailMessageHeaderField::parameter
 
 /*!
     Returns the entire header field text as a formatted string, with the name of the field
-    included if \a includeName is true.  If \a presentable is true, artifacts of RFC 2822 
-    transmission format such as parameter folding will be removed.  For example: 
-    
+    included if \a includeName is true.  If \a presentable is true, artifacts of RFC 2822
+    transmission format such as parameter folding will be removed.  For example:
+
     \code
     QMailMessageHeaderField hdr;
     hdr.setId("Content-Type");
@@ -2409,7 +2409,7 @@ void QMailMessageHeaderField::parse(const QByteArray& text, FieldType fieldType)
 
 /*!
     Returns the content of the string \a input encoded into a series of RFC 2045 'encoded-word'
-    format tokens, each no longer than 75 characters.  The encoding used can be specified in 
+    format tokens, each no longer than 75 characters.  The encoding used can be specified in
     \a charset, or can be deduced from the content of \a input if \a charset is empty.
 */
 QByteArray QMailMessageHeaderField::encodeWord(const QString& input, const QByteArray& charset)
@@ -2428,9 +2428,9 @@ QString QMailMessageHeaderField::decodeWord(const QByteArray& input)
 
 /*!
     Returns the content of the string \a input encoded into RFC 2231 'extended-parameter'
-    format.  The encoding used can be specified in \a charset, or can be deduced from the 
-    content of \a input if \a charset is empty.  If \a language is non-empty, it will be 
-    included in the encoded output; otherwise the language component will be extracted from 
+    format.  The encoding used can be specified in \a charset, or can be deduced from the
+    content of \a input if \a charset is empty.  If \a language is non-empty, it will be
+    included in the encoded output; otherwise the language component will be extracted from
     \a charset, if it contains a trailing language specifier as defined in RFC 2231.
 */
 QByteArray QMailMessageHeaderField::encodeParameter(const QString& input, const QByteArray& charset, const QByteArray& language)
@@ -2474,7 +2474,7 @@ QByteArray QMailMessageHeaderField::removeComments(const QByteArray& input)
 }
 
 /*!
-    Returns the content of \a input with any whitespace characters removed. 
+    Returns the content of \a input with any whitespace characters removed.
     Whitespace inside double quotes is preserved.
 */
 QByteArray QMailMessageHeaderField::removeWhitespace(const QByteArray& input)
@@ -2493,7 +2493,7 @@ QByteArray QMailMessageHeaderField::removeWhitespace(const QByteArray& input)
         if (quoted || !isspace(*it))
             result.append(*it);
     }
-    
+
     return result;
 }
 
@@ -2503,21 +2503,21 @@ void QMailMessageHeaderField::output(QDataStream& out) const
     impl(this)->output(out);
 }
 
-/*! 
+/*!
     \fn QMailMessageHeaderField::serialize(Stream&) const
-    \internal 
+    \internal
 */
-template <typename Stream> 
+template <typename Stream>
 void QMailMessageHeaderField::serialize(Stream &stream) const
 {
     impl(this)->serialize(stream);
 }
 
-/*! 
+/*!
     \fn QMailMessageHeaderField::deserialize(Stream&)
-    \internal 
+    \internal
 */
-template <typename Stream> 
+template <typename Stream>
 void QMailMessageHeaderField::deserialize(Stream &stream)
 {
     impl(this)->deserialize(stream);
@@ -2530,10 +2530,10 @@ void QMailMessageHeaderField::deserialize(Stream &stream)
     \preliminary
     \brief The QMailMessageContentType class encapsulates the parsing of the RFC 2822
     'Content-Type' header field.
-    
+
     \ingroup messaginglibrary
-   
-    QMailMessageContentType provides simplified access to the various components of the 
+
+    QMailMessageContentType provides simplified access to the various components of the
     'Content-Type' header field.
     Components of the header field not exposed by member functions can be accessed using
     the functions inherited from QMailMessageHeaderField.
@@ -2599,7 +2599,7 @@ QByteArray QMailMessageContentType::type() const
 }
 
 /*!
-    Sets the primary type information of the 'Content-Type' header field to \a type. If \a type 
+    Sets the primary type information of the 'Content-Type' header field to \a type. If \a type
     is empty, then any pre-existing sub-type information will be cleared.
 
     \sa setSubType()
@@ -2732,10 +2732,10 @@ bool QMailMessageContentType::matches(const QByteArray& primary, const QByteArra
     \preliminary
     \brief The QMailMessageContentDisposition class encapsulates the parsing of the RFC 2822
     'Content-Disposition' header field.
-    
+
     \ingroup messaginglibrary
-   
-    QMailMessageContentDisposition provides simplified access to the various components of the 
+
+    QMailMessageContentDisposition provides simplified access to the various components of the
     'Content-Disposition' header field.
     Components of the header field not exposed by member functions can be accessed using
     the functions inherited from QMailMessageHeaderField.
@@ -3131,13 +3131,13 @@ void QMailMessageHeaderPrivate::output(QDataStream& out, const QList<QByteArray>
     }
 }
 
-template <typename Stream> 
+template <typename Stream>
 void QMailMessageHeaderPrivate::serialize(Stream &stream) const
 {
     stream << _headerFields;
 }
 
-template <typename Stream> 
+template <typename Stream>
 void QMailMessageHeaderPrivate::deserialize(Stream &stream)
 {
     stream >> _headerFields;
@@ -3204,21 +3204,21 @@ void QMailMessageHeader::output(QDataStream& out, const QList<QByteArray>& exclu
     impl(this)->output(out, exclusions, excludeInternalFields);
 }
 
-/*! 
+/*!
     \fn QMailMessageHeader::serialize(Stream&) const
-    \internal 
+    \internal
 */
-template <typename Stream> 
+template <typename Stream>
 void QMailMessageHeader::serialize(Stream &stream) const
 {
     impl(this)->serialize(stream);
 }
 
-/*! 
+/*!
     \fn QMailMessageHeader::deserialize(Stream&)
-    \internal 
+    \internal
 */
-template <typename Stream> 
+template <typename Stream>
 void QMailMessageHeader::deserialize(Stream &stream)
 {
     impl(this)->deserialize(stream);
@@ -3572,7 +3572,7 @@ void QMailMessageBodyPrivate::output(QDataStream& out, bool includeAttachments) 
         toStream( out, QMailMessageBody::Encoded );
 }
 
-template <typename Stream> 
+template <typename Stream>
 void QMailMessageBodyPrivate::serialize(Stream &stream) const
 {
     stream << _encoding;
@@ -3582,7 +3582,7 @@ void QMailMessageBodyPrivate::serialize(Stream &stream) const
     stream << _type;
 }
 
-template <typename Stream> 
+template <typename Stream>
 void QMailMessageBodyPrivate::deserialize(Stream &stream)
 {
     stream >> _encoding;
@@ -3598,9 +3598,9 @@ void QMailMessageBodyPrivate::deserialize(Stream &stream)
 
     \preliminary
     \brief The QMailMessageBody class contains the body element of a message or message part.
-    
+
     \ingroup messaginglibrary
-   
+
     The body of a message or message part is treated as an atomic unit by the Qt Extended messaging library.  It can only be inserted into a message part container or extracted
     from one.  It can be inserted or extracted using either a QByteArray, a QDataStream
     or to/from a file.  In the case of unicode text data, the insertion and extraction can
@@ -3609,30 +3609,30 @@ void QMailMessageBodyPrivate::deserialize(Stream &stream)
     The body data must be associated with a QMailMessageContentType describing that data.
     When extracting body data from a message or part to unicode text, the content type
     description must include a parameter named 'charset'; this parameter is used to locate
-    a QTextCodec to be used to extract unicode data from the body data octet stream.  
-    
-    If the Content-Type of the data is a subtype of "text", then line-ending translation 
-    will be used to ensure that the text is transmitted with CR/LF line endings.  The text 
-    data supplied to QMailMessageBody must conform to the RFC 2822 restrictions on maximum 
-    line lengths: "Each line of characters MUST be no more than 998 characters, and SHOULD 
-    be no more than 78 characters, excluding the CRLF."  Textual message body data decoded 
-    from a QMailMessageBody object will have transmitted CR/LF line endings converted to 
+    a QTextCodec to be used to extract unicode data from the body data octet stream.
+
+    If the Content-Type of the data is a subtype of "text", then line-ending translation
+    will be used to ensure that the text is transmitted with CR/LF line endings.  The text
+    data supplied to QMailMessageBody must conform to the RFC 2822 restrictions on maximum
+    line lengths: "Each line of characters MUST be no more than 998 characters, and SHOULD
+    be no more than 78 characters, excluding the CRLF."  Textual message body data decoded
+    from a QMailMessageBody object will have transmitted CR/LF line endings converted to
     \c \n on extraction.
 
     The body data can also be encoded from 8-bit octets to 7-bit ASCII characters for
-    safe transmission through obsolete email systems.  When creating an instance of the 
-    QMailMessageBody class, the encoding to be used must be specified using the 
+    safe transmission through obsolete email systems.  When creating an instance of the
+    QMailMessageBody class, the encoding to be used must be specified using the
     QMailMessageBody::TransferEncoding enum.
 
     \sa QMailMessagePart, QMailMessage, QTextCodec
-*/    
+*/
 
 /*!
     \typedef QMailMessageBody::ImplementationType
     \internal
 */
 
-/*! 
+/*!
     Creates an instance of QMailMessageBody.
 */
 QMailMessageBody::QMailMessageBody()
@@ -3641,13 +3641,13 @@ QMailMessageBody::QMailMessageBody()
 }
 
 /*!
-    Creates a message body from the data contained in the file \a filename, having the content type 
-    \a type.  If \a status is QMailMessageBody::RequiresEncoding, the data from the file will be 
+    Creates a message body from the data contained in the file \a filename, having the content type
+    \a type.  If \a status is QMailMessageBody::RequiresEncoding, the data from the file will be
     encoded to \a encoding for transmission; otherwise it must already be in that encoding, which
     will be reported to recipients of the data.
 
     If \a type is a subtype of "text", the data will be treated as text, and line-ending
-    translation will be employed.  Otherwise, the file will be treated as containing binary 
+    translation will be employed.  Otherwise, the file will be treated as containing binary
     data.  If the file contains unicode text data, it will be converted to an octet stream using
     a QTextCodec object identified by the 'charset' parameter of \a type.
 
@@ -3668,13 +3668,13 @@ QMailMessageBody QMailMessageBody::fromFile(const QString& filename, const QMail
 }
 
 /*!
-    Creates a message body from the data read from \a in, having the content type \a type.  
-    If \a status is QMailMessageBody::RequiresEncoding, the data from the file will be 
-    encoded to \a encoding for transmission; otherwise it must already be in that encoding, 
+    Creates a message body from the data read from \a in, having the content type \a type.
+    If \a status is QMailMessageBody::RequiresEncoding, the data from the file will be
+    encoded to \a encoding for transmission; otherwise it must already be in that encoding,
     which will be reported to recipients of the data.
 
     If \a type is a subtype of "text", the data will be treated as text, and line-ending
-    translation will be employed.  Otherwise, the file will be treated as containing binary 
+    translation will be employed.  Otherwise, the file will be treated as containing binary
     data.
 
     If \a encoding is QMailMessageBody::QuotedPrintable, encoding will be performed assuming
@@ -3690,13 +3690,13 @@ QMailMessageBody QMailMessageBody::fromStream(QDataStream& in, const QMailMessag
 }
 
 /*!
-    Creates a message body from the data contained in \a input, having the content type 
-    \a type.  If \a status is QMailMessageBody::RequiresEncoding, the data from the file will be 
-    encoded to \a encoding for transmission; otherwise it must already be in that encoding, 
+    Creates a message body from the data contained in \a input, having the content type
+    \a type.  If \a status is QMailMessageBody::RequiresEncoding, the data from the file will be
+    encoded to \a encoding for transmission; otherwise it must already be in that encoding,
     which will be reported to recipients of the data.
 
     If \a type is a subtype of "text", the data will be treated as text, and line-ending
-    translation will be employed.  Otherwise, the file will be treated as containing binary 
+    translation will be employed.  Otherwise, the file will be treated as containing binary
     data.
 
     If \a encoding is QMailMessageBody::QuotedPrintable, encoding will be performed assuming
@@ -3715,9 +3715,9 @@ QMailMessageBody QMailMessageBody::fromData(const QByteArray& input, const QMail
 }
 
 /*!
-    Creates a message body from the data read from \a in, having the content type \a type.  
+    Creates a message body from the data read from \a in, having the content type \a type.
     The data read from \a in will be encoded to \a encoding for transmission, and line-ending
-    translation will be employed.  The unicode text data will be converted to an octet stream 
+    translation will be employed.  The unicode text data will be converted to an octet stream
     using a QTextCodec object identified by the 'charset' parameter of \a type.
 
     If \a encoding is QMailMessageBody::QuotedPrintable, encoding will be performed assuming
@@ -3733,9 +3733,9 @@ QMailMessageBody QMailMessageBody::fromStream(QTextStream& in, const QMailMessag
 }
 
 /*!
-    Creates a message body from the data contained in \a input, having the content type 
-    \a type.  The data from \a input will be encoded to \a encoding for transmission, and 
-    line-ending translation will be employed.  The unicode text data will be converted to 
+    Creates a message body from the data contained in \a input, having the content type
+    \a type.  The data from \a input will be encoded to \a encoding for transmission, and
+    line-ending translation will be employed.  The unicode text data will be converted to
     an octet stream using a QTextCodec object identified by the 'charset' parameter of \a type.
 
     If \a encoding is QMailMessageBody::QuotedPrintable, encoding will be performed assuming
@@ -3767,8 +3767,8 @@ QMailMessageBody QMailMessageBody::fromLongString(LongString& ls, const QMailMes
     QMailMessageBody::Encoded, then the data is written in the transfer encoding it was
     created with; otherwise, it is written in unencoded form.
 
-    If the body has a content type with a QMailMessageContentType::type() of "text", and the 
-    content type parameter 'charset' is not empty, then the unencoded data will be written 
+    If the body has a content type with a QMailMessageContentType::type() of "text", and the
+    content type parameter 'charset' is not empty, then the unencoded data will be written
     as unicode text data, using the charset parameter to locate the appropriate QTextCodec.
 
     Returns false if the operation causes an error; otherwise returns true.
@@ -3815,7 +3815,7 @@ bool QMailMessageBody::toStream(QDataStream& out, EncodingFormat format) const
     Returns the data of the message body as a QString, in unencoded form.  Line-endings
     transmitted as CR/LF pairs are converted to \c \n on extraction.
 
-    The 'charset' parameter of the body's content type is used to locate the appropriate 
+    The 'charset' parameter of the body's content type is used to locate the appropriate
     QTextCodec to convert the data from an octet stream to unicode, if necessary.
 
     \sa QMailCodec, QMailMessageContentType, QTextCodec
@@ -3831,11 +3831,11 @@ QString QMailMessageBody::data() const
 }
 
 /*!
-    Writes the data of the message body to the stream \a out, in unencoded form. 
+    Writes the data of the message body to the stream \a out, in unencoded form.
     Line-endings transmitted as CR/LF pairs are converted to \c \n on extraction.
     Returns false if the operation causes an error; otherwise returns true.
 
-    The 'charset' parameter of the body's content type is used to locate the appropriate 
+    The 'charset' parameter of the body's content type is used to locate the appropriate
     QTextCodec to convert the data from an octet stream to unicode, if necessary.
 
     \sa QMailCodec, QMailMessageContentType, QTextCodec
@@ -3901,21 +3901,21 @@ void QMailMessageBody::output(QDataStream& out, bool includeAttachments) const
     impl(this)->output(out, includeAttachments);
 }
 
-/*! 
+/*!
     \fn QMailMessageBody::serialize(Stream&) const
-    \internal 
+    \internal
 */
-template <typename Stream> 
+template <typename Stream>
 void QMailMessageBody::serialize(Stream &stream) const
 {
     impl(this)->serialize(stream);
 }
 
-/*! 
+/*!
     \fn QMailMessageBody::deserialize(Stream&)
-    \internal 
+    \internal
 */
-template <typename Stream> 
+template <typename Stream>
 void QMailMessageBody::deserialize(Stream &stream)
 {
     impl(this)->deserialize(stream);
@@ -3964,7 +3964,7 @@ int QMailMessagePartContainerPrivate::partNumber() const
 
 bool QMailMessagePartContainerPrivate::contains(const QMailMessagePart::Location& location) const
 {
-    const QMailMessagePart* part = 0; 
+    const QMailMessagePart* part = 0;
     const QmfList<QMailMessagePart>* partList = &_messageParts;
 
     foreach (int index, location.d->_indices) {
@@ -3981,7 +3981,7 @@ bool QMailMessagePartContainerPrivate::contains(const QMailMessagePart::Location
 
 const QMailMessagePart& QMailMessagePartContainerPrivate::partAt(const QMailMessagePart::Location& location) const
 {
-    const QMailMessagePart* part = 0; 
+    const QMailMessagePart* part = 0;
     const QmfList<QMailMessagePart>* partList = &_messageParts;
 
     foreach (int index, location.d->_indices) {
@@ -4000,7 +4000,7 @@ const QMailMessagePart& QMailMessagePartContainerPrivate::partAt(const QMailMess
 
 QMailMessagePart& QMailMessagePartContainerPrivate::partAt(const QMailMessagePart::Location& location)
 {
-    QMailMessagePart* part = 0; 
+    QMailMessagePart* part = 0;
     QmfList<QMailMessagePart>* partList = &_messageParts;
 
     foreach (int index, location.d->_indices) {
@@ -4531,11 +4531,11 @@ void QMailMessagePartContainerPrivate::parseMimeMultipart(const QMailMessageHead
     // Consider CRLF also (which happens to be the standard, so we honor it)
     if (endPos > 1 && body.mid(endPos - 1, 1).indexOf(QByteArray(1, QMailMessage::CarriageReturn)) != -1)
         endPos--;
-    
+
     // invalid message handling: handles truncated multipart messages
     if (endPos == -1)
         endPos = body.length() - 1;
-    
+
     while ((startPos != -1) && (startPos < endPos))
     {
         // Skip the boundary line
@@ -4556,7 +4556,7 @@ void QMailMessagePartContainerPrivate::parseMimeMultipart(const QMailMessageHead
             // invalid message handling: handles truncated multipart messages
             if (nextPos == -1)
                 nextPos = body.length() - 1;
-            
+
             multipartContainer->parseMimePart(body.mid(startPos, (nextPos - startPos)));
 
             if (body.mid(nextPos, 1).indexOf(QByteArray(1, QMailMessage::CarriageReturn)) ==0)
@@ -4666,7 +4666,7 @@ void QMailMessagePartContainerPrivate::setPreviewDirty(bool value)
         (*it).impl<QMailMessagePartContainerPrivate>()->setPreviewDirty(value);
 }
 
-template <typename Stream> 
+template <typename Stream>
 void QMailMessagePartContainerPrivate::serialize(Stream &stream) const
 {
     stream << _multipartType;
@@ -4682,7 +4682,7 @@ void QMailMessagePartContainerPrivate::serialize(Stream &stream) const
     stream << _previewDirty;
 }
 
-template <typename Stream> 
+template <typename Stream>
 void QMailMessagePartContainerPrivate::deserialize(Stream &stream)
 {
     stream >> _multipartType;
@@ -4704,27 +4704,27 @@ void QMailMessagePartContainerPrivate::deserialize(Stream &stream)
 
     \preliminary
     \brief The QMailMessagePartContainer class provides access to a collection of message parts.
-    
+
     \ingroup messaginglibrary
-   
-    Message formats such as email messages conforming to 
-    \l{http://www.ietf.org/rfc/rfc2822.txt} {RFC 2822} (Internet Message Format) can consist of 
-    multiple independent parts, whose relationship to each other is defined by the message that 
-    contains those parts.  The QMailMessagePartContainer class provides storage for these related 
+
+    Message formats such as email messages conforming to
+    \l{http://www.ietf.org/rfc/rfc2822.txt} {RFC 2822} (Internet Message Format) can consist of
+    multiple independent parts, whose relationship to each other is defined by the message that
+    contains those parts.  The QMailMessagePartContainer class provides storage for these related
     message parts, and the interface through which they are accessed.
 
-    The multipartType() function returns a member of the MultipartType enumeration, which 
+    The multipartType() function returns a member of the MultipartType enumeration, which
     describes the relationship of the parts in the container to each other.
 
     The part container can instead contain a message body element.  In this case, it cannot contain
-    sub-parts, and the multipartType() function will return MultipartType::MultipartNone for the part. 
+    sub-parts, and the multipartType() function will return MultipartType::MultipartNone for the part.
     The body element can be accessed via the body() function.
 
     The QMailMessagePart class is itself derived from QMailMessagePartContainer, which allows
     messages to support the nesting of part collections within other part collections.
 
     \sa QMailMessagePart, QMailMessage, QMailMessageBody
-*/    
+*/
 
 /*!
     \typedef QMailMessagePartContainer::ImplementationType
@@ -4734,7 +4734,7 @@ void QMailMessagePartContainerPrivate::deserialize(Stream &stream)
 /*!
     \fn QMailMessagePartContainer::QMailMessagePartContainer(Subclass*)
 
-    Constructs an empty part container object, in the space allocated 
+    Constructs an empty part container object, in the space allocated
     within the subclass instance at \a p.
 */
 template<typename Subclass>
@@ -4751,7 +4751,7 @@ void QMailMessagePartContainer::setHeader(const QMailMessageHeader& partHeader, 
 
 /*!
     Returns the number of attachments the message has.
-*/  
+*/
 uint QMailMessagePartContainer::partCount() const
 {
     return impl(this)->_messageParts.count();
@@ -4784,7 +4784,7 @@ void QMailMessagePartContainer::removePartAt(uint pos)
 }
 
 /*!
-    Returns a const reference to the item at position \a pos in the list of 
+    Returns a const reference to the item at position \a pos in the list of
     attachments for the message.
 
     \a pos must be a valid index position in the list (i.e., 0 <= i < partCount()).
@@ -4795,7 +4795,7 @@ const QMailMessagePart& QMailMessagePartContainer::partAt(uint pos) const
 }
 
 /*!
-    Returns a non-const reference to the item at position \a pos in the list of 
+    Returns a non-const reference to the item at position \a pos in the list of
     attachments for the message.
 
     \a pos must be a valid index position in the list (i.e., 0 <= i < partCount()).
@@ -4816,7 +4816,7 @@ void QMailMessagePartContainer::clearParts()
 /*!
     Returns the type of multipart relationship shared by the parts contained within this container, or
     \l {QMailMessagePartContainerFwd::MultipartNone}{MultipartNone} if the content is not a multipart message.
-*/  
+*/
 QMailMessagePartContainer::MultipartType QMailMessagePartContainer::multipartType() const
 {
     return impl(this)->_multipartType;
@@ -4914,7 +4914,7 @@ bool QMailMessagePartContainer::hasBody() const
 
 /*!
     Returns the content type of this part.  Where hasBody() is true, the type of the
-    contained body element is returned; otherwise a content type matching the 
+    contained body element is returned; otherwise a content type matching the
     multipartType() for this part is returned.
 
     \sa hasBody(), QMailMessageBody::contentType(), multipartType()
@@ -4927,7 +4927,7 @@ QMailMessageContentType QMailMessagePartContainer::contentType() const
 /*!
     Returns the transfer encoding type of this part.  Where hasBody() is true, the
     transfer encoding type of the contained body element is returned; otherwise, the
-    transfer encoding type specified by the 'Content-Transfer-Encoding' field of the 
+    transfer encoding type specified by the 'Content-Transfer-Encoding' field of the
     header for this part is returned.
 
     \sa hasBody(), QMailMessageBody::transferEncoding()
@@ -4947,8 +4947,8 @@ QString QMailMessagePartContainer::headerFieldText( const QString &id ) const
 
 /*!
     Returns an object containing the value of the first header field with the given \a id.
-    If \a fieldType is QMailMessageHeaderField::StructuredField, then the field content 
-    will be parsed assuming a format equivalent to that used for the RFC 2045 'Content-Type' 
+    If \a fieldType is QMailMessageHeaderField::StructuredField, then the field content
+    will be parsed assuming a format equivalent to that used for the RFC 2045 'Content-Type'
     and RFC 2183 'Content-Disposition' header fields.
 */
 QMailMessageHeaderField QMailMessagePartContainer::headerField( const QString &id, QMailMessageHeaderField::FieldType fieldType ) const
@@ -4976,8 +4976,8 @@ QStringList QMailMessagePartContainer::headerFieldsText( const QString &id ) con
 
 /*!
     Returns a list of objects containing the value of each header field with the given \a id.
-    If \a fieldType is QMailMessageHeaderField::StructuredField, then the field content will 
-    be parsed assuming a format equivalent to that used for the RFC 2045 'Content-Type' and 
+    If \a fieldType is QMailMessageHeaderField::StructuredField, then the field content will
+    be parsed assuming a format equivalent to that used for the RFC 2045 'Content-Type' and
     RFC 2183 'Content-Disposition' header fields.
 */
 QList<QMailMessageHeaderField> QMailMessagePartContainer::headerFields( const QString &id, QMailMessageHeaderField::FieldType fieldType ) const
@@ -5006,14 +5006,14 @@ QList<QMailMessageHeaderField> QMailMessagePartContainer::headerFields() const
 }
 
 /*!
-    Sets the value of the first header field with identity \a id to \a value if it already 
-    exists; otherwise adds the header with the supplied id and value.  If \a value is of 
+    Sets the value of the first header field with identity \a id to \a value if it already
+    exists; otherwise adds the header with the supplied id and value.  If \a value is of
     the form "<id>:<content>", then only the part after the semi-colon is processed.
 
-    RFC 2822 encoding requires header fields to be transmitted in ASCII characters.  
-    If \a value contains non-ASCII characters, it will be encoded to ASCII via the 
-    QMailMessageHeaderField::encodeContent() function; depending on the specific header 
-    field this may result in illegal content.  Where possible, clients should encode 
+    RFC 2822 encoding requires header fields to be transmitted in ASCII characters.
+    If \a value contains non-ASCII characters, it will be encoded to ASCII via the
+    QMailMessageHeaderField::encodeContent() function; depending on the specific header
+    field this may result in illegal content.  Where possible, clients should encode
     non-ASCII data prior to calling setHeaderField.
 
     \sa QMailMessageHeaderField
@@ -5048,13 +5048,13 @@ void QMailMessagePartContainer::setHeaderField( const QMailMessageHeaderField& f
     Appends a new header field with id \a id and value \a value to the existing
     list of header fields. If the \a id should be present only once according
     to RFC2822 and is already existing, it will be updated instead of appended.
-    If \a value is of the form "<id>:<content>", then only the part after the 
+    If \a value is of the form "<id>:<content>", then only the part after the
     semi-colon is processed.
 
-    RFC 2822 encoding requires header fields to be transmitted in ASCII characters.  
-    If \a value contains non-ASCII characters, it will be encoded to ASCII via the 
-    QMailMessageHeaderField::encodeContent() function; depending on the specific header 
-    field this may result in illegal content.  Where possible, clients should encode 
+    RFC 2822 encoding requires header fields to be transmitted in ASCII characters.
+    If \a value contains non-ASCII characters, it will be encoded to ASCII via the
+    QMailMessageHeaderField::encodeContent() function; depending on the specific header
+    field this may result in illegal content.  Where possible, clients should encode
     non-ASCII data prior to calling appendHeaderField.
 
     \sa QMailMessageHeaderField
@@ -5136,7 +5136,7 @@ QMailMessagePartContainer::MultipartType QMailMessagePartContainer::multipartTyp
 */
 QByteArray QMailMessagePartContainer::nameForMultipartType(QMailMessagePartContainer::MultipartType type)
 {
-    switch (type) 
+    switch (type)
     {
         case QMailMessagePartContainer::MultipartSigned:
         {
@@ -5548,7 +5548,7 @@ QMailMessagePart::ReferenceType QMailMessagePartPrivate::referenceType() const
 {
     if (_referenceId.isValid())
         return QMailMessagePart::MessageReference;
-        
+
     if (_referenceLocation.isValid())
         return QMailMessagePart::PartReference;
 
@@ -5653,7 +5653,7 @@ void QMailMessagePartPrivate::output(QDataStream **out, bool addMimePreamble, bo
     }
 }
 
-template <typename Stream> 
+template <typename Stream>
 void QMailMessagePartPrivate::serialize(Stream &stream) const
 {
     QMailMessagePartContainerPrivate::serialize(stream);
@@ -5663,7 +5663,7 @@ void QMailMessagePartPrivate::serialize(Stream &stream) const
     stream << _resolution;
 }
 
-template <typename Stream> 
+template <typename Stream>
 void QMailMessagePartPrivate::deserialize(Stream &stream)
 {
     QMailMessagePartContainerPrivate::deserialize(stream);
@@ -5673,16 +5673,16 @@ void QMailMessagePartPrivate::deserialize(Stream &stream)
     stream >> _resolution;
 }
 
-void QMailMessagePartPrivate::setReference(const QMailMessageId &id, 
-                                           const QMailMessageContentType& type, 
+void QMailMessagePartPrivate::setReference(const QMailMessageId &id,
+                                           const QMailMessageContentType& type,
                                            QMailMessageBody::TransferEncoding encoding)
 {
     _referenceId = id;
     setBodyProperties(type, encoding);
 }
 
-void QMailMessagePartPrivate::setReference(const QMailMessagePart::Location &location, 
-                                           const QMailMessageContentType& type, 
+void QMailMessagePartPrivate::setReference(const QMailMessagePart::Location &location,
+                                           const QMailMessageContentType& type,
                                            QMailMessageBody::TransferEncoding encoding)
 {
     _referenceLocation = location;
@@ -5708,7 +5708,7 @@ QMailMessagePartContainerPrivate* QMailMessagePartContainerPrivate::privatePoint
 
 /*!
     \fn bool QMailMessagePartContainer::foreachPart(F func)
-    
+
     Applies the function or functor \a func to each part contained within the container.
     \a func must implement the signature 'bool operator()(QMailMessagePart &)', and must
     return true to indicate success, or false to end the traversal operation.
@@ -5719,7 +5719,7 @@ QMailMessagePartContainerPrivate* QMailMessagePartContainerPrivate::privatePoint
 
 /*!
     \fn bool QMailMessagePartContainer::foreachPart(F func) const
-    
+
     Applies the function or functor \a func to each part contained within the container.
     \a func must implement the signature 'bool operator()(const QMailMessagePart &)', and must
     return true to indicate success, or false to end the traversal operation.
@@ -5736,21 +5736,21 @@ QMailMessagePartContainerPrivate* QMailMessagePartContainerPrivate::privatePoint
     \class QMailMessagePart
     \preliminary
 
-    \brief The QMailMessagePart class provides a convenient interface for working 
+    \brief The QMailMessagePart class provides a convenient interface for working
     with message attachments.
 
     \ingroup messaginglibrary
-    
-    A message part inherits the properties of QMailMessagePartContainer, and can 
-    therefore contain a message body or a collection of sub-parts.  
-    
-    A message part differs from a message proper in that a part will often have 
-    properties specified by the MIME multipart specification, not relevant to 
-    messages.  These include the 'name' and 'filename' parameters of the Content-Type 
+
+    A message part inherits the properties of QMailMessagePartContainer, and can
+    therefore contain a message body or a collection of sub-parts.
+
+    A message part differs from a message proper in that a part will often have
+    properties specified by the MIME multipart specification, not relevant to
+    messages.  These include the 'name' and 'filename' parameters of the Content-Type
     and Content-Disposition fields, and the Content-Id and Content-Location fields.
 
     A message part may consist entirely of a reference to an external message, or
-    a part within an external message.  Parts that consists of references may be 
+    a part within an external message.  Parts that consists of references may be
     used with some protocols that permit data to be transmitted by reference, such
     as IMAP with the URLAUTH extension.  Not all messaging protocols support the
     use of content references. The partReference() and messageReference() functions
@@ -5773,9 +5773,9 @@ QMailMessagePartContainerPrivate* QMailMessagePartContainerPrivate::privatePoint
     with the message that contains it.
 
     \ingroup messaginglibrary
-    
+
     A Location object is used to refer to a single part within a multi-part message.  The
-    location can be used to reference a part within a QMailMessage object, via the 
+    location can be used to reference a part within a QMailMessage object, via the
     \l{QMailMessage::partAt()}{partAt} function.
 */
 
@@ -5861,7 +5861,7 @@ bool QMailMessagePartContainer::Location::operator!=(const QMailMessagePartConta
   return !(*this == other);
 }
 
-/*! 
+/*!
     Returns true if the location object contains the location of a valid message part.
     If \a extended is true, the location must also contain a valid message identifier.
 */
@@ -5870,7 +5870,7 @@ bool QMailMessagePartContainer::Location::isValid(bool extended) const
     return ((!extended || d->_messageId.isValid()) && !d->_indices.isEmpty());
 }
 
-/*! 
+/*!
     Returns the identifier of the message that contains the part with this location.
 */
 QMailMessageId QMailMessagePartContainer::Location::containingMessageId() const
@@ -5878,7 +5878,7 @@ QMailMessageId QMailMessagePartContainer::Location::containingMessageId() const
     return d->_messageId;
 }
 
-/*! 
+/*!
     Sets the identifier of the message that contains the part with this location to \a id.
 */
 void QMailMessagePartContainer::Location::setContainingMessageId(const QMailMessageId &id)
@@ -5903,11 +5903,11 @@ QString QMailMessagePartContainer::Location::toString(bool extended) const
     return result.append(numbers.join(QChar::fromLatin1('.')));
 }
 
-/*! 
+/*!
     \fn QMailMessagePartContainer::Location::serialize(Stream&) const
-    \internal 
+    \internal
 */
-template <typename Stream> 
+template <typename Stream>
 void QMailMessagePartContainer::Location::serialize(Stream &stream) const
 {
     stream << d->_messageId;
@@ -5917,11 +5917,11 @@ void QMailMessagePartContainer::Location::serialize(Stream &stream) const
 template void QMailMessagePartContainer::Location::serialize(QDataStream &) const;
 template void QMailMessagePartContainer::Location::serialize(QDBusArgument &) const;
 
-/*! 
+/*!
     \fn QMailMessagePartContainer::Location::deserialize(Stream&)
-    \internal 
+    \internal
 */
-template <typename Stream> 
+template <typename Stream>
 void QMailMessagePartContainer::Location::deserialize(Stream &stream)
 {
     stream >> d->_messageId;
@@ -5940,16 +5940,16 @@ QMailMessagePart::QMailMessagePart()
 }
 
 /*!
-   Creates a QMailMessagePart containing an attachment of type \a disposition, from the 
+   Creates a QMailMessagePart containing an attachment of type \a disposition, from the
    data contained in \a filename, of content type \a type and using the transfer encoding
    \a encoding.  The current status of the data is specified as \a status.
 
    \sa QMailMessageBody::fromFile()
 */
 QMailMessagePart QMailMessagePart::fromFile(const QString& filename,
-                                            const QMailMessageContentDisposition& disposition, 
-                                            const QMailMessageContentType& type, 
-                                            QMailMessageBody::TransferEncoding encoding, 
+                                            const QMailMessageContentDisposition& disposition,
+                                            const QMailMessageContentType& type,
+                                            QMailMessageBody::TransferEncoding encoding,
                                             QMailMessageBody::EncodingStatus status)
 {
     QMailMessagePart part;
@@ -5960,16 +5960,16 @@ QMailMessagePart QMailMessagePart::fromFile(const QString& filename,
 }
 
 /*!
-   Creates a QMailMessagePart containing an attachment of type \a disposition, from the 
+   Creates a QMailMessagePart containing an attachment of type \a disposition, from the
    data read from \a in, of content type \a type and using the transfer encoding
    \a encoding.  The current status of the data is specified as \a status.
 
    \sa QMailMessageBody::fromStream()
 */
 QMailMessagePart QMailMessagePart::fromStream(QDataStream& in,
-                                              const QMailMessageContentDisposition& disposition, 
-                                              const QMailMessageContentType& type, 
-                                              QMailMessageBody::TransferEncoding encoding, 
+                                              const QMailMessageContentDisposition& disposition,
+                                              const QMailMessageContentType& type,
+                                              QMailMessageBody::TransferEncoding encoding,
                                               QMailMessageBody::EncodingStatus status)
 {
     QMailMessagePart part;
@@ -5980,16 +5980,16 @@ QMailMessagePart QMailMessagePart::fromStream(QDataStream& in,
 }
 
 /*!
-   Creates a QMailMessagePart containing an attachment of type \a disposition, from the 
+   Creates a QMailMessagePart containing an attachment of type \a disposition, from the
    data contained in \a input, of content type \a type and using the transfer encoding
    \a encoding.  The current status of the data is specified as \a status.
 
    \sa QMailMessageBody::fromData()
 */
 QMailMessagePart QMailMessagePart::fromData(const QByteArray& input,
-                                            const QMailMessageContentDisposition& disposition, 
-                                            const QMailMessageContentType& type, 
-                                            QMailMessageBody::TransferEncoding encoding, 
+                                            const QMailMessageContentDisposition& disposition,
+                                            const QMailMessageContentType& type,
+                                            QMailMessageBody::TransferEncoding encoding,
                                             QMailMessageBody::EncodingStatus status)
 {
     QMailMessagePart part;
@@ -6000,15 +6000,15 @@ QMailMessagePart QMailMessagePart::fromData(const QByteArray& input,
 }
 
 /*!
-   Creates a QMailMessagePart containing an attachment of type \a disposition, from the 
+   Creates a QMailMessagePart containing an attachment of type \a disposition, from the
    data read from \a in, of content type \a type and using the transfer encoding
    \a encoding.
 
    \sa QMailMessageBody::fromStream()
 */
 QMailMessagePart QMailMessagePart::fromStream(QTextStream& in,
-                                              const QMailMessageContentDisposition& disposition, 
-                                              const QMailMessageContentType& type, 
+                                              const QMailMessageContentDisposition& disposition,
+                                              const QMailMessageContentType& type,
                                               QMailMessageBody::TransferEncoding encoding)
 {
     QMailMessagePart part;
@@ -6019,15 +6019,15 @@ QMailMessagePart QMailMessagePart::fromStream(QTextStream& in,
 }
 
 /*!
-   Creates a QMailMessagePart containing an attachment of type \a disposition, from the 
+   Creates a QMailMessagePart containing an attachment of type \a disposition, from the
    data contained in \a input, of content type \a type and using the transfer encoding
    \a encoding.
 
    \sa QMailMessageBody::fromData()
 */
 QMailMessagePart QMailMessagePart::fromData(const QString& input,
-                                            const QMailMessageContentDisposition& disposition, 
-                                            const QMailMessageContentType& type, 
+                                            const QMailMessageContentDisposition& disposition,
+                                            const QMailMessageContentType& type,
                                             QMailMessageBody::TransferEncoding encoding)
 {
     QMailMessagePart part;
@@ -6039,16 +6039,16 @@ QMailMessagePart QMailMessagePart::fromData(const QString& input,
 
 /*!
     Creates a QMailMessagePart containing an attachment of type \a disposition, whose
-    content is a reference to the message identified by \a messageId.  The resulting 
+    content is a reference to the message identified by \a messageId.  The resulting
     part has content type \a type and uses the transfer encoding \a encoding.
-    
-    The message reference can only be resolved by transmitting the message to an external 
-    server, where both the originating server of the referenced message and the receiving 
+
+    The message reference can only be resolved by transmitting the message to an external
+    server, where both the originating server of the referenced message and the receiving
     server of the new message support resolution of the content reference.
 */
 QMailMessagePart QMailMessagePart::fromMessageReference(const QMailMessageId &messageId,
-                                                        const QMailMessageContentDisposition& disposition, 
-                                                        const QMailMessageContentType& type, 
+                                                        const QMailMessageContentDisposition& disposition,
+                                                        const QMailMessageContentType& type,
                                                         QMailMessageBody::TransferEncoding encoding)
 {
     QMailMessagePart part;
@@ -6060,16 +6060,16 @@ QMailMessagePart QMailMessagePart::fromMessageReference(const QMailMessageId &me
 
 /*!
     Creates a QMailMessagePart containing an attachment of type \a disposition, whose
-    content is a reference to the message part identified by \a partLocation.  The 
+    content is a reference to the message part identified by \a partLocation.  The
     resulting part has content type \a type and uses the transfer encoding \a encoding.
-    
-    The part reference can only be resolved by transmitting the message to an external 
-    server, where both the originating server of the referenced part's message and the 
+
+    The part reference can only be resolved by transmitting the message to an external
+    server, where both the originating server of the referenced part's message and the
     receiving server of the new message support resolution of the content reference.
 */
 QMailMessagePart QMailMessagePart::fromPartReference(const QMailMessagePart::Location &partLocation,
-                                                     const QMailMessageContentDisposition& disposition, 
-                                                     const QMailMessageContentType& type, 
+                                                     const QMailMessageContentDisposition& disposition,
+                                                     const QMailMessageContentType& type,
                                                      QMailMessageBody::TransferEncoding encoding)
 {
     QMailMessagePart part;
@@ -6082,9 +6082,9 @@ QMailMessagePart QMailMessagePart::fromPartReference(const QMailMessagePart::Loc
 /*!
     Sets the part content to contain a reference to the message identified by \a id,
     having content type \a type and using the transfer encoding \a encoding.
-    
-    The message reference can only be resolved by transmitting the message to an external 
-    server, where both the originating server of the referenced message and the receiving 
+
+    The message reference can only be resolved by transmitting the message to an external
+    server, where both the originating server of the referenced message and the receiving
     server of the new message support resolution of the content reference.
 
     \sa referenceType(), setReferenceResolution()
@@ -6097,9 +6097,9 @@ void QMailMessagePart::setReference(const QMailMessageId &id, const QMailMessage
 /*!
     Sets the part content to contain a reference to the message part identified by \a location,
     having content type \a type and using the transfer encoding \a encoding.
-    
-    The part reference can only be resolved by transmitting the message to an external 
-    server, where both the originating server of the referenced part's message and the 
+
+    The part reference can only be resolved by transmitting the message to an external
+    server, where both the originating server of the referenced part's message and the
     receiving server of the new message support resolution of the content reference.
 
     \sa referenceType(), setReferenceResolution()
@@ -6145,7 +6145,7 @@ void QMailMessagePart::setContentID(const QString &id)
 }
 
 /*!
-    Returns the Content-Location header field for the part, if present; 
+    Returns the Content-Location header field for the part, if present;
     otherwise returns an empty string.
 */
 QString QMailMessagePart::contentLocation() const
@@ -6162,7 +6162,7 @@ void QMailMessagePart::setContentLocation(const QString &location)
 }
 
 /*!
-    Returns the Content-Language header field for the part, if present; 
+    Returns the Content-Language header field for the part, if present;
     otherwise returns an empty string.
 */
 QString QMailMessagePart::contentLanguage() const
@@ -6215,11 +6215,11 @@ QMailMessagePart::Location QMailMessagePart::location() const
 }
 
 /*!
-    Returns a non-empty string to identify the part, appropriate for display.  If the part 
-    'Content-Type' header field contains a 'name' parameter, that value is used. Otherwise, 
-    if the part has a 'Content-Disposition' header field containing a 'filename' parameter, 
-    that value is used.  Otherwise, if the part has a 'Content-ID' header field, that value 
-    is used.  Finally, a usable name will be created by combining the content type of the 
+    Returns a non-empty string to identify the part, appropriate for display.  If the part
+    'Content-Type' header field contains a 'name' parameter, that value is used. Otherwise,
+    if the part has a 'Content-Disposition' header field containing a 'filename' parameter,
+    that value is used.  Otherwise, if the part has a 'Content-ID' header field, that value
+    is used.  Finally, a usable name will be created by combining the content type of the
     part with the part's number.
 
     \sa identifier()
@@ -6252,10 +6252,10 @@ QString QMailMessagePart::displayName() const
 }
 
 /*!
-    Returns a non-empty string to identify the part, appropriate for storage.  If the part 
-    has a 'Content-ID' header field, that value is used.  Otherwise, if the part has a 
+    Returns a non-empty string to identify the part, appropriate for storage.  If the part
+    has a 'Content-ID' header field, that value is used.  Otherwise, if the part has a
     'Content-Disposition' header field containing a 'filename' parameter, that value is used.
-    Otherwise, if the part 'Content-Type' header field contains a 'name' parameter, that value 
+    Otherwise, if the part 'Content-Type' header field contains a 'name' parameter, that value
     is used.  Finally, the part's number will be returned.
 */
 QString QMailMessagePart::identifier() const
@@ -6374,7 +6374,7 @@ static QString partFileName(const QMailMessagePart &part)
 
 /*!
     Writes the decoded body of the part to a file under the directory specified by \a path.
-    The name of the resulting file is taken from the part. If that file name already exists 
+    The name of the resulting file is taken from the part. If that file name already exists
     in the path a new unique name is created from that file name.
 
     Returns the path of the file written on success, or an empty string otherwise.
@@ -6409,14 +6409,14 @@ QString QMailMessagePart::writeBodyTo(const QString &path) const
         qWarning() << "Could not write part data to file " << filepath;
         return QString();
     }
-    
+
     return filepath;
 }
 
 /*!
     Returns an indication of the size of the part.  This measure should be used
     only in comparing the relative size of parts with respect to transmission.
-*/  
+*/
 uint QMailMessagePart::indicativeSize() const
 {
     return impl(this)->indicativeSize();
@@ -6457,11 +6457,11 @@ QByteArray QMailMessagePart::toRfc2822() const
     return result;
 }
 
-/*! 
+/*!
     \fn QMailMessagePart::serialize(Stream&) const
-    \internal 
+    \internal
 */
-template <typename Stream> 
+template <typename Stream>
 void QMailMessagePart::serialize(Stream &stream) const
 {
     impl(this)->serialize(stream);
@@ -6470,11 +6470,11 @@ void QMailMessagePart::serialize(Stream &stream) const
 template void QMailMessagePart::serialize(QDataStream &) const;
 template void QMailMessagePart::serialize(QDBusArgument &) const;
 
-/*! 
+/*!
     \fn QMailMessagePart::deserialize(Stream&)
-    \internal 
+    \internal
 */
-template <typename Stream> 
+template <typename Stream>
 void QMailMessagePart::deserialize(Stream &stream)
 {
     impl(this)->deserialize(stream);
@@ -6608,7 +6608,7 @@ void QMailMessageMetaDataPrivate::setReceivedDate(const QMailTimeStamp& timeStam
 void QMailMessageMetaDataPrivate::setFrom(const QString& s)
 {
     updateMember(_from, s);
-} 
+}
 
 void QMailMessageMetaDataPrivate::setRecipients(const QString& s)
 {
@@ -6751,7 +6751,7 @@ void QMailMessageMetaDataPrivate::setParentThreadId(const QMailThreadId &id)
     updateMember(_parentThreadId, id);
 }
 
-template <typename Stream> 
+template <typename Stream>
 void QMailMessageMetaDataPrivate::serialize(Stream &stream) const
 {
     stream << _messageType;
@@ -6783,7 +6783,7 @@ void QMailMessageMetaDataPrivate::serialize(Stream &stream) const
     stream << _parentThreadId;
 }
 
-template <typename Stream> 
+template <typename Stream>
 void QMailMessageMetaDataPrivate::deserialize(Stream &stream)
 {
     QString timeStamp;
@@ -6826,25 +6826,25 @@ void QMailMessageMetaDataPrivate::deserialize(Stream &stream)
 
     \preliminary
     \brief The QMailMessageMetaData class provides information about a message stored by QMF.
-    
+
     \ingroup messaginglibrary
-   
+
     The QMailMessageMetaData class provides information about messages stored in the Qt Extended system as QMailMessage objects.  The meta data is more compact and more easily accessed and
-    manipulated than the content of the message itself.  Many messaging-related tasks can 
-    be accomplished by manipulating the message meta data, such as listing, filtering, and 
+    manipulated than the content of the message itself.  Many messaging-related tasks can
+    be accomplished by manipulating the message meta data, such as listing, filtering, and
     searching through sets of messages.
 
     QMailMessageMetaData objects can be created as needed, specifying the identifier of
-    the message whose meta data is required.  The meta data of a message can be located by 
-    specifying the QMailMessageId identifier directly, or by specifying the account and server UID 
+    the message whose meta data is required.  The meta data of a message can be located by
+    specifying the QMailMessageId identifier directly, or by specifying the account and server UID
     pair needed to locate the message.
 
-    The content of the message described by the meta data object can be accessed by creating 
+    The content of the message described by the meta data object can be accessed by creating
     a QMailMessage object specifying the identifier returned by QMailMessageMetaData::id().
 
     \sa QMailStore, QMailMessageId
-*/    
-    
+*/
+
 /*!
     \typedef QMailMessageMetaData::ImplementationType
     \internal
@@ -6853,7 +6853,7 @@ void QMailMessageMetaDataPrivate::deserialize(Stream &stream)
 /*!
     \variable QMailMessageMetaData::Incoming
 
-    The status mask needed for testing the value of the registered status flag named 
+    The status mask needed for testing the value of the registered status flag named
     \c "Incoming" against the result of QMailMessage::status().
 
     This flag indicates that the message has been sent from an external source to an
@@ -6863,17 +6863,17 @@ void QMailMessageMetaDataPrivate::deserialize(Stream &stream)
 /*!
     \variable QMailMessageMetaData::Outgoing
 
-    The status mask needed for testing the value of the registered status flag named 
+    The status mask needed for testing the value of the registered status flag named
     \c "Outgoing" against the result of QMailMessage::status().
 
-    This flag indicates that the message originates within Qt Extended, for transmission 
+    This flag indicates that the message originates within Qt Extended, for transmission
     to an external message sink.
 */
 
 /*!
     \variable QMailMessageMetaData::Sent
 
-    The status mask needed for testing the value of the registered status flag named 
+    The status mask needed for testing the value of the registered status flag named
     \c "Sent" against the result of QMailMessage::status().
 
     This flag indicates that the message has been delivered to an external message sink.
@@ -6882,27 +6882,27 @@ void QMailMessageMetaDataPrivate::deserialize(Stream &stream)
 /*!
     \variable QMailMessageMetaData::Replied
 
-    The status mask needed for testing the value of the registered status flag named 
+    The status mask needed for testing the value of the registered status flag named
     \c "Replied" against the result of QMailMessage::status().
 
-    This flag indicates that a message replying to the source of this message has been 
+    This flag indicates that a message replying to the source of this message has been
     created, in response to this message.
 */
 
 /*!
     \variable QMailMessageMetaData::RepliedAll
 
-    The status mask needed for testing the value of the registered status flag named 
+    The status mask needed for testing the value of the registered status flag named
     \c "RepliedAll" against the result of QMailMessage::status().
 
-    This flag indicates that a message replying to the source of this message and all 
+    This flag indicates that a message replying to the source of this message and all
     its recipients, has been created in response to this message.
 */
 
 /*!
     \variable QMailMessageMetaData::Forwarded
 
-    The status mask needed for testing the value of the registered status flag named 
+    The status mask needed for testing the value of the registered status flag named
     \c "Forwarded" against the result of QMailMessage::status().
 
     This flag indicates that a message forwarding the content of this message has been created.
@@ -6911,7 +6911,7 @@ void QMailMessageMetaDataPrivate::deserialize(Stream &stream)
 /*!
     \variable QMailMessageMetaData::Read
 
-    The status mask needed for testing the value of the registered status flag named 
+    The status mask needed for testing the value of the registered status flag named
     \c "Read" against the result of QMailMessage::status().
 
     This flag indicates that the content of this message has been displayed to the user.
@@ -6920,7 +6920,7 @@ void QMailMessageMetaDataPrivate::deserialize(Stream &stream)
 /*!
     \variable QMailMessageMetaData::Removed
 
-    The status mask needed for testing the value of the registered status flag named 
+    The status mask needed for testing the value of the registered status flag named
     \c "Removed" against the result of QMailMessage::status().
 
     This flag indicates that the message has been deleted from or moved on the originating server.
@@ -6929,7 +6929,7 @@ void QMailMessageMetaDataPrivate::deserialize(Stream &stream)
 /*!
     \variable QMailMessageMetaData::ReadElsewhere
 
-    The status mask needed for testing the value of the registered status flag named 
+    The status mask needed for testing the value of the registered status flag named
     \c "ReadElsewhere" against the result of QMailMessage::status().
 
     This flag indicates that the content of this message has been reported as having
@@ -6939,7 +6939,7 @@ void QMailMessageMetaDataPrivate::deserialize(Stream &stream)
 /*!
     \variable QMailMessageMetaData::UnloadedData
 
-    The status mask needed for testing the value of the registered status flag named 
+    The status mask needed for testing the value of the registered status flag named
     \c "UnloadedData" against the result of QMailMessage::status().
 
     This flag indicates that the meta data of the message is not loaded in entirety.
@@ -6948,7 +6948,7 @@ void QMailMessageMetaDataPrivate::deserialize(Stream &stream)
 /*!
     \variable QMailMessageMetaData::New
 
-    The status mask needed for testing the value of the registered status flag named 
+    The status mask needed for testing the value of the registered status flag named
     \c "New" against the result of QMailMessage::status().
 
     This flag indicates that the meta data of the message has not yet been displayed to the user.
@@ -6957,7 +6957,7 @@ void QMailMessageMetaDataPrivate::deserialize(Stream &stream)
 /*!
     \variable QMailMessageMetaData::ReadReplyRequested
 
-    The status mask needed for testing the value of the registered status flag named 
+    The status mask needed for testing the value of the registered status flag named
     \c "ReadReplyRequested" against the result of QMailMessage::status().
 
     This flag indicates that the message has requested that a read confirmation reply be returned to the sender.
@@ -6966,7 +6966,7 @@ void QMailMessageMetaDataPrivate::deserialize(Stream &stream)
 /*!
     \variable QMailMessageMetaData::Trash
 
-    The status mask needed for testing the value of the registered status flag named 
+    The status mask needed for testing the value of the registered status flag named
     \c "Trash" against the result of QMailMessage::status().
 
     This flag indicates that the message has been marked as trash, and should be considered logically deleted.
@@ -6975,7 +6975,7 @@ void QMailMessageMetaDataPrivate::deserialize(Stream &stream)
 /*!
     \variable QMailMessageMetaData::ContentAvailable
 
-    The status mask needed for testing the value of the registered status flag named 
+    The status mask needed for testing the value of the registered status flag named
     \c "ContentAvailable" against the result of QMailMessage::status().
 
     This flag indicates that the entire content of the message has been retrieved from the originating server,
@@ -6987,7 +6987,7 @@ void QMailMessageMetaDataPrivate::deserialize(Stream &stream)
 /*!
     \variable QMailMessageMetaData::PartialContentAvailable
 
-    The status mask needed for testing the value of the registered status flag named 
+    The status mask needed for testing the value of the registered status flag named
     \c "PartialContentAvailable" against the result of QMailMessage::status().
 
     This flag indicates that some portion of the  content of the message has been retrieved from the originating server.
@@ -6998,10 +6998,10 @@ void QMailMessageMetaDataPrivate::deserialize(Stream &stream)
 /*!
     \variable QMailMessageMetaData::HasAttachments
 
-    The status mask needed for testing the value of the registered status flag named 
+    The status mask needed for testing the value of the registered status flag named
     \c "HasAttachments" against the result of QMailMessage::status().
 
-    This flag indicates that the message contains at least one sub-part with 
+    This flag indicates that the message contains at least one sub-part with
     'Attachment' disposition, or a "X-MS-Has-Attach" headerfield with value yes.
 
     \sa QMailMessageContentDisposition
@@ -7010,7 +7010,7 @@ void QMailMessageMetaDataPrivate::deserialize(Stream &stream)
 /*!
     \variable QMailMessageMetaData::HasReferences
 
-    The status mask needed for testing the value of the registered status flag named 
+    The status mask needed for testing the value of the registered status flag named
     \c "HasReferences" against the result of QMailMessage::status().
 
     This flag indicates that the message contains at least one sub-part which is a reference to an external message element.
@@ -7021,7 +7021,7 @@ void QMailMessageMetaDataPrivate::deserialize(Stream &stream)
 /*!
     \variable QMailMessageMetaData::HasUnresolvedReferences
 
-    The status mask needed for testing the value of the registered status flag named 
+    The status mask needed for testing the value of the registered status flag named
     \c "HasUnresolvedReferences" against the result of QMailMessage::status().
 
     This flag indicates that the message contains at least one sub-part which is a reference, that has no corresponding resolution value.
@@ -7032,7 +7032,7 @@ void QMailMessageMetaDataPrivate::deserialize(Stream &stream)
 /*!
     \variable QMailMessageMetaData::Draft
 
-    The status mask needed for testing the value of the registered status flag named 
+    The status mask needed for testing the value of the registered status flag named
     \c "Draft" against the result of QMailMessage::status().
 
     This flag indicates that the message has been marked as a draft, and should be considered subject to further composition.
@@ -7041,7 +7041,7 @@ void QMailMessageMetaDataPrivate::deserialize(Stream &stream)
 /*!
     \variable QMailMessageMetaData::Outbox
 
-    The status mask needed for testing the value of the registered status flag named 
+    The status mask needed for testing the value of the registered status flag named
     \c "Outbox" against the result of QMailMessage::status().
 
     This flag indicates that the message has been marked as ready for transmission.
@@ -7050,7 +7050,7 @@ void QMailMessageMetaDataPrivate::deserialize(Stream &stream)
 /*!
     \variable QMailMessageMetaData::Junk
 
-    The status mask needed for testing the value of the registered status flag named 
+    The status mask needed for testing the value of the registered status flag named
     \c "Junk" against the result of QMailMessage::status().
 
     This flag indicates that the message has been marked as junk, and should be considered unsuitable for standard listings.
@@ -7059,7 +7059,7 @@ void QMailMessageMetaDataPrivate::deserialize(Stream &stream)
 /*!
     \variable QMailMessageMetaData::TransmitFromExternal
 
-    The status mask needed for testing the value of the registered status flag named 
+    The status mask needed for testing the value of the registered status flag named
     \c "TransmitFromExternal" against the result of QMailMessage::status().
 
     This flag indicates that the message should be transmitted by reference to its external server location.
@@ -7068,7 +7068,7 @@ void QMailMessageMetaDataPrivate::deserialize(Stream &stream)
 /*!
     \variable QMailMessageMetaData::LocalOnly
 
-    The status mask needed for testing the value of the registered status flag named 
+    The status mask needed for testing the value of the registered status flag named
     \c "LocalOnly" against the result of QMailMessage::status().
 
     This flag indicates that the message exists only on the local device, and has no representation on any external server.
@@ -7086,17 +7086,17 @@ void QMailMessageMetaDataPrivate::deserialize(Stream &stream)
 /*!
     \variable QMailMessageMetaData::ImportantElsewhere
 
-    The status mask needed for testing the value of the registered status flag named 
+    The status mask needed for testing the value of the registered status flag named
     \c "ImportantElsewhere" against the result of QMailMessage::status().
 
-    This flag indicates that the message has been reported as having been marked as 
+    This flag indicates that the message has been reported as having been marked as
     important by some other client.
 */
 
 /*!
     \variable QMailMessageMetaData::Important
 
-    The status mask needed for testing the value of the registered status flag named 
+    The status mask needed for testing the value of the registered status flag named
     \c "Important" against the result of QMailMessage::status().
 
     This flag indicates that the message is marked as important.
@@ -7105,31 +7105,31 @@ void QMailMessageMetaDataPrivate::deserialize(Stream &stream)
 /*!
     \variable QMailMessageMetaData::HighPriority
 
-    The status mask needed for testing the value of the registered status flag named 
+    The status mask needed for testing the value of the registered status flag named
     \c "HighPriority" against the result of QMailMessage::status().
 
-    This flag indicates that the message has a header field specifying that the message 
+    This flag indicates that the message has a header field specifying that the message
     is high priority. This flag is set only during message parsing.
-    
+
     \sa QMailMessage::fromRfc2822()
 */
 
 /*!
     \variable QMailMessageMetaData::LowPriority
 
-    The status mask needed for testing the value of the registered status flag named 
+    The status mask needed for testing the value of the registered status flag named
     \c "LowPriority" against the result of QMailMessage::status().
 
-    This flag indicates that the message has a header field specifying that the message 
+    This flag indicates that the message has a header field specifying that the message
     is low priority. This flag is set only during message parsing.
-    
+
     \sa QMailMessage::fromRfc2822()
 */
 
 /*!
     \variable QMailMessageMetaData::CalendarInvitation
 
-    The status mask needed for testing the value of the registered status flag named 
+    The status mask needed for testing the value of the registered status flag named
     \c "CalendarInvitation" against the result of QMailMessage::status().
 
     This flag indicates that the message includes a calendar invitation request part.
@@ -7138,7 +7138,7 @@ void QMailMessageMetaDataPrivate::deserialize(Stream &stream)
 /*!
     \variable QMailMessageMetaData::Todo
 
-    The status mask needed for testing the value of the registered status flag named 
+    The status mask needed for testing the value of the registered status flag named
     \c "Todo" against the result of QMailMessage::status().
 
     This flag indicates that the message has been marked as a todo item.
@@ -7147,12 +7147,12 @@ void QMailMessageMetaDataPrivate::deserialize(Stream &stream)
 /*!
     \variable QMailMessageMetaData::NoNotification
 
-    The status mask needed for testing the value of the registered status flag named 
+    The status mask needed for testing the value of the registered status flag named
     \c "NoNotification" against the result of QMailMessage::status().
 
     This flag indicates that a new message notification should not be shown
     for the message. e.g. an older message retrieved in a folder that has previously
-    been synchronized, or an existing message moved to a folder such as trash, or a 
+    been synchronized, or an existing message moved to a folder such as trash, or a
     message externalized by saving in a drafts or sent folder.
 */
 
@@ -7218,7 +7218,7 @@ QMailMessageMetaData::QMailMessageMetaData(const QMailMessageId& id)
 }
 
 /*!
-    Constructs a message meta data object from data stored in the message store with the unique 
+    Constructs a message meta data object from data stored in the message store with the unique
     identifier \a uid from the account with id \a accountId.
 */
 QMailMessageMetaData::QMailMessageMetaData(const QString& uid, const QMailAccountId& accountId)
@@ -7326,7 +7326,7 @@ void QMailMessageMetaData::setSubject(const QString &subject)
 
 
 /*!
-    Returns the timestamp contained in the origination date header field of the message, if present; 
+    Returns the timestamp contained in the origination date header field of the message, if present;
     otherwise returns an empty timestamp.
 */
 QMailTimeStamp QMailMessageMetaData::date() const
@@ -7344,7 +7344,7 @@ void QMailMessageMetaData::setDate(const QMailTimeStamp &timeStamp)
 
 /*!
     Returns the timestamp when the message was recieved by the remote server, if known;
-    otherwise returns the timestamp contained in the origination date header field of the message, if present; 
+    otherwise returns the timestamp contained in the origination date header field of the message, if present;
     otherwise returns an empty timestamp.
 */
 QMailTimeStamp QMailMessageMetaData::receivedDate() const
@@ -7360,7 +7360,7 @@ void QMailMessageMetaData::setReceivedDate(const QMailTimeStamp &timeStamp)
     impl(this)->setReceivedDate(timeStamp);
 }
 
-/*! 
+/*!
     Returns the list of all recipients for the message.
 
     \sa QMailAddress
@@ -7370,7 +7370,7 @@ QList<QMailAddress> QMailMessageMetaData::recipients() const
     return QMailAddress::fromStringList(impl(this)->_to);
 }
 
-/*! 
+/*!
     Sets the list of recipients for the message to \a toList.
 */
 void QMailMessageMetaData::setRecipients(const QList<QMailAddress>& toList)
@@ -7378,7 +7378,7 @@ void QMailMessageMetaData::setRecipients(const QList<QMailAddress>& toList)
     impl(this)->setRecipients(QMailAddress::toStringList(toList).join(QLatin1String(", ")));
 }
 
-/*! 
+/*!
     Sets the list of primary recipients for the message to contain \a address.
 */
 void QMailMessageMetaData::setRecipients(const QMailAddress& address)
@@ -7485,7 +7485,7 @@ void QMailMessageMetaData::setParentThreadId(const QMailThreadId &id)
     Returns the status value for the message.
 
     \sa setStatus(), statusMask()
-*/  
+*/
 quint64 QMailMessageMetaData::status() const
 {
     return impl(this)->_status;
@@ -7519,7 +7519,7 @@ void QMailMessageMetaData::setStatus(quint64 mask, bool set)
 
 /*!
     Returns the id of the originating account for the message.
-*/  
+*/
 QMailAccountId QMailMessageMetaData::parentAccountId() const
 {
     return impl(this)->_parentAccountId;
@@ -7527,7 +7527,7 @@ QMailAccountId QMailMessageMetaData::parentAccountId() const
 
 /*!
     Sets the id of the originating account for the message to \a id.
-*/ 
+*/
 void QMailMessageMetaData::setParentAccountId(const QMailAccountId& id)
 {
     impl(this)->setParentAccountId(id);
@@ -7535,7 +7535,7 @@ void QMailMessageMetaData::setParentAccountId(const QMailAccountId& id)
 
 /*!
     Returns the identifier for the message on the originating server.
-*/  
+*/
 QString QMailMessageMetaData::serverUid() const
 {
     return impl(this)->_serverUid;
@@ -7544,7 +7544,7 @@ QString QMailMessageMetaData::serverUid() const
 /*!
     Sets the originating server identifier for the message to \a server.
     The identifier specified should be unique.
-*/  
+*/
 void QMailMessageMetaData::setServerUid(const QString &server)
 {
     impl(this)->setServerUid(server);
@@ -7552,7 +7552,7 @@ void QMailMessageMetaData::setServerUid(const QString &server)
 
 /*!
     Returns the complete size of the message as indicated on the originating server.
-*/  
+*/
 uint QMailMessageMetaData::size() const
 {
     return impl(this)->_size;
@@ -7560,7 +7560,7 @@ uint QMailMessageMetaData::size() const
 
 /*!
     Sets the complete size of the message as found on the server to \a size.
-*/  
+*/
 void QMailMessageMetaData::setSize(uint size)
 {
     impl(this)->setSize(size);
@@ -7569,7 +7569,7 @@ void QMailMessageMetaData::setSize(uint size)
 /*!
     Returns an indication of the size of the message.  This measure should be used
     only in comparing the relative size of messages with respect to transmission.
-*/  
+*/
 uint QMailMessageMetaData::indicativeSize() const
 {
     return impl(this)->indicativeSize();
@@ -7577,7 +7577,7 @@ uint QMailMessageMetaData::indicativeSize() const
 
 /*!
     Returns the type of content contained within the message.
-*/  
+*/
 QMailMessage::ContentType QMailMessageMetaData::content() const
 {
     return impl(this)->_contentType;
@@ -7586,16 +7586,16 @@ QMailMessage::ContentType QMailMessageMetaData::content() const
 /*!
     \fn QMailMessageMetaData::setContent(QMailMessageMetaData::ContentType)
 
-    Sets the type of content contained within the message to \a type.  
+    Sets the type of content contained within the message to \a type.
     It is the caller's responsibility to ensure that this value matches the actual content.
-*/  
+*/
 void QMailMessageMetaData::setContent(QMailMessage::ContentType type)
 {
     impl(this)->setContent(type);
 }
 
 /*!
-    Return the QMailFolderId of the folder that contained the message before it was 
+    Return the QMailFolderId of the folder that contained the message before it was
     moved into the current parent folder.
 */
 QMailFolderId QMailMessageMetaData::previousParentFolderId() const
@@ -7604,7 +7604,7 @@ QMailFolderId QMailMessageMetaData::previousParentFolderId() const
 }
 
 /*!
-    Sets the QMailFolderId of the folder that contained the message before it was 
+    Sets the QMailFolderId of the folder that contained the message before it was
     moved into the current parent folder to \a id.
 */
 void QMailMessageMetaData::setPreviousParentFolderId(const QMailFolderId &id)
@@ -7614,7 +7614,7 @@ void QMailMessageMetaData::setPreviousParentFolderId(const QMailFolderId &id)
 
 /*!
     Returns the scheme used to store the content of this message.
-*/  
+*/
 QString QMailMessageMetaData::contentScheme() const
 {
     return impl(this)->_contentScheme;
@@ -7623,7 +7623,7 @@ QString QMailMessageMetaData::contentScheme() const
 /*!
     Sets the scheme used to store the content of this message to \a scheme, and returns
     true if successful.  Once set, the scheme cannot be modified.
-*/  
+*/
 bool QMailMessageMetaData::setContentScheme(const QString &scheme)
 {
     if (!impl(this)->_contentScheme.isEmpty() && (impl(this)->_contentScheme != scheme)) {
@@ -7636,7 +7636,7 @@ bool QMailMessageMetaData::setContentScheme(const QString &scheme)
 
 /*!
     Returns the identifer used to locate the content of this message.
-*/  
+*/
 QString QMailMessageMetaData::contentIdentifier() const
 {
     return impl(this)->_contentIdentifier;
@@ -7647,7 +7647,7 @@ QString QMailMessageMetaData::contentIdentifier() const
     true if successful.  Once set, the identifier cannot be modified.
 
     The identifier specified should be unique within the scheme returned by contentScheme().
-*/  
+*/
 bool QMailMessageMetaData::setContentIdentifier(const QString &identifier)
 {
     impl(this)->setContentIdentifier(identifier);
@@ -7656,7 +7656,7 @@ bool QMailMessageMetaData::setContentIdentifier(const QString &identifier)
 
 /*!
     Returns the identifier of the message that this message was created in response to.
-*/  
+*/
 QMailMessageId QMailMessageMetaData::inResponseTo() const
 {
     return impl(this)->_responseId;
@@ -7674,7 +7674,7 @@ void QMailMessageMetaData::setInResponseTo(const QMailMessageId &id)
     Returns the type of response that this message was created as.
 
     \sa inResponseTo()
-*/  
+*/
 QMailMessageMetaData::ResponseType QMailMessageMetaData::responseType() const
 {
     return impl(this)->_responseType;
@@ -7694,7 +7694,7 @@ void QMailMessageMetaData::setResponseType(QMailMessageMetaData::ResponseType ty
     Returns the preview text of this message.
 
     \sa setPreview()
-*/  
+*/
 QString QMailMessageMetaData::preview() const
 {
     return impl(this)->_preview.isNull() ? QLatin1String("") : impl(this)->_preview;
@@ -7739,7 +7739,7 @@ void QMailMessageMetaData::setUnmodified()
 }
 
 /*!
-    Returns the status bitmask needed to test the result of QMailMessageMetaData::status() 
+    Returns the status bitmask needed to test the result of QMailMessageMetaData::status()
     against the QMailMessageMetaData status flag registered with the identifier \a flagName.
 
     \sa status(), QMailStore::messageStatusMask()
@@ -7749,7 +7749,7 @@ quint64 QMailMessageMetaData::statusMask(const QString &flagName)
     return QMailStore::instance()->messageStatusMask(flagName);
 }
 
-/*! 
+/*!
     Returns the value recorded in the custom field named \a name.
 
     \sa setCustomField(), customFields()
@@ -7759,7 +7759,7 @@ QString QMailMessageMetaData::customField(const QString &name) const
     return d->customField(name);
 }
 
-/*! 
+/*!
     Sets the value of the custom field named \a name to \a value.
 
     \sa customField(), customFields()
@@ -7769,7 +7769,7 @@ void QMailMessageMetaData::setCustomField(const QString &name, const QString &va
     d->setCustomField(name, value);
 }
 
-/*! 
+/*!
     Removes the custom field named \a name.
 
     \sa customField(), customFields()
@@ -7779,7 +7779,7 @@ void QMailMessageMetaData::removeCustomField(const QString &name)
     d->removeCustomField(name);
 }
 
-/*! 
+/*!
     Returns the map of custom fields stored in the message.
 
     \sa customField(), setCustomField()
@@ -7808,9 +7808,9 @@ void QMailMessageMetaData::setCustomFieldsModified(bool set)
 }
 
 
-/*! 
+/*!
     \fn QMailMessageMetaData::serialize(Stream&) const
-    \internal 
+    \internal
 */
 template <typename Stream>
 void QMailMessageMetaData::serialize(Stream &stream) const
@@ -7821,11 +7821,11 @@ void QMailMessageMetaData::serialize(Stream &stream) const
 template void QMailMessageMetaData::serialize(QDataStream &) const;
 template void QMailMessageMetaData::serialize(QDBusArgument &) const;
 
-/*! 
+/*!
     \fn QMailMessageMetaData::deserialize(Stream&)
-    \internal 
+    \internal
 */
-template <typename Stream> 
+template <typename Stream>
 void QMailMessageMetaData::deserialize(Stream &stream)
 {
     impl(this)->deserialize(stream);
@@ -7895,7 +7895,7 @@ void QMailMessagePrivate::setDate(const QMailTimeStamp& timeStamp)
 void QMailMessagePrivate::setFrom(const QString& s)
 {
     updateHeaderField( "From:", s );
-} 
+}
 
 void QMailMessagePrivate::setReplyTo(const QString& s)
 {
@@ -7936,7 +7936,7 @@ bool QMailMessagePrivate::hasRecipients() const
 
 uint QMailMessagePrivate::indicativeSize() const
 {
-    uint size = QMailMessagePartContainerPrivate::indicativeSize(); 
+    uint size = QMailMessagePartContainerPrivate::indicativeSize();
 
     // Count the message header as one size unit
     return (size + 1);
@@ -7967,7 +7967,7 @@ void QMailMessagePrivate::toRfc2822(QDataStream **out, QMailMessage::EncodingFor
     bool isOutgoing = (messageStatus & (QMailMessage::Outgoing | QMailMessage::Sent));
 
     bool addTimeStamp = (format != QMailMessage::IdentityFormat);
-    bool addContentHeaders = ((format != QMailMessage::IdentityFormat) && 
+    bool addContentHeaders = ((format != QMailMessage::IdentityFormat) &&
                               ((format != QMailMessage::StorageFormat) || isOutgoing || !hasBody()));
     bool includeBcc = (format != QMailMessage::TransmissionFormat);
     bool excludeInternalFields = (format == QMailMessage::TransmissionFormat);
@@ -8025,13 +8025,13 @@ void QMailMessagePrivate::setUnmodified()
     setDirty(false, true);
 }
 
-template <typename Stream> 
+template <typename Stream>
 void QMailMessagePrivate::serialize(Stream &stream) const
 {
     QMailMessagePartContainerPrivate::serialize(stream);
 }
 
-template <typename Stream> 
+template <typename Stream>
 void QMailMessagePrivate::deserialize(Stream &stream)
 {
     QMailMessagePartContainerPrivate::deserialize(stream);
@@ -8045,34 +8045,34 @@ void QMailMessagePrivate::deserialize(Stream &stream)
 
     \preliminary
     \brief The QMailMessage class provides a convenient interface for working with messages.
-    
+
     \ingroup messaginglibrary
-   
-    QMailMessage supports a number of types. These include telephony types 
+
+    QMailMessage supports a number of types. These include telephony types
     such as SMS and MMS, and Internet email messages as defined in
-    \l{http://www.ietf.org/rfc/rfc2822.txt} {RFC 2822} (Internet Message Format), and 
-    \l{http://www.ietf.org/rfc/rfc2045.txt} {RFC 2045} (Format of Internet Message Bodies) through 
+    \l{http://www.ietf.org/rfc/rfc2822.txt} {RFC 2822} (Internet Message Format), and
+    \l{http://www.ietf.org/rfc/rfc2045.txt} {RFC 2045} (Format of Internet Message Bodies) through
     \l{http://www.ietf.org/rfc/rfc2049.txt} {RFC 2049} (Conformance Criteria and Examples).
-    
+
     The most common way to use QMailMessage is to initialize it from raw
     data using QMailMessage::fromRfc2822().
-    
-    A QMailMessage can also be constructed piece by piece using functions such as 
-    setMessageType(), setFrom(), setTo(), setSubject(), and setBody() or appendPart(). 
+
+    A QMailMessage can also be constructed piece by piece using functions such as
+    setMessageType(), setFrom(), setTo(), setSubject(), and setBody() or appendPart().
     Convenience functions such as from()/setFrom() and date()/setDate() accept and
     return wrapper types, to simplify the exchange of correctly-formatted data.
-    In some cases, however, it may be simpler for clients to get and set the content 
+    In some cases, however, it may be simpler for clients to get and set the content
     of header fields directly, using the headerField() and setHeaderField() functions inherited
     from QMailMessagePartContainer.
-    
-    Messages can be added to the QMailStore, or retrieved from the store via their QMailMessageId 
+
+    Messages can be added to the QMailStore, or retrieved from the store via their QMailMessageId
     identifier.  The QMailMessage object also provides access to any relevant meta data
     describing the message, using the functions inherited from QMailMessageMetaData.
 
     A message may be serialized to a QDataStream, or returned as a QByteArray using toRfc2822().
-    
+
     \sa QMailMessageMetaData, QMailMessagePart, QMailMessageBody, QMailStore, QMailMessageId
-*/    
+*/
 
 
 const char QMailMessage::CarriageReturn = '\015';
@@ -8099,7 +8099,7 @@ QMailMessage::QMailMessage(const QMailMessageId& id)
 }
 
 /*!
-    Constructs a message object from data stored in the message store with the unique 
+    Constructs a message object from data stored in the message store with the unique
     identifier \a uid from the account with id \a accountId.
 */
 QMailMessage::QMailMessage(const QString& uid, const QMailAccountId& accountId)
@@ -8226,7 +8226,7 @@ QByteArray QMailMessage::toRfc2822(EncodingFormat format) const
 }
 
 /*!
-    Writes the message to the output stream \a out, in RFC 2822 format. 
+    Writes the message to the output stream \a out, in RFC 2822 format.
     The encoded content will vary depending on the value of \a format.
 */
 void QMailMessage::toRfc2822(QDataStream& out, EncodingFormat format) const
@@ -8251,7 +8251,7 @@ struct ChunkStore
         close();
     }
 
-    void close() 
+    void close()
     {
         if (ds) {
             delete ds;
@@ -8331,7 +8331,7 @@ QList<QMailAddress> QMailMessage::to() const
     Set the list of to recipients for the message to \a toList.
 
     \sa setCc(), setBcc()
-*/  
+*/
 void QMailMessage::setTo(const QList<QMailAddress>& toList)
 {
     metaDataImpl()->setRecipients(QMailAddress::toStringList(toList + cc() + bcc()).join(QLatin1String(", ")));
@@ -8342,7 +8342,7 @@ void QMailMessage::setTo(const QList<QMailAddress>& toList)
     Set the list of to recipients for the message to a list containing a single item \a address.
 
     \sa setCc(), setBcc(), QMailAddress
-*/  
+*/
 void QMailMessage::setTo(const QMailAddress& address)
 {
     setTo(QList<QMailAddress>() << address);
@@ -8352,7 +8352,7 @@ void QMailMessage::setTo(const QMailAddress& address)
     Returns a list of all the cc (carbon copy) recipients specified for the message.
 
     \sa to(), bcc(), QMailAddress
-*/  
+*/
 QList<QMailAddress> QMailMessage::cc() const
 {
     return QMailAddress::fromStringList(headerFieldText(QLatin1String("Cc")));
@@ -8362,7 +8362,7 @@ QList<QMailAddress> QMailMessage::cc() const
     Set the list of cc (carbon copy) recipients for the message to \a ccList.
 
     \sa setTo(), setBcc()
-*/  
+*/
 void QMailMessage::setCc(const QList<QMailAddress>& ccList)
 {
     metaDataImpl()->setRecipients(QMailAddress::toStringList(to() + ccList + bcc()).join(QLatin1String(", ")));
@@ -8373,7 +8373,7 @@ void QMailMessage::setCc(const QList<QMailAddress>& ccList)
     Returns a list of all the bcc (blind carbon copy) recipients specified for the message.
 
     \sa to(), cc(), QMailAddress
-*/  
+*/
 QList<QMailAddress> QMailMessage::bcc() const
 {
     return QMailAddress::fromStringList(headerFieldText(QLatin1String("Bcc")));
@@ -8383,7 +8383,7 @@ QList<QMailAddress> QMailMessage::bcc() const
     Set the list of bcc (blind carbon copy) recipients for the message to \a bccList.
 
     \sa setTo(), setCc()
-*/  
+*/
 void QMailMessage::setBcc(const QList<QMailAddress>& bccList)
 {
     metaDataImpl()->setRecipients(QMailAddress::toStringList(to() + cc() + bccList).join(QLatin1String(", ")));
@@ -8392,7 +8392,7 @@ void QMailMessage::setBcc(const QList<QMailAddress>& bccList)
 
 /*!
     Returns the address specified by the RFC 2822 'Reply-To' field for the message, if present.
-*/  
+*/
 QMailAddress QMailMessage::replyTo() const
 {
     return QMailAddress(headerFieldText(QLatin1String("Reply-To")));
@@ -8400,7 +8400,7 @@ QMailAddress QMailMessage::replyTo() const
 
 /*!
     Sets the RFC 2822 'Reply-To' address of the message to \a address.
-*/  
+*/
 void QMailMessage::setReplyTo(const QMailAddress &address)
 {
     partContainerImpl()->setReplyTo(address.toString());
@@ -8408,7 +8408,7 @@ void QMailMessage::setReplyTo(const QMailAddress &address)
 
 /*!
     Returns the message ID specified by the RFC 2822 'In-Reply-To' field for the message, if present.
-*/  
+*/
 QString QMailMessage::inReplyTo() const
 {
     return headerFieldText(QLatin1String("In-Reply-To"));
@@ -8426,7 +8426,7 @@ void QMailMessage::setInReplyTo(const QString &messageId)
     Returns a list of all the recipients specified for the message, either as To, CC, or BCC addresses.
 
     \sa to(), cc(), bcc(), hasRecipients()
-*/  
+*/
 QList<QMailAddress> QMailMessage::recipients() const
 {
     QList<QMailAddress> addresses;
@@ -8447,15 +8447,15 @@ QList<QMailAddress> QMailMessage::recipients() const
 }
 
 /*!
-    Returns true if there are any recipients (either To, CC or BCC addresses) 
+    Returns true if there are any recipients (either To, CC or BCC addresses)
     defined for this message; otherwise returns false.
-*/  
+*/
 bool QMailMessage::hasRecipients() const
 {
     return partContainerImpl()->hasRecipients();
 }
 
-/*! \reimp */  
+/*! \reimp */
 uint QMailMessage::indicativeSize() const
 {
     // Count the message header as one size unit
@@ -8464,7 +8464,7 @@ uint QMailMessage::indicativeSize() const
 
 /*!
     Returns the size of the message content excluding any meta data, in bytes.
-*/  
+*/
 uint QMailMessage::contentSize() const
 {
     return customField(QLatin1String("qtopiamail-content-size")).toUInt();
@@ -8480,7 +8480,7 @@ void QMailMessage::setContentSize(uint size)
 
 /*!
     Returns a value by which the external location of the message can be referenced, if available.
-*/  
+*/
 QString QMailMessage::externalLocationReference() const
 {
     return customField(QLatin1String("qtopiamail-external-location-reference"));
@@ -8520,30 +8520,30 @@ QString QMailMessage::preview() const
 
 // The QMMMetaData half of this object is implemented in a QMailMessageMetaDataPrivate object
 /*! \internal */
-QMailMessageMetaDataPrivate* QMailMessage::metaDataImpl() 
-{ 
-    return QMailMessageMetaData::impl<QMailMessageMetaDataPrivate>(); 
+QMailMessageMetaDataPrivate* QMailMessage::metaDataImpl()
+{
+    return QMailMessageMetaData::impl<QMailMessageMetaDataPrivate>();
 }
 
 /*! \internal */
-const QMailMessageMetaDataPrivate* QMailMessage::metaDataImpl() const 
-{ 
-    return QMailMessageMetaData::impl<const QMailMessageMetaDataPrivate>(); 
+const QMailMessageMetaDataPrivate* QMailMessage::metaDataImpl() const
+{
+    return QMailMessageMetaData::impl<const QMailMessageMetaDataPrivate>();
 }
 
 // The QMMPartContainer half of this object is implemented in a QMailMessagePrivate object
 /*! \internal */
-QMailMessagePrivate* QMailMessage::partContainerImpl() 
-{ 
-    return QMailMessagePartContainer::impl<QMailMessagePrivate>(); 
+QMailMessagePrivate* QMailMessage::partContainerImpl()
+{
+    return QMailMessagePartContainer::impl<QMailMessagePrivate>();
 }
 
 /*! \internal */
-const QMailMessagePrivate* QMailMessage::partContainerImpl() const 
-{ 
-    return QMailMessagePartContainer::impl<const QMailMessagePrivate>(); 
+const QMailMessagePrivate* QMailMessage::partContainerImpl() const
+{
+    return QMailMessagePartContainer::impl<const QMailMessagePrivate>();
 }
-    
+
 /*! \internal */
 bool QMailMessage::contentModified() const
 {
@@ -8553,7 +8553,7 @@ bool QMailMessage::contentModified() const
 /*!
     Returns true if the message contains a calendar invitation;
     otherwise returns false.
-*/  
+*/
 bool QMailMessage::hasCalendarInvitation() const
 {
     return hasCalendarMethod("request");
@@ -8658,7 +8658,7 @@ void QMailMessage::updateMetaData(const QByteArray& id, const QString& value)
     }
 }
 
-static void setMessagePriorityFromHeaderFields(QMailMessage *mail) 
+static void setMessagePriorityFromHeaderFields(QMailMessage *mail)
 {
     bool ok;
     QString priority = mail->headerFieldText(QLatin1String("X-Priority"));
@@ -8801,7 +8801,7 @@ QMailMessage QMailMessage::fromRfc2822(LongString& ls)
     } else {
         // Parse the header part to know what we've got
         mail.setHeader( QMailMessageHeader( ls.left(pos).toQByteArray() ) );
- 
+
         // Parse the remainder as content
         mail.partContainerImpl()->fromRfc2822( ls.mid(pos + terminator.length()) );
     }
@@ -8903,11 +8903,11 @@ bool QMailMessage::extractUndecodedData(const LongString &ls)
     return true;
 }
 
-/*! 
+/*!
     \fn QMailMessage::serialize(Stream&) const
-    \internal 
+    \internal
 */
-template <typename Stream> 
+template <typename Stream>
 void QMailMessage::serialize(Stream &stream) const
 {
     metaDataImpl()->serialize(stream);
@@ -8917,11 +8917,11 @@ void QMailMessage::serialize(Stream &stream) const
 template void QMailMessage::serialize(QDataStream &) const;
 template void QMailMessage::serialize(QDBusArgument &) const;
 
-/*! 
+/*!
     \fn QMailMessage::deserialize(Stream&)
-    \internal 
+    \internal
 */
-template <typename Stream> 
+template <typename Stream>
 void QMailMessage::deserialize(Stream &stream)
 {
     metaDataImpl()->deserialize(stream);

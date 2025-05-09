@@ -221,10 +221,10 @@ private:
     void output(QDataStream& out, const QList<QByteArray>& exclusions, bool stripInternal) const;
 };
 
-template <typename Stream> 
+template <typename Stream>
 Stream& operator<<(Stream &stream, const QMailMessageHeader& header) { header.serialize(stream); return stream; }
 
-template <typename Stream> 
+template <typename Stream>
 Stream& operator>>(Stream &stream, QMailMessageHeader& header) { header.deserialize(stream); return stream; }
 
 
@@ -278,10 +278,10 @@ private:
     static QMailMessageBody fromLongString(LongString& ls, const QMailMessageContentType& type, TransferEncoding encoding, EncodingStatus status);
 };
 
-template <typename Stream> 
+template <typename Stream>
 Stream& operator<<(Stream &stream, const QMailMessageBody& body) { body.serialize(stream); return stream; }
 
-template <typename Stream> 
+template <typename Stream>
 Stream& operator>>(Stream &stream, QMailMessageBody& body) { body.deserialize(stream); return stream; }
 
 class QMF_EXPORT QMailMessagePartContainer : public QPrivatelyImplemented<QMailMessagePartContainerPrivate>, public QMailMessagePartContainerFwd
@@ -428,25 +428,25 @@ public:
     QMailMessagePart();
 
     // Construction functions
-    static QMailMessagePart fromFile(const QString& filename, const QMailMessageContentDisposition& disposition, 
-                                     const QMailMessageContentType& type, QMailMessageBody::TransferEncoding encoding, 
+    static QMailMessagePart fromFile(const QString& filename, const QMailMessageContentDisposition& disposition,
+                                     const QMailMessageContentType& type, QMailMessageBody::TransferEncoding encoding,
                                      QMailMessageBody::EncodingStatus status = QMailMessageBody::RequiresEncoding);
 
-    static QMailMessagePart fromStream(QDataStream& in, const QMailMessageContentDisposition& disposition, 
-                                       const QMailMessageContentType& type, QMailMessageBody::TransferEncoding encoding, 
+    static QMailMessagePart fromStream(QDataStream& in, const QMailMessageContentDisposition& disposition,
+                                       const QMailMessageContentType& type, QMailMessageBody::TransferEncoding encoding,
                                        QMailMessageBody::EncodingStatus status = QMailMessageBody::RequiresEncoding);
-    static QMailMessagePart fromData(const QByteArray& input, const QMailMessageContentDisposition& disposition, 
-                                     const QMailMessageContentType& type, QMailMessageBody::TransferEncoding encoding, 
+    static QMailMessagePart fromData(const QByteArray& input, const QMailMessageContentDisposition& disposition,
+                                     const QMailMessageContentType& type, QMailMessageBody::TransferEncoding encoding,
                                      QMailMessageBody::EncodingStatus status = QMailMessageBody::RequiresEncoding);
 
-    static QMailMessagePart fromStream(QTextStream& in, const QMailMessageContentDisposition& disposition, 
+    static QMailMessagePart fromStream(QTextStream& in, const QMailMessageContentDisposition& disposition,
                                        const QMailMessageContentType& type, QMailMessageBody::TransferEncoding encoding);
-    static QMailMessagePart fromData(const QString& input, const QMailMessageContentDisposition& disposition, 
+    static QMailMessagePart fromData(const QString& input, const QMailMessageContentDisposition& disposition,
                                      const QMailMessageContentType& type, QMailMessageBody::TransferEncoding encoding);
 
-    static QMailMessagePart fromMessageReference(const QMailMessageId &id, const QMailMessageContentDisposition& disposition, 
+    static QMailMessagePart fromMessageReference(const QMailMessageId &id, const QMailMessageContentDisposition& disposition,
                                                  const QMailMessageContentType& type, QMailMessageBody::TransferEncoding encoding);
-    static QMailMessagePart fromPartReference(const QMailMessagePart::Location &partLocation, const QMailMessageContentDisposition& disposition, 
+    static QMailMessagePart fromPartReference(const QMailMessagePart::Location &partLocation, const QMailMessageContentDisposition& disposition,
                                               const QMailMessageContentType& type, QMailMessageBody::TransferEncoding encoding);
 
     void setReference(const QMailMessageId &id, const QMailMessageContentType& type, QMailMessageBody::TransferEncoding encoding);
@@ -505,10 +505,10 @@ private:
     void output(QDataStream& out, bool includeAttachments, bool stripInternal) const;
 };
 
-template <typename Stream> 
+template <typename Stream>
 Stream& operator<<(Stream &stream, const QMailMessagePart& part) { part.serialize(stream); return stream; }
 
-template <typename Stream> 
+template <typename Stream>
 Stream& operator>>(Stream &stream, QMailMessagePart& part) { part.deserialize(stream); return stream; }
 
 template <typename F>
@@ -516,7 +516,7 @@ bool QMailMessagePartContainer::foreachPart(F func)
 {
     for (uint i = 0; i < partCount(); ++i) {
         QMailMessagePart &part(partAt(i));
-        
+
         if (!func(part)) {
             return false;
         } else if (part.multipartType() != QMailMessagePartContainer::MultipartNone) {
@@ -534,7 +534,7 @@ bool QMailMessagePartContainer::foreachPart(F func) const
 {
     for (uint i = 0; i < partCount(); ++i) {
         const QMailMessagePart &part(partAt(i));
-        
+
         if (!func(part)) {
             return false;
         } else if (part.multipartType() != QMailMessagePartContainer::MultipartNone) {
@@ -753,7 +753,7 @@ public:
     void setFrom(const QMailAddress &s) override;
 
     void setSubject(const QString &s) override;
-    
+
     void setDate(const QMailTimeStamp &s) override;
 
     virtual QList<QMailAddress> to() const;
@@ -808,7 +808,7 @@ private:
 
     QMailMessagePrivate* partContainerImpl();
     const QMailMessagePrivate* partContainerImpl() const;
-    
+
     virtual bool hasCalendarMethod(QByteArray const &method) const;
     void setUnmodified() override;
 

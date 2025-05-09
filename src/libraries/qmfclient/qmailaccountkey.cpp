@@ -115,7 +115,7 @@ QMailAccountKey::QMailAccountKey()
 {
 }
 
-/*! 
+/*!
     Constructs a QMailAccountKey which defines a query parameter where
     QMailAccount::Property \a p is compared using comparison operator
     \a c with a value \a value.
@@ -125,9 +125,9 @@ QMailAccountKey::QMailAccountKey(Property p, const QVariant& value, QMailKey::Co
 {
 }
 
-/*! 
+/*!
     \fn QMailAccountKey::QMailAccountKey(const ListType &, Property, QMailKey::Comparator)
-    \internal 
+    \internal
 */
 template <typename ListType>
 QMailAccountKey::QMailAccountKey(const ListType &valueList, QMailAccountKey::Property p, QMailKey::Comparator c)
@@ -328,7 +328,7 @@ QMailAccountKey QMailAccountKey::nonMatchingKey()
     return QMailAccountKeyPrivate::nonMatchingKey();
 }
 
-/*! 
+/*!
     Returns a key matching accounts whose identifier matches \a id, according to \a cmp.
 
     \sa QMailAccount::id()
@@ -338,7 +338,7 @@ QMailAccountKey QMailAccountKey::id(const QMailAccountId &id, QMailDataComparato
     return QMailAccountKey(Id, id, QMailKey::comparator(cmp));
 }
 
-/*! 
+/*!
     Returns a key matching accounts whose identifier is a member of \a ids, according to \a cmp.
 
     \sa QMailAccount::id()
@@ -348,7 +348,7 @@ QMailAccountKey QMailAccountKey::id(const QMailAccountIdList &ids, QMailDataComp
     return QMailAccountKey(ids, Id, QMailKey::comparator(cmp));
 }
 
-/*! 
+/*!
     Returns a key matching accounts whose identifier is a member of the set yielded by \a key, according to \a cmp.
 
     \sa QMailAccount::id()
@@ -358,7 +358,7 @@ QMailAccountKey QMailAccountKey::id(const QMailAccountKey &key, QMailDataCompara
     return QMailAccountKey(Id, key, QMailKey::comparator(cmp));
 }
 
-/*! 
+/*!
     Returns a key matching accounts whose name matches \a value, according to \a cmp.
 
     \sa QMailAccount::name()
@@ -368,7 +368,7 @@ QMailAccountKey QMailAccountKey::name(const QString &value, QMailDataComparator:
     return QMailAccountKey(Name, QMailKey::stringValue(value), QMailKey::comparator(cmp));
 }
 
-/*! 
+/*!
     Returns a key matching accounts whose name matches the substring \a value, according to \a cmp.
 
     \sa QMailAccount::name()
@@ -378,7 +378,7 @@ QMailAccountKey QMailAccountKey::name(const QString &value, QMailDataComparator:
     return QMailAccountKey(Name, QMailKey::stringValue(value), QMailKey::comparator(cmp));
 }
 
-/*! 
+/*!
     Returns a key matching accounts whose name is a member of \a values, according to \a cmp.
 
     \sa QMailAccount::name()
@@ -388,7 +388,7 @@ QMailAccountKey QMailAccountKey::name(const QStringList &values, QMailDataCompar
     return QMailAccountKey(values, Name, QMailKey::comparator(cmp));
 }
 
-/*! 
+/*!
     Returns a key matching accounts whose messageType matches \a value, according to \a cmp.
 
     \sa QMailAccount::messageType()
@@ -398,7 +398,7 @@ QMailAccountKey QMailAccountKey::messageType(QMailMessageMetaDataFwd::MessageTyp
     return QMailAccountKey(MessageType, static_cast<int>(value), QMailKey::comparator(cmp));
 }
 
-/*! 
+/*!
     Returns a key matching accounts whose messageType is a bitwise match to \a value, according to \a cmp.
 
     \sa QMailAccount::messageType()
@@ -408,7 +408,7 @@ QMailAccountKey QMailAccountKey::messageType(int value, QMailDataComparator::Inc
     return QMailAccountKey(MessageType, value, QMailKey::comparator(cmp));
 }
 
-/*! 
+/*!
     Returns a key matching accounts whose address matches \a value, according to \a cmp.
 
     \sa QMailAccount::fromAddress()
@@ -418,7 +418,7 @@ QMailAccountKey QMailAccountKey::fromAddress(const QString &value, QMailDataComp
     return QMailAccountKey(FromAddress, QMailKey::stringValue(value), QMailKey::comparator(cmp));
 }
 
-/*! 
+/*!
     Returns a key matching accounts whose address matches the substring \a value, according to \a cmp.
 
     \sa QMailAccount::fromAddress()
@@ -428,7 +428,7 @@ QMailAccountKey QMailAccountKey::fromAddress(const QString &value, QMailDataComp
     return QMailAccountKey(FromAddress, QMailKey::stringValue(value), QMailKey::comparator(cmp));
 }
 
-/*! 
+/*!
     Returns a key matching accounts whose last synchronization time matches the time \a value, according to \a cmp.
 
     \sa QMailAccount::lastSynchronized()
@@ -448,7 +448,7 @@ QMailAccountKey QMailAccountKey::lastSynchronized(const QDateTime &value, QMailD
     return QMailAccountKey(LastSynchronized, value, QMailKey::comparator(cmp));
 }
 
-/*! 
+/*!
     Returns a key matching accounts whose status matches \a value, according to \a cmp.
 
     \sa QMailAccount::status()
@@ -458,7 +458,7 @@ QMailAccountKey QMailAccountKey::status(quint64 value, QMailDataComparator::Equa
     return QMailAccountKey(Status, value, QMailKey::comparator(cmp));
 }
 
-/*! 
+/*!
     Returns a key matching accounts whose status is a bitwise match to \a mask, according to \a cmp.
 
     \sa QMailAccount::status()
@@ -468,7 +468,7 @@ QMailAccountKey QMailAccountKey::status(quint64 mask, QMailDataComparator::Inclu
     return QMailAccountKey(Status, mask, QMailKey::comparator(cmp));
 }
 
-/*! 
+/*!
     Returns a key matching accounts that possess a custom field with the name \a name, according to \a cmp.
 
     \sa QMailAccount::customField()
@@ -478,7 +478,7 @@ QMailAccountKey QMailAccountKey::customField(const QString &name, QMailDataCompa
     return QMailAccountKey(Custom, QStringList() << QMailKey::stringValue(name), QMailKey::comparator(cmp));
 }
 
-/*! 
+/*!
     Returns a key matching accounts that possess a custom field with the name \a name, whose value matches \a value, according to \a cmp.
 
     \sa QMailAccount::customField()
@@ -488,7 +488,7 @@ QMailAccountKey QMailAccountKey::customField(const QString &name, const QString 
     return QMailAccountKey(Custom, QStringList() << QMailKey::stringValue(name) << QMailKey::stringValue(value), QMailKey::comparator(cmp));
 }
 
-/*! 
+/*!
     Returns a key matching accounts that possess a custom field with the name \a name, whose value matches the substring \a value, according to \a cmp.
 
     \sa QMailAccount::customField()

@@ -65,7 +65,7 @@ static QByteArray messageId(const QByteArray& domainName, quint32 addressCompone
     quint32 timeComponent(QDateTime::currentDateTimeUtc().toMSecsSinceEpoch() / 1000);
 
     return ('<' +
-            QString::number(randomComponent, 36) + 
+            QString::number(randomComponent, 36) +
             '.' +
             QString::number(timeComponent, 36) +
             '.' +
@@ -313,7 +313,7 @@ void SmtpClient::transportError(int errorCode, QString msg)
 {
     if (status == Done)
         return; //Ignore errors after QUIT is sent
- 
+
     operationFailed(errorCode, msg);
 }
 
@@ -436,9 +436,9 @@ void SmtpClient::nextAction(const QString &response)
         bufferedResponse += ' ';
         return;
     }
-    
+
     switch (status) {
-    case Init:  
+    case Init:
     {
         if (responseCode == 220) {
             mailItr = mailList.begin();
@@ -450,7 +450,7 @@ void SmtpClient::nextAction(const QString &response)
             status = Helo;
         } else {
             operationFailed(QMailServiceAction::Status::ErrUnknownResponse, response);
-        } 
+        }
         break;
     }
     case Helo:
@@ -551,7 +551,7 @@ void SmtpClient::nextAction(const QString &response)
             }
         } else {
             operationFailed(QMailServiceAction::Status::ErrUnknownResponse, response);
-        } 
+        }
         break;
     }
     case StartTLS:
@@ -588,7 +588,7 @@ void SmtpClient::nextAction(const QString &response)
     case Connected:
     {
         // We are now connected with appropriate encryption
-        
+
         // Find the properties of our connection
         QHostAddress localAddress(transport->socket().localAddress());
         if (localAddress.isNull()) {
@@ -733,7 +733,7 @@ void SmtpClient::nextAction(const QString &response)
         }
         break;
     }
-    case From:  
+    case From:
     {
         sendCommand("MAIL FROM:" + mailItr->from);
         status = Recv;
@@ -741,7 +741,7 @@ void SmtpClient::nextAction(const QString &response)
         emit updateStatus(tr( "Sending: %1").arg(mailItr->mail.subject().simplified()) );
         break;
     }
-    case Recv:  
+    case Recv:
     {
         if (responseCode == 250) {
             it = mailItr->to.begin();
@@ -753,10 +753,10 @@ void SmtpClient::nextAction(const QString &response)
             }
         } else  {
             operationFailed(QMailServiceAction::Status::ErrUnknownResponse, response);
-        } 
+        }
         break;
     }
-    case MRcv:  
+    case MRcv:
     {
         if ((responseCode == 250) || (responseCode == 251)) {
             it++;
@@ -772,7 +772,7 @@ void SmtpClient::nextAction(const QString &response)
         break;
     }
 
-    case PrepareData:  
+    case PrepareData:
     {
         if (mailItr->mail.status() & QMailMessage::TransmitFromExternal) {
             // We can replace this entire message by a reference to its external location
@@ -793,13 +793,13 @@ void SmtpClient::nextAction(const QString &response)
         break;
     }
 
-    case Data:  
+    case Data:
     {
         sendCommand("DATA");
         status = Body;
         break;
     }
-    case Body:  
+    case Body:
     {
         if (responseCode == 354) {
 
@@ -888,7 +888,7 @@ void SmtpClient::nextAction(const QString &response)
         break;
     }
 
-    case Sent:  
+    case Sent:
     {
         QMailMessageId msgId(mailItr->mail.id());
 
@@ -921,7 +921,7 @@ void SmtpClient::nextAction(const QString &response)
         break;
     }
 
-    case Quit:  
+    case Quit:
     {
         // Completed successfully
         sendCommand("QUIT");
@@ -940,7 +940,7 @@ void SmtpClient::nextAction(const QString &response)
         break;
     }
 
-    case Done:  
+    case Done:
     {
         // Supposed to be unused here
         qWarning() << "nextAction - Unexpected status value: " << status;
@@ -1069,7 +1069,7 @@ void SmtpClient::sendMoreData(qint64 bytesWritten)
     // Queue up to SENDING_BUFFER_SIZE bytes for transmission
     char buffer[SENDING_BUFFER_SIZE];
     qint64 bytes = temporaryFile->read(buffer, SENDING_BUFFER_SIZE);
-    
+
     QByteArray dotstuffed;
     dotstuffed.reserve(SENDING_BUFFER_SIZE + 10); // more than 10 stuffs and array may be autoresized
     for (int i = 0; i < bytes; ++i) {
@@ -1084,7 +1084,7 @@ void SmtpClient::sendMoreData(qint64 bytesWritten)
             linestart = false;
         }
     }
-    
+
 #ifdef QT_NO_SSL
     waitingForBytes += dotstuffed.length();
 #endif

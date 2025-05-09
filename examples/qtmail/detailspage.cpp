@@ -565,7 +565,7 @@ void DetailsPage::setFrom( const QMailAccountId &accountId )
 
 void DetailsPage::copy()
 {
-#ifndef QT_NO_CLIPBOARD 
+#ifndef QT_NO_CLIPBOARD
     QWidget *fw = focusWidget();
     if( !fw )
         return;
@@ -578,7 +578,7 @@ void DetailsPage::copy()
 
 void DetailsPage::paste()
 {
-#ifndef QT_NO_CLIPBOARD 
+#ifndef QT_NO_CLIPBOARD
     QWidget *fw = focusWidget();
     if( !fw )
         return;

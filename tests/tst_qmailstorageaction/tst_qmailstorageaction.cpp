@@ -80,10 +80,10 @@ QTEST_MAIN(tst_QMailStorageAction)
 void tst_QMailStorageAction::initTestCase()
 {
     QVERIFY2(QMail::isMessageServerRunning(), "tst_QMailStorageAction requires messageserver to be running");
-    
+
     // Instantiate the store to initialise the values of the status flags and create the standard folders
     QMailStore::instance();
-    
+
     // Tests rely on clearing all content in the database
     QMailStore::instance()->clearContent();
 
@@ -259,7 +259,7 @@ void tst_QMailStorageAction::initTestCase()
         QVERIFY(QMailStore::instance()->addFolder(&folder));
         trashId1 = folder.id();
         allFolders << folder.id();
-        
+
         QMailAccount account(accountId2);
         account.setStandardFolder(QMailFolder::TrashFolder, trashId1);
         QVERIFY(QMailStore::instance()->updateAccount(&account));
@@ -328,7 +328,7 @@ void tst_QMailStorageAction::initTestCase()
         QVERIFY(QMailStore::instance()->addFolder(&folder));
         trashId2 = folder.id();
         allFolders << folder.id();
-        
+
         QMailAccount account(accountId3);
         account.setStandardFolder(QMailFolder::TrashFolder, trashId2);
         QVERIFY(QMailStore::instance()->updateAccount(&account));
@@ -484,7 +484,7 @@ void tst_QMailStorageAction::test_storageaction_add()
     QMailMessageId saved3id;
     QMailMessage message;
     QMailMessageList messages;
-    
+
     message.setMessageType(QMailMessage::Email);
     message.setParentAccountId(accountId2);
     message.setParentFolderId(inboxId2);
@@ -504,7 +504,7 @@ void tst_QMailStorageAction::test_storageaction_add()
     messages << message;
     QSignalSpy activity(&action, SIGNAL(activityChanged(QMailServiceAction::Activity)));
     action.addMessages(messages);
-        
+
     int i = 0;
     while (action.isRunning() && i++ < 1000)
         QTest::qWait(10);
@@ -517,7 +517,7 @@ void tst_QMailStorageAction::test_storageaction_add()
         QList<QVariant> arguments = activity.takeFirst();
         QVERIFY(arguments.at(0).toInt() != QMailServiceAction::Failed);
     }
-    
+
     QMailMessageKey savedMessage3Key(QMailMessageKey::serverUid("savedMessage3"));
     QVERIFY(QMailStore::instance()->countMessages(savedMessage3Key) == 1);
     message = QMailStore::instance()->message("savedMessage3", accountId2);
@@ -531,17 +531,17 @@ void tst_QMailStorageAction::test_storageaction_update_message()
     QMailMessageId saved3id;
     QMailMessageList messages;
     QMailMessage message;
-    
+
     message = QMailStore::instance()->message("savedMessage3", accountId2);
     saved3id = message.id();
     QVERIFY(saved3id.isValid());
-        
+
     QString subject("Updated simple test message");
     message.setSubject(subject);
     messages << message;
     QSignalSpy activity(&action, SIGNAL(activityChanged(QMailServiceAction::Activity)));
     action.updateMessages(messages);
-        
+
     int i = 0;
     while (action.isRunning() && i++ < 1000)
         QTest::qWait(10);
@@ -554,7 +554,7 @@ void tst_QMailStorageAction::test_storageaction_update_message()
         QList<QVariant> arguments = activity.takeFirst();
         QVERIFY(arguments.at(0).toInt() != QMailServiceAction::Failed);
     }
-    
+
     QMailMessage saved3(saved3id);
     QVERIFY(saved3.subject() == subject);
 }
@@ -590,7 +590,7 @@ void tst_QMailStorageAction::test_storageaction_update_messagemetadata()
         QList<QVariant> arguments = activity.takeFirst();
         QVERIFY(arguments.at(0).toInt() != QMailServiceAction::Failed);
     }
-    
+
     QMailMessage saved3(saved3id);
     QVERIFY(saved3.subject() == subject);
     QVERIFY(saved3.status() & QMailMessage::Read);
@@ -613,7 +613,7 @@ void tst_QMailStorageAction::test_storageaction_movetostandardfolder()
     while (action.isRunning() && i++ < 1000)
         QTest::qWait(10);
     QTest::qWait(0);
-    
+
     QVERIFY(action.status().errorCode == QMailServiceAction::Status::ErrNoError);
     QVERIFY(action.activity() == QMailServiceAction::Successful);
     QVERIFY(activity.count() > 0);
@@ -621,7 +621,7 @@ void tst_QMailStorageAction::test_storageaction_movetostandardfolder()
         QList<QVariant> arguments = activity.takeFirst();
         QVERIFY(arguments.at(0).toInt() != QMailServiceAction::Failed);
     }
-    
+
     QCOMPARE(QMailStore::instance()->countMessages(QMailMessageKey::parentFolderId(trashId1)), oldTrashCount + 1);
     QCOMPARE(QMailStore::instance()->countMessages(QMailMessageKey::parentFolderId(inboxId2)), oldInboxCount - 1);
 
@@ -648,7 +648,7 @@ void tst_QMailStorageAction::test_storageaction_restoretopreviousfolder()
     while (action.isRunning() && i++ < 1000)
         QTest::qWait(10);
     QTest::qWait(0);
-    
+
     QVERIFY(action.status().errorCode == QMailServiceAction::Status::ErrNoError);
     QVERIFY(action.activity() == QMailServiceAction::Successful);
     QVERIFY(activity.count() > 0);
@@ -656,7 +656,7 @@ void tst_QMailStorageAction::test_storageaction_restoretopreviousfolder()
         QList<QVariant> arguments = activity.takeFirst();
         QVERIFY(arguments.at(0).toInt() != QMailServiceAction::Failed);
     }
-    
+
     QVERIFY(QMailStore::instance()->countMessages(QMailMessageKey::parentFolderId(inboxId2)) == (oldInboxCount + 1));
     QVERIFY(QMailStore::instance()->countMessages(QMailMessageKey::parentFolderId(trashId1)) == (oldTrashCount - 1));
 
@@ -677,12 +677,12 @@ void tst_QMailStorageAction::test_storageaction_movetofolder()
 
     action.moveToFolder(list, trashId1);
     QSignalSpy activity(&action, SIGNAL(activityChanged(QMailServiceAction::Activity)));
- 
+
     int i = 0;
     while (action.isRunning() && i++ < 1000)
         QTest::qWait(10);
     QTest::qWait(0);
-    
+
     QVERIFY(action.status().errorCode == QMailServiceAction::Status::ErrNoError);
     QVERIFY(action.activity() == QMailServiceAction::Successful);
     QVERIFY(activity.count() > 0);
@@ -690,7 +690,7 @@ void tst_QMailStorageAction::test_storageaction_movetofolder()
         QList<QVariant> arguments = activity.takeFirst();
         QVERIFY(arguments.at(0).toInt() != QMailServiceAction::Failed);
     }
-    
+
     QVERIFY(QMailStore::instance()->countMessages(QMailMessageKey::parentFolderId(inboxId2)) == (oldInboxCount - 1));
     QVERIFY(QMailStore::instance()->countMessages(QMailMessageKey::parentFolderId(trashId1)) == (oldTrashCount + 1));
 
@@ -706,7 +706,7 @@ void tst_QMailStorageAction::test_storageaction_flagMessages()
 
     QMailMessageMetaData metadata("savedMessage3", accountId2);
     QVERIFY(metadata.status() & QMailMessage::Read);
-        
+
     list = QMailStore::instance()->queryMessages(QMailMessageKey::serverUid("savedMessage3"));
     QVERIFY(list.count() == 1);
 
@@ -725,7 +725,7 @@ void tst_QMailStorageAction::test_storageaction_flagMessages()
         QList<QVariant> arguments = activity.takeFirst();
         QVERIFY(arguments.at(0).toInt() != QMailServiceAction::Failed);
     }
-    
+
     QMailMessageMetaData metadataAfter("savedMessage3", accountId2);
     QVERIFY((metadataAfter.status() & QMailMessage::Read) == false);
 }
@@ -736,7 +736,7 @@ void tst_QMailStorageAction::test_storageaction_rollBackUpdates()
     QMailMessageId saved3id;
     QMailMessage message;
     QMailMessageIdList list;
-    
+
     message.setMessageType(QMailMessage::Email);
     message.setParentAccountId(accountId3);
     message.setParentFolderId(inboxId3);
@@ -752,7 +752,7 @@ void tst_QMailStorageAction::test_storageaction_rollBackUpdates()
     message.setSize(7 * 1024);
     message.setContent(QMailMessage::HtmlContent);
     message.setCustomField("present", "true");
-    
+
     QVERIFY(QMailStore::instance()->addMessage(&message));
 
     QMailMessageMetaData metadata("savedMessage5", accountId3);
@@ -789,12 +789,12 @@ void tst_QMailStorageAction::test_storageaction_rollBackUpdates()
         QList<QVariant> arguments = activity.takeFirst();
         QVERIFY(arguments.at(0).toInt() != QMailServiceAction::Failed);
     }
-    
+
     QMailMessageMetaData metadataAfter("savedMessage5", accountId3);
     QVERIFY(metadataAfter.parentFolderId() == inboxId3);
     QVERIFY(metadataAfter.previousParentFolderId() == QMailFolderId());
 
-    // Can't test QMailDisconnected::upatesOutstanding(accountId3) == false,  because having any 
+    // Can't test QMailDisconnected::upatesOutstanding(accountId3) == false,  because having any
     // local messages at all causes a folder to be considered as having updates outstanding
 }
 
@@ -813,7 +813,7 @@ void tst_QMailStorageAction::test_storageaction_deleteMessages()
     while (action.isRunning() && i++ < 1000)
         QTest::qWait(10);
     QTest::qWait(0);
-    
+
     QVERIFY(action.status().errorCode == QMailServiceAction::Status::ErrNoError);
     QVERIFY(action.activity() == QMailServiceAction::Successful);
     QVERIFY(activity.count() > 0);
@@ -821,7 +821,7 @@ void tst_QMailStorageAction::test_storageaction_deleteMessages()
         QList<QVariant> arguments = activity.takeFirst();
         QVERIFY(arguments.at(0).toInt() != QMailServiceAction::Failed);
     }
-    
+
     list = QMailStore::instance()->queryMessages(QMailMessageKey::serverUid("savedMessage3"));
     QVERIFY(list.count() == 0);
 }
@@ -833,7 +833,7 @@ void tst_QMailStorageAction::test_storageaction_discardMessages()
     QMailMessageId saved3id;
     QMailMessage message;
     QMailMessageIdList messages;
-    
+
     message.setMessageType(QMailMessage::Email);
     message.setParentAccountId(accountId2);
     message.setParentFolderId(inboxId2);
@@ -849,7 +849,7 @@ void tst_QMailStorageAction::test_storageaction_discardMessages()
     message.setSize(6 * 1024);
     message.setContent(QMailMessage::HtmlContent);
     message.setCustomField("present", "true");
-    
+
     QVERIFY(QMailStore::instance()->addMessage(&message));
     QMailMessageKey savedMessage4Key(QMailMessageKey::serverUid("savedMessage4"));
     QVERIFY(QMailStore::instance()->countMessages(savedMessage4Key) == 1);
@@ -857,12 +857,12 @@ void tst_QMailStorageAction::test_storageaction_discardMessages()
     messages << message.id();
     QSignalSpy activity(&action, SIGNAL(activityChanged(QMailServiceAction::Activity)));
     action.discardMessages(messages);
-        
+
     int i = 0;
     while (action.isRunning() && i++ < 1000)
         QTest::qWait(10);
     QTest::qWait(0);
- 
+
     QVERIFY(action.status().errorCode == QMailServiceAction::Status::ErrNoError);
     QVERIFY(action.activity() == QMailServiceAction::Successful);
     QVERIFY(activity.count() > 0);
@@ -870,6 +870,6 @@ void tst_QMailStorageAction::test_storageaction_discardMessages()
         QList<QVariant> arguments = activity.takeFirst();
         QVERIFY(arguments.at(0).toInt() != QMailServiceAction::Failed);
     }
-    
+
     QVERIFY(QMailStore::instance()->countMessages(savedMessage4Key) == 0);
 }

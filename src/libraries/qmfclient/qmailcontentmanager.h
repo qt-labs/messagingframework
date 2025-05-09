@@ -102,7 +102,7 @@ public:
         IndexRole
     };
 
-    enum DurabilityRequirement { 
+    enum DurabilityRequirement {
         EnsureDurability = 0,
         DeferDurability,
         NoDurability

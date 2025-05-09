@@ -199,7 +199,7 @@ QMap<QMailAccountId, QMailMessageIdList> accountMessages(const QMailMessageIdLis
     QMap<QMailAccountId, QMailMessageIdList> map;
 
         for (const QMailMessageMetaData &metaData : QMailStore::instance()->messagesMetaData(QMailMessageKey::id(ids),
-                                                                                                QMailMessageKey::Id | QMailMessageKey::ParentAccountId, 
+                                                                                                QMailMessageKey::Id | QMailMessageKey::ParentAccountId,
                                                                                                 QMailStore::ReturnAll)) {
             if (metaData.id().isValid() && metaData.parentAccountId().isValid())
                 map[metaData.parentAccountId()].append(metaData.id());
@@ -595,7 +595,7 @@ void ServiceHandler::registerAccountServices(const QMailAccountIdList &ids)
         QMailAccount account(id);
         if (account.status() & QMailAccount::Enabled) {
             QMailAccountConfiguration config(id);
-            
+
             // See if this account is configured to use a master account
             QMailServiceConfiguration internalCfg(&config, "qmf");
             QString masterId(internalCfg.value("masterAccountId", ""));
@@ -881,7 +881,7 @@ void ServiceHandler::registerAccountSink(const QMailAccountId &accountId, QMailM
 
     // } else {
     connect(sink, SIGNAL(messagesTransmitted(QMailMessageIdList)), this, SLOT(messagesTransmitted(QMailMessageIdList)));
-    connect(sink, SIGNAL(messagesFailedTransmission(QMailMessageIdList, QMailServiceAction::Status::ErrorCode)), 
+    connect(sink, SIGNAL(messagesFailedTransmission(QMailMessageIdList, QMailServiceAction::Status::ErrorCode)),
             this, SLOT(messagesFailedTransmission(QMailMessageIdList, QMailServiceAction::Status::ErrorCode)));
     // }
 }
@@ -1127,7 +1127,7 @@ void ServiceHandler::dispatchRequest()
             continue;
         }
 
-        // Limit number of concurrent actions serviced on the device 
+        // Limit number of concurrent actions serviced on the device
         if (mActiveActions.count() >= QMail::maximumConcurrentServiceActions())
             return;
 
@@ -1146,7 +1146,7 @@ void ServiceHandler::dispatchRequest()
             ++request;
             continue;
         }
-    
+
         // Associate the services with the action, so that signals are reported correctly
         foreach (QMailMessageService *service, request->services)
             mServiceAction.insert(service, request->action);
@@ -1164,8 +1164,8 @@ void ServiceHandler::dispatchRequest()
 
         mActiveActions.insert(request->action, data);
         qMailLog(Messaging) << "Running action" << ::requestTypeNames[data.description] << request->action;
-        emit actionStarted(QMailActionData(request->action, request->description, 0, 0, 
-                                           data.status.errorCode, data.status.text, 
+        emit actionStarted(QMailActionData(request->action, request->description, 0, 0,
+                                           data.status.errorCode, data.status.text,
                                            data.status.accountId, data.status.folderId, data.status.messageId));
         emit activityChanged(request->action, QMailServiceAction::InProgress);
 
@@ -1342,7 +1342,7 @@ void ServiceHandler::cancelTransfer(quint64 action)
         it = mActiveActions.find(action);
         if (it != mActiveActions.end()) mActiveActions.erase(it);
 
-        // See if there are more actions 
+        // See if there are more actions
         QTimer::singleShot(0, this, SLOT(dispatchRequest()));
     } else {
         // See if this is a pending request that we can abort
@@ -2007,7 +2007,7 @@ void ServiceHandler::discardMessages(quint64 action, QMailMessageIdList messageI
     emit progressChanged(action, progress, total);
 
     // Just delete all these messages
-    if (!messageIds.isEmpty() 
+    if (!messageIds.isEmpty()
         && !QMailStore::instance()->removeMessages(QMailMessageKey::id(messageIds), QMailStore::NoRemovalRecord)) {
         qWarning() << "Unable to service request to discard messages";
 
@@ -2161,7 +2161,7 @@ bool ServiceHandler::dispatchOnlineMoveMessages(quint64 action, const QByteArray
     deserialize(data, messageLists, destination);
 
     QMap<QMailAccountId, QMailMessageIdList>::const_iterator it = messageLists.begin(), end = messageLists.end();
-    for ( ; it != end; ++it) {       
+    for ( ; it != end; ++it) {
         if (QMailMessageSource *source = accountSource(it.key())) {
 
             bool success(sourceService.value(source)->usesConcurrentActions()
@@ -2358,7 +2358,7 @@ void ServiceHandler::deleteMessages(quint64 action, const QMailMessageIdList& me
 void ServiceHandler::rollBackUpdates(quint64 action, const QMailAccountId &mailAccountId)
 {
     QMailDisconnected::rollBackUpdates(mailAccountId);
-    
+
     emit storageActionCompleted(action);
     emit activityChanged(action, QMailServiceAction::Successful);
     QMailStore::instance()->flushIpcNotifications();
@@ -2374,14 +2374,14 @@ void ServiceHandler::moveToStandardFolder(quint64 action, const QMailMessageIdLi
     emit storageActionCompleted(action);
     emit activityChanged(action, QMailServiceAction::Successful);
     QMailStore::instance()->flushIpcNotifications();
-    return;    
+    return;
 }
 
 void ServiceHandler::moveToFolder(quint64 action, const QMailMessageIdList& ids, const QMailFolderId& folderId)
 {
     QMailDisconnected::moveToFolder(ids, folderId);
     messagesMoved(ids, action);
-    
+
     emit storageActionCompleted(action);
     emit activityChanged(action, QMailServiceAction::Successful);
     QMailStore::instance()->flushIpcNotifications();
@@ -2392,7 +2392,7 @@ void ServiceHandler::flagMessages(quint64 action, const QMailMessageIdList& ids,
 {
     QMailDisconnected::flagMessages(ids, setMask, unsetMask, "");
     messagesFlagged(ids, action);
-    
+
     emit storageActionCompleted(action);
     emit activityChanged(action, QMailServiceAction::Successful);
     QMailStore::instance()->flushIpcNotifications();
@@ -2402,7 +2402,7 @@ void ServiceHandler::flagMessages(quint64 action, const QMailMessageIdList& ids,
 void ServiceHandler::restoreToPreviousFolder(quint64 action, const QMailMessageKey& key)
 {
     QMailDisconnected::restoreToPreviousFolder(key);
-    
+
     emit storageActionCompleted(action);
     emit activityChanged(action, QMailServiceAction::Successful);
     QMailStore::instance()->flushIpcNotifications();
@@ -2761,7 +2761,7 @@ void ServiceHandler::actionCompleted(bool success, QMailMessageService *service,
                 QMailMessageKey externalKey(QMailMessageKey::status(externalStatus, QMailDataComparator::Includes));
                 QMailMessageKey sentIdsKey(QMailMessageKey::id(mSentIds));
                 QMailMessageIdList sentNonFwodIds = QMailStore::instance()->queryMessages(sentIdsKey & ~externalKey);
-                
+
                 // Move sent messages to sent folder on remote server
                 QMap<QMailAccountId, QMailMessageIdList> groupedMessages(accountMessages(sentNonFwodIds));
                 if (!groupedMessages.empty()) { // messages are still around

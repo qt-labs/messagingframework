@@ -69,7 +69,7 @@ public slots:
     void handleSigTerm();
     void handleSigInt();
 #endif
-    
+
 private slots:
     void retrievalCompleted(quint64 action);
 

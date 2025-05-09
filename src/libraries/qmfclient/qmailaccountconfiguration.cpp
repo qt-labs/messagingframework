@@ -81,7 +81,7 @@ class QMailAccountConfigurationPrivate : public QSharedData
 public:
     QMailAccountConfigurationPrivate();
     ~QMailAccountConfigurationPrivate();
-    
+
     QMailAccountConfiguration::ServiceConfiguration &serviceConfiguration(const QString &service) const;
 
 private:
@@ -99,7 +99,7 @@ private:
     \class QMailAccountConfiguration::ServiceConfiguration
 
     \preliminary
-    \brief The ServiceConfiguration class provides access to the configuration parameters 
+    \brief The ServiceConfiguration class provides access to the configuration parameters
     of a single named service within an account.
     \ingroup messaginglibrary
 
@@ -111,7 +111,7 @@ private:
 
     \code
     QMailAccountConfiguration config(accountId);
-    
+
     if (config.id().isValid()) {
         qDebug() << "Account" << config.id() << ":";
         foreach (const QString& service, config.services()) {
@@ -127,16 +127,16 @@ private:
     Several predefined sets of key/value pairs are used to control the behavior of retrieval
     services, such as IMAP and POP services, as described in the following table. Other
     retrieval protocols should behave similarly.
-    
+
     \table
     \header \o Desired retrieval behavior \o Required key/value pair settings
     \row \o Headers only \o "downloadAttachments" = "0", "autoDownload" = "0", "maxSize" = "0"
     \row \o Entire message including attachments \o "downloadAttachments" = "1", "autoDownload" = "1", "maxSize" = "0"
     \row \o Message headers, body and when available structure, no attachments \o "downloadAttachments" = "0", "autoDownload" = "1", "maxSize" = "0"
     \endtable
-    
+
     Structure refers to MIME body structure information.
-    
+
     \sa QMailAccountConfiguration::serviceConfiguration()
 */
 
@@ -310,19 +310,19 @@ QMailAccountConfiguration::ServiceConfiguration &QMailAccountConfigurationPrivat
     \brief The QMailAccountConfiguration class contains the configuration parameters of an account.
     \ingroup messaginglibrary
 
-    QMailAccountConfiguration provides the configuration information for a single account, 
+    QMailAccountConfiguration provides the configuration information for a single account,
     as retrieved from the mail store.  The configuration is stored as key-value pairs, grouped
     into services, where each service within the account has a different name.  A service
     typically corresponds to a protocol used to implement the account.
 
-    To modify the configuration details, the ServiceConfiguration class must be used. 
-    ServiceConfiguration groupings may be added to and removed from the account configuration, 
+    To modify the configuration details, the ServiceConfiguration class must be used.
+    ServiceConfiguration groupings may be added to and removed from the account configuration,
     but a service configuration may not be modified until it has been added.  A service
     is not stored in the mail store until it has member parameters.
 
     ServiceConfiguration objects are allocated by, and retained within the QMailAccountConfiguration
     object.
-    
+
     A ServiceConfiguration object cannot be directly constructed, but can be acquired
     from the containing account's QMailAccountConfiguration object.
 

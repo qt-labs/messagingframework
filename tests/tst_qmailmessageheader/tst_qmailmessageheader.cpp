@@ -39,7 +39,7 @@
 #include <qmailnamespace.h>
 #include <qmailtimestamp.h>
 
-/* 
+/*
 Note: Any email addresses appearing in this test data must be example addresses,
 as defined by RFC 2606.  Therefore, they should use one of the following domains:
     *.example.{com|org|net}
@@ -250,7 +250,7 @@ void tst_QMailMessageHeaderField::constructor1_data()
     QTest::addColumn<QList<QMailMessageHeaderField::ParameterType> >("parameters");
     QTest::addColumn<QByteArray>("to_string");
 
-    QTest::newRow("Empty") 
+    QTest::newRow("Empty")
         << QByteArray()
         << QMailMessageHeaderField::StructuredField
         << QByteArray()
@@ -258,7 +258,7 @@ void tst_QMailMessageHeaderField::constructor1_data()
         << QList<QMailMessageHeaderField::ParameterType>()
         << QByteArray();
 
-    QTest::newRow("Id only") 
+    QTest::newRow("Id only")
         << QByteArray("Content-Type")
         << QMailMessageHeaderField::StructuredField
         << QByteArray("Content-Type")
@@ -266,7 +266,7 @@ void tst_QMailMessageHeaderField::constructor1_data()
         << QList<QMailMessageHeaderField::ParameterType>()
         << QByteArray("Content-Type:");
 
-    QTest::newRow("Id and content") 
+    QTest::newRow("Id and content")
         << QByteArray("Content-Type: text/html")
         << QMailMessageHeaderField::StructuredField
         << QByteArray("Content-Type")
@@ -274,16 +274,16 @@ void tst_QMailMessageHeaderField::constructor1_data()
         << QList<QMailMessageHeaderField::ParameterType>()
         << QByteArray("Content-Type: text/html");
 
-    QTest::newRow("With parameter") 
+    QTest::newRow("With parameter")
         << QByteArray("Content-Type: text/html; charset=UTF-8")
         << QMailMessageHeaderField::StructuredField
         << QByteArray("Content-Type")
         << QByteArray("text/html")
-        << ( QList<QMailMessageHeaderField::ParameterType>() 
+        << ( QList<QMailMessageHeaderField::ParameterType>()
                 << qMakePair(QByteArray("charset"), QByteArray("UTF-8")) )
         << QByteArray("Content-Type: text/html; charset=UTF-8");
 
-    QTest::newRow("With parameter - unstructured") 
+    QTest::newRow("With parameter - unstructured")
         << QByteArray("Content-Type: text/html; charset=UTF-8")
         << QMailMessageHeaderField::UnstructuredField
         << QByteArray("Content-Type")
@@ -291,27 +291,27 @@ void tst_QMailMessageHeaderField::constructor1_data()
         << QList<QMailMessageHeaderField::ParameterType>()
         << QByteArray("Content-Type: text/html; charset=UTF-8");
 
-    QTest::newRow("With multiple parameters") 
+    QTest::newRow("With multiple parameters")
         << QByteArray("Content-Type: text/html; charset=UTF-8; sample=simple")
         << QMailMessageHeaderField::StructuredField
         << QByteArray("Content-Type")
         << QByteArray("text/html")
-        << ( QList<QMailMessageHeaderField::ParameterType>() 
-                << qMakePair(QByteArray("charset"), QByteArray("UTF-8")) 
+        << ( QList<QMailMessageHeaderField::ParameterType>()
+                << qMakePair(QByteArray("charset"), QByteArray("UTF-8"))
                 << qMakePair(QByteArray("sample"), QByteArray("simple")) )
         << QByteArray("Content-Type: text/html; charset=UTF-8; sample=simple");
 
-    QTest::newRow("With quoted parameters") 
+    QTest::newRow("With quoted parameters")
         << QByteArray("Content-Type: text/html; quoted=\"needs quotes\"; unquoted=\"doesn't-need-quotes\"")
         << QMailMessageHeaderField::StructuredField
         << QByteArray("Content-Type")
         << QByteArray("text/html")
-        << ( QList<QMailMessageHeaderField::ParameterType>() 
+        << ( QList<QMailMessageHeaderField::ParameterType>()
                 << qMakePair(QByteArray("quoted"), QByteArray("needs quotes"))
                 << qMakePair(QByteArray("unquoted"), QByteArray("doesn't-need-quotes")) )
         << QByteArray("Content-Type: text/html; quoted=\"needs quotes\"; unquoted=doesn't-need-quotes");
 
-    QTest::newRow("With quoted parameters - unstructured") 
+    QTest::newRow("With quoted parameters - unstructured")
         << QByteArray("Content-Type: text/html; quoted=\"needs quotes\"; unquoted=\"doesn't-need-quotes\"")
         << QMailMessageHeaderField::UnstructuredField
         << QByteArray("Content-Type")
@@ -319,18 +319,18 @@ void tst_QMailMessageHeaderField::constructor1_data()
         << QList<QMailMessageHeaderField::ParameterType>()
         << QByteArray("Content-Type: text/html; quoted=\"needs quotes\"; unquoted=\"doesn't-need-quotes\"");
 
-    QTest::newRow("With multiple parameters - whitespace") 
+    QTest::newRow("With multiple parameters - whitespace")
         << QByteArray(" \tContent-Type:text/html;charset=UTF-8  ;   sample=simple;\n\tsimple=\r\r sample\t  ")
         << QMailMessageHeaderField::StructuredField
         << QByteArray("Content-Type")
         << QByteArray("text/html")
-        << ( QList<QMailMessageHeaderField::ParameterType>() 
+        << ( QList<QMailMessageHeaderField::ParameterType>()
                 << qMakePair(QByteArray("charset"), QByteArray("UTF-8"))
                 << qMakePair(QByteArray("sample"), QByteArray("simple"))
                 << qMakePair(QByteArray("simple"), QByteArray("sample")) )
         << QByteArray("Content-Type: text/html; charset=UTF-8; sample=simple; simple=sample");
 
-    QTest::newRow("With multiple parameters - whitespace unstructured") 
+    QTest::newRow("With multiple parameters - whitespace unstructured")
         << QByteArray(" \tContent-Type:text/html;charset=UTF-8  ;   sample=simple;\n\tsimple=\r\r sample\t  ")
         << QMailMessageHeaderField::UnstructuredField
         << QByteArray("Content-Type")
@@ -341,8 +341,8 @@ void tst_QMailMessageHeaderField::constructor1_data()
 
 void tst_QMailMessageHeaderField::constructor1()
 {
-    QFETCH( QByteArray, text ); 
-    QFETCH( QMailMessageHeaderField::FieldType, field_type ); 
+    QFETCH( QByteArray, text );
+    QFETCH( QMailMessageHeaderField::FieldType, field_type );
 
     QMailMessageHeaderField header(text, field_type);
     QTEST( header.id(), "id" );
@@ -360,70 +360,70 @@ void tst_QMailMessageHeaderField::constructor2_data()
     QTest::addColumn<QList<QMailMessageHeaderField::ParameterType> >("parameters");
     QTest::addColumn<QByteArray>("to_string");
 
-    QTest::newRow("Empty") 
+    QTest::newRow("Empty")
         << QByteArray()
         << QByteArray()
         << QByteArray()
         << QList<QMailMessageHeaderField::ParameterType>()
         << QByteArray();
 
-    QTest::newRow("Id only") 
+    QTest::newRow("Id only")
         << QByteArray()
         << QByteArray("Content-Type")
         << QByteArray()
         << QList<QMailMessageHeaderField::ParameterType>()
         << QByteArray("Content-Type:");
 
-    QTest::newRow("Differing Id") 
+    QTest::newRow("Differing Id")
         << QByteArray("Context-Hype:")
         << QByteArray("Content-Type")
         << QByteArray()
         << QList<QMailMessageHeaderField::ParameterType>()
         << QByteArray("Content-Type:");
 
-    QTest::newRow("Id and content") 
+    QTest::newRow("Id and content")
         << QByteArray("text/html")
         << QByteArray("Content-Type")
         << QByteArray("text/html")
         << QList<QMailMessageHeaderField::ParameterType>()
         << QByteArray("Content-Type: text/html");
 
-    QTest::newRow("Duplicated Id and content") 
+    QTest::newRow("Duplicated Id and content")
         << QByteArray("Content-Type: text/html")
         << QByteArray("Content-Type")
         << QByteArray("text/html")
         << QList<QMailMessageHeaderField::ParameterType>()
         << QByteArray("Content-Type: text/html");
 
-    QTest::newRow("Differing Id and content") 
+    QTest::newRow("Differing Id and content")
         << QByteArray("Context-Hype: text/html")
         << QByteArray("Content-Type")
         << QByteArray("text/html")
         << QList<QMailMessageHeaderField::ParameterType>()
         << QByteArray("Content-Type: text/html");
 
-    QTest::newRow("With parameter") 
+    QTest::newRow("With parameter")
         << QByteArray("text/html; charset=UTF-8")
         << QByteArray("Content-Type")
         << QByteArray("text/html")
-        << ( QList<QMailMessageHeaderField::ParameterType>() 
+        << ( QList<QMailMessageHeaderField::ParameterType>()
                 << qMakePair(QByteArray("charset"), QByteArray("UTF-8")) )
         << QByteArray("Content-Type: text/html; charset=UTF-8");
 
-    QTest::newRow("With multiple parameters") 
+    QTest::newRow("With multiple parameters")
         << QByteArray("text/html; charset=UTF-8; sample=simple")
         << QByteArray("Content-Type")
         << QByteArray("text/html")
-        << ( QList<QMailMessageHeaderField::ParameterType>() 
-                << qMakePair(QByteArray("charset"), QByteArray("UTF-8")) 
+        << ( QList<QMailMessageHeaderField::ParameterType>()
+                << qMakePair(QByteArray("charset"), QByteArray("UTF-8"))
                 << qMakePair(QByteArray("sample"), QByteArray("simple")) )
         << QByteArray("Content-Type: text/html; charset=UTF-8; sample=simple");
 }
 
 void tst_QMailMessageHeaderField::constructor2()
 {
-    QFETCH( QByteArray, text ); 
-    QFETCH( QByteArray, id ); 
+    QFETCH( QByteArray, text );
+    QFETCH( QByteArray, id );
 
     QMailMessageHeaderField header(id, text);
 
@@ -442,7 +442,7 @@ void tst_QMailMessageHeaderField::setId()
 {
     QMailMessageHeaderField header1;
     QMailMessageHeaderField header2("Content-Type: text/plain; charset=UTF-8; sample=simple");
-    
+
     QCOMPARE( header1.id(), QByteArray() );
     QCOMPARE( header2.id(), QByteArray("Content-Type") );
 
@@ -464,7 +464,7 @@ void tst_QMailMessageHeaderField::setContent()
 {
     QMailMessageHeaderField header1;
     QMailMessageHeaderField header2("Content-Type: text/plain; charset=UTF-8; sample=simple");
-    
+
     QCOMPARE( header1.content(), QByteArray() );
     QCOMPARE( header2.content(), QByteArray("text/plain") );
 
@@ -519,7 +519,7 @@ void tst_QMailMessageHeaderField::parameter()
 
 void tst_QMailMessageHeaderField::setParameter()
 {
-    QByteArray oversize = 
+    QByteArray oversize =
 "This is a really long parameter value that will need to be partitioned into"
 " multiple pieces for transmission, using the RFC 2231 encoding marking"
 " and not exceeding 78 characters per line.";
@@ -527,7 +527,7 @@ void tst_QMailMessageHeaderField::setParameter()
     QMailMessageHeaderField header1;
     QMailMessageHeaderField header2("Content-Type: text/plain; charset=UTF-8; sample=simple");
     QMailMessageHeaderField header3(QByteArray("Content-Type: application/octet-stream; charset=") + oversize);
-    
+
     QByteArray name("charset");
 
     QCOMPARE( header1.parameter(name), QByteArray() );
@@ -593,7 +593,7 @@ void tst_QMailMessageHeaderField::setParameterEncoded()
 {
     QMailMessageHeaderField header1;
     QMailMessageHeaderField header2("Content-Type: text/plain; charset=UTF-8; sample=simple");
-    
+
     QByteArray name("charset");
 
     QVERIFY( header1.isParameterEncoded(name) == false );
@@ -639,7 +639,7 @@ void tst_QMailMessageHeaderField::parameters()
 {
     QMailMessageHeaderField header1;
     QMailMessageHeaderField header2("Content-Type: text/plain; charset=UTF-8; sample=simple");
-    
+
     QList<QMailMessageHeaderField::ParameterType> result1, result2;
 
     QByteArray name("charset");
@@ -706,7 +706,7 @@ CRLF;
     result1.clear();
     result1.append(qMakePair(QByteArray("charset"), QByteArray("Very long charset value which will take up multiple lines in the RFC 2822 output")));
     result1.append(qMakePair(QByteArray("sample"), QByteArray("simple")));
-                
+
     QMailMessage msg = QMailMessage::fromRfc2822(input);
     QCOMPARE( msg.contentType().parameters(), result1 );
 }
@@ -753,7 +753,7 @@ void tst_QMailMessageHeaderField::decodedContent_data()
     result += "param*=";
     result += unicodeAddress;
 
-    QTest::newRow("unicode characters") 
+    QTest::newRow("unicode characters")
         << input
         << ( QList<QByteArray>() << QByteArray("param") )
         << result;
@@ -767,7 +767,7 @@ void tst_QMailMessageHeaderField::decodedContent()
     QMailMessageHeaderField field("X-Type", input);
     foreach (const QByteArray& param, encoded)
         field.setParameterEncoded(param);
-        
+
     QTEST( field.decodedContent(), "result" );
 }
 
@@ -1289,7 +1289,7 @@ void tst_QMailMessageContentType::constructor_data()
 
 void tst_QMailMessageContentType::constructor()
 {
-    QFETCH( QByteArray, text ); 
+    QFETCH( QByteArray, text );
     QMailMessageContentType ct(text);
 
     QCOMPARE( ct.id(), QByteArray("Content-Type") );
@@ -1302,12 +1302,12 @@ void tst_QMailMessageContentType::constructor()
     QCOMPARE( ct.content(), content );
 }
 
-void tst_QMailMessageContentType::type() 
+void tst_QMailMessageContentType::type()
 {
     // Tested-by: constructor, setType
 }
 
-void tst_QMailMessageContentType::setType() 
+void tst_QMailMessageContentType::setType()
 {
     QMailMessageContentType type1;
     QMailMessageContentType type2("text/html; charset=us-ascii");
@@ -1347,12 +1347,12 @@ void tst_QMailMessageContentType::setType()
     QVERIFY( type3.charset().isEmpty() );
 }
 
-void tst_QMailMessageContentType::subType() 
+void tst_QMailMessageContentType::subType()
 {
     // Tested-by: constructor, setSubType
 }
 
-void tst_QMailMessageContentType::setSubType() 
+void tst_QMailMessageContentType::setSubType()
 {
     QMailMessageContentType type1;
     QMailMessageContentType type2("text/html; charset=us-ascii");

@@ -108,7 +108,7 @@ public:
     static QMailMessageSortKey restoreFolderId(Qt::SortOrder order = Qt::AscendingOrder);
     static QMailMessageSortKey listId(Qt::SortOrder order = Qt::AscendingOrder);
     static QMailMessageSortKey rfcId(Qt::SortOrder order = Qt::AscendingOrder);
-        
+
     static QMailMessageSortKey status(quint64 mask, Qt::SortOrder order = Qt::DescendingOrder);
 
 private:

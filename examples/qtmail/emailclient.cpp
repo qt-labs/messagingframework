@@ -515,7 +515,7 @@ void EmailClient::openFiles()
     if ( cachedDisplayMailId.isValid() ) {
         displayCachedMail();
     }
-    
+
     // See if there is a draft whose composition was interrupted by the Red Key (tm)
     QTimer::singleShot(0, this, SLOT(resumeInterruptedComposition()));
 }
@@ -865,13 +865,13 @@ void EmailClient::initActions()
 
         readerMarkMessageAsUnreadAction = new QAction( tr("Mark as Unread"), this );
         connect(readerMarkMessageAsUnreadAction, SIGNAL(triggered()), this, SLOT(readerMarkMessageAsUnread()));
-        
+
         readerMarkMessageAsImportantAction = new QAction( tr("Mark as Important"), this );
         connect(readerMarkMessageAsImportantAction, SIGNAL(triggered()), this, SLOT(readerMarkMessageAsImportant()));
-        
+
         readerMarkMessageAsNotImportantAction = new QAction( tr("Mark as Not Important"), this );
         connect(readerMarkMessageAsNotImportantAction, SIGNAL(triggered()), this, SLOT(readerMarkMessageAsNotImportant()));
-        
+
         QMenu* fileMenu = m_contextMenu;
         fileMenu->addAction( composeButton );
         fileMenu->addAction( getMailButton );
@@ -965,7 +965,7 @@ void EmailClient::updateActions()
     QMailMessageKey typeFilter(QMailMessageKey::messageType(QMailMessage::Email));
     QMailMessageKey trashFilter(QMailMessageKey::status(QMailMessage::Trash));
     setActionVisible(threadAction, (messageCount > 0) && !markingMode);
-    
+
     messageCount = QMailStore::instance()->countMessages(typeFilter & trashFilter);
 
     setActionVisible(emptyTrashAction, (messageCount > 0) && !markingMode);
@@ -1040,7 +1040,7 @@ void EmailClient::init()
 
     // Use a separate action for flag updates, which are not directed by the user
     connect(m_flagRetrievalAction, SIGNAL(activityChanged(QMailServiceAction::Activity)), this, SLOT(flagRetrievalActivityChanged(QMailServiceAction::Activity)));
-    
+
     // We need to load the settings in case they affect our service handlers
     readSettings();
 }
@@ -1096,7 +1096,7 @@ void EmailClient::beginEnqueueMail(QMailMessage& mail)
     m_outboxingMessages.append(mail);
 
     QMailStorageAction *outboxAction(new QMailStorageAction());
-    connect(outboxAction, SIGNAL(activityChanged(QMailServiceAction::Activity)), 
+    connect(outboxAction, SIGNAL(activityChanged(QMailServiceAction::Activity)),
             this, SLOT(finishEnqueueMail(QMailServiceAction::Activity)));
     m_outboxActions.append(outboxAction);
     if (!mail.id().isValid()) {
@@ -1293,11 +1293,11 @@ void EmailClient::transmitCompleted()
     if (transmissionFailure) {
         transmissionFailure = false;
         const QMailServiceAction::Status status(m_transmitAction->status());
-        transferFailure(status.accountId, 
-                        tr("Some messages could not be sent and have been left in the outbox. Verify that recipient addresses are well formed."), 
+        transferFailure(status.accountId,
+                        tr("Some messages could not be sent and have been left in the outbox. Verify that recipient addresses are well formed."),
                         QMailServiceAction::Status::ErrInvalidAddress);
     }
-        
+
     // If there are more SMTP accounts to service, continue
     if (!transmitAccountIds.isEmpty()) {
         sendAllQueuedMail();
@@ -1472,7 +1472,7 @@ void EmailClient::getNextNewMail()
             clearStatusText();
 
         setRetrievalInProgress(false);
-        retrieveVisibleMessagesFlags();      
+        retrieveVisibleMessagesFlags();
     }
 }
 
@@ -1763,7 +1763,7 @@ void EmailClient::copySelectedMessagesTo(const QMailFolderId &destination)
     // retrieveMessageList and retriveMessages(flags) logic doesn't properly
     // handle copied messages
     copyToFolder(copyList,destination);
-#else 
+#else
     storageAction("Copying messages")->onlineCopyMessages(copyList, destination);
 #endif
 
@@ -1857,7 +1857,7 @@ void EmailClient::copySelectedMessages()
         for(uint i = 0; (i < message.partCount()) && complete; ++i) {
             complete &= message.partAt(i).contentAvailable();
         }
-        
+
         if (!complete) {
             // IMAP limitation
             AcknowledgmentBox::show(tr("Cannot copy"), tr("Can not copy partial message"));
@@ -1865,7 +1865,7 @@ void EmailClient::copySelectedMessages()
         }
     }
 #endif
-    
+
     if (applyToSelectedFolder(&EmailClient::copySelectedMessagesTo)) {
         if (markingMode) {
             // After copying the messages, clear marking mode
@@ -2284,8 +2284,8 @@ void EmailClient::retrieveVisibleMessagesFlags()
 {
     if (workOfflineAction->isChecked())
         return;
-    
-    // This code to detect flag changes is required to address a limitation 
+
+    // This code to detect flag changes is required to address a limitation
     // of IMAP servers that do not support NOTIFY+CONDSTORE functionality.
     QMailMessageIdList ids(messageListView()->visibleMessagesIds());
     if (ids.isEmpty())
@@ -2337,7 +2337,7 @@ void EmailClient::sendMessageTo(const QMailAddress &address, QMailMessage::Messa
 void EmailClient::quit()
 {
     if (writeMailWidget()->hasContent()) {
-        
+
         // We need to save whatever is currently being worked on
         writeMailWidget()->forcedClosure();
 
@@ -2349,7 +2349,7 @@ void EmailClient::quit()
             mailconf.endGroup();
         }
     }
-    
+
     if(m_messageServerProcess)
     {
         //we started the messageserver, direct it to shut down
@@ -2469,7 +2469,7 @@ void EmailClient::setupUi()
 void EmailClient::showEvent(QShowEvent* e)
 {
     Q_UNUSED(e);
-    
+
     suspendMailCount = false;
 
     QTimer::singleShot(0, this, SLOT(delayedInit()) );
@@ -2586,7 +2586,7 @@ void EmailClient::connectionStateChanged()
 {
     if (workOfflineAction->isChecked())
         return;
-    
+
     exportPendingChanges();
     sendAllQueuedMail();
 }
@@ -2595,7 +2595,7 @@ void EmailClient::exportPendingChanges()
 {
     if (workOfflineAction->isChecked())
         return;
-    
+
     foreach(QMailAccountId accountId, emailAccounts()) {
         exportPendingChanges(accountId);
     }
@@ -2604,7 +2604,7 @@ void EmailClient::exportPendingChanges()
         m_exportAction = new QMailRetrievalAction(this);
         connectServiceAction(m_exportAction);
     }
-        
+
     runNextPendingExport();
 }
 
@@ -2612,7 +2612,7 @@ void EmailClient::exportPendingChanges(const QMailAccountId &accountId)
 {
     if (workOfflineAction->isChecked())
         return;
-    
+
     if (!m_queuedExports.contains(accountId)) {
         m_queuedExports.append(accountId);
     }
@@ -2625,10 +2625,10 @@ void EmailClient::runNextPendingExport()
         m_exportAction = 0;
         return;
     }
-    
+
     if (!m_exportAction->isRunning()) {
         QMailAccountId mailAccountId = m_queuedExports.first();
-        
+
         ServiceActionStatusItem* newItem = new ServiceActionStatusItem(m_exportAction, "Exporting pending updates");
         StatusMonitor::instance()->add(newItem);
         m_exportAction->exportUpdates(mailAccountId);
@@ -2894,7 +2894,7 @@ void EmailClient::previousMessage()
         QApplication::postEvent(list, new QKeyEvent(QEvent::KeyRelease, Qt::Key_Enter, Qt::NoModifier));
     }
 }
-   
+
 void EmailClient::nextUnreadMessage()
 {
     QWidget *list = messageListView()->findChild<QWidget*>("messagelistview");
@@ -2934,7 +2934,7 @@ void EmailClient::scrollReaderUp()
     }
 }
 
-void EmailClient::readerMarkMessageAsUnread() 
+void EmailClient::readerMarkMessageAsUnread()
 {
     quint64 setMask(0);
     quint64 unsetMask(QMailMessage::Read);
@@ -2942,7 +2942,7 @@ void EmailClient::readerMarkMessageAsUnread()
     flagMessage(id, setMask, unsetMask);
 }
 
-void EmailClient::readerMarkMessageAsImportant() 
+void EmailClient::readerMarkMessageAsImportant()
 {
     quint64 setMask(QMailMessage::Important);
     quint64 unsetMask(0);
@@ -2950,7 +2950,7 @@ void EmailClient::readerMarkMessageAsImportant()
     flagMessage(id, setMask, unsetMask);
 }
 
-void EmailClient::readerMarkMessageAsNotImportant() 
+void EmailClient::readerMarkMessageAsNotImportant()
 {
     quint64 setMask(0);
     quint64 unsetMask(QMailMessage::Important);

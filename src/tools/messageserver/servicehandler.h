@@ -132,7 +132,7 @@ signals:
 
     void folderCreated(quint64 action, const QMailFolderId&);
     void folderRenamed(quint64 action, const QMailFolderId&);
-    void folderDeleted(quint64 action, const QMailFolderId&); 
+    void folderDeleted(quint64 action, const QMailFolderId&);
     void folderMoved(quint64 action, const QMailFolderId&);
 
     void storageActionCompleted(quint64 action);
@@ -320,7 +320,7 @@ private:
         uint progressCurrent;
         QMailServiceAction::Status status;
     };
-    
+
     QMap<quint64, ActionData> mActiveActions;
     QLinkedList<quint64> mActionExpiry;
 
@@ -328,7 +328,7 @@ private:
 
     static const int ExpirySeconds = 120;
 
-    struct Request 
+    struct Request
     {
         quint64 action;
         QByteArray data;

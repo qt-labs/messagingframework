@@ -101,9 +101,9 @@ private:
         return QSet<QMailAccountId>(accounts.constBegin(), accounts.constEnd());
     }
 
-    QSet<QMailAccountId> accountSet() const 
-    { 
-        return QSet<QMailAccountId>(); 
+    QSet<QMailAccountId> accountSet() const
+    {
+        return QSet<QMailAccountId>();
     }
 
     const QSet<QMailFolderId> folderSet(const QMailFolderKey &key) const
@@ -112,9 +112,9 @@ private:
         return QSet<QMailFolderId>(folders.constBegin(), folders.constEnd());
     }
 
-    QSet<QMailFolderId> folderSet() const 
-    { 
-        return QSet<QMailFolderId>(); 
+    QSet<QMailFolderId> folderSet() const
+    {
+        return QSet<QMailFolderId>();
     }
 
     const QSet<QMailMessageId> messageSet(const QMailMessageKey &key) const
@@ -123,9 +123,9 @@ private:
         return QSet<QMailMessageId>(messages.constBegin(), messages.constEnd());
     }
 
-    QSet<QMailMessageId> messageSet() const 
-    { 
-        return QSet<QMailMessageId>(); 
+    QSet<QMailMessageId> messageSet() const
+    {
+        return QSet<QMailMessageId>();
     }
 
     QMailAccountId accountId1, accountId2, accountId3, accountId4;
@@ -520,7 +520,7 @@ void tst_QMailStoreKeys::simpleKeys()
     QCOMPARE(accountSet(accountKey), accountResult);
     QCOMPARE(folderSet(folderKey), folderResult);
     QCOMPARE(messageSet(messageKey), messageResult);
-    
+
     // Empty & standard = standard
     QCOMPARE(accountSet(QMailAccountKey() & accountKey), accountResult);
     QCOMPARE(accountSet(accountKey & QMailAccountKey()), accountResult);
@@ -1286,8 +1286,8 @@ void tst_QMailStoreKeys::folderCustomField()
     // Test for partial matches
     QCOMPARE(folderSet(QMailFolderKey::customField("uidValidity", "stu", Includes)), folderSet() << inboxId2);
     QCOMPARE(folderSet(~QMailFolderKey::customField("uidValidity", "stu", Includes)), folderSet() << inboxId1 << savedId1 << savedId2);
-    QCOMPARE(folderSet(QMailFolderKey::customField("uidNext", "11", Includes)), folderSet() << savedId1 << archivedId1 << savedId2 << archivedId2); 
-    QCOMPARE(folderSet(~QMailFolderKey::customField("uidNext", "11", Includes)), folderSet() << inboxId1 << inboxId2); 
+    QCOMPARE(folderSet(QMailFolderKey::customField("uidNext", "11", Includes)), folderSet() << savedId1 << archivedId1 << savedId2 << archivedId2);
+    QCOMPARE(folderSet(~QMailFolderKey::customField("uidNext", "11", Includes)), folderSet() << inboxId1 << inboxId2);
     QCOMPARE(folderSet(QMailFolderKey::customField("uidNext", "bicycle", Includes)), noFolders);
     QCOMPARE(folderSet(~QMailFolderKey::customField("uidNext", "bicycle", Includes)), folderSet() << inboxId1 << savedId1 << archivedId1 << inboxId2 << savedId2 << archivedId2);
     QCOMPARE(folderSet(QMailFolderKey::customField("uidNext", QString(""), Includes)), folderSet() << inboxId1 << savedId1 << archivedId1 << inboxId2 << savedId2 << archivedId2);
@@ -1298,8 +1298,8 @@ void tst_QMailStoreKeys::folderCustomField()
     // Test for partial match exclusion
     QCOMPARE(folderSet(QMailFolderKey::customField("uidValidity", "stu", Excludes)), folderSet() << inboxId1 << savedId1 << savedId2);
     QCOMPARE(folderSet(~QMailFolderKey::customField("uidValidity", "stu", Excludes)), folderSet() << inboxId2);
-    QCOMPARE(folderSet(QMailFolderKey::customField("uidNext", "11", Excludes)), folderSet() << inboxId1 << inboxId2); 
-    QCOMPARE(folderSet(~QMailFolderKey::customField("uidNext", "11", Excludes)), folderSet() << savedId1 << archivedId1 << savedId2 << archivedId2); 
+    QCOMPARE(folderSet(QMailFolderKey::customField("uidNext", "11", Excludes)), folderSet() << inboxId1 << inboxId2);
+    QCOMPARE(folderSet(~QMailFolderKey::customField("uidNext", "11", Excludes)), folderSet() << savedId1 << archivedId1 << savedId2 << archivedId2);
     QCOMPARE(folderSet(QMailFolderKey::customField("uidNext", "bicycle", Excludes)), folderSet() << inboxId1 << savedId1 << archivedId1 << inboxId2 << savedId2 << archivedId2);
     QCOMPARE(folderSet(~QMailFolderKey::customField("uidNext", "bicycle", Excludes)), noFolders);
     QCOMPARE(folderSet(QMailFolderKey::customField("uidNext", QString(""), Excludes)), noFolders);
@@ -1648,7 +1648,7 @@ void tst_QMailStoreKeys::messageTimeStamp()
     QCOMPARE(messageSet(~QMailMessageKey::timeStamp(today, NotEqual)), messageSet() << smsMessage << inboxMessage1 << inboxMessage2);
     QCOMPARE(messageSet(QMailMessageKey::timeStamp(today, LessThan)), messageSet() << archivedMessage1 << savedMessage2);
     QCOMPARE(messageSet(~QMailMessageKey::timeStamp(today, LessThan)), messageSet() << smsMessage << inboxMessage1 << inboxMessage2);
-    QCOMPARE(messageSet(QMailMessageKey::timeStamp(today, GreaterThanEqual)), messageSet() << smsMessage << inboxMessage1 << inboxMessage2); 
+    QCOMPARE(messageSet(QMailMessageKey::timeStamp(today, GreaterThanEqual)), messageSet() << smsMessage << inboxMessage1 << inboxMessage2);
     QCOMPARE(messageSet(~QMailMessageKey::timeStamp(today, GreaterThanEqual)), messageSet() << archivedMessage1 << savedMessage2);
     QCOMPARE(messageSet(QMailMessageKey::timeStamp(today, LessThanEqual)), allMessages);
     QCOMPARE(messageSet(~QMailMessageKey::timeStamp(today, LessThanEqual)), noMessages);
@@ -1709,7 +1709,7 @@ void tst_QMailStoreKeys::messageReceptionTimeStamp()
     QCOMPARE(messageSet(~QMailMessageKey::receptionTimeStamp(today, NotEqual)), messageSet() << smsMessage << inboxMessage1 << inboxMessage2);
     QCOMPARE(messageSet(QMailMessageKey::receptionTimeStamp(today, LessThan)), messageSet() << archivedMessage1 << savedMessage2);
     QCOMPARE(messageSet(~QMailMessageKey::receptionTimeStamp(today, LessThan)), messageSet() << smsMessage << inboxMessage1 << inboxMessage2);
-    QCOMPARE(messageSet(QMailMessageKey::receptionTimeStamp(today, GreaterThanEqual)), messageSet() << smsMessage << inboxMessage1 << inboxMessage2); 
+    QCOMPARE(messageSet(QMailMessageKey::receptionTimeStamp(today, GreaterThanEqual)), messageSet() << smsMessage << inboxMessage1 << inboxMessage2);
     QCOMPARE(messageSet(~QMailMessageKey::receptionTimeStamp(today, GreaterThanEqual)), messageSet() << archivedMessage1 << savedMessage2);
     QCOMPARE(messageSet(QMailMessageKey::receptionTimeStamp(today, LessThanEqual)), allMessages);
     QCOMPARE(messageSet(~QMailMessageKey::receptionTimeStamp(today, LessThanEqual)), noMessages);
@@ -1812,7 +1812,7 @@ void tst_QMailStoreKeys::messageStatus()
 
     QMailMessageIdList sortedIds;
     sortedIds << inboxMessage1 << inboxMessage2 << savedMessage2 << smsMessage << archivedMessage1;
-    
+
     QCOMPARE(QMailStore::instance()->queryMessages(QMailMessageKey(), sort), sortedIds);
 
     // Invert the sort
@@ -1822,7 +1822,7 @@ void tst_QMailStoreKeys::messageStatus()
 
     sortedIds.clear();
     sortedIds << archivedMessage1 << smsMessage << savedMessage2 << inboxMessage2 << inboxMessage1;
-    
+
     QCOMPARE(QMailStore::instance()->queryMessages(QMailMessageKey(), sort), sortedIds);
 }
 
@@ -2010,7 +2010,7 @@ void tst_QMailStoreKeys::messageParentAccountId()
     QCOMPARE(messageSet(QMailMessageKey::parentAccountId(QMailAccountKey::id(accountId1, Equal))), messageSet() << inboxMessage1 << archivedMessage1);
     QCOMPARE(messageSet(QMailMessageKey::parentAccountId(~QMailAccountKey::id(accountId1, Equal))), messageSet() << smsMessage << inboxMessage2 << savedMessage2);
     QCOMPARE(messageSet(~QMailMessageKey::parentAccountId(QMailAccountKey::id(accountId1, Equal))), messageSet() << smsMessage << inboxMessage2 << savedMessage2);
-    QCOMPARE(messageSet(~QMailMessageKey::parentAccountId(~QMailAccountKey::id(accountId1, Equal))), messageSet() << inboxMessage1 << archivedMessage1); 
+    QCOMPARE(messageSet(~QMailMessageKey::parentAccountId(~QMailAccountKey::id(accountId1, Equal))), messageSet() << inboxMessage1 << archivedMessage1);
 
     QString name("Account 1");
     QCOMPARE(accountSet(QMailAccountKey::name(name, Equal)), accountSet() << accountId1);

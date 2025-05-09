@@ -452,8 +452,8 @@ private:
     AttemptResult updateCustomFields(quint64 id, const QMap<QString, QString> &fields, const QString &tableName);
     AttemptResult customFields(quint64 id, QMap<QString, QString> *fields, const QString &tableName);
 
-    AttemptResult attemptAddAccount(QMailAccount *account, QMailAccountConfiguration* config, 
-                                    QMailAccountIdList *addedAccountIds, 
+    AttemptResult attemptAddAccount(QMailAccount *account, QMailAccountConfiguration* config,
+                                    QMailAccountIdList *addedAccountIds,
                                     Transaction &t, bool commitOnSuccess);
 
     AttemptResult attemptSetAccountStandardFolders(const QMailAccountId &id,
@@ -565,7 +565,7 @@ private:
     };
 
 
-    AttemptResult attemptRemoveFolders(const QMailFolderKey &key, QMailStore::MessageRemovalOption option, 
+    AttemptResult attemptRemoveFolders(const QMailFolderKey &key, QMailStore::MessageRemovalOption option,
                                        AttemptRemoveFoldersOut *out,
                                        Transaction &t, bool commitOnSuccess);
 
@@ -606,7 +606,7 @@ private:
                                        QMailAccountIdList *updatedAccountIds,
                                        Transaction &t, bool commitOnSuccess);
 
-    AttemptResult attemptUpdateAccountConfiguration(QMailAccountConfiguration *config, 
+    AttemptResult attemptUpdateAccountConfiguration(QMailAccountConfiguration *config,
                                                     QMailAccountIdList *updatedAccountIds,
                                                     Transaction &t, bool commitOnSuccess);
 
@@ -635,73 +635,73 @@ private:
 
     AttemptResult attemptEnsureDurability(Transaction &t, bool commitOnSuccess);
 
-    AttemptResult attemptCountAccounts(const QMailAccountKey &key, int *result, 
+    AttemptResult attemptCountAccounts(const QMailAccountKey &key, int *result,
                                        ReadLock &);
 
-    AttemptResult attemptCountFolders(const QMailFolderKey &key, int *result, 
+    AttemptResult attemptCountFolders(const QMailFolderKey &key, int *result,
                                       ReadLock &);
 
-    AttemptResult attemptCountMessages(const QMailMessageKey &key, 
-                                       int *result, 
+    AttemptResult attemptCountMessages(const QMailMessageKey &key,
+                                       int *result,
                                        ReadLock &);
 
     AttemptResult attemptCountThreads(const QMailThreadKey &key,
                                        int *result,
                                        ReadLock &);
 
-    AttemptResult attemptSizeOfMessages(const QMailMessageKey &key, 
-                                        int *result, 
+    AttemptResult attemptSizeOfMessages(const QMailMessageKey &key,
+                                        int *result,
                                         ReadLock &);
 
     AttemptResult attemptQueryAccounts(const QMailAccountKey &key, const QMailAccountSortKey &sortKey, uint limit, uint offset,
-                                       QMailAccountIdList *ids, 
+                                       QMailAccountIdList *ids,
                                        ReadLock &);
 
     AttemptResult attemptQueryFolders(const QMailFolderKey &key, const QMailFolderSortKey &sortKey, uint limit, uint offset,
-                                      QMailFolderIdList *ids, 
+                                      QMailFolderIdList *ids,
                                       ReadLock &);
 
     AttemptResult attemptQueryMessages(const QMailMessageKey &key, const QMailMessageSortKey &sortKey, uint limit, uint offset,
-                                       QMailMessageIdList *ids, 
+                                       QMailMessageIdList *ids,
                                        ReadLock &);
 
     AttemptResult attemptQueryThreads(const QMailThreadKey &key, const QMailThreadSortKey &sortKey, uint limit, uint offset,
                                       QMailThreadIdList *ids,
                                       ReadLock &);
 
-    AttemptResult attemptAccount(const QMailAccountId &id, 
-                                 QMailAccount *result, 
+    AttemptResult attemptAccount(const QMailAccountId &id,
+                                 QMailAccount *result,
                                  ReadLock &);
 
-    AttemptResult attemptAccountConfiguration(const QMailAccountId &id, 
-                                              QMailAccountConfiguration *result, 
+    AttemptResult attemptAccountConfiguration(const QMailAccountId &id,
+                                              QMailAccountConfiguration *result,
                                               ReadLock &);
 
     AttemptResult attemptAccountStandardFolders(const QMailAccountId &id,
                                                 QMap<QMailFolder::StandardFolder, QMailFolderId> *result,
                                                 ReadLock &);
 
-    AttemptResult attemptFolder(const QMailFolderId &id, 
-                                QMailFolder *result, 
+    AttemptResult attemptFolder(const QMailFolderId &id,
+                                QMailFolder *result,
                                 ReadLock &);
 
-    AttemptResult attemptMessage(const QMailMessageId &id, 
-                                 QMailMessage *result, 
+    AttemptResult attemptMessage(const QMailMessageId &id,
+                                 QMailMessage *result,
                                  ReadLock &);
 
-    AttemptResult attemptMessage(const QString &uid, const QMailAccountId &accountId, 
-                                 QMailMessage *result, 
+    AttemptResult attemptMessage(const QString &uid, const QMailAccountId &accountId,
+                                 QMailMessage *result,
                                  ReadLock &);
 
-    AttemptResult attemptMessageMetaData(const QMailMessageId &id, 
-                                         QMailMessageMetaData *result, 
+    AttemptResult attemptMessageMetaData(const QMailMessageId &id,
+                                         QMailMessageMetaData *result,
                                          ReadLock &);
 
-    AttemptResult attemptMessageMetaData(const QString &uid, const QMailAccountId &accountId, 
-                                         QMailMessageMetaData *result, 
+    AttemptResult attemptMessageMetaData(const QString &uid, const QMailAccountId &accountId,
+                                         QMailMessageMetaData *result,
                                          ReadLock &);
 
-    AttemptResult attemptMessagesMetaData(const QMailMessageKey& key, const QMailMessageKey::Properties &properties, QMailStore::ReturnOption option, 
+    AttemptResult attemptMessagesMetaData(const QMailMessageKey& key, const QMailMessageKey::Properties &properties, QMailStore::ReturnOption option,
                                           QList<QMailMessageMetaData> *result,
                                           ReadLock &);
 
@@ -718,27 +718,27 @@ private:
                                                QList<QMailMessageRemovalRecord> *result,
                                                ReadLock &);
 
-    AttemptResult attemptMessageFolderIds(const QMailMessageKey &key, 
-                                          QMailFolderIdList *result, 
+    AttemptResult attemptMessageFolderIds(const QMailMessageKey &key,
+                                          QMailFolderIdList *result,
                                           ReadLock &);
 
-    AttemptResult attemptFolderAccountIds(const QMailFolderKey &key, 
-                                          QMailAccountIdList *result, 
+    AttemptResult attemptFolderAccountIds(const QMailFolderKey &key,
+                                          QMailAccountIdList *result,
                                           ReadLock &);
 
-    AttemptResult attemptFolderAncestorIds(const QMailFolderIdList &ids, 
-                                           QMailFolderIdList *result, 
+    AttemptResult attemptFolderAncestorIds(const QMailFolderIdList &ids,
+                                           QMailFolderIdList *result,
                                            ReadLock &);
 
-    AttemptResult attemptStatusBit(const QString &name, const QString &context, 
-                                   int *result, 
+    AttemptResult attemptStatusBit(const QString &name, const QString &context,
+                                   int *result,
                                    ReadLock &);
 
     AttemptResult attemptRegisterStatusBit(const QString &name, const QString &context, int maximum, bool check, quint64 *number,
                                            Transaction &t, bool commitOnSuccess);
 
-    AttemptResult attemptMessageId(const QString &uid, const QMailAccountId &accountId, 
-                                   quint64 *result, 
+    AttemptResult attemptMessageId(const QString &uid, const QMailAccountId &accountId,
+                                   quint64 *result,
                                    ReadLock &);
 
     AttemptResult affectedByMessageIds(const QMailMessageIdList &messages, QMailFolderIdList *folderIds, QMailAccountIdList *accountIds) const;

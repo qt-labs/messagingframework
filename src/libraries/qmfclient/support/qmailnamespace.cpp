@@ -176,7 +176,7 @@ QString QMail::messageSettingsPath()
 }
 
 /*!
-    Returns the database where the Messaging framework will store its message meta-data. 
+    Returns the database where the Messaging framework will store its message meta-data.
     If the database does not exist, it is created.
 */
 #ifdef Q_OS_UNIX
@@ -231,7 +231,7 @@ QSqlDatabase QMail::createDatabase()
     } else {
         qMailLog(Messaging) << "opening database";
         db = QSqlDatabase::addDatabase(QLatin1String("QSQLITE"), instance->dbConnectionName());
-        
+
         QDir dbDir(dataPath() + QLatin1String("database"));
         if (!dbDir.exists()) {
 #ifdef Q_OS_UNIX
@@ -516,10 +516,10 @@ bool detectStandardFolder(const QMailAccountId &accountId, StandardFolderInfo st
 /*!
     Detects standard folders for the account specified by \a accountId, and
     updates the mail store if standard folders are found.
-    
-    Detection is based on matching folder names, that is QMailFolder::displayName() 
+
+    Detection is based on matching folder names, that is QMailFolder::displayName()
     against a predefined list of translations.
-  
+
     Returns true if all standard folders are detected; otherwise returns false;
 */
 bool QMail::detectStandardFolders(const QMailAccountId &accountId)
@@ -548,7 +548,7 @@ bool QMail::detectStandardFolders(const QMailAccountId &accountId)
   Returns the maximum number of service actions that can be serviced
   concurrently on the device. Service actions that can't be serviced
   immediately are queued until an appropriate service becomes available.
-  
+
   Used to limit peak memory (RAM) used by the messageserver.
 */
 int QMail::maximumConcurrentServiceActions()
@@ -561,7 +561,7 @@ int QMail::maximumConcurrentServiceActions()
   concurrently per process. Service actions that can't be serviced
   immediately are queued until an appropriate service becomes available.
 
-  Used by the messageserver to prevent a client form monopolizing usage 
+  Used by the messageserver to prevent a client form monopolizing usage
   of shared services.
 */
 int QMail::maximumConcurrentServiceActionsPerProcess()
@@ -599,8 +599,8 @@ bool QMail::isMessageServerRunning()
 /*!
     \enum QMail::SaslMechanism
 
-    This enum type describes the available SASL (Simple Authentication and Security Layer \l{http://www.ietf.org/rfc/rfc4422.txt} {RFC 2822} ) 
-    mechanisms for authenticating with external servers using protocol plugins. They should be used in conjunction with a data security 
+    This enum type describes the available SASL (Simple Authentication and Security Layer \l{http://www.ietf.org/rfc/rfc4422.txt} {RFC 2822} )
+    mechanisms for authenticating with external servers using protocol plugins. They should be used in conjunction with a data security
     mechanism such as TLS (Transport Layer Security \l{http://www.ietf.org/rfc4346} {RFC 4346})
 
     \value NoMechanism No SASL mechanism will be used.

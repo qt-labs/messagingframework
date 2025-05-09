@@ -136,9 +136,9 @@ QTextStream& operator<<(QTextStream& s, const QMailIdPrivate &id)
     by their unique numeric internal indentifer.
 
     A QMailAccountId instance can be tested for validity, and compared to other instances
-    for equality.  The numeric value of the identifier is not intrinsically meaningful 
+    for equality.  The numeric value of the identifier is not intrinsically meaningful
     and cannot be modified.
-    
+
     \sa QMailAccount, QMailStore::account()
 */
 
@@ -149,7 +149,7 @@ QTextStream& operator<<(QTextStream& s, const QMailIdPrivate &id)
 
 Q_IMPLEMENT_USER_METATYPE(QMailAccountId)
 
-/*! 
+/*!
     Construct an uninitialized QMailAccountId, for which isValid() returns false.
 */
 QMailAccountId::QMailAccountId()
@@ -157,7 +157,7 @@ QMailAccountId::QMailAccountId()
 {
 }
 
-/*! 
+/*!
     Construct a QMailAccountId with the supplied numeric identifier \a value.
 */
 QMailAccountId::QMailAccountId(quint64 value)
@@ -177,7 +177,7 @@ QMailAccountId::~QMailAccountId()
 }
 
 /*! \internal */
-QMailAccountId& QMailAccountId::operator=(const QMailAccountId& other) 
+QMailAccountId& QMailAccountId::operator=(const QMailAccountId& other)
 {
     *d = *other.d;
     return *this;
@@ -229,18 +229,18 @@ bool QMailAccountId::operator<(const QMailAccountId& other) const
     return *d < *other.d;
 }
 
-/*! 
+/*!
     \fn QMailAccountId::serialize(Stream&) const
-    \internal 
+    \internal
 */
 template <typename Stream> void QMailAccountId::serialize(Stream &stream) const
 {
     d->serialize(stream);
 }
 
-/*! 
+/*!
     \fn QMailAccountId::deserialize(Stream&)
-    \internal 
+    \internal
 */
 template <typename Stream> void QMailAccountId::deserialize(Stream &stream)
 {
@@ -414,9 +414,9 @@ Q_IMPLEMENT_USER_METATYPE_TYPEDEF(QMailThreadIdList, QMailThreadIdList)
     by their unique numeric internal indentifer.
 
     A QMailFolderId instance can be tested for validity, and compared to other instances
-    for equality.  The numeric value of the identifier is not intrinsically meaningful 
+    for equality.  The numeric value of the identifier is not intrinsically meaningful
     and cannot be modified.
-    
+
     \sa QMailFolder, QMailStore::folder()
 */
 
@@ -427,7 +427,7 @@ Q_IMPLEMENT_USER_METATYPE_TYPEDEF(QMailThreadIdList, QMailThreadIdList)
 
 Q_IMPLEMENT_USER_METATYPE(QMailFolderId)
 
-/*! 
+/*!
     Construct an uninitialized QMailFolderId, for which isValid() returns false.
 */
 QMailFolderId::QMailFolderId()
@@ -435,7 +435,7 @@ QMailFolderId::QMailFolderId()
 {
 }
 
-/*! 
+/*!
     Construct a QMailFolderId corresponding to the predefined folder identifier \a id.
 */
 QMailFolderId::QMailFolderId(QMailFolderFwd::PredefinedFolderId id)
@@ -443,7 +443,7 @@ QMailFolderId::QMailFolderId(QMailFolderFwd::PredefinedFolderId id)
 {
 }
 
-/*! 
+/*!
     Construct a QMailFolderId with the supplied numeric identifier \a value.
 */
 QMailFolderId::QMailFolderId(quint64 value)
@@ -463,7 +463,7 @@ QMailFolderId::~QMailFolderId()
 }
 
 /*! \internal */
-QMailFolderId& QMailFolderId::operator=(const QMailFolderId& other) 
+QMailFolderId& QMailFolderId::operator=(const QMailFolderId& other)
 {
     *d = *other.d;
     return *this;
@@ -515,18 +515,18 @@ bool QMailFolderId::operator<(const QMailFolderId& other) const
     return *d < *other.d;
 }
 
-/*! 
+/*!
     \fn QMailFolderId::serialize(Stream&) const
-    \internal 
+    \internal
 */
 template <typename Stream> void QMailFolderId::serialize(Stream &stream) const
 {
     d->serialize(stream);
 }
 
-/*! 
+/*!
     \fn QMailFolderId::deserialize(Stream&)
-    \internal 
+    \internal
 */
 template <typename Stream> void QMailFolderId::deserialize(Stream &stream)
 {
@@ -561,9 +561,9 @@ Q_IMPLEMENT_USER_METATYPE_TYPEDEF(QMailFolderIdList, QMailFolderIdList)
     by their unique numeric internal indentifer.
 
     A QMailMessageId instance can be tested for validity, and compared to other instances
-    for equality.  The numeric value of the identifier is not intrinsically meaningful 
+    for equality.  The numeric value of the identifier is not intrinsically meaningful
     and cannot be modified.
-    
+
     \sa QMailMessage, QMailStore::message()
 */
 
@@ -574,7 +574,7 @@ Q_IMPLEMENT_USER_METATYPE_TYPEDEF(QMailFolderIdList, QMailFolderIdList)
 
 Q_IMPLEMENT_USER_METATYPE(QMailMessageId)
 
-/*! 
+/*!
     Construct an uninitialized QMailMessageId, for which isValid() returns false.
 */
 QMailMessageId::QMailMessageId()
@@ -582,7 +582,7 @@ QMailMessageId::QMailMessageId()
 {
 }
 
-/*! 
+/*!
     Construct a QMailMessageId with the supplied numeric identifier \a value.
 */
 QMailMessageId::QMailMessageId(quint64 value)
@@ -602,7 +602,7 @@ QMailMessageId::~QMailMessageId()
 }
 
 /*! \internal */
-QMailMessageId& QMailMessageId::operator=(const QMailMessageId& other) 
+QMailMessageId& QMailMessageId::operator=(const QMailMessageId& other)
 {
     *d = *other.d;
     return *this;
@@ -654,18 +654,18 @@ bool QMailMessageId::operator< (const QMailMessageId& other) const
     return *d < *other.d;
 }
 
-/*! 
+/*!
     \fn QMailMessageId::serialize(Stream&) const
-    \internal 
+    \internal
 */
 template <typename Stream> void QMailMessageId::serialize(Stream &stream) const
 {
     d->serialize(stream);
 }
 
-/*! 
+/*!
     \fn QMailMessageId::deserialize(Stream&)
-    \internal 
+    \internal
 */
 template <typename Stream> void QMailMessageId::deserialize(Stream &stream)
 {

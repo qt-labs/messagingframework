@@ -296,14 +296,14 @@ void tst_QMailMessagePart::appendHeaderField()
     QCOMPARE(m.headerFieldText("Resent-From"), addr1);
     QCOMPARE(m.headerField("Resent-From").content(), addr1.toLatin1());
     QCOMPARE(m.headerFieldsText("Resent-From"), QStringList(addr1));
-    QCOMPARE(m.headerFields("Resent-From"), ( QList<QMailMessageHeaderField>() 
+    QCOMPARE(m.headerFields("Resent-From"), ( QList<QMailMessageHeaderField>()
                                                  << QMailMessageHeaderField("Resent-From", addr1.toLatin1()) ) );
 
     m.appendHeaderField("Resent-From", addr2);
     QCOMPARE(m.headerFieldText("Resent-From"), addr1);
     QCOMPARE(m.headerField("Resent-From").content(), addr1.toLatin1());
     QCOMPARE(m.headerFieldsText("Resent-From"), (QStringList() << addr1 << addr2));
-    QCOMPARE(m.headerFields("Resent-From"), ( QList<QMailMessageHeaderField>() 
+    QCOMPARE(m.headerFields("Resent-From"), ( QList<QMailMessageHeaderField>()
                                                  << QMailMessageHeaderField("Resent-From", addr1.toLatin1())
                                                  << QMailMessageHeaderField("Resent-From", addr2.toLatin1()) ) );
 }
@@ -324,7 +324,7 @@ void tst_QMailMessagePart::removeHeaderField()
     QCOMPARE(m.headerFieldText("Resent-From"), addr1);
     QCOMPARE(m.headerField("Resent-From").content(), addr1.toLatin1());
     QCOMPARE(m.headerFieldsText("Resent-From"), (QStringList() << addr1 << addr2));
-    QCOMPARE(m.headerFields("Resent-From"), ( QList<QMailMessageHeaderField>() 
+    QCOMPARE(m.headerFields("Resent-From"), ( QList<QMailMessageHeaderField>()
                                                  << QMailMessageHeaderField("Resent-From", addr1.toLatin1())
                                                  << QMailMessageHeaderField("Resent-From", addr2.toLatin1()) ) );
 
@@ -332,7 +332,7 @@ void tst_QMailMessagePart::removeHeaderField()
     QCOMPARE(m.headerFieldText("Resent-From"), addr1);
     QCOMPARE(m.headerField("Resent-From").content(), addr1.toLatin1());
     QCOMPARE(m.headerFieldsText("Resent-From"), (QStringList() << addr1 << addr2));
-    QCOMPARE(m.headerFields("Resent-From"), ( QList<QMailMessageHeaderField>() 
+    QCOMPARE(m.headerFields("Resent-From"), ( QList<QMailMessageHeaderField>()
                                                  << QMailMessageHeaderField("Resent-From", addr1.toLatin1())
                                                  << QMailMessageHeaderField("Resent-From", addr2.toLatin1()) ) );
 

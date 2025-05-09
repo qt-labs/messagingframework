@@ -112,7 +112,7 @@ bool PopService::Source::retrieveFolderList(const QMailAccountId &accountId, con
         _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("No account specified"));
         return false;
     }
-    
+
     if (!_service->_client.findInbox()) { // find/create local inbox
         // Inbox created so first sync, so test connection
         _service->_client.testConnection();
@@ -149,7 +149,7 @@ bool PopService::Source::retrieveMessageList(const QMailAccountId &accountId, co
     countKey &= ~QMailMessageKey::status(QMailMessage::Temporary);
     uint existing = QMailStore::instance()->countMessages(countKey);
     existing = qMin(existing, minimum);
-    
+
     _service->_client.setOperation(QMailRetrievalAction::Auto);
     _service->_client.setAdditional(minimum - existing);
 
@@ -159,7 +159,7 @@ bool PopService::Source::retrieveMessageList(const QMailAccountId &accountId, co
         QTimer::singleShot(0, this, SLOT(retrievalCompleted()));
         return true;
     }
-    
+
     _service->_client.newConnection();
     _unavailable = true;
     return true;
@@ -278,7 +278,7 @@ void PopService::Source::retrievalCompleted()
     emit _service->actionCompleted(true);
 
     _deleting = false;
-    
+
     if (_mailCheckQueued) {
         queueMailCheck();
     }
@@ -305,7 +305,7 @@ void PopService::Source::retrievalTerminated()
         _queuedMailCheckInProgress = false;
         emit _service->availabilityChanged(true);
     }
-    
+
     // Just give up if an error occurs
     _mailCheckQueued = false;
 }
@@ -320,7 +320,7 @@ PopService::PopService(const QMailAccountId &accountId)
     connect(&_client, SIGNAL(errorOccurred(int, QString)), this, SLOT(errorOccurred(int, QString)));
     connect(&_client, SIGNAL(errorOccurred(QMailServiceAction::Status::ErrorCode, QString)), this, SLOT(errorOccurred(QMailServiceAction::Status::ErrorCode, QString)));
     connect(&_client, SIGNAL(updateStatus(QString)), this, SLOT(updateStatus(QString)));
-    connect(QMailStore::instance(), SIGNAL(accountsUpdated(const QMailAccountIdList&)), 
+    connect(QMailStore::instance(), SIGNAL(accountsUpdated(const QMailAccountIdList&)),
             this, SLOT(accountsUpdated(const QMailAccountIdList&)));
 
     QMailAccountConfiguration accountCfg(accountId);

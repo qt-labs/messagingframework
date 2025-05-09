@@ -284,7 +284,7 @@ bool SmtpSettings::updateAccount(QMailAccount *account, QMailAccountConfiguratio
     QString address(emailInput->text());
 
     if (!username.isEmpty() || !address.isEmpty()) {
-        account->setFromAddress(QMailAddress(username, address)); 
+        account->setFromAddress(QMailAddress(username, address));
     }
 
     bool result;

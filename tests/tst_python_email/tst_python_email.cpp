@@ -203,7 +203,7 @@ void tst_python_email::test_get_all()
     QCOMPARE( msg.headerFieldsText("cc"), to );
     QCOMPARE( msg.headerFieldsText("xx"), QStringList() );
 
-    // Note that our cc() function will return the content of the first encountered 
+    // Note that our cc() function will return the content of the first encountered
     // field; it is illegal to have more than one CC field, so this seems acceptable...
     QCOMPARE( msg.cc(), ( QList<QMailAddress>() << QMailAddress("ccc@zzz.test") ) );
 }
@@ -589,7 +589,7 @@ void tst_python_email::test_long_nonstring()
     //original = "Finan" "\xe8" "ni metropole se hroutily pod tlakem jejich d" "\xf9" "vtipu.. ";
     //input.append(' ').append(QMailMessageHeaderField::encodeWord(original, "ISO-8859-2"));
 
-    // Python appears to identify runs of single-byte characters within unicode strings, and 
+    // Python appears to identify runs of single-byte characters within unicode strings, and
     // output them in quoted-printable encoded-words.  We don't do that.
     QChar chars[] = { static_cast<char16_t>(0x6b63), static_cast<char16_t>(0x78ba), static_cast<char16_t>(0x306b), static_cast<char16_t>(0x8a00),
                       static_cast<char16_t>(0x3046), static_cast<char16_t>(0x3068), static_cast<char16_t>(0x7ffb), static_cast<char16_t>(0x8a33),
@@ -687,7 +687,7 @@ void tst_python_email::test_no_semis_header_splitter()
 
 void tst_python_email::test_splitting_multiple_long_lines()
 {
-    QByteArray input = 
+    QByteArray input =
 "from babylon.scr.example.org (localhost [127.0.0.1]); by babylon.scr.example.org (Postfix) with ESMTP id B570E51B81; for <mailman-admin@babylon.scr.example.org>; Sat, 2 Feb 2002 17:00:06 -0800 (PST)"
 "\tfrom babylon.scr.example.org (localhost [127.0.0.1]); by babylon.scr.example.org (Postfix) with ESMTP id B570E51B81; for <mailman-admin@babylon.scr.example.org>; Sat, 2 Feb 2002 17:00:06 -0800 (PST)"
 "\tfrom babylon.scr.example.org (localhost [127.0.0.1]); by babylon.scr.example.org (Postfix) with ESMTP id B570E51B81; for <mailman-admin@babylon.scr.example.org>; Sat, 2 Feb 2002 17:00:06 -0800 (PST)";
@@ -711,7 +711,7 @@ void tst_python_email::test_splitting_multiple_long_lines()
 
 void tst_python_email::test_splitting_first_line_only_is_long()
 {
-    QByteArray input = 
+    QByteArray input =
 "from modemcable093.139-201-24.que.mc.vidtron.test ([24.201.139.93] helo=cthulhu.gg.test)"
 "\tby kronos.mems-exchange.test with esmtp (Exim 4.05)"
 "\tid 17k4h5-00034i-00"
@@ -736,7 +736,7 @@ void tst_python_email::test_long_8bit_header()
     input.append(' ').append(QMailMessageHeaderField::encodeWord(QString::fromLatin1(original), "ISO-8859-1"));
 
     // Note the same as the equivalent python formulation, but again, conforming
-    QByteArray output = 
+    QByteArray output =
 "Subject: =?ISO-8859-1?Q?Britische_Regierung_gibt?=" CRLF
 " =?ISO-8859-1?Q?gr=FCnes_Licht_f=FCr_Offshore-Windkraftprojekte?=";
 
@@ -747,7 +747,7 @@ void tst_python_email::test_long_8bit_header()
 
 void tst_python_email::test_long_to_header()
 {
-    QByteArray input = 
+    QByteArray input =
 "\"Someone Test #A\" <someone@eecs.umich.test>,<someone@eecs.umich.test>,\"Someone Test #B\" <someone@umich.test>, \"Someone Test #C\" <someone@eecs.umich.test>, \"Someone Test #D\" <someone@eecs.umich.test>";
 
     // Note the same as the equivalent python formulation, but again, conforming
@@ -764,7 +764,7 @@ void tst_python_email::test_long_to_header()
 
 void tst_python_email::test_long_field_name()
 {
-    QString original = 
+    QString original =
 QString::fromLatin1("Die Mieter treten hier ein werden mit einem Foerderband komfortabel den Korridor entlang, an s" "\xfc" "dl" "\xf" "cndischen Wandgem" "\xe4" "lden vorbei, gegen die rotierenden Klingen bef" "\xf6" "rdert. ");
     QByteArray input = QMailMessageHeaderField::encodeContent(original);
 
@@ -797,7 +797,7 @@ QString::fromLatin1("Die Mieter treten hier ein werden mit einem Foerderband kom
 void tst_python_email::test_string_headerinst_eq()
 {
     // This test doesn't really achieve anything except use of realistic-looking header string...
-    QByteArray input = 
+    QByteArray input =
 "<15975.17901.207240.414604@sgritzmann1.mathematik.tu-muenchen.test> (David Bremner's message of \"Thu, 6 Mar 2003 13:58:21 +0100\")";
 
     // Note the same as the equivalent python formulation, but again, conforming
@@ -812,7 +812,7 @@ void tst_python_email::test_string_headerinst_eq()
 
 void tst_python_email::test_another_long_multiline_header()
 {
-    QByteArray input = 
+    QByteArray input =
 "Received: from siimage.test ([172.25.1.3]) by zima.siliconimage.test with Microsoft SMTPSVC(5.0.2195.4905);" CRLF
 "\tWed, 16 Oct 2002 07:41:11 -0700";
 
@@ -830,7 +830,7 @@ void tst_python_email::test_another_long_multiline_header()
 void tst_python_email::test_long_lines_with_different_header()
 {
     // This test doesn't really achieve anything except use of realistic-looking header string...
-    QByteArray input = 
+    QByteArray input =
 "List: List-Unsubscribe: <https://lists.sourceforge.test/lists/listinfo/spamassassin-talk>," CRLF
 "\t<mailto:spamassassin-talk-request@lists.sourceforge.test?subject=unsubscribe>";
 
@@ -910,7 +910,7 @@ void tst_python_email::test_hierarchy()
 {
     QString p(QFINDTESTDATA("testdata/PyBanner048.gif"));
 
-    QByteArray input = 
+    QByteArray input =
 "Hi there," CRLF
 CRLF
 "This is the dingus fish." CRLF;
@@ -961,7 +961,7 @@ CRLF
 
 void tst_python_email::test_empty_multipart_idempotent()
 {
-    QByteArray input = 
+    QByteArray input =
 "Content-Type: multipart/mixed; boundary=\"BOUNDARY\"" CRLF
 "MIME-Version: 1.0" CRLF
 "Subject: A subject" CRLF
@@ -1005,7 +1005,7 @@ void tst_python_email::test_no_parts_in_a_multipart_with_none_epilogue()
 
     // Note - python produces an empty, one-part formulation for this test.  I think
     // neither formulation is well-formed, so it probably doesn't matter that we differ...
-    QByteArray output = 
+    QByteArray output =
 "Content-Type: multipart/mixed; boundary=BOUNDARY" CRLF
 "Subject: A subject" CRLF
 "To: aperson@domain.example" CRLF
@@ -1039,7 +1039,7 @@ void tst_python_email::test_one_part_in_a_multipart()
 
     msg.appendPart(textPart);
 
-    QByteArray output = 
+    QByteArray output =
 "Content-Type: multipart/mixed; boundary=BOUNDARY" CRLF
 "Subject: A subject" CRLF
 "To: aperson@domain.example" CRLF
@@ -1113,7 +1113,7 @@ void tst_python_email::test_nested_inner_contains_outer_boundary()
         # these are illegal and should be interpreted as unterminated inner
         # parts.
 
-    Note: AFAICT, this is illegal, due to the following stipulation: 
+    Note: AFAICT, this is illegal, due to the following stipulation:
     "Boundary delimiters must not appear within the encapsulated material"
     And we don't support it, apart from accepting the input.
     */
@@ -1160,7 +1160,7 @@ Content-Transfer-Encoding: 7Bit\n\
 
 void tst_python_email::test_boundary_with_leading_space()
 {
-    QByteArray input = 
+    QByteArray input =
 "MIME-Version: 1.0" CRLF
 "Content-Type: multipart/mixed; boundary=\"    XXXX\"" CRLF
 CRLF
@@ -1187,7 +1187,7 @@ CRLF
 
 void tst_python_email::test_boundary_without_trailing_newline()
 {
-    QByteArray input = 
+    QByteArray input =
 "Content-Type: multipart/mixed; boundary=\"===============0012394164==\"" CRLF
 "MIME-Version: 1.0" CRLF
 CRLF
@@ -1241,7 +1241,7 @@ void tst_python_email::test_multipart_no_boundary()
 
 void tst_python_email::test_invalid_content_type()
 {
-    QByteArray input = 
+    QByteArray input =
 "Content-Type: text";
 
     QMailMessage msg = QMailMessage::fromRfc2822(input);
@@ -1265,7 +1265,7 @@ void tst_python_email::test_no_start_boundary()
        format, will insert the text as a plain body.  If anything, I think we should
        treat it as a preamble...
 
-    QByteArray output = 
+    QByteArray output =
 "--BOUNDARY" CRLF
 "Content-Type: text/plain" CRLF
 CRLF
@@ -1397,7 +1397,7 @@ void tst_python_email::test_generate()
     msg.setHeaderField("Date", "irrelevant");
     msg.setBody(QMailMessageBody::fromData(subMessage.toRfc2822(QMailMessage::IdentityFormat), type, QMailMessageBody::SevenBit, QMailMessageBody::AlreadyEncoded));
 
-    QByteArray output = 
+    QByteArray output =
 "Subject: The enclosing message" CRLF
 "Date: irrelevant" CRLF
 "Content-Type: message/rfc822" CRLF
@@ -1416,7 +1416,7 @@ CRLF
 void tst_python_email::test_parse_message_rfc822()
 {
     QMailMessage msg = fromFile("msg_11.txt");
-    
+
     QCOMPARE( msg.multipartType(), QMailMessagePartContainer::MultipartNone );
     QCOMPARE( msg.contentType().content().toLower(), QByteArray("message/rfc822") );
     QVERIFY( msg.hasBody() );
@@ -1436,12 +1436,12 @@ void tst_python_email::test_parse_message_rfc822()
 void tst_python_email::test_dsn()
 {
     QMailMessage msg = fromFile("msg_16.txt");
-    
+
     QCOMPARE( msg.multipartType(), QMailMessagePartContainer::MultipartReport );
     QCOMPARE( msg.contentType().content().toLower(), QByteArray("multipart/report") );
     QVERIFY( msg.hasBody() == false );
     QCOMPARE( msg.partCount(), 3u );
-    
+
     QByteArray output = "\
 This report relates to a message you sent with the following header fields:\n\
 \n\
@@ -1509,17 +1509,17 @@ Your message cannot be delivered to the following recipients:\n\
 
 void tst_python_email::test_epilogue()
 {
-    // Python allows the client to set the preamble and epilogue of a 
+    // Python allows the client to set the preamble and epilogue of a
     // multipart message. Since we don't, we will only test that the message
     // is correctly parsed here
     QMailMessage msg = fromFile("msg_21.txt");
-    
+
     QCOMPARE( msg.multipartType(), QMailMessagePartContainer::MultipartMixed );
     QCOMPARE( msg.contentType().content().toLower(), QByteArray("multipart/mixed") );
     QVERIFY( msg.hasBody() == false );
     QCOMPARE( msg.partCount(), 2u );
 
-    QByteArray output = 
+    QByteArray output =
 "This report relates to a message you sent with the following header fields:" CRLF
 CRLF
 "  Message-id: <002001c144a6$8752e060$56104586@oxy.test>" CRLF
@@ -1552,7 +1552,7 @@ CRLF;
 void tst_python_email::test_default_type()
 {
     QMailMessage msg = fromFile("msg_30.txt");
-    
+
     QCOMPARE( msg.multipartType(), QMailMessagePartContainer::MultipartDigest );
     QCOMPARE( msg.contentType().content().toLower(), QByteArray("multipart/digest") );
     QVERIFY( msg.hasBody() == false );
@@ -1588,7 +1588,7 @@ void tst_python_email::test_default_type()
 void tst_python_email::test_default_type_with_explicit_container_type()
 {
     QMailMessage msg = fromFile("msg_28.txt");
-    
+
     QCOMPARE( msg.multipartType(), QMailMessagePartContainer::MultipartDigest );
     QCOMPARE( msg.contentType().content().toLower(), QByteArray("multipart/digest") );
     QVERIFY( msg.hasBody() == false );
@@ -1713,7 +1713,7 @@ void tst_python_email::test_rfc2231_set_param()
     field.setParameterEncoded("title");
     msg.setHeaderField(field);
 
-    QByteArray output = 
+    QByteArray output =
 "Return-Path: <bbb@zzz.test>" CRLF
 "Delivered-To: bbb@zzz.test" CRLF
 "Received: by mail.zzz.test (Postfix, from userid 889)\tid 27CEAD38CC; Fri," CRLF

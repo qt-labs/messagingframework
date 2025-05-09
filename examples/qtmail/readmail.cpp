@@ -154,15 +154,15 @@ void ReadMail::init()
     setFrameStyle(QFrame::StyledPanel| QFrame::Sunken);
 
     // Update the view if the displayed message's content changes
-    connect(QMailStore::instance(), SIGNAL(messageContentsModified(QMailMessageIdList)), 
+    connect(QMailStore::instance(), SIGNAL(messageContentsModified(QMailMessageIdList)),
             this, SLOT(messageContentsModified(QMailMessageIdList)));
 
     // Remove the view if the message is removed
-    connect(QMailStore::instance(), SIGNAL(messagesRemoved(QMailMessageIdList)), 
+    connect(QMailStore::instance(), SIGNAL(messagesRemoved(QMailMessageIdList)),
             this, SLOT(messagesRemoved(QMailMessageIdList)));
 }
 
-QMailMessageId ReadMail::displayedMessage() const 
+QMailMessageId ReadMail::displayedMessage() const
 {
     return mail.id();
 }
@@ -473,7 +473,7 @@ void ReadMail::switchView(QMailViewerInterface* viewer, const QString& title)
     currentView.push(qMakePair(viewer, title));
 }
 
-QMailViewerInterface* ReadMail::currentViewer() const 
+QMailViewerInterface* ReadMail::currentViewer() const
 {
     if (currentView.isEmpty())
         return 0;

@@ -44,10 +44,10 @@
 
 
 /* Note: the obvious design for these classes would be that Sink and Source
-both inherit virtually from Service, and thus a concrete service could 
+both inherit virtually from Service, and thus a concrete service could
 inherit from both Source and Sink.  In fac, moc does not work with
-virtual inheritance...  
-Instead, we will have the service object export the source and sink 
+virtual inheritance...
+Instead, we will have the service object export the source and sink
 objects that it wishes to make available. */
 
 
@@ -309,17 +309,17 @@ Q_SIGNALS:
     void actionCompleted(bool success, quint64 action);
 
 protected:
-    void updateStatus(QMailServiceAction::Status::ErrorCode code, 
-                      const QString &text = QString(), 
+    void updateStatus(QMailServiceAction::Status::ErrorCode code,
+                      const QString &text = QString(),
                       const QMailAccountId &accountId = QMailAccountId(),
-                      const QMailFolderId &folderId = QMailFolderId(), 
+                      const QMailFolderId &folderId = QMailFolderId(),
                       const QMailMessageId &messageId = QMailMessageId(),
                       quint64 action = 0);
 
-    void updateStatus(int code, 
-                      const QString &text = QString(), 
+    void updateStatus(int code,
+                      const QString &text = QString(),
                       const QMailAccountId &accountId = QMailAccountId(),
-                      const QMailFolderId &folderId = QMailFolderId(), 
+                      const QMailFolderId &folderId = QMailFolderId(),
                       const QMailMessageId &messageId = QMailMessageId(),
                       quint64 action = 0);
 

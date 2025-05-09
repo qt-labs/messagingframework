@@ -69,7 +69,7 @@ public:
           mask(m)
     {
     }
-    
+
     bool operator==(const QMailSortKeyArgument<PropertyType>& other) const
     {
         return (property == other.property) && (order == other.order) && (mask == other.mask);
