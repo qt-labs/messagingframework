@@ -155,48 +155,47 @@ signals:
     void retrievalReady(quint64 action);
 
 private slots:
-    void statusChanged(const QMailServiceAction::Status);
-    void statusChanged(const QMailServiceAction::Status, quint64);
-    void availabilityChanged(bool);
-    void availabilityChanged(bool, quint64);
-    void connectivityChanged(QMailServiceAction::Connectivity);
-    void connectivityChanged(QMailServiceAction::Connectivity, quint64);
-    void activityChanged(QMailServiceAction::Activity);
-    void activityChanged(QMailServiceAction::Activity, quint64);
-    void progressChanged(uint, uint );
-    void progressChanged(uint, uint, quint64);
-    void actionCompleted(bool);
-    void actionCompleted(bool, quint64);
-    void actionCompleted(bool, QMailMessageService *, quint64);
+    void onStatusChanged(const QMailServiceAction::Status);
+    void onStatusChanged(const QMailServiceAction::Status, quint64);
+    void onAvailabilityChanged(bool);
+    void emitAvailabilityChanged(bool, quint64);
+    void onConnectivityChanged(QMailServiceAction::Connectivity);
+    void emitConnectivityChanged(QMailServiceAction::Connectivity, quint64);
+    void onActivityChanged(QMailServiceAction::Activity);
+    void emitActivityChanged(QMailServiceAction::Activity, quint64);
+    void onProgressChanged(uint, uint );
+    void onProgressChanged(uint, uint, quint64);
+    void onActionCompleted(bool);
+    void onActionCompleted(bool, quint64);
 
-    void messagesTransmitted(const QMailMessageIdList&);
-    void messagesTransmitted(const QMailMessageIdList&, quint64);
-    void messagesFailedTransmission(const QMailMessageIdList&, QMailServiceAction::Status::ErrorCode);
-    void messagesFailedTransmission(const QMailMessageIdList&, QMailServiceAction::Status::ErrorCode, quint64);
+    void onMessagesTransmitted(const QMailMessageIdList&);
+    void emitMessagesTransmitted(const QMailMessageIdList&, quint64);
+    void onMessagesFailedTransmission(const QMailMessageIdList&, QMailServiceAction::Status::ErrorCode);
+    void emitMessagesFailedTransmission(const QMailMessageIdList&, QMailServiceAction::Status::ErrorCode, quint64);
 
-    void messagesDeleted(const QMailMessageIdList&);
-    void messagesDeleted(const QMailMessageIdList& , quint64);
-    void messagesCopied(const QMailMessageIdList&);
-    void messagesCopied(const QMailMessageIdList&, quint64);
-    void messagesMoved(const QMailMessageIdList&);
-    void messagesMoved(const QMailMessageIdList&, quint64);
-    void messagesFlagged(const QMailMessageIdList&);
-    void messagesFlagged(const QMailMessageIdList&, quint64);
-    void messagesPrepared(const QMailMessageIdList&);
-    void messagesPrepared(const QMailMessageIdList&, quint64);
-    void matchingMessageIds(const QMailMessageIdList&);
-    void matchingMessageIds(const QMailMessageIdList&, quint64);
-    void remainingMessagesCount(uint count);
-    void remainingMessagesCount(uint count, quint64);
-    void messagesCount(uint count);
-    void messagesCount(uint count, quint64);
+    void onMessagesDeleted(const QMailMessageIdList&);
+    void emitMessagesDeleted(const QMailMessageIdList& , quint64);
+    void onMessagesCopied(const QMailMessageIdList&);
+    void emitMessagesCopied(const QMailMessageIdList&, quint64);
+    void onMessagesMoved(const QMailMessageIdList&);
+    void emitMessagesMoved(const QMailMessageIdList&, quint64);
+    void onMessagesFlagged(const QMailMessageIdList&);
+    void emitMessagesFlagged(const QMailMessageIdList&, quint64);
+    void onMessagesPrepared(const QMailMessageIdList&);
+    void emitMessagesPrepared(const QMailMessageIdList&, quint64);
+    void onMatchingMessageIds(const QMailMessageIdList&);
+    void emitMatchingMessageIds(const QMailMessageIdList&, quint64);
+    void onRemainingMessagesCount(uint count);
+    void emitRemainingMessagesCount(uint count, quint64);
+    void onMessagesCount(uint count);
+    void emitMessagesCount(uint count, quint64);
 
-    void protocolResponse(const QString &response, const QVariantMap &data);
-    void protocolResponse(const QString &response, const QVariantMap &data, quint64);
+    void onProtocolResponse(const QString &response, const QVariantMap &data);
+    void emitProtocolResponse(const QString &response, const QVariantMap &data, quint64);
 
-    void accountsAdded(const QMailAccountIdList &);
-    void accountsUpdated(const QMailAccountIdList &);
-    void accountsRemoved(const QMailAccountIdList &);
+    void onAccountsAdded(const QMailAccountIdList &);
+    void onAccountsUpdated(const QMailAccountIdList &);
+    void onAccountsRemoved(const QMailAccountIdList &);
 
     void continueSearch();
 
@@ -212,6 +211,8 @@ private:
         Limit = 1,
         Count = 2
     };
+
+    void handleActionCompleted(bool, QMailMessageService *, quint64);
 
     void searchMessages(quint64 action, const QMailMessageKey &filter, const QString &bodyText,
                         QMailSearchAction::SearchSpecification spec, quint64 limit, const QMailMessageSortKey &sort,
