@@ -34,6 +34,7 @@
 #include "qmailmessagelistmodel.h"
 #include "qmailnamespace.h"
 #include "qmailstore.h"
+#include "qmaillog.h"
 #include <QtAlgorithms>
 
 
@@ -438,7 +439,7 @@ bool QMailMessageListModelPrivate::updateMessages(const QMailMessageIdList &ids)
 
                 // See if this item is still sorted correctly with respect to its neighbours
                 if (newIndex >= _idList.count()) {
-                    qWarning() << "QMailMessageListModelPrivate::updateMessage index out of bounds" << newIndex << _idList.count();
+                    qCWarning(lcMessaging) << "QMailMessageListModelPrivate::updateMessage index out of bounds" << newIndex << _idList.count();
                 } else if (newIndex > 0) {
                     if (newIds.indexOf(_idList.at(newIndex - 1)) > newIndex) {
                         reinsert = true;

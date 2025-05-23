@@ -1,6 +1,6 @@
 /****************************************************************************
 **
-** Copyright (C) 2015 The Qt Company Ltd.
+** Copyright (C) 2025 The Qt Company Ltd.
 ** Contact: http://www.qt.io/licensing/
 **
 ** This file is part of the Qt Messaging Framework.
@@ -31,33 +31,6 @@
 **
 ****************************************************************************/
 
-#include "messageserver.h"
-#include <QCoreApplication>
-#include <qmailnamespace.h>
-#include <qmaillog.h>
+#include "imaplog.h"
 
-#ifdef USE_HTML_PARSER
-#include <QtGui>
-#endif
-
-int main(int argc, char** argv)
-{
-#ifdef USE_HTML_PARSER
-    // Need for html parsing by <QTextdocument> in qmailmessage.cpp, but don't need real UI
-    setenv("QT_QPA_PLATFORM", "minimal", 1);
-    QGuiApplication app(argc, argv);
-#else
-    QCoreApplication app(argc, argv);
-#endif
-
-    MessageServer server;
-    if (!server.init()) {
-        qCWarning(lcMessaging) << "Failed to initialize message server";
-        return 1;
-    }
-
-    int exitCode = app.exec();
-
-    return exitCode;
-}
-
+Q_LOGGING_CATEGORY(lcIMAP, "org.qt.messageserver.imap", QtWarningMsg)

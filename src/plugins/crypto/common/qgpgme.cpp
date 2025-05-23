@@ -35,6 +35,7 @@
 ****************************************************************************/
 
 #include "qgpgme.h"
+#include <qmaillog.h>
 
 #include <QCryptographicHash>
 
@@ -45,26 +46,29 @@ QMailCryptoGPGME::QMailCryptoGPGME(gpgme_protocol_t protocol): m_protocol(protoc
     gpgme_check_version(NULL);
     err = gpgme_engine_check_version(protocol);
     if (gpgme_err_code(err) != GPG_ERR_NO_ERROR) {
-        qWarning() << QStringLiteral("cannot use %1 engine.").arg(gpgme_get_protocol_name(protocol));
+        qCWarning(lcMessaging) << QStringLiteral("cannot use %1 engine.").arg(gpgme_get_protocol_name(protocol));
 
         gpgme_engine_info_t info;
         err = gpgme_get_engine_info(&info);
         if (!err) {
             while (info) {
-                qWarning() << "protocol:" << gpgme_get_protocol_name(info->protocol);
+                qCWarning(lcMessaging) << "protocol:"
+                                       << gpgme_get_protocol_name(info->protocol);
                 if (info->file_name && !info->version)
-                    qWarning() << "engine " << info->file_name << " not installed properly";
+                    qCWarning(lcMessaging) << "engine " << info->file_name
+                                           << " not installed properly";
                 else if (info->file_name && info->version && info->req_version)
-                    qWarning() << "engine " << info->file_name
-                               << " version " << info->version
-                               << " installed, but at least version "
-                               << info->req_version << " required";
+                    qCWarning(lcMessaging) << "engine " << info->file_name
+                                           << " version " << info->version
+                                           << " installed, but at least version "
+                                           << info->req_version << " required";
                 else
-                    qWarning() << "unknown issue";
+                    qCWarning(lcMessaging) << "unknown issue";
                 info = info->next;
             }
         } else {
-            qWarning() << "cannot get engine info:" << gpgme_strerror(err);
+            qCWarning(lcMessaging) << "cannot get engine info:"
+                                   << gpgme_strerror(err);
         }
     }
 }
@@ -242,26 +246,26 @@ QMailCryptoFwd::SignatureResult QMailCryptoGPGME::getSignature(const QByteArray 
 
     GPGmeData sig;
     if (!sig.isValid()) {
-        qWarning() << "cannot create signature data:" << sig.errorMessage();
+        qCWarning(lcMessaging) << "cannot create signature data:" << sig.errorMessage();
         return toSignatureResult(sig.err);
     }
     gpgme_error_t err;
     err = gpgme_data_set_encoding(sig, GPGME_DATA_ENCODING_ARMOR);
     if (gpgme_err_code(err) != GPG_ERR_NO_ERROR) {
-        qWarning() << "cannot set ascii armor on signature:" << gpgme_strerror(err);
+        qCWarning(lcMessaging) << "cannot set ascii armor on signature:" << gpgme_strerror(err);
         return toSignatureResult(err);
     }
 
     QByteArray mess(canonicalizeStr(message));
     GPGmeData data(mess);
     if (!data.isValid()) {
-        qWarning() << "cannot create message data:" << data.errorMessage();
+        qCWarning(lcMessaging) << "cannot create message data:" << data.errorMessage();
         return toSignatureResult(data.err);
     }
 
     GPGmeContext ctx(m_protocol);
     if (!ctx) {
-        qWarning() << "cannot create context:" << ctx.errorMessage();
+        qCWarning(lcMessaging) << "cannot create context:" << ctx.errorMessage();
         return toSignatureResult(ctx.err);
     }
     gpgme_set_textmode(ctx, 1);
@@ -273,12 +277,12 @@ QMailCryptoFwd::SignatureResult QMailCryptoGPGME::getSignature(const QByteArray 
         const int RETRIEVE_SECRET_KEY = 1;
         err = gpgme_get_key(ctx, it->toLocal8Bit().data(), &key, RETRIEVE_SECRET_KEY);
         if (gpgme_err_code(err) != GPG_ERR_NO_ERROR) {
-            qWarning() << "cannot retrieve key" << *it;
+            qCWarning(lcMessaging) << "cannot retrieve key" << *it;
             return toSignatureResult(err);
         }
         err = gpgme_signers_add(ctx, key);
         if (gpgme_err_code(err) != GPG_ERR_NO_ERROR) {
-            qWarning() << "cannot add key" << *it;
+            qCWarning(lcMessaging) << "cannot add key" << *it;
             gpgme_key_unref(key);
             return toSignatureResult(err);
         }
@@ -290,7 +294,7 @@ QMailCryptoFwd::SignatureResult QMailCryptoGPGME::getSignature(const QByteArray 
         // Will be activated later.
         // gpgme_set_pinentry_mode(ctx, GPGME_PINENTRY_MODE_LOOPBACK);
         // gpgme_set_passphrase_cb(ctx, gpgme_passphraseCallback, (void*)this);
-        qWarning() << "passphrase callback not implemented";
+        qCWarning(lcMessaging) << "passphrase callback not implemented";
 
         // For testing purpose, just creating a md5 of data
         // and use this as signature data.
@@ -305,18 +309,18 @@ QMailCryptoFwd::SignatureResult QMailCryptoGPGME::getSignature(const QByteArray 
 
     err = gpgme_op_sign(ctx, data, sig, GPGME_SIG_MODE_DETACH);
     if (gpgme_err_code(err) != GPG_ERR_NO_ERROR) {
-        qWarning() << "cannot sign" << gpgme_strerror(err);
+        qCWarning(lcMessaging) << "cannot sign" << gpgme_strerror(err);
         return toSignatureResult(err);
     }
 
     gpgme_sign_result_t res;
     res = gpgme_op_sign_result(ctx);
     if (res->invalid_signers) {
-        qWarning() << "found invalid signer" << res->invalid_signers->fpr;
+        qCWarning(lcMessaging) << "found invalid signer" << res->invalid_signers->fpr;
         return QMailCryptoFwd::MissingKey;
     }
     if (!res->signatures || res->signatures->next) {
-        qWarning() << "found zero or more than one signature";
+        qCWarning(lcMessaging) << "found zero or more than one signature";
         return QMailCryptoFwd::MissingKey;
     }
 
@@ -379,27 +383,27 @@ QMailCryptoFwd::SignatureResult QMailCryptoGPGME::verify(const QByteArray &sigDa
 
     GPGmeData sig(sigData);
     if (!sig.isValid()) {
-        qWarning() << "cannot create message data:" << sig.errorMessage();
+        qCWarning(lcMessaging) << "cannot create message data:" << sig.errorMessage();
         return toSignatureResult(sig.err);
     }
 
     QByteArray mess(canonicalizeStr(messageData.constData()));
     GPGmeData signed_text(mess);
     if (!signed_text.isValid()) {
-        qWarning() << "cannot create signature data:" << signed_text.errorMessage();
+        qCWarning(lcMessaging) << "cannot create signature data:" << signed_text.errorMessage();
         return toSignatureResult(signed_text.err);
     }
 
     GPGmeContext ctx(m_protocol);
     if (!ctx) {
-        qWarning() << "cannot create context:" << ctx.errorMessage();
+        qCWarning(lcMessaging) << "cannot create context:" << ctx.errorMessage();
         return toSignatureResult(ctx.err);
     }
 
     gpgme_error_t err;
     err = gpgme_op_verify(ctx, sig, signed_text, NULL);
     if (gpgme_err_code(err) != GPG_ERR_NO_ERROR) {
-        qWarning() << "verification fails:" << gpgme_strerror(err);
+        qCWarning(lcMessaging) << "verification fails:" << gpgme_strerror(err);
         return toSignatureResult(err);
     }
 
@@ -449,26 +453,26 @@ QMailCryptoFwd::CryptResult QMailCryptoGPGME::decrypt(const QByteArray &encData,
 {
     GPGmeContext ctx(m_protocol);
     if (!ctx) {
-        qWarning() << "cannot create context:" << ctx.errorMessage();
+        qCWarning(lcMessaging) << "cannot create context:" << ctx.errorMessage();
         return toCryptResult(ctx.err);
     }
 
     GPGmeData enc(encData);
     if (!enc.isValid()) {
-        qWarning() << "cannot create encoded data:" << enc.errorMessage();
+        qCWarning(lcMessaging) << "cannot create encoded data:" << enc.errorMessage();
         return toCryptResult(enc.err);
     }
 
     GPGmeData dec;
     if (!dec.isValid()) {
-        qWarning() << "cannot create decoded data:" << dec.errorMessage();
+        qCWarning(lcMessaging) << "cannot create decoded data:" << dec.errorMessage();
         return toCryptResult(dec.err);
     }
 
     gpgme_error_t err;
     err = gpgme_op_decrypt(ctx, enc, dec);
     if (gpgme_err_code(err) != GPG_ERR_NO_ERROR) {
-        qWarning() << "decryption fails:" << gpgme_strerror(err);
+        qCWarning(lcMessaging) << "decryption fails:" << gpgme_strerror(err);
         return toCryptResult(err);
     }
     decData = dec.releaseData();

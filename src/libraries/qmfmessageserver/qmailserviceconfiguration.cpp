@@ -32,6 +32,7 @@
 ****************************************************************************/
 
 #include "qmailserviceconfiguration.h"
+#include "qmaillog.h"
 #include <qmailcodec.h>
 #include <QStringList>
 
@@ -227,7 +228,7 @@ QString QMailServiceConfiguration::value(const QString &name, const QString &def
 void QMailServiceConfiguration::setValue(const QString &name, const QString &value)
 {
     if (!_config) {
-        qWarning() << "Attempted to modify uninitialized configuration! (" << name << ":" << value << ")";
+        qCWarning(lcMessaging) << "Attempted to modify uninitialized configuration! (" << name << ":" << value << ")";
     } else {
         _config->setValue(name, value);
     }

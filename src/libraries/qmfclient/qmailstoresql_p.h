@@ -47,6 +47,7 @@
 
 #include "qmailstore.h"
 #include "qmflist.h"
+#include "qmaillog.h"
 #include <QSqlDatabase>
 
 //#define QMAILSTORE_LOG_SQL //define to enable SQL query logging
@@ -800,8 +801,8 @@ template <typename ValueType>
 ValueType QMailStoreSql::extractValue(const QVariant &var, const ValueType &defaultValue)
 {
     if (!var.canConvert<ValueType>()) {
-        qWarning() << "QMailStoreSql::extractValue - Cannot convert variant to:"
-                   << typeid(ValueType).name();
+        qCWarning(lcMailStore) << "QMailStoreSql::extractValue - Cannot convert variant to:"
+                               << typeid(ValueType).name();
         return defaultValue;
     }
 

@@ -1,8 +1,10 @@
 set(POP_SOURCES
   ../../src/plugins/messageservices/pop/popauthenticator.h
   ../../src/plugins/messageservices/pop/popclient.h
+  ../../src/plugins/messageservices/pop/poplog.h
   ../../src/plugins/messageservices/pop/popconfiguration.h
   ../../src/plugins/messageservices/pop/popclient.cpp
+  ../../src/plugins/messageservices/pop/poplog.cpp
   ../../src/plugins/messageservices/pop/popauthenticator.cpp
   ../../src/plugins/messageservices/pop/popconfiguration.cpp)
 

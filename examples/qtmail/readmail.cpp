@@ -255,7 +255,7 @@ void ReadMail::updateView(QMailViewerFactory::PresentationType type)
 
     QMailViewerInterface* view = viewer(content, type);
     if (!view) {
-        qMailLog(Messaging) << "Unable to view message" << mail.id() << "with content:" << content;
+        qCWarning(lcMessaging) << "Unable to view message" << mail.id() << "with content:" << content;
         return;
     }
 

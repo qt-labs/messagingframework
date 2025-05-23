@@ -38,6 +38,7 @@
 #include <QObject>
 #include <QStringList>
 #include <QList>
+#include <QLoggingCategory>
 
 #include <qmflist.h>
 #include <qmailaccountconfiguration.h>
@@ -45,6 +46,8 @@
 #include <qmailmessageserver.h>
 #include <qmailtransport.h>
 #include <qmailcredentials.h>
+
+Q_DECLARE_LOGGING_CATEGORY(lcSMTP)
 
 QT_BEGIN_NAMESPACE
 

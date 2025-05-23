@@ -56,7 +56,7 @@ LongStream::LongStream()
         tmpFile->setPermissions(QFile::ReadOwner | QFile::WriteOwner);
         ts = new QDataStream( tmpFile );
     } else {
-        qWarning() << "Unable to open temporary file:" << tmpFile->fileName();
+        qCWarning(lcMessaging) << "Unable to open temporary file:" << tmpFile->fileName();
         ts = 0;
         setStatus(OutOfSpace);
     }

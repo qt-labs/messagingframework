@@ -1,6 +1,7 @@
 set(SRC
   imapclient.cpp
   imapconfiguration.cpp
+  imaplog.cpp
   imapprotocol.cpp
   imapservice.cpp
   imapstructure.cpp
@@ -14,6 +15,7 @@ set(SRC
 set(HEADERS
   imapclient.h
   imapconfiguration.h
+  imaplog.h
   imapmailboxproperties.h
   imapprotocol.h
   imapservice.h

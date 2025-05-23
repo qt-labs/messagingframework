@@ -154,7 +154,7 @@ bool WriteMail::sendStage()
 
         emit enqueueMail(mail);
     } else {
-        qMailLog(Messaging) << "Unable to build mail for transmission!";
+        qCWarning(lcMessaging) << "Unable to build mail for transmission!";
     }
 
     // Prevent double deletion of composer textedit that leads to crash on exit

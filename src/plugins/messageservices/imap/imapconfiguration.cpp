@@ -32,6 +32,7 @@
 ****************************************************************************/
 
 #include "imapconfiguration.h"
+#include "imaplog.h"
 #include <QStringList>
 
 
@@ -156,7 +157,7 @@ int ImapConfiguration::timeTillLogout() const
     bool ok;
     int val(t.toInt(&ok));
     if (!ok) {
-        qWarning() << "Could not parse timeTillLogout";
+        qCWarning(lcIMAP) << "Could not parse timeTillLogout";
         return tenSeconds;
     } else {
         return val;
@@ -184,7 +185,7 @@ int ImapConfiguration::searchLimit() const
     bool ok;
     int val(t.toInt(&ok));
     if (!ok) {
-        qWarning() << "Could not parse searchLimit";
+        qCWarning(lcIMAP) << "Could not parse searchLimit";
         return 0;
     } else {
         return val;

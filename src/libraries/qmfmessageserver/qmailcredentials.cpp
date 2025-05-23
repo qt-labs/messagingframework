@@ -171,7 +171,7 @@ QMailCredentialsInterface *QMailCredentialsFactory::createCredentialsHandler(con
     if (it != pluginMap().end())
         return (*it)->createCredentialsHandler(parent);
 
-    qMailLog(Messaging) << "Unknown plugin: " << key;
+    qCWarning(lcMessaging) << "Unknown plugin: " << key;
     return nullptr;
 }
 
@@ -190,10 +190,10 @@ QMailCredentialsInterface *QMailCredentialsFactory::getCredentialsHandlerForAcco
         if (!plugin.isEmpty()) {
             credentials = QMailCredentialsFactory::createCredentialsHandler(plugin, parent);
             if (!credentials) {
-                qMailLog(Messaging) << "Credential plugin" << plugin
-                                    << "is not available for account id: "
-                                    << config.id()
-                                    << ", account configuration will be used";
+                qCWarning(lcMessaging) << "Credential plugin" << plugin
+                                       << "is not available for account id: "
+                                       << config.id()
+                                       << ", account configuration will be used";
             }
         }
     }
@@ -251,27 +251,27 @@ QString QMailCredentialsInterface::service() const
 
 QString QMailCredentialsInterface::username() const
 {
-    qMailLog(Messaging) << "username credential not supported for service:" << service();
+    qCWarning(lcMessaging) << "username credential not supported for service:" << service();
     return QString();
 }
 
 QString QMailCredentialsInterface::password() const
 {
-    qMailLog(Messaging) << "password credential not supported for service:" << service();
+    qCWarning(lcMessaging) << "password credential not supported for service:" << service();
     return QString();
 }
 
 QString QMailCredentialsInterface::accessToken() const
 {
-    qMailLog(Messaging) << "access token credential not supported for service:" << service();
+    qCWarning(lcMessaging) << "access token credential not supported for service:" << service();
     return QString();
 }
 
 void QMailCredentialsInterface::invalidate(const QString &source)
 {
     if (id().isValid()) {
-        qMailLog(Messaging) << "Invalidate credentials" << service()
-                            << " from account" << id().toULongLong();
+        qCWarning(lcMessaging) << "Invalidate credentials" << service()
+                               << " from account" << id().toULongLong();
         QMailAccountConfiguration config(id());
         QMailAccountConfiguration::ServiceConfiguration &srv = config.serviceConfiguration(service());
         srv.setValue(QLatin1String("CredentialsNeedUpdate"),

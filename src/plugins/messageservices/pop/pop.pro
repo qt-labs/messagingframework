@@ -8,11 +8,13 @@ QT = core core5compat network qmfclient qmfclient-private qmfmessageserver qmfme
 
 HEADERS += popclient.h \
            popconfiguration.h \
+           poplog.h \
            popservice.h \
            popauthenticator.h
 
 SOURCES += popclient.cpp \
            popconfiguration.cpp \
+           poplog.cpp \
            popservice.cpp \
            popauthenticator.cpp
 

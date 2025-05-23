@@ -77,10 +77,10 @@ bool SSOManager::init(uint credentialsId, const QString &method,
             connect(m_identity, &SignOn::Identity::methodsAvailable,
                     [this, mechanism, parameters] (const QStringList &methods) {
                         if (methods.isEmpty()) {
-                            qMailLog(Messaging) << "No method available for credentialsId:" << m_identity->id();
+                            qCWarning(lcMessaging) << "No method available for credentialsId:" << m_identity->id();
                         } else {
                             if (methods.size() > 1) {
-                                qMailLog(Messaging) << "Several methods available for credentialsId:" << m_identity->id();
+                                qCWarning(lcMessaging) << "Several methods available for credentialsId:" << m_identity->id();
                             }
                             start(methods.first(), mechanism, parameters);
                         }
@@ -88,7 +88,7 @@ bool SSOManager::init(uint credentialsId, const QString &method,
         }
     }
     if (!m_identity) {
-        qMailLog(Messaging) << "No such credential id:" << credentialsId;
+        qCWarning(lcMessaging) << "No such credential id:" << credentialsId;
         m_errorMessage = QLatin1String("invalid SSO credential id.");
         return false;
     }

@@ -7,6 +7,7 @@ INCLUDEPATH += $$SRCDIR
 QT += qmfclient qmfmessageserver qmfmessageserver-private
 HEADERS += $$SRCDIR/imapauthenticator.h \
            $$SRCDIR/imapclient.h \
+           $$SRCDIR/imaplog.h \
            $$SRCDIR/imapprotocol.h \
            $$SRCDIR/imaptransport.h \
            $$SRCDIR/imapstrategy.h \
@@ -15,6 +16,7 @@ HEADERS += $$SRCDIR/imapauthenticator.h \
            $$SRCDIR/imapconfiguration.h
 SOURCES += $$SRCDIR/imapclient.cpp \
            $$SRCDIR/imapauthenticator.cpp \
+           $$SRCDIR/imaplog.cpp \
            $$SRCDIR/imapprotocol.cpp \
            $$SRCDIR/imaptransport.cpp \
            $$SRCDIR/imapstrategy.cpp \

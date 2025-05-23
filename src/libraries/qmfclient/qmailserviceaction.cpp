@@ -239,7 +239,7 @@ void QMailServiceActionPrivate::init()
 quint64 QMailServiceActionPrivate::newAction()
 {
     if (_isValid) {
-        qWarning() << "Unable to allocate new action - oustanding:" << messageActionParts(_action).second;
+        qCWarning(lcMessaging) << "Unable to allocate new action - oustanding:" << messageActionParts(_action).second;
         return _action;
     }
 
@@ -775,7 +775,7 @@ void QMailRetrievalActionPrivate::createStandardFolders(const QMailAccountId &ac
 
     if (!QMail::detectStandardFolders(accountId)) {
         if (!(account.status() & QMailAccount::CanCreateFolders)) {
-            qMailLog(Messaging) << "Unable to create folders for account: " << accountId;
+            qCWarning(lcMessaging) << "Unable to create folders for account: " << accountId;
             if (validAction(newAction())) {
                 setActivity(QMailServiceAction::Successful);
                 emitChanges();
@@ -785,7 +785,7 @@ void QMailRetrievalActionPrivate::createStandardFolders(const QMailAccountId &ac
             _server->createStandardFolders(newAction(), accountId);
         }
     } else {
-        qMailLog(Messaging) << "Standard folders matched for account: " << accountId;
+        qCDebug(lcMessaging) << "Standard folders matched for account: " << accountId;
         if (validAction(newAction())) {
             setActivity(QMailServiceAction::Successful);
             emitChanges();
@@ -1543,7 +1543,7 @@ void QMailStorageActionPrivate::addMessages(const QMailMessageList &list)
         if (QMailContentManager *contentManager = QMailContentManagerFactory::create(message.contentScheme())) {
             QMailStore::ErrorCode code = contentManager->add(&message, QMailContentManager::NoDurability);
             if (code != QMailStore::NoError) {
-                qWarning() << "Unable to ensure message content durability for scheme:" << message.contentScheme();
+                qCWarning(lcMessaging) << "Unable to ensure message content durability for scheme:" << message.contentScheme();
                 if (validAction(newAction())) {
                     setActivity(QMailServiceAction::Failed);
                     emitChanges();
@@ -1603,7 +1603,7 @@ void QMailStorageActionPrivate::updateMessages(const QMailMessageList &list)
         if (QMailContentManager *contentManager = QMailContentManagerFactory::create(message.contentScheme())) {
             QMailStore::ErrorCode code = contentManager->update(&message, QMailContentManager::EnsureDurability);
             if (code != QMailStore::NoError) {
-                qWarning() << "Unable to ensure message content durability for scheme:" << message.contentScheme();
+                qCWarning(lcMessaging) << "Unable to ensure message content durability for scheme:" << message.contentScheme();
                 if (validAction(newAction())) {
                     setActivity(QMailServiceAction::Failed);
                     emitChanges();

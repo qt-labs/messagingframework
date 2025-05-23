@@ -7,9 +7,11 @@ INCLUDEPATH += $$SRCDIR
 QT += qmfclient qmfmessageserver qmfmessageserver-private
 HEADERS += $$SRCDIR/popauthenticator.h \
            $$SRCDIR/popclient.h \
+           $$SRCDIR/poplog.h \
            $$SRCDIR/popconfiguration.h
 SOURCES += $$SRCDIR/popclient.cpp \
            $$SRCDIR/popauthenticator.cpp \
+           $$SRCDIR/poplog.cpp \
            $$SRCDIR/popconfiguration.cpp
 
 SOURCES += tst_pop.cpp

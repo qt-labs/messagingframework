@@ -32,6 +32,7 @@
 ****************************************************************************/
 
 #include "qmailmessageserverplugin.h"
+#include <qmaillog.h>
 #include <qmailpluginmanager.h>
 #include <QDebug>
 
@@ -73,7 +74,7 @@ static QMailMessageServerPlugin* mapping(const QString& key)
     if ((it = pluginMap().find(key)) != pluginMap().end())
         return it.value();
 
-    qWarning() << "Failed attempt to map plugin: " << key;
+    qCWarning(lcMessaging) << "Failed attempt to map plugin: " << key;
     return 0;
 }
 

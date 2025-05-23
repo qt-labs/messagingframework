@@ -1,12 +1,14 @@
 set(SRC
   popclient.cpp
   popconfiguration.cpp
+  poplog.cpp
   popservice.cpp
   popauthenticator.cpp)
 
 set(HEADERS
   popclient.h
   popconfiguration.h
+  poplog.h
   popservice.h
   popauthenticator.h)
 

@@ -157,9 +157,9 @@ void SmtpService::onCapabilitiesFetched()
         if (timeout <= capabilityCheckTimeoutLimit) {
             _capabilityFetchTimeout->setInterval(timeout);
             _capabilityFetchTimeout->start();
-            qMailLog(SMTP) << "Could not fetch capabilities...trying again after " << (timeout / 1000) << "seconds";
+            qCDebug(lcSMTP) << "Could not fetch capabilities...trying again after " << (timeout / 1000) << "seconds";
         } else {
-            qMailLog(SMTP) << "Could not fetch capabilities, giving up";
+            qCDebug(lcSMTP) << "Could not fetch capabilities, giving up";
         }
     } else {
         _capabilityFetcher->deleteLater();

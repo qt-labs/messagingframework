@@ -35,6 +35,7 @@
 
 #include "imapprotocol.h"
 #include "imapconfiguration.h"
+#include "imaplog.h"
 
 #include <qmailauthenticator.h>
 #include <qmailtransport.h>
@@ -52,7 +53,7 @@ bool ImapAuthenticator::useEncryption(const ImapConfiguration &svcCfg,
 
     if (!capabilities.contains("STARTTLS")) {
         if (useTLS) {
-            qWarning() << "Server does not support TLS - continuing unencrypted";
+            qCWarning(lcIMAP) << "Server does not support TLS - continuing unencrypted";
         }
     } else {
         if (useTLS) {

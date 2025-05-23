@@ -1,6 +1,7 @@
 set(IMAP_SOURCES
   ../../src/plugins/messageservices/imap/imapauthenticator.h
   ../../src/plugins/messageservices/imap/imapclient.h
+  ../../src/plugins/messageservices/imap/imaplog.h
   ../../src/plugins/messageservices/imap/imapprotocol.h
   ../../src/plugins/messageservices/imap/imaptransport.h
   ../../src/plugins/messageservices/imap/imapstrategy.h
@@ -8,6 +9,7 @@ set(IMAP_SOURCES
   ../../src/plugins/messageservices/imap/integerregion.h
   ../../src/plugins/messageservices/imap/imapconfiguration.h
   ../../src/plugins/messageservices/imap/imapclient.cpp
+  ../../src/plugins/messageservices/imap/imaplog.cpp
   ../../src/plugins/messageservices/imap/imapauthenticator.cpp
   ../../src/plugins/messageservices/imap/imapprotocol.cpp
   ../../src/plugins/messageservices/imap/imaptransport.cpp

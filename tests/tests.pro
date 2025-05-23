@@ -32,15 +32,6 @@ exists(/usr/bin/gpgme-config) {
     SUBDIRS += tst_crypto
 }
 
-# these tests fail to build/pass on windows.
-# longer term, we should remove this stuff entirely in favour of Qt's
-# categorised logging.
-!win32 {
-    SUBDIRS += \
-        tst_qmaillog \
-        tst_qlogsystem
-}
-
 CONFIG += unittest
 
 # Install test file description

@@ -35,6 +35,7 @@
 #include "qmailstore.h"
 #include "qmailnamespace.h"
 #include "qmflist.h"
+#include "qmaillog.h"
 
 #include <QCache>
 #include <QtAlgorithms>
@@ -441,7 +442,7 @@ bool QMailMessageThreadedModelPrivate::appendMessages(const QMailMessageIdList &
             }
 
             if (descendants.indexOf(messageId) != -1) {
-                qWarning() << "Conversation loop detected" << Q_FUNC_INFO << "messageId" << messageId << "descendants" << descendants;
+                qCWarning(lcMessaging) << "Conversation loop detected" << Q_FUNC_INFO << "messageId" << messageId << "descendants" << descendants;
                 insertParent = &_root;
             }
 
@@ -866,7 +867,7 @@ void QMailMessageThreadedModelPrivate::init() const
                 }
 
                 if (descendants.indexOf(messageId) != -1) {
-                    qWarning() << "Conversation loop detected" << Q_FUNC_INFO << "messageId" << messageId << "descendants" << descendants;
+                    qCWarning(lcMessaging) << "Conversation loop detected" << Q_FUNC_INFO << "messageId" << messageId << "descendants" << descendants;
                     insertParent = &_root;
                 }
                 if (insertParent != 0) {
@@ -877,7 +878,7 @@ void QMailMessageThreadedModelPrivate::init() const
                     int index = container.count();
                     for ( ; index > 0; --index) {
                         if (!idIndexMap.contains(container.at(index - 1)._id)) {
-                            qWarning() << "Warning: Threading hash failure" << __FUNCTION__;
+                            qCWarning(lcMessaging) << "Warning: Threading hash failure" << __FUNCTION__;
                             idIndexMap[container.at(index - 1)._id] = ids.indexOf(container.at(index - 1)._id);
                         }
                         if (idIndexMap[container.at(index - 1)._id] < itemSortValue) {

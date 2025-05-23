@@ -38,9 +38,9 @@
 #include "imapconfiguration.h"
 #include "imapstrategy.h"
 #include "serviceactionqueue.h"
+#include "imaplog.h"
 #include <QtPlugin>
 #include <QTimer>
-#include <qmaillog.h>
 #include <qmailmessage.h>
 #include <qmaildisconnected.h>
 #include <QCoreApplication>
@@ -284,7 +284,7 @@ bool ImapService::Source::retrieveMessageLists(const QMailAccountId &accountId, 
     }
 
     if (!sort.isEmpty()) {
-        qWarning() << "IMAP Search sorting not yet implemented!";
+        qCWarning(lcIMAP) << "IMAP Search sorting not yet implemented!";
     }
 
     QMailFolderIdList folderIds;
@@ -752,7 +752,7 @@ bool ImapService::Source::moveMessages(const QMailMessageIdList &messageIds, con
 
     QMailMessageKey idsKey(QMailMessageKey::id(messageIds));
     if (!QMailStore::instance()->updateMessagesMetaData(idsKey, QMailMessageKey::ParentFolderId | QMailMessageKey::ServerUid, metaData)) {
-        qWarning() << "Unable to update message metadata for move to folder:" << destinationId;
+        qCWarning(lcMailStore) << "Unable to update message metadata for move to folder:" << destinationId;
     } else {
         emit messagesMoved(messageIds);
     }
@@ -1032,7 +1032,7 @@ bool ImapService::Source::createStandardFolders(const QMailAccountId &accountId)
     //Create the folder in the root
     QMailFolder dummyParent;
     for (int i = 0; i < folderNames.size(); ++i) {
-        qMailLog(Messaging) << "Creating folder: " << folderNames.at(i);
+        qCDebug(lcIMAP) << "Creating folder: " << folderNames.at(i);
         bool matchFolderRequired = true;
         _service->_client->strategyContext()->createFolderStrategy.createFolder(dummyParent.id(), folderNames.at(i), matchFolderRequired);
     }
@@ -1243,7 +1243,7 @@ bool ImapService::Source::prepareMessages(const QList<QPair<QMailMessagePart::Lo
 
 bool ImapService::Source::setStrategy(ImapStrategy *strategy, const char *signal)
 {
-    qMailLog(Messaging) << "Setting imap strategy" << typeid(*strategy).name();
+    qCDebug(lcIMAP) << "Setting imap strategy" << typeid(*strategy).name();
 
     disconnect(this, SIGNAL(messageActionCompleted(QMailMessageIdList)));
     if (signal) {
@@ -1336,8 +1336,8 @@ void ImapService::Source::retrievalCompleted()
             // Push email is successfully established for all push folders
             _service->_establishingPushEmail = false;
             _service->_pushRetry = ThirtySeconds;
-            qMailLog(Messaging) << "Push email established for account" << _service->_accountId
-                                << QMailAccount(_service->_accountId).name();
+            qCDebug(lcIMAP) << "Push email established for account" << _service->_accountId
+                            << QMailAccount(_service->_accountId).name();
         }
         _queuedMailCheckInProgress = false;
     }
@@ -1434,7 +1434,7 @@ void ImapService::Source::resetExpiryTimer()
 
 void ImapService::Source::expireStrategy()
 {
-    qMailLog(Messaging) << "IMAP Strategy is not progressing. Internally reseting IMAP service for account" << _service->_accountId;
+    qCDebug(lcIMAP) << "IMAP Strategy is not progressing. Internally reseting IMAP service for account" << _service->_accountId;
     _service->disable();
     _service->enable();
 }
@@ -1467,7 +1467,7 @@ ImapService::ImapService(const QMailAccountId &accountId)
 
 void ImapService::enable()
 {
-    qMailLog(IMAP) << "account enabled, initiating a new client.";
+    qCDebug(lcIMAP) << "account enabled, initiating a new client.";
     _client = new ImapClient(_accountId, this);
     _source->initClientConnections();
     _establishingPushEmail = false;
@@ -1509,7 +1509,7 @@ void ImapService::disable()
     _source->setIntervalTimer(0);
     _source->setPushIntervalTimer(0);
     _source->retrievalTerminated();
-    qMailLog(IMAP) << "account disabled, terminating the client.";
+    qCDebug(lcIMAP) << "account disabled, terminating the client.";
     delete _client;
     _client = 0;
 }
@@ -1612,8 +1612,8 @@ bool ImapService::cancelOperation(QMailServiceAction::Status::ErrorCode code, co
 void ImapService::restartPushEmail()
 {
     if (!_establishingPushEmail) {
-        qMailLog(Messaging) << "Attempting to restart push email for account" << _accountId
-                            << QMailAccount(_accountId).name();
+        qCDebug(lcIMAP) << "Attempting to restart push email for account" << _accountId
+                        << QMailAccount(_accountId).name();
         cancelOperation(QMailServiceAction::Status::ErrInternalStateReset, tr("Initiating push email"));
         initiatePushEmail();
     }
@@ -1629,8 +1629,8 @@ void ImapService::initiatePushEmail()
         return;
     }
 
-    qMailLog(Messaging) << "Attempting to establish push email for account" << _accountId
-                        << QMailAccount(_accountId).name();
+    qCDebug(lcIMAP) << "Attempting to establish push email for account" << _accountId
+                    << QMailAccount(_accountId).name();
     QMailFolderIdList ids(_client->configurationIdleFolderIds());
     if (ids.count()) {
         _establishingPushEmail = true;
@@ -1644,7 +1644,7 @@ void ImapService::initiatePushEmail()
         // Interval check to update flags on servers that do not push flag changes when idling e.g. gmail
         _source->setPushIntervalTimer(60); // minutes
     } else {
-        qWarning() << "No valid push folders, aborting.";
+        qCWarning(lcIMAP) << "No valid push folders, aborting.";
     }
 }
 
@@ -1652,7 +1652,7 @@ void ImapService::retryPushEmail()
 {
     if (!_restartPushEmailTimer->isActive()) {
         const int oneHour = 60*60;
-        qMailLog(Messaging) << "Push email connection could not be established. Reattempting to establish in" << _pushRetry << "seconds";
+        qCDebug(lcIMAP) << "Push email connection could not be established. Reattempting to establish in" << _pushRetry << "seconds";
         _restartPushEmailTimer->start(_pushRetry*1000);
         _pushRetry = qMin(oneHour, _pushRetry * 2);
     }
@@ -1700,7 +1700,7 @@ void ImapService::openIdleSession()
 {
     closeIdleSession();
 
-    qMailLog(Messaging) << "IDLE Session: Opening...";
+    qCDebug(lcIMAP) << "IDLE Session: Opening...";
     _networkSession = new IdleNetworkSession(this);
 
     connect(_networkSession, &IdleNetworkSession::errorChanged,
@@ -1718,7 +1718,7 @@ void ImapService::openIdleSession()
 void ImapService::closeIdleSession()
 {
     if (_networkSession) {
-        qMailLog(Messaging) << "IDLE Session: Closing...";
+        qCDebug(lcIMAP) << "IDLE Session: Closing...";
         _networkSession->disconnect();
         _networkSession->close();
         delete _networkSession;
@@ -1730,7 +1730,7 @@ void ImapService::closeIdleSession()
 
 void ImapService::onOnlineStateChanged(bool isOnline)
 {
-    qMailLog(Messaging) << "IDLE Session: Network state changed: " << isOnline;
+    qCDebug(lcIMAP) << "IDLE Session: Network state changed: " << isOnline;
     if (accountPushEnabled() && isOnline
         && (!_networkSession
             || _networkSession->state() != IdleNetworkSession::Connected)) {
@@ -1749,7 +1749,7 @@ void ImapService::onSessionOpened()
     _networkSessionTimer->stop();
     _networkSessionTimer->disconnect();
 
-    qMailLog(Messaging) << "IDLE session opened, state" << _networkSession->state();
+    qCDebug(lcIMAP) << "IDLE session opened, state" << _networkSession->state();
     connect(_networkSession, &IdleNetworkSession::stateChanged,
             this, &ImapService::onSessionStateChanged);
 
@@ -1761,7 +1761,7 @@ void ImapService::onSessionOpened()
 void ImapService::onSessionStateChanged(IdleNetworkSession::State status)
 {
 
-    qMailLog(Messaging) << "IDLE session state now: " << status;
+    qCDebug(lcIMAP) << "IDLE session state now: " << status;
     if (status != IdleNetworkSession::Connecting
             && status != IdleNetworkSession::Connected
             && status != IdleNetworkSession::Closing
@@ -1774,22 +1774,22 @@ void ImapService::onSessionError(IdleNetworkSession::Error error)
 {
     switch (error) {
     case IdleNetworkSession::UnknownError:
-        qMailLog(Messaging) << "IDLE session error: IdleNetworkSession::UnknownError";
+        qCWarning(lcIMAP) << "IDLE session error: IdleNetworkSession::UnknownError";
         break;
     case IdleNetworkSession::AbortedError:
-        qMailLog(Messaging) << "IDLE session error: IdleNetworkSession::AbortedError";
+        qCWarning(lcIMAP) << "IDLE session error: IdleNetworkSession::AbortedError";
         break;
     case IdleNetworkSession::RoamingError:
-        qMailLog(Messaging) << "IDLE session error: IdleNetworkSession::RoamingError";
+        qCWarning(lcIMAP) << "IDLE session error: IdleNetworkSession::RoamingError";
         break;
     case IdleNetworkSession::OperationNotSupportedError:
-        qMailLog(Messaging) << "IDLE session error: IdleNetworkSession::OperationNotSupportedError";
+        qCWarning(lcIMAP) << "IDLE session error: IdleNetworkSession::OperationNotSupportedError";
         break;
     case IdleNetworkSession::InvalidConfigurationError:
-        qMailLog(Messaging) << "IDLE session error: IdleNetworkSession::InvalidConfigurationError";
+        qCWarning(lcIMAP) << "IDLE session error: IdleNetworkSession::InvalidConfigurationError";
         break;
     default:
-        qMailLog(Messaging) << "IDLE session error: IdleNetworkSession:: Invalid error code";
+        qCWarning(lcIMAP) << "IDLE session error: IdleNetworkSession:: Invalid error code";
         break;
     }
 
@@ -1803,7 +1803,7 @@ void ImapService::onSessionConnectionTimeout()
 {
     if (_networkSession) {
         if (!_networkSession->isOpen()) {
-            qWarning() << "IDLE session error: No network reply received after 10 seconds";
+            qCWarning(lcIMAP) << "IDLE session error: No network reply received after 10 seconds";
             onSessionError(_networkSession->error());
         }
     }
@@ -1825,9 +1825,11 @@ void ImapService::setPersistentConnectionStatus(bool status)
             account.setLastSynchronized(QMailTimeStamp::currentDateTime());
         }
         if (!QMailStore::instance()->updateAccount(&account)) {
-            qWarning() << "Unable to update account" << account.id() << "to HasPersistentConnection" << status;
+            qCWarning(lcIMAP) << "Unable to update account" << account.id()
+                              << "to HasPersistentConnection" << status;
         } else {
-            qMailLog(Messaging) << "HasPersistentConnection for" << account.id() << "changed to" << status;
+            qCDebug(lcIMAP) << "HasPersistentConnection for" << account.id()
+                            << "changed to" << status;
         }
     }
     _idling = status;

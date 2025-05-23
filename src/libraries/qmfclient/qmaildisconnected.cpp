@@ -281,7 +281,7 @@ void QMailDisconnected::rollBackUpdates(const QMailAccountId &mailAccountId)
     // remove copies
     if (!copiedIds.isEmpty()) {
         if (!QMailStore::instance()->removeMessages(QMailMessageKey::id(copiedIds))) {
-            qWarning() << "Unable to rollback disconnected copies for account:" << mailAccountId;
+            qCWarning(lcMailStore) << "Unable to rollback disconnected copies for account:" << mailAccountId;
             return;
         }
     }
@@ -293,7 +293,7 @@ void QMailDisconnected::rollBackUpdates(const QMailAccountId &mailAccountId)
         mail.setPreviousParentFolderId(QMailFolderId());
         syncStatusWithFolder(mail);
         if (!QMailStore::instance()->updateMessage(&mail)) {
-            qWarning() << "Unable to rollback disconnected moves for account:" << mailAccountId;
+            qCWarning(lcMailStore) << "Unable to rollback disconnected moves for account:" << mailAccountId;
             return;
         }
     }
@@ -307,7 +307,7 @@ void QMailDisconnected::rollBackUpdates(const QMailAccountId &mailAccountId)
    }
 
    if (!QMailStore::instance()->purgeMessageRemovalRecords(mailAccountId, serverUidList)) {
-       qWarning() << "Unable to rollback disconnected removal records for account:" << mailAccountId;
+       qCWarning(lcMailStore) << "Unable to rollback disconnected removal records for account:" << mailAccountId;
        return;
    }
 
@@ -315,35 +315,35 @@ void QMailDisconnected::rollBackUpdates(const QMailAccountId &mailAccountId)
    QMailMessageKey accountKey(QMailMessageKey::parentAccountId(mailAccountId));
    QMailMessageKey removedKey(accountKey & QMailMessageKey::serverUid(serverUidList));
    if (!QMailStore::instance()->updateMessagesMetaData(removedKey, QMailMessage::Removed, false)) {
-       qWarning() << "Unable to rollback disconnected removed flagging for account:" << mailAccountId;
+       qCWarning(lcMailStore) << "Unable to rollback disconnected removed flagging for account:" << mailAccountId;
        return;
    }
 
     QMailMessageKey readStatusKey(QMailMessageKey::status(QMailMessage::Read, QMailDataComparator::Includes));
     readStatusKey &= QMailMessageKey::status(QMailMessage::ReadElsewhere, QMailDataComparator::Excludes);
     if (!QMailStore::instance()->updateMessagesMetaData(accountKey & readStatusKey, QMailMessage::Read, false)) {
-        qWarning() << "Unable to rollback disconnected unread->read flagging for account:" << mailAccountId;
+        qCWarning(lcMailStore) << "Unable to rollback disconnected unread->read flagging for account:" << mailAccountId;
         return;
     }
 
     QMailMessageKey unreadStatusKey(QMailMessageKey::status(QMailMessage::Read, QMailDataComparator::Excludes));
     unreadStatusKey &= QMailMessageKey::status(QMailMessage::ReadElsewhere, QMailDataComparator::Includes);
     if (!QMailStore::instance()->updateMessagesMetaData(accountKey & unreadStatusKey, QMailMessage::Read, true)) {
-        qWarning() << "Unable to rollback disconnected read->unread flagging for account:" << mailAccountId;
+        qCWarning(lcMailStore) << "Unable to rollback disconnected read->unread flagging for account:" << mailAccountId;
         return;
     }
 
     QMailMessageKey importantStatusKey(QMailMessageKey::status(QMailMessage::Important, QMailDataComparator::Includes));
     importantStatusKey &= QMailMessageKey::status(QMailMessage::ImportantElsewhere, QMailDataComparator::Excludes);
     if (!QMailStore::instance()->updateMessagesMetaData(accountKey & importantStatusKey, QMailMessage::Important, false)) {
-        qWarning() << "Unable to rollback disconnected unimportant->important flagging for account:" << mailAccountId;
+        qCWarning(lcMailStore) << "Unable to rollback disconnected unimportant->important flagging for account:" << mailAccountId;
         return;
     }
 
     QMailMessageKey unimportantStatusKey(QMailMessageKey::status(QMailMessage::Important, QMailDataComparator::Excludes));
     unimportantStatusKey &= QMailMessageKey::status(QMailMessage::ImportantElsewhere, QMailDataComparator::Includes);
     if (!QMailStore::instance()->updateMessagesMetaData(accountKey & unimportantStatusKey, QMailMessage::Important, true)) {
-        qWarning() << "Unable to rollback disconnected important->unimportant flagging for account:" << mailAccountId;
+        qCWarning(lcMailStore) << "Unable to rollback disconnected important->unimportant flagging for account:" << mailAccountId;
         return;
     }
 
@@ -513,11 +513,11 @@ void QMailDisconnected::flagMessages(const QMailMessageIdList &ids, quint64 setM
 {
     Q_UNUSED(description)
     if (setMask && !QMailStore::instance()->updateMessagesMetaData(QMailMessageKey::id(ids), setMask, true)) {
-        qMailLog(Messaging) << "Unable to flag messages:" << ids;
+        qCWarning(lcMailStore) << "Unable to flag messages:" << ids;
     }
 
     if (unsetMask && !QMailStore::instance()->updateMessagesMetaData(QMailMessageKey::id(ids), unsetMask, false)) {
-        qMailLog(Messaging) << "Unable to flag messages:" << ids;
+        qCWarning(lcMailStore) << "Unable to flag messages:" << ids;
     }
 }
 

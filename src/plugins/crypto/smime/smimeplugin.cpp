@@ -35,6 +35,7 @@
 ****************************************************************************/
 
 #include "smimeplugin.h"
+#include <qmaillog.h>
 
 QMailCryptoSMIME::QMailCryptoSMIME() : QMailCryptoGPGME(GPGME_PROTOCOL_CMS)
 {
@@ -78,7 +79,7 @@ QMailCryptoFwd::SignatureResult QMailCryptoSMIME::sign(QMailMessagePartContainer
                                                        const QStringList &keys) const
 {
     if (!part) {
-        qWarning() << "unable to sign a NULL part.";
+        qCWarning(lcMessaging) << "unable to sign a NULL part.";
         return QMailCryptoFwd::UnknownError;
     }
 

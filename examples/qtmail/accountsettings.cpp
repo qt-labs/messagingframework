@@ -370,7 +370,7 @@ void AccountSettings::activityChanged(QMailServiceAction::Activity activity)
 
                 action = action.arg(account.name()).arg(status.text);
 
-                qMailLog(Messaging) << "retrieveFolders failed:" << action;
+                qCDebug(lcMessaging) << "retrieveFolders failed:" << action;
                 statusDisplay->setVisible(false);
                 QMessageBox::warning(0, caption, action, QMessageBox::Ok);
             }
@@ -387,7 +387,7 @@ void AccountSettings::activityChanged(QMailServiceAction::Activity activity)
 
             action = action.arg(account.name()).arg(status.text);
 
-            qMailLog(Messaging) << "transmitMessages failed:" << action;
+            qCDebug(lcMessaging) << "transmitMessages failed:" << action;
             statusDisplay->setVisible(false);
             QMessageBox::warning(0, caption, action, QMessageBox::Ok);
         }

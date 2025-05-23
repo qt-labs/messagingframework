@@ -39,7 +39,6 @@
 #include <QFileInfo>
 #include <QTextStream>
 #include <QDBusArgument>
-#include <QtDebug>
 
 #ifndef USE_FANCY_MATCH_ALGORITHM
 #include <ctype.h>
@@ -225,7 +224,7 @@ LongStringFileMapping::~LongStringFileMapping()
     if (!filename.isEmpty()) {
         QMap<QString, QFileMapping>::iterator it = fileMap.find(filename);
         if (it == fileMap.end()) {
-            qWarning() << "Unable to find mapped file:" << filename;
+            qCWarning(lcMessaging) << "Unable to find mapped file:" << filename;
         } else {
             QFileMapping& fileMapping(it.value());
 
@@ -286,19 +285,19 @@ void LongStringFileMapping::map() const
                     fileMapping.file->close();
 
                     if (!fileMapping.mapping) {
-                        qWarning() << "Unable to map file:" << filename;
+                        qCWarning(lcMessaging) << "Unable to map file:" << filename;
                     }
                 } else {
-                    qWarning() << "Unable to open file for mapping:" << filename;
+                    qCWarning(lcMessaging) << "Unable to open file for mapping:" << filename;
                 }
             }
 
             buffer = fileMapping.mapping;
         } else {
-            qWarning() << "Unable to find file in fileMap:" << filename;
+            qCWarning(lcMessaging) << "Unable to find file in fileMap:" << filename;
         }
     } else {
-        qWarning() << "Trying to map on a unspecified file?";
+        qCWarning(lcMessaging) << "Trying to map on a unspecified file?";
     }
 }
 

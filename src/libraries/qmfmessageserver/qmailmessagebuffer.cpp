@@ -117,7 +117,7 @@ bool QMailMessageBuffer::setCallback(QMailMessage *message, QMailMessageBufferFl
 {
     if (!message) {
         // This message was not scheduled for adding or updating
-        qWarning() << "Adding null message to buffer";
+        qCWarning(lcMessaging) << "Adding null message to buffer";
         delete callback;
         return false;
     }

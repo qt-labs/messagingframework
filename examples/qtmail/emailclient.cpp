@@ -553,7 +553,7 @@ void EmailClient::resumeInterruptedComposition()
 
 bool EmailClient::startMessageServer()
 {
-    qMailLog(Messaging) << "Starting messageserver child process...";
+    qCDebug(lcMessaging) << "Starting messageserver child process...";
     if (m_messageServerProcess) delete m_messageServerProcess;
     m_messageServerProcess = new QProcess(this);
     connect(m_messageServerProcess,SIGNAL(error(QProcess::ProcessError)),
@@ -573,7 +573,7 @@ bool EmailClient::waitForMessageServer()
 {
     if (m_messageServerProcess)
     {
-        qMailLog(Messaging) << "Shutting down messageserver child process..";
+        qCDebug(lcMessaging) << "Shutting down messageserver child process..";
         bool result = m_messageServerProcess->waitForFinished();
         delete m_messageServerProcess; m_messageServerProcess = 0;
         return result;
@@ -613,7 +613,7 @@ bool EmailClient::cleanExit(bool force)
 
     if (isTransmitting()) {
         if (force) {
-            qMailLog(Messaging) << "EmailClient::cleanExit: forcing cancel to exit";
+            qCDebug(lcMessaging) << "EmailClient::cleanExit: forcing cancel to exit";
             cancelOperation();   //abort all transfer
         }
         result = false;
@@ -1520,7 +1520,7 @@ void EmailClient::transferFailure(const QMailAccountId& accountId, const QString
             action = action.arg(tr("message")).arg(text);
         }
 
-        qMailLog(Messaging) << "transferFailure:" << caption << '-' << action;
+        qCDebug(lcMessaging) << "transferFailure:" << caption << '-' << action;
         if (code != QMailServiceAction::Status::ErrCancel) {
             clearStatusText();
             QMessageBox::warning(0, caption, action, QMessageBox::Ok);
@@ -1998,7 +1998,7 @@ void EmailClient::flagRetrievalActivityChanged(QMailServiceAction::Activity acti
         if (activity == QMailServiceAction::Failed) {
             // Report failure
             const QMailServiceAction::Status status(action->status());
-            qMailLog(Messaging) << "Failed to update message flags -" << status.text << "(" << status.errorCode << ")";
+            qCDebug(lcMessaging) << "Failed to update message flags -" << status.text << "(" << status.errorCode << ")";
             flagMessageIds.clear();
         } else if (activity != QMailServiceAction::Successful) {
             return;

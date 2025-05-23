@@ -32,10 +32,10 @@
 ****************************************************************************/
 
 #include "qmailpluginmanager.h"
+#include "qmaillog.h"
 #include <QMap>
 #include <QPluginLoader>
 #include <QDir>
-#include <QtDebug>
 #include <QCoreApplication>
 #include <qmailnamespace.h>
 
@@ -176,11 +176,11 @@ QObject* QMailPluginManager::instance(const QString& name)
         if (d->pluginMap[name]->load()) {
             return d->pluginMap[name]->instance();
         } else {
-            qWarning() << "Error loading" << name << "with errorString()" << d->pluginMap[name]->errorString();
+            qCWarning(lcMessaging) << "Error loading" << name << "with errorString()" << d->pluginMap[name]->errorString();
             return 0;
         }
     } else {
-        qWarning() << "Could not find" << name << "to load";
+        qCWarning(lcMessaging) << "Could not find" << name << "to load";
         return 0;
     }
 }

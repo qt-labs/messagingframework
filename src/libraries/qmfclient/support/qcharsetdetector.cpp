@@ -33,6 +33,7 @@
 
 #include "qcharsetdetector.h"
 #include "qcharsetdetector_p.h"
+#include "qmaillog.h"
 
 #include <unicode/utypes.h>
 #include <unicode/uversion.h>
@@ -45,7 +46,6 @@
 #include <QString>
 #include <QStringList>
 #include <QTextCodec>
-#include "qmaillog.h"
 
 QCharsetMatchPrivate::QCharsetMatchPrivate()
     : _confidence(0),
@@ -178,7 +178,7 @@ QCharsetDetectorPrivate::QCharsetDetectorPrivate()
 {
     _uCharsetDetector = ucsdet_open(&_status);
     if (hasError())
-        qWarning() << __PRETTY_FUNCTION__ << errorString();
+        qCWarning(lcMessaging) << __PRETTY_FUNCTION__ << errorString();
 }
 
 QCharsetDetectorPrivate::~QCharsetDetectorPrivate()
@@ -277,7 +277,7 @@ void QCharsetDetector::setText(const QByteArray &ba)
 
     ucsdet_setText(d->_uCharsetDetector, d->_baExtended.constData(), int32_t(-1), &(d->_status));
     if (hasError())
-        qWarning() << __PRETTY_FUNCTION__ << errorString();
+        qCWarning(lcMessaging) << __PRETTY_FUNCTION__ << errorString();
 }
 
 QCharsetMatch QCharsetDetector::detect()
@@ -292,7 +292,7 @@ QCharsetMatch QCharsetDetector::detect()
     Q_D(QCharsetDetector);
     QList<QCharsetMatch> qCharsetMatchList = detectAll();
     if (hasError()) {
-        qWarning() << __PRETTY_FUNCTION__ << errorString();
+        qCWarning(lcMessaging) << __PRETTY_FUNCTION__ << errorString();
         return QCharsetMatch();
     }
     if (qCharsetMatchList.isEmpty()) {
@@ -300,7 +300,7 @@ QCharsetMatch QCharsetDetector::detect()
         // error if no matches are found which the previous
         // if (hasError()) should detect.
         d->_status = U_CE_NOT_FOUND_ERROR;
-        qWarning() << __PRETTY_FUNCTION__
+        qCWarning(lcMessaging) << __PRETTY_FUNCTION__
                    << "no matches found at all" << errorString();
         return QCharsetMatch();
     }
@@ -316,7 +316,7 @@ QList<QCharsetMatch> QCharsetDetector::detectAll()
     const UCharsetMatch **uCharsetMatch
         = ucsdet_detectAll(d->_uCharsetDetector, &matchesFound, &(d->_status));
     if (hasError()) {
-        qWarning() << __PRETTY_FUNCTION__ << errorString();
+        qCWarning(lcMessaging) << __PRETTY_FUNCTION__ << errorString();
         return QList<QCharsetMatch>();
     }
     // sometimes the number of matches found by ucsdet_detectAll()
@@ -332,19 +332,19 @@ QList<QCharsetMatch> QCharsetDetector::detectAll()
         qCharsetMatch.setName(
             QString::fromLatin1(ucsdet_getName(uCharsetMatch[i], &(d->_status))));
         if (hasError()) {
-            qWarning() << __PRETTY_FUNCTION__ << errorString();
+            qCWarning(lcMessaging) << __PRETTY_FUNCTION__ << errorString();
             return QList<QCharsetMatch>();
         }
         qCharsetMatch.setConfidence(
             static_cast<qint32>(ucsdet_getConfidence (uCharsetMatch[i], &(d->_status))));
         if (hasError()) {
-            qWarning() << __PRETTY_FUNCTION__ << errorString();
+            qCWarning(lcMessaging) << __PRETTY_FUNCTION__ << errorString();
             return QList<QCharsetMatch>();
         }
         qCharsetMatch.setLanguage(
             QString::fromLatin1(ucsdet_getLanguage(uCharsetMatch[i], &(d->_status))));
         if (hasError()) {
-            qWarning() << __PRETTY_FUNCTION__ << errorString();
+            qCWarning(lcMessaging) << __PRETTY_FUNCTION__ << errorString();
             return QList<QCharsetMatch>();
         }
         qCharsetMatchList << qCharsetMatch;
@@ -594,7 +594,7 @@ QList<QCharsetMatch> QCharsetDetector::detectAll()
     if (qCharsetMatchList.isEmpty()) {
         // is there any better status to describe this case?
         d->_status = U_CE_NOT_FOUND_ERROR;
-        qWarning() << __PRETTY_FUNCTION__
+        qCWarning(lcMessaging) << __PRETTY_FUNCTION__
                  << "number of matches found=0"
                  << errorString();
         return QList<QCharsetMatch>();
@@ -610,7 +610,7 @@ QString QCharsetDetector::text(const QCharsetMatch &charsetMatch)
         = QTextCodec::codecForName(charsetMatch.name().toLatin1());
     if (codec == NULL) { // there is no codec matching the name
         d->_status = U_ILLEGAL_ARGUMENT_ERROR;
-        qWarning() << __PRETTY_FUNCTION__
+        qCWarning(lcMessaging) << __PRETTY_FUNCTION__
                  << "no codec for the name" << charsetMatch.name()
                  << errorString();
         // return empty string to indicate that no conversion is possible:
@@ -645,7 +645,7 @@ void QCharsetDetector::setDeclaredEncoding(const QString &encoding)
                                int32_t(-1),
                                &(d->_status));
     if (hasError())
-        qWarning() << __PRETTY_FUNCTION__ << errorString();
+        qCWarning(lcMessaging) << __PRETTY_FUNCTION__ << errorString();
 }
 
 QStringList QCharsetDetector::getAllDetectableCharsets()

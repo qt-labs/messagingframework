@@ -120,9 +120,9 @@ static void enumerateCodecs()
 
     if (!enumerated)
     {
-        qWarning() << "Available codecs:";
+        qCDebug(lcMessaging) << "Available codecs:";
         foreach (const QByteArray& codec, QTextCodec::availableCodecs())
-            qWarning() << "  " << codec;
+            qCDebug(lcMessaging) << "  " << codec;
 
         enumerated = true;
     }
@@ -274,7 +274,7 @@ QTextCodec* QMailCodec::codecForName(const QByteArray& charset, bool translateAs
         QTextCodec* codec = QTextCodec::codecForName(encoding);
         if (!codec)
         {
-            qWarning() << "QMailCodec::codecForName - Unable to find codec for charset" << encoding;
+            qCWarning(lcMessaging) << "QMailCodec::codecForName - Unable to find codec for charset" << encoding;
             enumerateCodecs();
         }
 
@@ -687,7 +687,7 @@ void QMailBase64Codec::decodeChunk(QDataStream& out, const char* it, int length,
         int bufferedBytesRemaining = _decodeBufferOut - _decodeBuffer;
         if (bufferedBytesRemaining > 0)
         {
-            qWarning() << "Huh? bytes remaining:" << bufferedBytesRemaining;
+            qCWarning(lcMessaging) << "Huh? bytes remaining:" << bufferedBytesRemaining;
         }
     }
 }
@@ -1018,7 +1018,7 @@ void QMailQuotedPrintableCodec::decodeChunk(QDataStream& out, const char* it, in
 
     if (finalChunk && _decodePrecedingInput != NilPreceding)
     {
-        qWarning() << "Huh? unfinished escape sequence...";
+        qCWarning(lcMessaging) << "Huh? unfinished escape sequence...";
     }
 }
 

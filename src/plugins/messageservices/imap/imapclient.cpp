@@ -35,8 +35,8 @@
 #include "imapauthenticator.h"
 #include "imapconfiguration.h"
 #include "imapstrategy.h"
+#include "imaplog.h"
 #include <longstream_p.h>
-#include <qmaillog.h>
 #include <qmailmessagebuffer.h>
 #include <qmailfolder.h>
 #include <qmailnamespace.h>
@@ -110,7 +110,7 @@ namespace {
         folder->setStatus(QMailFolder::ChildCreationPermitted, childCreationPermitted);
         folder->setStatus(QMailFolder::MessagesPermitted, messagesPermitted);
         if (!folder->id().isValid()) {
-            qWarning() << "setFolderFlags must be called on folder in store " << folder->id();
+            qCWarning(lcIMAP) << "setFolderFlags must be called on folder in store " << folder->id();
             return;
         }
 
@@ -152,20 +152,20 @@ namespace {
                     // So call exportUpdates before retrieveFolderList
                     QMailMessageKey oldFolderKey(QMailMessageKey::parentFolderId(oldFolderId));
                     if (!QMailStore::instance()->updateMessagesMetaData(oldFolderKey, messageFlag, false)) {
-                        qWarning() << "Unable to update messages in folder" << oldFolderId << "to remove flag" << flagNames;
+                        qCWarning(lcMailStore) << "Unable to update messages in folder" << oldFolderId << "to remove flag" << flagNames;
                     }
                     if (!QMailStore::instance()->updateFolder(&oldFolder)) {
-                        qWarning() << "Unable to update folder" << oldFolderId << "to remove flag" << flagNames;
+                        qCWarning(lcMailStore) << "Unable to update folder" << oldFolderId << "to remove flag" << flagNames;
                     }
                 }
                 if (!oldFolderId.isValid() || (oldFolderId != folder->id())) {
                     account->setStandardFolder(standardFolder, folder->id());
                     if (!QMailStore::instance()->updateAccount(account)) {
-                        qWarning() << "Unable to update account" << account->id() << "to set flag" << flagNames;
+                        qCWarning(lcMailStore) << "Unable to update account" << account->id() << "to set flag" << flagNames;
                     }
                     QMailMessageKey folderKey(QMailMessageKey::parentFolderId(folder->id()));
                     if (!QMailStore::instance()->updateMessagesMetaData(folderKey, messageFlag, true)) {
-                        qWarning() << "Unable to update messages in folder" << folder->id() << "to set flag" << flagNames;
+                        qCWarning(lcMailStore) << "Unable to update messages in folder" << folder->id() << "to set flag" << flagNames;
                     }
                 }
             }
@@ -239,14 +239,14 @@ void IdleProtocol::logIn()
         connect(_credentials, &QMailCredentialsInterface::statusChanged,
                 this, &IdleProtocol::onCredentialsStatusChanged);
     } else {
-        qMailLog(IMAP) << objectName() << "credential retrieval failed with:" << _credentials->lastError();
+        qCWarning(lcIMAP) << objectName() << "credential retrieval failed with:" << _credentials->lastError();
         idleTransportError();
     }
 }
 
 void IdleProtocol::onCredentialsStatusChanged()
 {
-    qMailLog(IMAP) << objectName() << "Got credential status changed" << _credentials->status();
+    qCDebug(lcIMAP) << objectName() << "Got credential status changed" << _credentials->status();
 
     disconnect(_credentials, &QMailCredentialsInterface::statusChanged,
                this, &IdleProtocol::onCredentialsStatusChanged);
@@ -268,7 +268,7 @@ void IdleProtocol::idleContinuation(ImapCommand command, const QString &type)
 {
     if (command == IMAP_Idle) {
         if (type == QString("idling")) {
-            qMailLog(IMAP) << objectName() << "IDLE: Idle connection established.";
+            qCDebug(lcIMAP) << objectName() << "IDLE: Idle connection established.";
 
             // We are now idling
             _timeoutTimer.stop();
@@ -277,15 +277,15 @@ void IdleProtocol::idleContinuation(ImapCommand command, const QString &type)
 
             _client->setIdlingForFolder(_folder.id());
         } else if (type == QString("newmail")) {
-            qMailLog(IMAP) << objectName() << "IDLE: new mail event occurred";
+            qCDebug(lcIMAP) << objectName() << "IDLE: new mail event occurred";
             // A new mail event occurred during idle
             emit idleNewMailNotification(_folder.id());
         } else if (type == QString("flagschanged")) {
-            qMailLog(IMAP) << objectName() << "IDLE: flags changed event occurred";
+            qCDebug(lcIMAP) << objectName() << "IDLE: flags changed event occurred";
             // A flags changed event occurred during idle
             emit idleFlagsChangedNotification(_folder.id());
         } else {
-            qWarning("idleContinuation: unknown continuation event");
+            qCWarning(lcIMAP) << "idleContinuation: unknown continuation event";
         }
     }
 }
@@ -365,7 +365,7 @@ void IdleProtocol::idleCommandTransition(const ImapCommand command, const Operat
         }
         default:        //default = all critical messages
         {
-            qMailLog(IMAP) << objectName() << "IDLE: IMAP Idle unknown command response: " << command;
+            qCWarning(lcIMAP) << objectName() << "IDLE: IMAP Idle unknown command response: " << command;
             return;
         }
     }
@@ -381,7 +381,7 @@ void IdleProtocol::idleRenew()
 
 void IdleProtocol::idleTransportError()
 {
-    qMailLog(IMAP) << objectName()
+    qCWarning(lcIMAP) << objectName()
                    << "IDLE: An IMAP IDLE related error occurred.";
 
     if (inUse())
@@ -529,7 +529,7 @@ void ImapClient::checkCommandResponse(ImapCommand command, OperationStatus statu
             case IMAP_Enable:
             {
                 // Couldn't enable QRESYNC, remove capability and continue
-                qMailLog(IMAP) << _protocol.objectName() << "unable to enable QRESYNC";
+                qCWarning(lcIMAP) << _protocol.objectName() << "unable to enable QRESYNC";
                 QStringList capa(_protocol.capabilities());
                 capa.removeAll("QRESYNC");
                 capa.removeAll("CONDSTORE");
@@ -540,7 +540,7 @@ void ImapClient::checkCommandResponse(ImapCommand command, OperationStatus statu
             case IMAP_UIDStore:
             {
                 // Couldn't set a flag, ignore as we can stil continue
-                qMailLog(IMAP) << _protocol.objectName() << "could not store message flag";
+                qCWarning(lcIMAP) << _protocol.objectName() << "could not store message flag";
                 commandTransition(command, OpOk);
                 break;
             }
@@ -692,7 +692,7 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
                 imapCfg.setPushCapable(_protocol.supportsCapability("IDLE"));
                 imapCfg.setCapabilities(_protocol.capabilities());
                 if (!QMailStore::instance()->updateAccount(&account, &config)) {
-                    qWarning() << "Unable to update account" << account.id() << "to set imap4 configuration";
+                    qCWarning(lcMailStore) << "Unable to update account" << account.id() << "to set imap4 configuration";
                 }
             }
             // After logging in server capabilities reported may change so we need to
@@ -782,7 +782,7 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
 
                 if (modified) {
                     if (!QMailStore::instance()->updateFolder(&folder)) {
-                        qWarning() << "Unable to update folder" << folder.id() << "to update server counts!";
+                        qCWarning(lcMailStore) << "Unable to update folder" << folder.id() << "to update server counts!";
                     }
                 }
             }
@@ -810,7 +810,7 @@ void ImapClient::mailboxListed(const QString &flags, const QString &path)
     QString mailboxPath;
 
     if (_protocol.delimiterUnknown())
-        qWarning() << "Delimiter has not yet been discovered, which is essential to know the structure of a mailbox";
+        qCWarning(lcIMAP) << "Delimiter has not yet been discovered, which is essential to know the structure of a mailbox";
 
     QStringList list = _protocol.flatHierarchy() ? QStringList(path) : path.split(_protocol.delimiter());
 
@@ -833,7 +833,7 @@ void ImapClient::mailboxListed(const QString &flags, const QString &path)
 
                 if (folder.status() != folderOriginal.status()) {
                     if (!QMailStore::instance()->updateFolder(&folder)) {
-                        qWarning() << "Unable to update folder for account:" << folder.parentAccountId() << "path:" << folder.path();
+                        qCWarning(lcMailStore) << "Unable to update folder for account:" << folder.parentAccountId() << "path:" << folder.path();
                     }
                 }
 
@@ -875,14 +875,14 @@ void ImapClient::mailboxListed(const QString &flags, const QString &path)
                 (path.startsWith(baseFolder, Qt::CaseInsensitive) && (path.length() == baseFolder.length())) ||
                 (path.startsWith(baseFolder + _protocol.delimiter(), Qt::CaseInsensitive))) {
                 if (!QMailStore::instance()->addFolder(&folder)) {
-                    qWarning() << "Unable to add folder for account:" << folder.parentAccountId() << "path:" << folder.path();
+                    qCWarning(lcMailStore) << "Unable to add folder for account:" << folder.parentAccountId() << "path:" << folder.path();
                 }
                 else {
                     //set inbox as standardFolder
                     if (QString::compare(path, "INBOX", Qt::CaseInsensitive) == 0) {
                         account.setStandardFolder(QMailFolder::InboxFolder, folder.id());
                         if (!QMailStore::instance()->updateAccount(&account)) {
-                            qWarning() << "Unable to update account" << account.id();
+                            qCWarning(lcMailStore) << "Unable to update account" << account.id();
                         }
                     }
                 }
@@ -892,7 +892,7 @@ void ImapClient::mailboxListed(const QString &flags, const QString &path)
             _strategyContext->mailboxListed(folder, folderFlags);
 
             if (!QMailStore::instance()->updateFolder(&folder)) {
-                qWarning() << "Unable to update folder for account:" << folder.parentAccountId() << "path:" << folder.path();
+                qCWarning(lcMailStore) << "Unable to update folder for account:" << folder.parentAccountId() << "path:" << folder.path();
             }
 
             boxId = mailboxId(mailboxPath);
@@ -979,7 +979,7 @@ void ImapClient::messageFetched(QMailMessage& mail, const QString &detachedFilen
                 mail.setStatus(QMailMessage::PartialContentAvailable, true);
             }
         } else {
-            qWarning() << "Unable to find existing message for uid:" << mail.serverUid() << "account:" << _accountId;
+            qCWarning(lcIMAP) << "Unable to find existing message for uid:" << mail.serverUid() << "account:" << _accountId;
         }
     }
     mail.setCustomField("qmf-detached-filename", detachedFilename);
@@ -1107,7 +1107,7 @@ public:
     {
         QFile file(_fileName);
         if (!file.open(QIODevice::WriteOnly)) {
-            qWarning() << "Unable to open file for writing:" << _fileName;
+            qCWarning(lcMailStore) << "Unable to open file for writing:" << _fileName;
             return false;
         }
 
@@ -1117,7 +1117,7 @@ public:
 
         QDataStream out(&file);
         if (!body.toStream(out, outputFormat)) {
-            qWarning() << "Unable to write existing body to file:" << _fileName;
+            qCWarning(lcMailStore) << "Unable to write existing body to file:" << _fileName;
             return false;
         }
 
@@ -1155,18 +1155,18 @@ public:
 
             if (!existingFile.exists()) {
                 if (!QFile::copy(fileName, _fileName)) {
-                    qWarning() << "Unable to copy - fileName:" << fileName << "_fileName:" << _fileName;
+                    qCWarning(lcMailStore) << "Unable to copy - fileName:" << fileName << "_fileName:" << _fileName;
                     return false;
                 }
             } else if (existingFile.open(QIODevice::Append)) {
                 // On windows, this file will be unwriteable if it is open elsewhere
                 if (dataFile.open(QIODevice::ReadOnly)) {
                     if (!copyFileData(dataFile, existingFile)) {
-                        qWarning() << "Unable to append data to file:" << _fileName;
+                        qCWarning(lcMailStore) << "Unable to append data to file:" << _fileName;
                         return false;
                     }
                 } else {
-                    qWarning() << "Unable to open new data for read:" << fileName;
+                    qCWarning(lcMailStore) << "Unable to open new data for read:" << fileName;
                     return false;
                 }
             } else if (existingFile.open(QIODevice::ReadOnly)) {
@@ -1175,19 +1175,19 @@ public:
                     qint64 dataLength = QFileInfo(dataFile).size();
 
                     if (!dataFile.resize(existingLength + dataLength)) {
-                        qWarning() << "Unable to resize data file:" << fileName;
+                        qCWarning(lcMailStore) << "Unable to resize data file:" << fileName;
                         return false;
                     } else {
                         QFile readDataFile(fileName);
                         if (!readDataFile.open(QIODevice::ReadOnly)) {
-                            qWarning() << "Unable to reopen data file for read:" << fileName;
+                            qCWarning(lcMailStore) << "Unable to reopen data file for read:" << fileName;
                             return false;
                         }
 
                         // Copy the data to the end of the file
                         dataFile.seek(existingLength);
                         if (!copyFileData(readDataFile, dataFile, dataLength)) {
-                            qWarning() << "Unable to copy existing data in file:" << fileName;
+                            qCWarning(lcMailStore) << "Unable to copy existing data in file:" << fileName;
                             return false;
                         }
                     }
@@ -1195,34 +1195,34 @@ public:
                     // Copy the existing data before the new data
                     dataFile.seek(0);
                     if (!copyFileData(existingFile, dataFile, existingLength)) {
-                        qWarning() << "Unable to copy existing data to file:" << fileName;
+                        qCWarning(lcMailStore) << "Unable to copy existing data to file:" << fileName;
                         return false;
                     }
                 } else {
-                    qWarning() << "Unable to open new data for write:" << fileName;
+                    qCWarning(lcMailStore) << "Unable to open new data for write:" << fileName;
                     return false;
                 }
 
                 // The complete data is now in the new file
                 if (!QFile::remove(_fileName)) {
-                    qWarning() << "Unable to remove pre-existing:" << _fileName;
+                    qCWarning(lcMailStore) << "Unable to remove pre-existing:" << _fileName;
                     return false;
                 }
 
                 _fileName = fileName;
                 return true;
             } else {
-                qWarning() << "Unable to open:" << _fileName;
+                qCWarning(lcMailStore) << "Unable to open:" << _fileName;
                 return false;
             }
         }
 
         if (!QFile::remove(fileName)) {
-            qWarning() << "Unable to remove:" << fileName;
+            qCWarning(lcMailStore) << "Unable to remove:" << fileName;
             return false;
         }
         if (!QFile::rename(_fileName, fileName)) {
-            qWarning() << "Unable to rename:" << _fileName << fileName;
+            qCWarning(lcMailStore) << "Unable to rename:" << _fileName << fileName;
             return false;
         }
 
@@ -1261,12 +1261,12 @@ void ImapClient::dataFetched(const QString &uid, const QString &section, const Q
                 // Write the existing data to a temporary file
                 TemporaryFile tempFile("mail-" + uid + "-body");
                 if (!tempFile.write(mail->body())) {
-                    qWarning() << "Unable to write existing body to file:" << tempFile.fileName();
+                    qCWarning(lcMailStore) << "Unable to write existing body to file:" << tempFile.fileName();
                     return;
                 }
 
                 if (!tempFile.appendAndReplace(fileName)) {
-                    qWarning() << "Unable to append data to existing body file:" << tempFile.fileName();
+                    qCWarning(lcMailStore) << "Unable to append data to existing body file:" << tempFile.fileName();
                     return;
                 } else {
                     // The appended content file is now named 'fileName'
@@ -1287,10 +1287,10 @@ void ImapClient::dataFetched(const QString &uid, const QString &section, const Q
             // This is data for a sub-part of the message
             QMailMessagePart::Location partLocation(section);
             if (!partLocation.isValid(false)) {
-                qWarning() << "Unable to locate part for invalid section:" << section;
+                qCWarning(lcIMAP) << "Unable to locate part for invalid section:" << section;
                 return;
             } else if (!mail->contains(partLocation)) {
-                qWarning() << "Unable to update invalid part for section:" << section;
+                qCWarning(lcIMAP) << "Unable to update invalid part for section:" << section;
                 return;
             }
 
@@ -1301,7 +1301,7 @@ void ImapClient::dataFetched(const QString &uid, const QString &section, const Q
             if (part.hasUndecodedData()) {
                 QFile file(fileName);
                 if (!file.open(QIODevice::ReadOnly)) {
-                    qWarning() << "Unable to read undecoded data from:" << fileName << "- error:" << file.error();
+                    qCWarning(lcMailStore) << "Unable to read undecoded data from:" << fileName << "- error:" << file.error();
                     operationFailed(QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to read fetched data"));
                     return;
                 }
@@ -1315,12 +1315,12 @@ void ImapClient::dataFetched(const QString &uid, const QString &section, const Q
                 // Write the existing data to a temporary file
                 TemporaryFile tempFile("mail-" + uid + "-part-" + section);
                 if (!tempFile.write(part.body())) {
-                    qWarning() << "Unable to write existing body to file:" << tempFile.fileName();
+                    qCWarning(lcMailStore) << "Unable to write existing body to file:" << tempFile.fileName();
                     return;
                 }
 
                 if (!tempFile.appendAndReplace(fileName)) {
-                    qWarning() << "Unable to append data to existing body file:" << tempFile.fileName();
+                    qCWarning(lcMailStore) << "Unable to append data to existing body file:" << tempFile.fileName();
                     return;
                 } else {
                     // The appended content file is now named 'fileName'
@@ -1344,14 +1344,14 @@ void ImapClient::dataFetched(const QString &uid, const QString &section, const Q
                 // Find the part bodies in the retrieved data
                 QFile file(fileName);
                 if (!file.open(QIODevice::ReadOnly)) {
-                    qWarning() << "Unable to read fetched data from:" << fileName << "- error:" << file.error();
+                    qCWarning(lcMailStore) << "Unable to read fetched data from:" << fileName << "- error:" << file.error();
                     operationFailed(QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to read fetched data"));
                     return;
                 }
 
                 uchar *data = file.map(0, size);
                 if (!data) {
-                    qWarning() << "Unable to map fetched data from:" << fileName << "- error:" << file.error();
+                    qCWarning(lcMailStore) << "Unable to map fetched data from:" << fileName << "- error:" << file.error();
                     operationFailed(QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to map fetched data"));
                     return;
                 }
@@ -1381,7 +1381,7 @@ void ImapClient::dataFetched(const QString &uid, const QString &section, const Q
         callbacks << callback;
         QMailMessageBuffer::instance()->setCallback(mail, callback);
     } else {
-        qWarning() << "Unable to handle dataFetched - uid:" << uid << "section:" << section;
+        qCWarning(lcIMAP) << "Unable to handle dataFetched - uid:" << uid << "section:" << section;
         operationFailed(QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to handle dataFetched without context"));
     }
 }
@@ -1410,10 +1410,10 @@ void ImapClient::partHeaderFetched(const QString &uid, const QString &section, c
         // This is data for a sub-part of the message
         QMailMessagePart::Location partLocation(section);
         if (!partLocation.isValid(false)) {
-            qWarning() << "Unable to locate part for invalid section:" << section;
+            qCWarning(lcIMAP) << "Unable to locate part for invalid section:" << section;
             return;
         } else if (!mail->contains(partLocation)) {
-            qWarning() << "Unable to update invalid part for section:" << section;
+            qCWarning(lcIMAP) << "Unable to update invalid part for section:" << section;
             return;
         }
 
@@ -1421,7 +1421,7 @@ void ImapClient::partHeaderFetched(const QString &uid, const QString &section, c
 
         QFile file(fileName);
         if (!file.open(QIODevice::ReadOnly)) {
-            qWarning() << "Unable to read undecoded data from:" << fileName << "- error:" << file.error();
+            qCWarning(lcMailStore) << "Unable to read undecoded data from:" << fileName << "- error:" << file.error();
             operationFailed(QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to read fetched data"));
             return;
         }
@@ -1439,7 +1439,7 @@ void ImapClient::partHeaderFetched(const QString &uid, const QString &section, c
         callbacks << callback;
         QMailMessageBuffer::instance()->setCallback(mail, callback);
     } else {
-        qWarning() << "Unable to handle partHeaderFetched - uid:" << uid << "section:" << section;
+        qCWarning(lcIMAP) << "Unable to handle partHeaderFetched - uid:" << uid << "section:" << section;
         operationFailed(QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to handle partHeaderFetched without context"));
     }
 }
@@ -1498,7 +1498,7 @@ void ImapClient::setupAccount() const
     }
 
     if (updated && !QMailStore::instance()->updateAccount(&account)) {
-        qWarning() << "Unable to setup account status" << account.id();
+        qCWarning(lcMailStore) << "Unable to setup account status" << account.id();
     }
 }
 
@@ -1712,7 +1712,7 @@ void ImapClient::monitor(const QMailFolderIdList &mailboxIds)
 
     foreach(const QMailFolderId &id, _monitored.keys()) {
         if (!mailboxIds.contains(id)) {
-            qMailLog(IMAP) << "stop monitoring folder" << id;
+            qCDebug(lcIMAP) << "stop monitoring folder" << id;
             IdleProtocol *protocol = _monitored.take(id);
             protocol->close(); // Instead of closing could reuse below in some cases
             delete protocol;
@@ -1729,7 +1729,7 @@ void ImapClient::monitor(const QMailFolderIdList &mailboxIds)
 
     foreach(QMailFolderId id, mailboxIds) {
         if (!_monitored.contains(id)) {
-            qMailLog(IMAP) << "start monitoring folder" << id;
+            qCDebug(lcIMAP) << "start monitoring folder" << id;
             ++count;
             IdleProtocol *protocol = new IdleProtocol(this, QMailFolder(id), _credentials);
             protocol->setObjectName(QString("I:%1").arg(count));
@@ -1781,7 +1781,7 @@ void ImapClient::logIn()
         connect(_credentials, &QMailCredentialsInterface::statusChanged,
                 this, &ImapClient::onCredentialsStatusChanged);
     } else {
-        qMailLog(IMAP) << "credential retrieval failed with:" << _credentials->lastError();
+        qCWarning(lcIMAP) << "credential retrieval failed with:" << _credentials->lastError();
         operationFailed(QMailServiceAction::Status::ErrConfiguration,
                         _credentials->lastError());
     }
@@ -1789,7 +1789,7 @@ void ImapClient::logIn()
 
 void ImapClient::onCredentialsStatusChanged()
 {
-    qMailLog(IMAP)  << "Got credential status changed" << _credentials->status();
+    qCDebug(lcIMAP)  << "Got credential status changed" << _credentials->status();
 
     disconnect(_credentials, &QMailCredentialsInterface::statusChanged,
                this, &ImapClient::onCredentialsStatusChanged);

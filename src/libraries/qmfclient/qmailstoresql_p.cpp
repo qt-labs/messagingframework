@@ -430,7 +430,7 @@ static QString messagePropertyName(QMailMessageKey::Property property)
 
     if ((property != QMailMessageKey::AncestorFolderIds) &&
         (property != QMailMessageKey::Custom))
-        qWarning() << "Unknown message property:" << property;
+        qCWarning(lcMailStore) << "Unknown message property:" << property;
 
     return QString();
 }
@@ -469,7 +469,7 @@ static QString accountPropertyName(QMailAccountKey::Property property)
         return it.value();
 
     if (property != QMailAccountKey::Custom)
-        qWarning() << "Unknown account property:" << property;
+        qCWarning(lcMailStore) << "Unknown account property:" << property;
 
     return QString();
 }
@@ -510,7 +510,7 @@ static QString folderPropertyName(QMailFolderKey::Property property)
 
     if ((property != QMailFolderKey::AncestorFolderIds) &&
         (property != QMailFolderKey::Custom))
-        qWarning() << "Unknown folder property:" << property;
+        qCWarning(lcMailStore) << "Unknown folder property:" << property;
 
     return QString();
 }
@@ -551,7 +551,7 @@ static QString threadPropertyName(QMailThreadKey::Property property)
     if (it != map.end())
         return it.value();
 
-   qWarning() << "Unknown thread property:" << property;
+   qCWarning(lcMailStore) << "Unknown thread property:" << property;
 
     return QString();
 }
@@ -2465,7 +2465,7 @@ QMailStoreSql::AttemptResult evaluate(QMailStoreSql::WriteAccess, FunctionType f
 
     // Ensure that the transaction was committed
     if ((result == QMailStoreSql::Success) && !t.committed()) {
-        qWarning() << pid << "Failed to commit successful" << qPrintable(description) << "!";
+        qCWarning(lcMailStore) << pid << "Failed to commit successful" << qPrintable(description) << "!";
     }
 
     return result;
@@ -2626,7 +2626,7 @@ bool QMailStoreSql::initStore(const QString &localFolderName)
     errorCode = QMailStore::StorageInaccessible;
 
     if (!database()->isOpen()) {
-        qWarning() << "Unable to open database in initStore!";
+        qCWarning(lcMailStore) << "Unable to open database in initStore!";
         return false;
     }
 
@@ -2795,23 +2795,23 @@ bool QMailStoreSql::initStore(const QString &localFolderName)
                                             63, true, const_cast<quint64 *>(&QMailMessage::CalendarCancellation), t, false);
 
         if (res) {
-            qWarning() << "There was an error registering flags.";
+            qCWarning(lcMailStore) << "There was an error registering flags.";
             return false;
         }
 
         if ((countMessages(QMailMessageKey()) != 0)
             && (countThreads(QMailThreadKey()) == 0)) {
             if (!fullThreadTableUpdate())
-                qWarning() << Q_FUNC_INFO << "Full thread's table update is not completed.";
+                qCWarning(lcMailStore) << Q_FUNC_INFO << "Full thread's table update is not completed.";
         }
 
         if (!setupFolders(QList<FolderInfo>() << FolderInfo(QMailFolder::LocalStorageFolderId, localFolderName, QMailFolder::MessagesPermitted))) {
-            qWarning() << "Error setting up folders";
+            qCWarning(lcMailStore) << "Error setting up folders";
             return false;
         }
 
         if (!t.commit()) {
-            qWarning() << "Could not commit setup operation to database";
+            qCWarning(lcMailStore) << "Could not commit setup operation to database";
             return false;
         }
 
@@ -2822,16 +2822,16 @@ bool QMailStoreSql::initStore(const QString &localFolderName)
         QSqlQuery query( *database() );
         query.exec(QLatin1String("PRAGMA journal_mode=WAL;")); // enable write ahead logging
         if (query.next() && query.value(0).toString().toLower() != QLatin1String("wal")) {
-            qWarning() << "res" << query.value(0).toString().toLower();
-            qWarning() << "INCORRECT DATABASE FORMAT!!! EXPECT SLOW DATABASE PERFORMANCE!!!";
-            qWarning() << "WAL mode disabled. Please delete $QMF_DATA directory, and/or update sqlite to >= 3.7.";
+            qCWarning(lcMailStore) << "res" << query.value(0).toString().toLower();
+            qCWarning(lcMailStore) << "INCORRECT DATABASE FORMAT!!! EXPECT SLOW DATABASE PERFORMANCE!!!";
+            qCWarning(lcMailStore) << "WAL mode disabled. Please delete $QMF_DATA directory, and/or update sqlite to >= 3.7.";
         }
     }
     {
         // Reduce page cache from 2MB (2000 pages) to 1MB
         QSqlQuery query( *database() );
         if (!query.exec(QLatin1String("PRAGMA cache_size=1000;"))) {
-            qWarning() << "Unable to reduce page cache size" << query.lastQuery().simplified();
+            qCWarning(lcMailStore) << "Unable to reduce page cache size" << query.lastQuery().simplified();
         }
     }
 #if defined(QMF_NO_DURABILITY) || defined(QMF_NO_SYNCHRONOUS_DB)
@@ -2839,9 +2839,9 @@ bool QMailStoreSql::initStore(const QString &localFolderName)
     {
         // Use sqlite synchronous=OFF does not protect integrity of database does not ensure durability
         QSqlQuery query( *database() );
-        qWarning() << "Disabling synchronous writes, database may become corrupted!";
+        qCWarning(lcMailStore) << "Disabling synchronous writes, database may become corrupted!";
         if (!query.exec(QLatin1String("PRAGMA synchronous=OFF;"))) {
-            qWarning() << "Unable to set synchronous mode to OFF" << query.lastQuery().simplified();
+            qCWarning(lcMailStore) << "Unable to set synchronous mode to OFF" << query.lastQuery().simplified();
         }
     }
 #else
@@ -2849,7 +2849,7 @@ bool QMailStoreSql::initStore(const QString &localFolderName)
         // Use sqlite synchronous=NORMAL protects integrity of database but does not ensure durability
         QSqlQuery query( *database() );
         if (!query.exec(QLatin1String("PRAGMA synchronous=NORMAL;"))) {
-            qWarning() << "Unable to set synchronous mode to NORMAL" << query.lastQuery().simplified();
+            qCWarning(lcMailStore) << "Unable to set synchronous mode to NORMAL" << query.lastQuery().simplified();
         }
     }
 #endif
@@ -2857,7 +2857,7 @@ bool QMailStoreSql::initStore(const QString &localFolderName)
 #endif
 
     if (!QMailContentManagerFactory::init()) {
-        qWarning() << "Could not initialize content manager factory";
+        qCWarning(lcMailStore) << "Could not initialize content manager factory";
         return false;
     }
 
@@ -2880,13 +2880,13 @@ void QMailStoreSql::clearContent()
             QString sql(QLatin1String("DELETE FROM %1"));
             QSqlQuery query(*database());
             if (!query.exec(sql.arg(table))) {
-                qWarning() << "Failed to delete from table - query:" << sql << "- error:" << query.lastError().text();
+                qCWarning(lcMailStore) << "Failed to delete from table - query:" << sql << "- error:" << query.lastError().text();
             }
         }
     }
 
     if (!t.commit()) {
-        qWarning() << "Could not commit clearContent operation to database";
+        qCWarning(lcMailStore) << "Could not commit clearContent operation to database";
     }
 
     // Remove all content
@@ -2896,8 +2896,8 @@ void QMailStoreSql::clearContent()
 bool QMailStoreSql::transaction()
 {
     if (inTransaction) {
-        qWarning() << "(" << pid << ")" << "Transaction already exists at begin!";
-        qWarning() << "Transaction already exists at begin!";
+        qCWarning(lcMailStore) << "(" << pid << ")" << "Transaction already exists at begin!";
+        qCWarning(lcMailStore) << "Transaction already exists at begin!";
     }
 
     clearQueryError();
@@ -2963,7 +2963,7 @@ QSqlQuery QMailStoreSql::prepare(const QString& sql)
                 QSqlQuery createQuery(*database());
                 if (!createQuery.exec(QString::fromLatin1("CREATE TEMP TABLE %1 ( id %2 PRIMARY KEY )").arg(tableName).arg(key.second))) {
                     setQueryError(createQuery.lastError(), QLatin1String("Failed to create temporary table"), queryText(createQuery));
-                    qWarning() << "Unable to prepare query:" << sql;
+                    qCWarning(lcMailStore) << "Unable to prepare query:" << sql;
                     return QSqlQuery();
                 }
             }
@@ -2997,8 +2997,8 @@ QSqlQuery QMailStoreSql::prepare(const QString& sql)
                         id = var.value<QMailAccountId>().toULongLong();
                         break;
                     default:
-                        qWarning() << "Unable to extract ID value from valuelist!";
-                        qWarning() << "Unable to prepare query:" << sql;
+                        qCWarning(lcMailStore) << "Unable to extract ID value from valuelist!";
+                        qCWarning(lcMailStore) << "Unable to prepare query:" << sql;
                         return QSqlQuery();
                     }
 
@@ -3012,7 +3012,7 @@ QSqlQuery QMailStoreSql::prepare(const QString& sql)
                     insertQuery.addBindValue(idValues);
                     if (!insertQuery.execBatch()) {
                         setQueryError(insertQuery.lastError(), QLatin1String("Failed to populate integer temporary table"), queryText(insertQuery));
-                        qWarning() << "Unable to prepare query:" << sql;
+                        qCWarning(lcMailStore) << "Unable to prepare query:" << sql;
                         return QSqlQuery();
                     }
                 }
@@ -3027,7 +3027,7 @@ QSqlQuery QMailStoreSql::prepare(const QString& sql)
                     insertQuery.addBindValue(idValues);
                     if (!insertQuery.execBatch()) {
                         setQueryError(insertQuery.lastError(), QLatin1String("Failed to populate varchar temporary table"), queryText(insertQuery));
-                        qWarning() << "Unable to prepare query:" << sql;
+                        qCWarning(lcMailStore) << "Unable to prepare query:" << sql;
                         return QSqlQuery();
                     }
                 }
@@ -3053,7 +3053,7 @@ bool QMailStoreSql::execute(QSqlQuery& query, bool batch)
     }
 
 #ifdef QMAILSTORE_LOG_SQL
-    qMailLog(Messaging) << "(" << pid << ")" << qPrintable(queryText(query));
+    qCDebug(lcMailStore) << "(" << pid << ")" << qPrintable(queryText(query));
 #endif
 
     if (!inTransaction) {
@@ -3068,8 +3068,8 @@ bool QMailStoreSql::execute(QSqlQuery& query, bool batch)
 bool QMailStoreSql::commit()
 {
     if (!inTransaction) {
-        qWarning() << "(" << pid << ")" << "Transaction does not exist at commit!";
-        qWarning() << "Transaction does not exist at commit!";
+        qCWarning(lcMailStore) << "(" << pid << ")" << "Transaction does not exist at commit!";
+        qCWarning(lcMailStore) << "Transaction does not exist at commit!";
     }
 
     if (!database()->commit()) {
@@ -3089,8 +3089,8 @@ bool QMailStoreSql::commit()
 void QMailStoreSql::rollback()
 {
     if (!inTransaction) {
-        qWarning() << "(" << pid << ")" << "Transaction does not exist at rollback!";
-        qWarning() << "Transaction does not exist at rollback!";
+        qCWarning(lcMailStore) << "(" << pid << ")" << "Transaction does not exist at rollback!";
+        qCWarning(lcMailStore) << "Transaction does not exist at rollback!";
     }
 
     inTransaction = false;
@@ -3136,8 +3136,8 @@ void QMailStoreSql::setQueryError(const QSqlError &error, const QString &descrip
     if (!statement.isEmpty())
         ts << "; statement:\"" << statement.simplified() << '"';
 
-    qWarning() << "(" << pid << ")" << qPrintable(s);
-    qWarning() << qPrintable(s);
+    qCWarning(lcMailStore) << "(" << pid << ")" << qPrintable(s);
+    qCWarning(lcMailStore) << qPrintable(s);
 }
 
 void QMailStoreSql::clearQueryError()
@@ -3179,8 +3179,8 @@ void QMailStoreSql::destroyTemporaryTables()
             QString sql = queryText(query);
             QString err = query.lastError().text();
 
-            qWarning() << "(" << pid << ")" << "Failed to drop temporary table - query:" << qPrintable(sql) << "; error:" << qPrintable(err);
-            qWarning() << "Failed to drop temporary table - query:" << qPrintable(sql) << "; error:" << qPrintable(err);
+            qCWarning(lcMailStore) << "(" << pid << ")" << "Failed to drop temporary table - query:" << qPrintable(sql) << "; error:" << qPrintable(err);
+            qCWarning(lcMailStore) << "Failed to drop temporary table - query:" << qPrintable(sql) << "; error:" << qPrintable(err);
         }
     }
 }
@@ -3191,7 +3191,7 @@ QMap<QString, QString> QMailStoreSql::messageCustomFields(const QMailMessageId &
     QMap<QString, QString> fields;
     AttemptResult res(customFields(id.toULongLong(), &fields, QLatin1String("mailmessagecustom")));
     if (res != Success)
-        qWarning() << "Could not query custom fields for message id: " << id.toULongLong();
+        qCWarning(lcMailStore) << "Could not query custom fields for message id: " << id.toULongLong();
 
     return fields;
  }
@@ -3468,11 +3468,11 @@ QMailMessage QMailStoreSql::extractMessage(const QSqlRecord& r, const QMap<QStri
             QMailStore::ErrorCode code = contentManager->load(elements.second, &newMessage);
             if (code != QMailStore::NoError) {
                 setLastError(code);
-                qWarning() << "Unable to load message content:" << contentUri;
+                qCWarning(lcMailStore) << "Unable to load message content:" << contentUri;
                 return QMailMessage();
             }
         } else {
-            qWarning() << "Unable to create content manager for scheme:" << elements.first;
+            qCWarning(lcMailStore) << "Unable to create content manager for scheme:" << elements.first;
             return QMailMessage();
         }
 
@@ -3846,7 +3846,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::updateThreadsValues(const QMailThrea
     }
 
     if (firstProperty) {
-        qWarning() << "QMailStoreSql::updateThreadsValues(): nothing to update, looks like something is wrong!";
+        qCWarning(lcMailStore) << "QMailStoreSql::updateThreadsValues(): nothing to update, looks like something is wrong!";
         return Success;
     }
 
@@ -3875,7 +3875,7 @@ bool QMailStoreSql::executeFile(QFile &file)
     while (result && !sql.isEmpty()) {
         QSqlQuery query(*database());
         if (!query.exec(sql)) {
-            qWarning() << "Failed to exec table creation SQL query:" << sql << "- error:" << query.lastError().text();
+            qCWarning(lcMailStore) << "Failed to exec table creation SQL query:" << sql << "- error:" << query.lastError().text();
             result = false;
         }
         sql = parseSql(ts);
@@ -3896,7 +3896,7 @@ bool QMailStoreSql::ensureVersionInfo()
 
         QSqlQuery query(*database());
         if (!query.exec(sql)) {
-            qWarning() << "Failed to create versioninfo table - query:" << sql << "- error:" << query.lastError().text();
+            qCWarning(lcMailStore) << "Failed to create versioninfo table - query:" << sql << "- error:" << query.lastError().text();
             return false;
         }
     }
@@ -3914,7 +3914,7 @@ qint64 QMailStoreSql::tableVersion(const QString &name) const
     if (query.exec() && query.first())
         return query.value(0).value<qint64>();
 
-    qWarning() << "Failed to query versioninfo - query:" << sql << "- error:" << query.lastError().text();
+    qCWarning(lcMailStore) << "Failed to query versioninfo - query:" << sql << "- error:" << query.lastError().text();
     return 0;
 }
 
@@ -3928,7 +3928,7 @@ bool QMailStoreSql::setTableVersion(const QString &name, qint64 version)
     query.addBindValue(name);
 
     if (!query.exec()) {
-        qWarning() << "Failed to delete versioninfo - query:" << sql << "- error:" << query.lastError().text();
+        qCWarning(lcMailStore) << "Failed to delete versioninfo - query:" << sql << "- error:" << query.lastError().text();
         return false;
     } else {
         sql = QLatin1String("INSERT INTO versioninfo (tablename,versionNum,lastUpdated) VALUES (?,?,?)");
@@ -3941,7 +3941,7 @@ bool QMailStoreSql::setTableVersion(const QString &name, qint64 version)
         query.addBindValue(QDateTime::currentDateTime().toString());
 
         if (!query.exec()) {
-            qWarning() << "Failed to insert versioninfo - query:" << sql << "- error:" << query.lastError().text();
+            qCWarning(lcMailStore) << "Failed to insert versioninfo - query:" << sql << "- error:" << query.lastError().text();
             return false;
         }
     }
@@ -3958,7 +3958,7 @@ qint64 QMailStoreSql::incrementTableVersion(const QString &name, qint64 current)
 
     QFile data(scriptName);
     if (!data.open(QIODevice::ReadOnly)) {
-        qWarning() << "Failed to load table upgrade resource:" << name;
+        qCWarning(lcMailStore) << "Failed to load table upgrade resource:" << name;
     } else {
         if (executeFile(data)) {
             // Update the table version number
@@ -3974,7 +3974,7 @@ bool QMailStoreSql::upgradeTimeStampToUtc()
 {
     QMailMessageIdList allMessageIds = queryMessages(QMailMessageKey(), QMailMessageSortKey(), 0, 0);
 
-    qMailLog(Messaging) << Q_FUNC_INFO << "Time stamp for " << allMessageIds.count() << " will be updated ";
+    qCDebug(lcMailStore) << Q_FUNC_INFO << "Time stamp for " << allMessageIds.count() << " will be updated ";
 
     QMailMessageKey::Properties updateDateProperties = QMailMessageKey::TimeStamp | QMailMessageKey::ReceptionTimeStamp;
     foreach(const QMailMessageId &updateId, allMessageIds)
@@ -4001,7 +4001,7 @@ bool QMailStoreSql::upgradeTableVersion(const QString &name, qint64 current, qin
     while (current < final) {
         int newVersion = incrementTableVersion(name, current);
         if (newVersion == current) {
-            qWarning() << "Failed to increment table version from:" << current << "(" << name << ")";
+            qCWarning(lcMailStore) << "Failed to increment table version from:" << current << "(" << name << ")";
             break;
         } else {
             current = newVersion;
@@ -4102,7 +4102,7 @@ bool QMailStoreSql::fullThreadTableUpdate()
                 if (query.next())
                     metaData->setParentThreadId(QMailThreadId(query.value(0).toULongLong()));
                 else
-                    qWarning() << Q_FUNC_INFO << "there is no message with id" << metaData->inResponseTo().toULongLong();
+                    qCWarning(lcMailStore) << Q_FUNC_INFO << "there is no message with id" << metaData->inResponseTo().toULongLong();
             }
 
             //QMailThreadId.isValid() is not working properly here
@@ -4209,7 +4209,7 @@ bool QMailStoreSql::createTable(const QString &name)
     // load schema.
     QFile data(QString::fromLatin1(":/QmfSql/") + database()->driverName() + QChar::fromLatin1('/') + name);
     if (!data.open(QIODevice::ReadOnly)) {
-        qWarning() << "Failed to load table schema resource:" << name;
+        qCWarning(lcMailStore) << "Failed to load table schema resource:" << name;
         result = false;
     } else {
         result = executeFile(data);
@@ -4236,7 +4236,7 @@ bool QMailStoreSql::setupTables(const QList<TableInfo> &tableList)
             qint64 dbVersion = tableVersion(tableName);
 
             if (dbVersion == 0) {
-                qWarning() << "No version for existing table:" << tableName;
+                qCWarning(lcMailStore) << "No version for existing table:" << tableName;
                 result = false;
             } else if (dbVersion != version) {
                 if (version > dbVersion) {
@@ -4245,16 +4245,16 @@ bool QMailStoreSql::setupTables(const QList<TableInfo> &tableList)
                     if (tableName == QLatin1String("mailmessages") && dbVersion <= 113 && version >= 114) {
                         //upgrade time stamp
                         if (!upgradeTimeStampToUtc()) {
-                            qWarning() << Q_FUNC_INFO << "Can't upgrade time stamp";
+                            qCWarning(lcMailStore) << Q_FUNC_INFO << "Can't upgrade time stamp";
                             result = false;
                         }
                     }
 
                     // Try upgrading the table
                     result = result && upgradeTableVersion(tableName, dbVersion, version);
-                    qWarning() << (result ? "Upgraded" : "Unable to upgrade") << "version for table:" << tableName << " from" << dbVersion << "to" << version;
+                    qCWarning(lcMailStore) << (result ? "Upgraded" : "Unable to upgrade") << "version for table:" << tableName << " from" << dbVersion << "to" << version;
                 } else {
-                    qWarning() << "Incompatible version for table:" << tableName << "- existing" << dbVersion << "!=" << version;
+                    qCWarning(lcMailStore) << "Incompatible version for table:" << tableName << "- existing" << dbVersion << "!=" << version;
                     result = false;
                 }
             }
@@ -4270,7 +4270,7 @@ bool QMailStoreSql::setupTables(const QList<TableInfo> &tableList)
             qFatal("Unsupported database. Please delete the %s directory and try again.", qPrintable(QMail::dataPath()));
         }
     } else {
-        qWarning() << "Failure running check";
+        qCWarning(lcMailStore) << "Failure running check";
     }
 
     return result;
@@ -4319,7 +4319,7 @@ bool QMailStoreSql::purgeMissingAncestors()
     QSqlQuery query(*database());
     query.prepare(sql);
     if (!query.exec()) {
-        qWarning() << "Failed to purge missing ancestors - query:" << sql << "- error:" << query.lastError().text();
+        qCWarning(lcMailStore) << "Failed to purge missing ancestors - query:" << sql << "- error:" << query.lastError().text();
         return false;
     }
     return true;
@@ -4334,7 +4334,7 @@ bool QMailStoreSql::purgeObsoleteFiles()
 
         QSqlQuery query(*database());
         if (!query.exec(sql)) {
-            qWarning() << "Failed to purge obsolete files - query:" << sql << "- error:" << query.lastError().text();
+            qCWarning(lcMailStore) << "Failed to purge obsolete files - query:" << sql << "- error:" << query.lastError().text();
             return false;
         } else {
             while (query.next()) {
@@ -4361,10 +4361,10 @@ bool QMailStoreSql::purgeObsoleteFiles()
                 if (!scheme.isEmpty()) {
                     QMailContentManager *manager(QMailContentManagerFactory::create(scheme));
                     if (!manager)
-                        qWarning() << "Unable to create content manager for scheme:" << scheme;
+                        qCWarning(lcMailStore) << "Unable to create content manager for scheme:" << scheme;
                     else {
                         if (manager->remove(*it) != QMailStore::NoError) {
-                            qWarning() << "Unable to remove obsolete message contents:" << *it;
+                            qCWarning(lcMailStore) << "Unable to remove obsolete message contents:" << *it;
                         }
                     }
                 }
@@ -4378,7 +4378,7 @@ bool QMailStoreSql::purgeObsoleteFiles()
 
         QSqlQuery query(*database());
         if (!query.exec(sql)) {
-            qWarning() << "Failed to purge obsolete file - query:" << sql << "- error:" << query.lastError().text();
+            qCWarning(lcMailStore) << "Failed to purge obsolete file - query:" << sql << "- error:" << query.lastError().text();
             return false;
         }
     }
@@ -4398,7 +4398,7 @@ bool QMailStoreSql::performMaintenanceTask(const QString &task, uint secondsFreq
         query.prepare(sql);
         query.addBindValue(task);
         if (!query.exec()) {
-            qWarning() << "Failed to query performed timestamp - query:" << sql << "- error:" << query.lastError().text();
+            qCWarning(lcMailStore) << "Failed to query performed timestamp - query:" << sql << "- error:" << query.lastError().text();
             return false;
         } else {
             if (query.first()) {
@@ -4427,7 +4427,7 @@ bool QMailStoreSql::performMaintenanceTask(const QString &task, uint secondsFreq
         query.addBindValue(currentTime);
         query.addBindValue(task);
         if (!query.exec()) {
-            qWarning() << "Failed to update performed timestamp - query:" << sql << "- error:" << query.lastError().text();
+            qCWarning(lcMailStore) << "Failed to update performed timestamp - query:" << sql << "- error:" << query.lastError().text();
             return false;
         }
     }
@@ -4608,18 +4608,18 @@ bool QMailStoreSql::addMessages(const QList<QMailMessage *> &messages,
             QMailStore::ErrorCode code = contentManager->ensureDurability();
             if (code != QMailStore::NoError) {
                 setLastError(code);
-                qWarning() << "Unable to ensure message content durability for scheme:" << scheme;
+                qCWarning(lcMailStore) << "Unable to ensure message content durability for scheme:" << scheme;
                 return false;
             }
         } else {
             setLastError(QMailStore::FrameworkFault);
-            qWarning() << "Unable to create content manager for scheme:" << scheme;
+            qCWarning(lcMailStore) << "Unable to create content manager for scheme:" << scheme;
             return false;
         }
     }
 
     if (!t.commit()) {
-        qWarning() << "Unable to commit successful addMessages!";
+        qCWarning(lcMailStore) << "Unable to commit successful addMessages!";
         return false;
     }
 
@@ -4651,7 +4651,7 @@ bool QMailStoreSql::addMessages(const QList<QMailMessageMetaData *> &messages,
     }
 
     if (!t.commit()) {
-        qWarning() << "Unable to commit successful addMessages!";
+        qCWarning(lcMailStore) << "Unable to commit successful addMessages!";
         return false;
     }
 
@@ -4799,12 +4799,12 @@ bool QMailStoreSql::updateMessages(const QList<QPair<QMailMessageMetaData*, QMai
             QMailStore::ErrorCode code = contentManager->ensureDurability(it.value());
             if (code != QMailStore::NoError) {
                 setLastError(code);
-                qWarning() << "Unable to ensure message content durability for scheme:" << it.key();
+                qCWarning(lcMailStore) << "Unable to ensure message content durability for scheme:" << it.key();
                 return false;
             }
         } else {
             setLastError(QMailStore::FrameworkFault);
-            qWarning() << "Unable to create content manager for scheme:" << it.key();
+            qCWarning(lcMailStore) << "Unable to create content manager for scheme:" << it.key();
             return false;
         }
     }
@@ -4814,12 +4814,12 @@ bool QMailStoreSql::updateMessages(const QList<QPair<QMailMessageMetaData*, QMai
             QMailStore::ErrorCode code = contentManager->remove(it.value());
             if (code != QMailStore::NoError) {
                 setLastError(code);
-                qWarning() << "Unable to ensure message content durability for scheme:" << it.key();
+                qCWarning(lcMailStore) << "Unable to ensure message content durability for scheme:" << it.key();
                 return false;
             }
         } else {
             setLastError(QMailStore::FrameworkFault);
-            qWarning() << "Unable to create content manager for scheme:" << it.key();
+            qCWarning(lcMailStore) << "Unable to create content manager for scheme:" << it.key();
             return false;
         }
     }
@@ -4827,7 +4827,7 @@ bool QMailStoreSql::updateMessages(const QList<QPair<QMailMessageMetaData*, QMai
 
 
     if (!t.commit()) {
-        qWarning() << "Unable to commit successful updateMessages!";
+        qCWarning(lcMailStore) << "Unable to commit successful updateMessages!";
         return false;
     }
 
@@ -4884,7 +4884,7 @@ bool QMailStoreSql::shrinkMemory()
 #if defined(Q_USE_SQLITE)
     QSqlQuery query( *database() );
     if (!query.exec(QLatin1String("PRAGMA shrink_memory"))) {
-        qWarning() << "Unable to shrink memory" << query.lastQuery().simplified();
+        qCWarning(lcMailStore) << "Unable to shrink memory" << query.lastQuery().simplified();
         return false;
     }
 #endif
@@ -4903,7 +4903,7 @@ void QMailStoreSql::unlock()
     if (--globalLocks == 0) {
         databaseMutex().unlock();
     } else if (globalLocks < 0) {
-        qWarning() << "Unable to unlock when lock was not called (in this process)";
+        qCWarning(lcMailStore) << "Unable to unlock when lock was not called (in this process)";
         globalLocks = 0;
     }
 }
@@ -5272,10 +5272,10 @@ void QMailStoreSql::removeExpiredData(const QStringList& contentUris)
                     if (!scheme.isEmpty()) {
                         QMailContentManager *manager(QMailContentManagerFactory::create(scheme));
                         if (!manager)
-                            qWarning() << "Unable to create content manager for scheme:" << scheme;
+                            qCWarning(lcMailStore) << "Unable to create content manager for scheme:" << scheme;
                         else {
                             if (manager->remove(*it) != QMailStore::NoError) {
-                                 qWarning() << "Unable to remove expired message contents:" << *it;
+                                 qCWarning(lcMailStore) << "Unable to remove expired message contents:" << *it;
                             }
                         }
                     }
@@ -5311,11 +5311,11 @@ bool QMailStoreSql::repeatedly(FunctionType func, const QString &description, Tr
 
         if (result == Success) {
             if (attemptCount > 0) {
-                qWarning() << pid << "Able to" << qPrintable(description) << "after" << attemptCount << "failed attempts";
+                qCWarning(lcMailStore) << pid << "Able to" << qPrintable(description) << "after" << attemptCount << "failed attempts";
             }
             return true;
         } else if (result == Failure) {
-            qWarning() << pid << "Unable to" << qPrintable(description);
+            qCWarning(lcMailStore) << pid << "Unable to" << qPrintable(description);
             if (lastError() == QMailStore::NoError) {
                 setLastError(errorType(AccessType()));
             }
@@ -5324,7 +5324,7 @@ bool QMailStoreSql::repeatedly(FunctionType func, const QString &description, Tr
             // result == DatabaseFailure
             if (queryError() == Sqlite3BusyErrorNumber) {
                 if (attemptCount < MaxAttempts) {
-                    qWarning() << pid << "Failed to" << qPrintable(description) << "- busy, pausing to retry";
+                    qCWarning(lcMailStore) << pid << "Failed to" << qPrintable(description) << "- busy, pausing to retry";
 
                     // Pause before we retry
                     QThread::usleep(delay * 1000);
@@ -5333,15 +5333,15 @@ bool QMailStoreSql::repeatedly(FunctionType func, const QString &description, Tr
 
                     ++attemptCount;
                 } else {
-                    qWarning() << pid << "Retry count exceeded - failed to" << qPrintable(description);
+                    qCWarning(lcMailStore) << pid << "Retry count exceeded - failed to" << qPrintable(description);
                     break;
                 }
             } else if (queryError() == Sqlite3ConstraintErrorNumber) {
-                qWarning() << pid << "Unable to" << qPrintable(description) << "- constraint failure";
+                qCWarning(lcMailStore) << pid << "Unable to" << qPrintable(description) << "- constraint failure";
                 setLastError(QMailStore::ConstraintFailure);
                 break;
             } else {
-                qWarning() << pid << "Unable to" << qPrintable(description) << "- code:" << queryError();
+                qCWarning(lcMailStore) << pid << "Unable to" << qPrintable(description) << "- code:" << queryError();
                 break;
             }
         }
@@ -5479,7 +5479,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptAddAccount(QMailAccount *acco
                                                               Transaction &t, bool commitOnSuccess)
 {
     if (account->id().isValid() && idExists(account->id())) {
-        qWarning() << "Account already exists in database, use update instead";
+        qCWarning(lcMailStore) << "Account already exists in database, use update instead";
         return Failure;
     }
 
@@ -5549,7 +5549,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptAddAccount(QMailAccount *acco
     account->setId(insertId);
 
     if (commitOnSuccess && !t.commit()) {
-        qWarning() << "Could not commit account changes to database";
+        qCWarning(lcMailStore) << "Could not commit account changes to database";
 
         account->setId(QMailAccountId()); //revert the id
         return DatabaseFailure;
@@ -5636,7 +5636,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptSetAccountStandardFolders(con
     }
 
     if (commitOnSuccess && !t.commit()) {
-        qWarning() << "Could not commit account standard folder changes to database";
+        qCWarning(lcMailStore) << "Could not commit account standard folder changes to database";
         return DatabaseFailure;
     }
 
@@ -5705,7 +5705,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptAddFolder(QMailFolder *folder
     }
 
     if (commitOnSuccess && !t.commit()) {
-        qWarning() << "Could not commit folder changes to database";
+        qCWarning(lcMailStore) << "Could not commit folder changes to database";
 
         folder->setId(QMailFolderId()); //revert the id
         return DatabaseFailure;
@@ -5785,7 +5785,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptAddThread(QMailThread *thread
 
 
     if (commitOnSuccess && !t.commit()) {
-        qWarning() << "Could not commit thread  changes to database";
+        qCWarning(lcMailStore) << "Could not commit thread  changes to database";
 
         thread->setId(QMailThreadId()); // id didn't sync
         return DatabaseFailure;
@@ -5802,7 +5802,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptAddMessage(QMailMessage *mess
 {
     if (!message->parentAccountId().isValid()) {
         // Require a parent account - possibly relax this later
-        qWarning() << "Unable to add message without parent account";
+        qCWarning(lcMailStore) << "Unable to add message without parent account";
         return Failure;
     }
 
@@ -5829,7 +5829,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptAddMessage(QMailMessage *mess
         if (!scheme.isEmpty()) {
             QMailContentManager *manager(QMailContentManagerFactory::create(scheme));
             if (!manager) {
-                qWarning() << "Unable to create content manager for scheme:" << message->contentScheme();
+                qCWarning(lcMailStore) << "Unable to create content manager for scheme:" << message->contentScheme();
                 return Failure;
              } else {
                  contentManagers.append(manager);
@@ -5842,7 +5842,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptAddMessage(QMailMessage *mess
         QMailStore::ErrorCode code = manager->add(message, durability(commitOnSuccess));
         if (code != QMailStore::NoError) {
             setLastError(code);
-            qWarning() << "Unable to add message content to URI:" << ::contentUri(*message);
+            qCWarning(lcMailStore) << "Unable to add message content to URI:" << ::contentUri(*message);
             return Failure;
         }
     }
@@ -5854,7 +5854,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptAddMessage(QMailMessage *mess
             // Try to remove the content file we added
             QMailStore::ErrorCode code = manager->remove(message->contentIdentifier());
             if (code != QMailStore::NoError && !obsoleted) {
-                qWarning() << "Could not remove extraneous message content:" << ::contentUri(*message);
+                qCWarning(lcMailStore) << "Could not remove extraneous message content:" << ::contentUri(*message);
                 if (code == QMailStore::ContentNotRemoved) {
                     obsoleted = true;
                     // The existing content could not be removed - try again later
@@ -5875,19 +5875,19 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptAddMessage(QMailMessageMetaDa
                                                               Transaction &t, bool commitOnSuccess)
 {
     if (!metaData->parentFolderId().isValid()) {
-        qWarning() << "Unable to add message. Invalid parent folder id";
+        qCWarning(lcMailStore) << "Unable to add message. Invalid parent folder id";
         return Failure;
     }
 
     if (metaData->id().isValid() && idExists(metaData->id())) {
-        qWarning() << "Message ID" << metaData->id() << "already exists in database, use update instead";
+        qCWarning(lcMailStore) << "Message ID" << metaData->id() << "already exists in database, use update instead";
         return Failure;
     }
 
     if (!metaData->serverUid().isEmpty() && metaData->parentAccountId().isValid()
         && messageExists(metaData->serverUid(), metaData->parentAccountId()))
     {
-        qWarning() << "Message with serveruid: " << metaData->serverUid() << "and accountid:" << metaData->parentAccountId()
+        qCWarning(lcMailStore) << "Message with serveruid: " << metaData->serverUid() << "and accountid:" << metaData->parentAccountId()
                 << "already exist. Use update instead.";
         return Failure;
     }
@@ -5909,7 +5909,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptAddMessage(QMailMessageMetaDa
             quint64 threadId(extractValue<quint64>(query.value(0)));
 
             if (threadId == 0)
-                qWarning() << "Message had an inResponseTo of " << metaData->inResponseTo() << " which had no thread id";
+                qCWarning(lcMailStore) << "Message had an inResponseTo of " << metaData->inResponseTo() << " which had no thread id";
             metaData->setParentThreadId(QMailThreadId(threadId));
         } else {
             // Predecessor was deleted
@@ -6125,7 +6125,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptAddMessage(QMailMessageMetaDa
         return result;
 
     if (commitOnSuccess && !t.commit()) {
-        qWarning() << "Could not commit message changes to database";
+        qCWarning(lcMailStore) << "Could not commit message changes to database";
         return DatabaseFailure;
     }
 
@@ -6357,7 +6357,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptUpdateAccount(QMailAccount *a
     }
 
     if (commitOnSuccess && !t.commit()) {
-        qWarning() << "Could not commit account update to database";
+        qCWarning(lcMailStore) << "Could not commit account update to database";
         return DatabaseFailure;
     }
 
@@ -6395,7 +6395,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptUpdateThread(QMailThread *thr
         return DatabaseFailure;
 
     if (commitOnSuccess && !t.commit()) {
-        qWarning() << "Could not commit folder update to database";
+        qCWarning(lcMailStore) << "Could not commit folder update to database";
         return DatabaseFailure;
     }
 
@@ -6456,7 +6456,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptUpdateFolder(QMailFolder *fol
             if (parentAccountId.isValid()) {
                 modifiedAccountIds->append(parentAccountId);
             } else {
-                qWarning() << "Unable to find parent account for folder" << folder->id();
+                qCWarning(lcMailStore) << "Unable to find parent account for folder" << folder->id();
             }
         }
         if (folder->parentFolderId().isValid() && folder->parentAccountId().isValid() && !modifiedAccountIds->contains(folder->parentAccountId()))
@@ -6542,7 +6542,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptUpdateFolder(QMailFolder *fol
     }
 
     if (commitOnSuccess && !t.commit()) {
-        qWarning() << "Could not commit folder update to database";
+        qCWarning(lcMailStore) << "Could not commit folder update to database";
         return DatabaseFailure;
     }
 
@@ -6617,7 +6617,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptUpdateMessage(QMailMessageMet
                 if (result != Success)
                     return result;
             } else {
-                qWarning() << "Could not query parent account, folder and content URI";
+                qCWarning(lcMailStore) << "Could not query parent account, folder and content URI";
                 return Failure;
             }
         }
@@ -6677,7 +6677,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptUpdateMessage(QMailMessageMet
                             QMailStore::ErrorCode code = contentManager->add(message, durability(commitOnSuccess));
                             if (code != QMailStore::NoError) {
                                 setLastError(code);
-                                qWarning() << "Unable to add message content to URI:" << contentUri << "for scheme" << scheme;
+                                qCWarning(lcMailStore) << "Unable to add message content to URI:" << contentUri << "for scheme" << scheme;
                                 return Failure;
                             }
                         } else {
@@ -6691,7 +6691,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptUpdateMessage(QMailMessageMet
                                 else
                                     it.value().append(oldContentIdentifier);
                             } else {
-                                qWarning() << "Unable to update message content:" << contentUri;
+                                qCWarning(lcMailStore) << "Unable to update message content:" << contentUri;
                                 if (code == QMailStore::ContentNotRemoved) {
                                     // The existing content could not be removed - try again later
                                     if (!obsoleteContent(contentUri)) {
@@ -6705,7 +6705,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptUpdateMessage(QMailMessageMet
                             }
                         }
                     } else {
-                        qWarning() << "Unable to create content manager for scheme:" << metaData->contentScheme();
+                        qCWarning(lcMailStore) << "Unable to create content manager for scheme:" << metaData->contentScheme();
                         return Failure;
                     }
                 }
@@ -7038,7 +7038,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptUpdateMessage(QMailMessageMet
     }
 
     if (commitOnSuccess && !t.commit()) {
-        qWarning() << "Could not commit message update to database";
+        qCWarning(lcMailStore) << "Could not commit message update to database";
         return DatabaseFailure;
     }
 
@@ -7070,7 +7070,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptUpdateMessagesMetaData(const 
 {
     //do some checks first
     if (props & QMailMessageKey::Id) {
-        qWarning() << "Updating of messages IDs is not supported";
+        qCWarning(lcMailStore) << "Updating of messages IDs is not supported";
         return Failure;
     }
 
@@ -7078,7 +7078,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptUpdateMessagesMetaData(const 
 
     if (properties & QMailMessageKey::ParentFolderId) {
         if (!idExists(data.parentFolderId())) {
-            qWarning() << "Update of messages failed. Parent folder does not exist";
+            qCWarning(lcMailStore) << "Update of messages failed. Parent folder does not exist";
             return Failure;
         }
     }
@@ -7176,7 +7176,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptUpdateMessagesMetaData(const 
     }
 
     if (commitOnSuccess && !t.commit()) {
-        qWarning() << "Could not commit metadata update to database";
+        qCWarning(lcMailStore) << "Could not commit metadata update to database";
         return DatabaseFailure;
     }
 
@@ -7269,7 +7269,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptUpdateMessagesStatus(const QM
     }
 
     if (commitOnSuccess && !t.commit()) {
-        qWarning() << "Could not commit metadata status update to database";
+        qCWarning(lcMailStore) << "Could not commit metadata status update to database";
         return DatabaseFailure;
     }
 
@@ -7318,7 +7318,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptPurgeMessageRemovalRecords(co
     }
 
     if (commitOnSuccess && !t.commit()) {
-        qWarning() << "Could not commit message removal record deletion to database";
+        qCWarning(lcMailStore) << "Could not commit message removal record deletion to database";
         return DatabaseFailure;
     }
 
@@ -7329,13 +7329,13 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptEnsureDurability(Transaction 
 {
     QSqlQuery query(simpleQuery(QLatin1String("PRAGMA wal_checkpoint(FULL)"), QLatin1String("ensure durability query")));
     if (query.lastError().type() != QSqlError::NoError) {
-        qWarning() << "Could not ensure durability of mail store";
+        qCWarning(lcMailStore) << "Could not ensure durability of mail store";
         return DatabaseFailure;
     }
     query.finish();
 
     if (commitOnSuccess && !t.commit()) {
-        qWarning() << "Could not commit message removal record deletion to database";
+        qCWarning(lcMailStore) << "Could not commit message removal record deletion to database";
         return DatabaseFailure;
     }
 
@@ -7823,7 +7823,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptMessagesMetaData(const QMailM
     } else {
         bool includeCustom(properties & QMailMessageKey::Custom);
         if (includeCustom && (option == QMailStore::ReturnDistinct)) {
-            qWarning() << "Warning: Distinct-ness is not supported with custom fields!";
+            qCWarning(lcMailStore) << "Warning: Distinct-ness is not supported with custom fields!";
         }
 
         QString sql(QLatin1String("SELECT %1 %2 FROM mailmessages t0"));
@@ -7947,7 +7947,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptFolderAncestorIds(const QMail
         if (folderId.isValid()) {
             result->append(folderId);
         } else {
-            qWarning() << "Unable to find parent account for folder" << folderId;
+            qCWarning(lcMailStore) << "Unable to find parent account for folder" << folderId;
         }
     }
 
@@ -7995,7 +7995,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptRegisterStatusBit(const QStri
 
         if (*result) {
             if (commitOnSuccess && !t.commit()) {
-                qWarning() << "Could not commit aftering reading status flag";
+                qCWarning(lcMailStore) << "Could not commit aftering reading status flag";
                 return DatabaseFailure;
             }
             return Success;
@@ -8030,7 +8030,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptRegisterStatusBit(const QStri
     }
 
     if (commitOnSuccess && !t.commit()) {
-        qWarning() << "Could not commit statusflag changes to database";
+        qCWarning(lcMailStore) << "Could not commit statusflag changes to database";
         return DatabaseFailure;
     }
 
@@ -8572,7 +8572,7 @@ bool QMailStoreSql::checkPreconditions(const QMailFolder& folder, bool update)
     {
         if (folder.id().isValid())
         {
-            qWarning() << "Folder exists, use update instead of add.";
+            qCWarning(lcMailStore) << "Folder exists, use update instead of add.";
             return false;
         }
     }
@@ -8580,13 +8580,13 @@ bool QMailStoreSql::checkPreconditions(const QMailFolder& folder, bool update)
     {
         if (!folder.id().isValid())
         {
-            qWarning() << "Folder does not exist, use add instead of update.";
+            qCWarning(lcMailStore) << "Folder does not exist, use add instead of update.";
             return false;
         }
 
         if (folder.parentFolderId().isValid() && folder.parentFolderId() == folder.id())
         {
-            qWarning() << "A folder cannot be a child to itself";
+            qCWarning(lcMailStore) << "A folder cannot be a child to itself";
             return false;
         }
     }
@@ -8595,7 +8595,7 @@ bool QMailStoreSql::checkPreconditions(const QMailFolder& folder, bool update)
     {
         if (!idExists(folder.parentFolderId()))
         {
-            qWarning() << "Parent folder does not exist!";
+            qCWarning(lcMailStore) << "Parent folder does not exist!";
             return false;
         }
     }
@@ -8606,7 +8606,7 @@ bool QMailStoreSql::checkPreconditions(const QMailFolder& folder, bool update)
              ? !idExists(folder.parentAccountId())
              : !externalAccountIdExists(folder.parentAccountId())))
         {
-            qWarning() << "Parent account does not exist!";
+            qCWarning(lcMailStore) << "Parent account does not exist!";
             return false;
         }
     }
@@ -9287,7 +9287,7 @@ bool QMailStoreSql::obsoleteContent(const QString& identifier)
                                 QVariantList() << QVariant(identifier),
                                 QLatin1String("obsoleteContent files insert query")));
     if (query.lastError().type() != QSqlError::NoError) {
-        qWarning() << "Unable to record obsolete content:" << identifier;
+        qCWarning(lcMailStore) << "Unable to record obsolete content:" << identifier;
         return false;
     }
 
@@ -9372,7 +9372,7 @@ QSqlQuery QMailStoreSql::performQuery(const QString& statement, bool batch, cons
 
     QSqlQuery query(prepare(statement + keyStatements + constraintStatements));
     if (queryError() != QSqlError::NoError) {
-        qWarning() << "Could not prepare query" << descriptor;
+        qCWarning(lcMailStore) << "Could not prepare query" << descriptor;
     } else {
         foreach (const QVariant& value, bindValues)
             query.addBindValue(value);
@@ -9380,7 +9380,7 @@ QSqlQuery QMailStoreSql::performQuery(const QString& statement, bool batch, cons
             query.addBindValue(value);
 
         if (!execute(query, batch)){
-            qWarning() << "Could not execute query" << descriptor;
+            qCWarning(lcMailStore) << "Could not execute query" << descriptor;
         }
     }
 

@@ -62,8 +62,6 @@ HEADERS += \
     qprivateimplementationdef_p.h \
     support/qmailglobal.h \
     support/qmaillog.h \
-    support/qlogsystem.h \
-    support/qloggers.h \
     support/qmailnamespace.h \
     support/qmailpluginmanager.h \
     support/qmailipc.h \
@@ -135,8 +133,6 @@ SOURCES += \
            qprivateimplementation.cpp \
            support/qmailnamespace.cpp \
            support/qmaillog.cpp \
-           support/qlogsystem.cpp \
-           support/qloggers.cpp \
            support/qmailpluginmanager.cpp
 
 mailservice.files = qmailservice.xml

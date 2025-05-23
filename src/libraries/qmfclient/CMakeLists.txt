@@ -45,8 +45,6 @@ set(SRC
   qprivateimplementation.cpp
   support/qmailnamespace.cpp
   support/qmaillog.cpp
-  support/qlogsystem.cpp
-  support/qloggers.cpp
   support/qmailpluginmanager.cpp)
 
 set(PUBLIC_HEADERS
@@ -92,8 +90,6 @@ set(PUBLIC_HEADERS
   qprivateimplementation.h
   support/qmailglobal.h
   support/qmaillog.h
-  support/qlogsystem.h
-  support/qloggers.h
   support/qmailnamespace.h
   support/qmailpluginmanager.h
   support/qmailipc.h)

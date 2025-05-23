@@ -94,9 +94,9 @@ QMailTransport::Socket::Socket(QObject *parent)
     if (appProxy.type() == QNetworkProxy::NoProxy) {
         QNetworkProxyFactory::setUseSystemConfiguration(true);
 
-        qMailLog(Messaging) << "QMailTransport::Socket::Socket SET PROXY" <<
-                    "host=" << QNetworkProxy::applicationProxy().hostName() <<
-                    "port=" << QNetworkProxy::applicationProxy().port();
+        qCDebug(lcMessaging) << "QMailTransport::Socket::Socket SET PROXY"
+                             << "host=" << QNetworkProxy::applicationProxy().hostName()
+                             << "port=" << QNetworkProxy::applicationProxy().port();
     }
 }
 
@@ -236,7 +236,7 @@ void QMailTransport::open(const QString& url, int port, EncryptType encryptionTy
 {
     if (mSocket && mSocket->isOpen())
     {
-        qWarning() << "Failed to open connection - already open!";
+        qCWarning(lcMessaging) << "Failed to open connection - already open!";
         return;
     }
 
@@ -248,13 +248,14 @@ void QMailTransport::open(const QString& url, int port, EncryptType encryptionTy
     emit updateStatus(tr("DNS lookup"));
 
 #ifndef QT_NO_SSL
-    qMailLog(Messaging) << "Opening connection - " << url << ':' << port << (encryptionType == Encrypt_SSL ? " SSL" : (encryptionType == Encrypt_TLS ? " TLS" : ""));
+    qCDebug(lcMessaging) << "Opening connection - " << url << ':' << port
+                         << (encryptionType == Encrypt_SSL ? " SSL" : (encryptionType == Encrypt_TLS ? " TLS" : ""));
     if (mailEncryption() == Encrypt_SSL)
         mSocket->connectToHostEncrypted(url, port);
     else
         mSocket->connectToHost(url, port);
 #else
-    qMailLog(Messaging) << "Opening connection - " << url << ':' << port;
+    qCDebug(lcMessaging) << "Opening connection - " << url << ':' << port;
     mSocket->connectToHost(url, port);
 #endif
 }
@@ -384,7 +385,7 @@ void QMailTransport::connectionEstablished()
         emit updateStatus(tr("Connected"));
     }
 
-    qMailLog(Messaging) << mName << ": connection established";
+    qCDebug(lcMessaging) << mName << ": connection established";
     emit connected(Encrypt_NONE);
 }
 
@@ -404,7 +405,7 @@ void QMailTransport::encryptionEstablished()
         emit updateStatus(tr("Connected"));
     }
 
-    qMailLog(Messaging) << mName << ": Secure connection established";
+    qCDebug(lcMessaging) << mName << ": Secure connection established";
     emit connected(mailEncryption());
 }
 
@@ -414,7 +415,7 @@ void QMailTransport::connectionFailed(const QList<QSslError>& errors)
     QMailServiceAction::Status::ErrorCode errorCode = classifyCertificateErrors(errors);
 
     if (errorCode == QMailServiceAction::Status::ErrNoError) {
-        qWarning() << "Accepting untrusted certificates";
+        qCWarning(lcMessaging) << "Accepting untrusted certificates";
         mSocket->ignoreSslErrors();
     } else {
         connectToHostTimeOut.stop();
@@ -454,7 +455,8 @@ QMailServiceAction::Status::ErrorCode QMailTransport::classifyCertificateErrors(
     }
 
     bool failed(rv != QMailServiceAction::Status::ErrNoError);
-    qWarning() << "Encrypted connect" << (failed ? "failed:" : "warnings:") << text;
+    qCWarning(lcMessaging) << "Encrypted connect"
+                           << (failed ? "failed:" : "warnings:") << text;
     return rv;
 }
 #endif
@@ -476,7 +478,8 @@ void QMailTransport::errorHandling(int status, QString msg)
 /*! \internal */
 void QMailTransport::socketError(QAbstractSocket::SocketError status)
 {
-    qWarning() << "socketError:" << static_cast<int>(status) << ':' << mSocket->errorString();
+    qCWarning(lcMessaging) << "socketError:" << static_cast<int>(status)
+                           << ':' << mSocket->errorString();
     errorHandling(static_cast<int>(status), tr("Socket error"));
 }
 

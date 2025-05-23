@@ -553,7 +553,7 @@ ServiceHandler::ServiceHandler(QObject* parent)
     // See if there are any requests remaining from our previous run
     if (_requestsFile.exists()) {
         if (!_requestsFile.open(QIODevice::ReadOnly)) {
-            qWarning() << "Unable to open requests file for read!";
+            qCWarning(lcMessaging) << "Unable to open requests file for read!";
         } else {
             // Every request still in the file failed to complete
             for (QByteArray line = _requestsFile.readLine(); !line.isEmpty(); line = _requestsFile.readLine()) {
@@ -567,10 +567,10 @@ ServiceHandler::ServiceHandler(QObject* parent)
     }
 
     if (!_requestsFile.open(QIODevice::WriteOnly)) {
-        qWarning() << "Unable to open requests file for write!" << _requestsFile.fileName();
+        qCWarning(lcMessaging) << "Unable to open requests file for write!" << _requestsFile.fileName();
     } else {
         if (!_requestsFile.resize(0)) {
-            qWarning() << "Unable to truncate requests file!";
+            qCWarning(lcMessaging) << "Unable to truncate requests file!";
         } else {
             _requestsFile.flush();
         }
@@ -607,7 +607,7 @@ void ServiceHandler::registerAccountServices(const QMailAccountIdList &ids)
                 if (master.id().isValid()) {
                     masterAccount.insert(id, master.id());
                 } else {
-                    qWarning() << "Unable to locate master account:" << masterId << "for account:" << id;
+                    qCWarning(lcMessaging) << "Unable to locate master account:" << masterId << "for account:" << id;
                 }
             } else {
                 foreach (const QString& service, config.services()) {
@@ -630,7 +630,7 @@ void ServiceHandler::removeServiceFromActions(QMailMessageService *removeService
 
     for (QMap<quint64, ActionData>::iterator it(mActiveActions.begin()) ; it != mActiveActions.end(); ++it) {
        if (it->services.remove(removeService)) {
-           qMailLog(Messaging) << "Removed service from action";
+           qCDebug(lcMessaging) << "Removed service from action";
        }
     }
 
@@ -652,7 +652,7 @@ void ServiceHandler::deregisterAccountServices(const QMailAccountIdList &ids, QM
         if (ids.contains(it.key().first)) {
             // Remove any services associated with this account
             if (QMailMessageService *service = it.value()) {
-                qMailLog(Messaging) << "Deregistering service:" << service->service() << "for account:" << it.key().first;
+                qCDebug(lcMessaging) << "Deregistering service:" << service->service() << "for account:" << it.key().first;
                 service->cancelOperation(code, text);
                 removeServiceFromActions(service);
                 delete service;
@@ -703,7 +703,7 @@ void ServiceHandler::reregisterAccountServices(QMailAccountIdList ids, QMailServ
                     Q_ASSERT(!masterAccount.contains(id)); // no duplicates, as deregisterAccountServies should remove from this list
                     masterAccount.insert(id, master.id());
                 } else {
-                    qWarning() << "Unable to locate master account:" << masterId << "for account:" << id;
+                    qCWarning(lcMessaging) << "Unable to locate master account:" << masterId << "for account:" << id;
                 }
             } else { // not using a master account
                 QSet<QString> newServices;
@@ -729,7 +729,7 @@ void ServiceHandler::reregisterAccountServices(QMailAccountIdList ids, QMailServ
                             Q_ASSERT(!service.isNull());
                             if (service->requiresReregistration()) {
                                 // Ok, we must remove it
-                                qMailLog(Messaging) << "Deregistering service:" << service->service() << "for account:" << it.key().first;
+                                qCDebug(lcMessaging) << "Deregistering service:" << service->service() << "for account:" << it.key().first;
                                 service->cancelOperation(code, text);
                                 removeServiceFromActions(service);
                                 delete service;
@@ -768,7 +768,7 @@ void ServiceHandler::deregisterAccountService(const QMailAccountId &id, const QS
         if (it.key().first == id && it.key().second == serviceName) {
             // Remove any services associated with this account
             service = it.value();
-            qMailLog(Messaging) << "Deregistering service:" << service->service() << "for account:" << it.key().first;
+            qCDebug(lcMessaging) << "Deregistering service:" << service->service() << "for account:" << it.key().first;
             service->cancelOperation(code, text);
             removeServiceFromActions(service);
 
@@ -940,7 +940,7 @@ void ServiceHandler::registerAccountService(const QMailAccountId &accountId, con
         // We need to create a new service for this account
         if (QMailMessageService *service = createService(svcCfg.service(), accountId)) {
             serviceMap.insert(qMakePair(accountId, svcCfg.service()), service);
-            qMailLog(Messaging) << "Registering service:" << svcCfg.service() << "for account:" << accountId;
+            qCDebug(lcMessaging) << "Registering service:" << svcCfg.service() << "for account:" << accountId;
 
             if (service->hasSource())
                 registerAccountSource(accountId, &service->source(), service);
@@ -951,7 +951,7 @@ void ServiceHandler::registerAccountService(const QMailAccountId &accountId, con
             if (!service->available())
                 mUnavailableServices.insert(service);
         } else {
-            qWarning() << "Unable to instantiate service:" << svcCfg.service();
+            qCWarning(lcMessaging) << "Unable to instantiate service:" << svcCfg.service();
         }
     }
 }
@@ -981,7 +981,7 @@ QSet<QMailMessageService*> ServiceHandler::sourceServiceSet(const QMailAccountId
     if (QMailMessageSource *source = accountSource(id)) {
         services.insert(sourceService.value(source));
     } else {
-        qWarning() << "Unable to find message source for account:" << id;
+        qCWarning(lcMessaging) << "Unable to find message source for account:" << id;
     }
 
     return services;
@@ -996,7 +996,7 @@ QSet<QMailMessageService*> ServiceHandler::sourceServiceSet(const QSet<QMailAcco
         if (QMailMessageSource *source = accountSource(id)) {
             services.insert(sourceService.value(source));
         } else {
-            qWarning() << "Unable to find message source for account:" << id;
+            qCWarning(lcMessaging) << "Unable to find message source for account:" << id;
             return QSet<QMailMessageService*>();
         }
     }
@@ -1016,7 +1016,7 @@ QSet<QMailMessageService*> ServiceHandler::sinkServiceSet(const QMailAccountId &
     if (QMailMessageSink *sink = accountSink(id)) {
         services.insert(sinkService[sink]);
     } else {
-        qWarning() << "Unable to find message sink for account:" << id;
+        qCWarning(lcMessaging) << "Unable to find message sink for account:" << id;
     }
 
     return services;
@@ -1030,7 +1030,7 @@ QSet<QMailMessageService*> ServiceHandler::sinkServiceSet(const QSet<QMailAccoun
         if (QMailMessageSink *sink = accountSink(id)) {
             services.insert(sinkService[sink]);
         } else {
-            qWarning() << "Unable to find message sink for account:" << id;
+            qCWarning(lcMessaging) << "Unable to find message sink for account:" << id;
             return QSet<QMailMessageService*>();
         }
     }
@@ -1176,7 +1176,7 @@ void ServiceHandler::dispatchRequest()
         data.status = QMailServiceAction::Status(QMailServiceAction::Status::ErrNoError, QString(), QMailAccountId(), QMailFolderId(), QMailMessageId());
 
         mActiveActions.insert(request->action, data);
-        qMailLog(Messaging) << "Running action" << ::requestTypeNames[data.description] << request->action;
+        qCDebug(lcMessaging) << "Running action" << ::requestTypeNames[data.description] << request->action;
         emit actionStarted(QMailActionData(request->action, request->description, 0, 0,
                                            data.status.errorCode, data.status.text,
                                            data.status.accountId, data.status.folderId, data.status.messageId));
@@ -1194,7 +1194,7 @@ void ServiceHandler::dispatchRequest()
         } else {
             mActiveActions.remove(request->action);
 
-            qWarning() << "Unable to dispatch request:" << request->action << "to services:" << request->services;
+            qCWarning(lcMessaging) << "Unable to dispatch request:" << request->action << "to services:" << request->services;
             emit activityChanged(request->action, QMailServiceAction::Failed);
 
             foreach (QMailMessageService *service, request->services)
@@ -1231,7 +1231,7 @@ void ServiceHandler::expireAction()
 
             // Is the oldest action expired?
             if (data.unixTimeExpiry <= now) {
-                qWarning() << "Expired request:" << action;
+                qCWarning(lcMessaging) << "Expired request:" << action;
                 reportFailure(action, QMailServiceAction::Status::ErrTimeout, tr("Request is not progressing"));
                 emit activityChanged(action, QMailServiceAction::Failed);
 
@@ -1324,7 +1324,7 @@ void ServiceHandler::cancelTransfer(quint64 action)
             }
             mServiceAction.remove(service);
             if (!service) {
-                qWarning() << "Unable to cancel null service for action:" << action;
+                qCWarning(lcMessaging) << "Unable to cancel null service for action:" << action;
                 continue;
             }
 
@@ -1454,7 +1454,7 @@ bool ServiceHandler::dispatchPrepareMessages(quint64 action, const QByteArray &d
     for ( ; it != end; ++it) {
         if (QMailMessageSource *source = accountSource(it.key())) {
             if (!source->prepareMessages(it.value())) {
-                qWarning() << "Unable to service request to prepare messages for account:" << it.key();
+                qCWarning(lcMessaging) << "Unable to service request to prepare messages for account:" << it.key();
                 return false;
             } else {
                 // This account is now transmitting
@@ -1494,7 +1494,7 @@ bool ServiceHandler::dispatchTransmitMessages(quint64 action, const QByteArray &
             // This account is now transmitting
             setTransmissionInProgress(accountId, true);
         } else {
-            qWarning() << "Unable to service request to add messages to sink for account:" << accountId;
+            qCWarning(lcMessaging) << "Unable to service request to add messages to sink for account:" << accountId;
             return false;
         }
     } else {
@@ -1530,7 +1530,7 @@ bool ServiceHandler::dispatchTransmitMessage(quint64 action, const QByteArray &d
             // This account is now transmitting
             setTransmissionInProgress(accountId, true);
         } else {
-            qWarning() << "Unable to service request to add message " << messageId << " to sink for account:" << accountId;
+            qCWarning(lcMessaging) << "Unable to service request to add message " << messageId << " to sink for account:" << accountId;
             return false;
         }
     } else {
@@ -1568,7 +1568,7 @@ bool ServiceHandler::dispatchRetrieveFolderListAccount(quint64 action, const QBy
             // This account is now retrieving (arguably...)
             setRetrievalInProgress(accountId, true);
         } else {
-            qWarning() << "Unable to service request to retrieve folder list for account:" << accountId;
+            qCWarning(lcMessaging) << "Unable to service request to retrieve folder list for account:" << accountId;
             return false;
         }
     } else {
@@ -1606,7 +1606,7 @@ bool ServiceHandler::dispatchRetrieveMessageList(quint64 action, const QByteArra
             // This account is now retrieving
             setRetrievalInProgress(accountId, true);
         } else {
-            qWarning() << "Unable to service request to retrieve message list for folder:" << folderId;
+            qCWarning(lcMessaging) << "Unable to service request to retrieve message list for folder:" << folderId;
             return false;
         }
     } else {
@@ -1644,7 +1644,7 @@ bool ServiceHandler::dispatchRetrieveMessageLists(quint64 action, const QByteArr
             // This account is now retrieving
             setRetrievalInProgress(accountId, true);
         } else {
-            qWarning() << "Unable to service request to retrieve message list for folders:" << folderIds;
+            qCWarning(lcMessaging) << "Unable to service request to retrieve message list for folders:" << folderIds;
             return false;
         }
     } else {
@@ -1680,7 +1680,7 @@ bool ServiceHandler::dispatchRetrieveNewMessages(quint64 action, const QByteArra
             // This account is now retrieving
             setRetrievalInProgress(accountId, true);
         } else {
-            qWarning() << "Unable to service request to retrieve new messages for folders:" << folderIds;
+            qCWarning(lcMessaging) << "Unable to service request to retrieve new messages for folders:" << folderIds;
             return false;
         }
     } else {
@@ -1715,7 +1715,7 @@ bool ServiceHandler::dispatchCreateStandardFolders(quint64 action, const QByteAr
         if (success) {
             return true;
         } else {
-            qWarning() << "Unable to service request to create standard folder for account:" << accountId;
+            qCWarning(lcMessaging) << "Unable to service request to create standard folder for account:" << accountId;
             return false;
         }
 
@@ -1757,7 +1757,7 @@ bool ServiceHandler::dispatchRetrieveMessages(quint64 action, const QByteArray &
                     _retrievalAccountIds.insert(it.key());
                 }
             } else {
-                qWarning() << "Unable to service request to retrieve messages for account:" << it.key() << "with spec" << spec;
+                qCWarning(lcMessaging) << "Unable to service request to retrieve messages for account:" << it.key() << "with spec" << spec;
                 return false;
             }
         } else {
@@ -1797,7 +1797,7 @@ bool ServiceHandler::dispatchRetrieveMessagePart(quint64 action, const QByteArra
            // This account is now retrieving
             setRetrievalInProgress(accountId, true);
         } else {
-            qWarning() << "Unable to service request to retrieve part for message:" << partLocation.containingMessageId();
+            qCWarning(lcMessaging) << "Unable to service request to retrieve part for message:" << partLocation.containingMessageId();
             return false;
         }
     } else {
@@ -1836,7 +1836,7 @@ bool ServiceHandler::dispatchRetrieveMessageRange(quint64 action, const QByteArr
             // This account is now retrieving
             setRetrievalInProgress(accountId, true);
         } else {
-            qWarning() << "Unable to service request to retrieve range:" << minimum << "for message:" << messageId;
+            qCWarning(lcMessaging) << "Unable to service request to retrieve range:" << minimum << "for message:" << messageId;
             return false;
         }
     } else {
@@ -1876,7 +1876,7 @@ bool ServiceHandler::dispatchRetrieveMessagePartRange(quint64 action, const QByt
             // This account is now retrieving
             setRetrievalInProgress(accountId, true);
         } else {
-            qWarning() << "Unable to service request to retrieve range:" << minimum << "for part in message:" << partLocation.containingMessageId();
+            qCWarning(lcMessaging) << "Unable to service request to retrieve range:" << minimum << "for part in message:" << partLocation.containingMessageId();
             return false;
         }
     } else {
@@ -1912,7 +1912,7 @@ bool ServiceHandler::dispatchRetrieveAll(quint64 action, const QByteArray &data)
             // This account is now retrieving
             setRetrievalInProgress(accountId, true);
         } else {
-            qWarning() << "Unable to service request to retrieve all messages for account:" << accountId;
+            qCWarning(lcMessaging) << "Unable to service request to retrieve all messages for account:" << accountId;
             return false;
         }
     } else {
@@ -1945,7 +1945,7 @@ bool ServiceHandler::dispatchExportUpdates(quint64 action, const QByteArray &dat
             : source->exportUpdates(accountId));
 
         if (!success) {
-            qWarning() << "Unable to service request to export updates for account:" << accountId;
+            qCWarning(lcMessaging) << "Unable to service request to export updates for account:" << accountId;
             return false;
         }
     } else {
@@ -1982,7 +1982,7 @@ bool ServiceHandler::dispatchSynchronize(quint64 action, const QByteArray &data)
             // This account is now retrieving
             setRetrievalInProgress(accountId, true);
         } else {
-            qWarning() << "Unable to service request to synchronize account:" << accountId;
+            qCWarning(lcMessaging) << "Unable to service request to synchronize account:" << accountId;
             return false;
         }
     } else {
@@ -2022,7 +2022,7 @@ void ServiceHandler::discardMessages(quint64 action, QMailMessageIdList messageI
     // Just delete all these messages
     if (!messageIds.isEmpty()
         && !QMailStore::instance()->removeMessages(QMailMessageKey::id(messageIds), QMailStore::NoRemovalRecord)) {
-        qWarning() << "Unable to service request to discard messages";
+        qCWarning(lcMessaging) << "Unable to service request to discard messages";
 
         reportFailure(action, QMailServiceAction::Status::ErrEnqueueFailed, tr("Unable to discard messages"));
         return;
@@ -2050,7 +2050,7 @@ bool ServiceHandler::dispatchOnlineDeleteMessages(quint64 action, const QByteArr
                 : source->deleteMessages(it.value()));
 
             if (!success) {
-                qWarning() << "Unable to service request to delete messages for account:" << it.key();
+                qCWarning(lcMessaging) << "Unable to service request to delete messages for account:" << it.key();
                 return false;
             }
         } else {
@@ -2105,7 +2105,7 @@ bool ServiceHandler::dispatchOnlineCopyMessages(quint64 action, const QByteArray
                 : source->copyMessages(messageIds, destination));
 
             if (!success) {
-                qWarning() << "Unable to service request to copy messages to folder:" << destination << "for account:" << accountId;
+                qCWarning(lcMessaging) << "Unable to service request to copy messages to folder:" << destination << "for account:" << accountId;
                 return false;
             }
         } else {
@@ -2140,7 +2140,7 @@ bool ServiceHandler::dispatchCopyToLocal(quint64 action, const QByteArray &data)
         message.setParentFolderId(destination);
 
         if (!QMailStore::instance()->addMessage(&message)) {
-            qWarning() << "Unable to service request to copy messages to folder:" << destination << "for account:" << message.parentAccountId();
+            qCWarning(lcMessaging) << "Unable to service request to copy messages to folder:" << destination << "for account:" << message.parentAccountId();
 
             reportFailure(action, QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to copy messages for account"), message.parentAccountId());
             return false;
@@ -2182,7 +2182,7 @@ bool ServiceHandler::dispatchOnlineMoveMessages(quint64 action, const QByteArray
                 : source->moveMessages(it.value(), destination));
 
             if (!success) {
-                qWarning() << "Unable to service request to move messages to folder:" << destination << "for account:" << it.key();
+                qCWarning(lcMessaging) << "Unable to service request to move messages to folder:" << destination << "for account:" << it.key();
                 return false;
             }
         } else {
@@ -2337,7 +2337,7 @@ bool ServiceHandler::dispatchOnlineFlagMessagesAndMoveToStandardFolder(quint64 a
                 : source->flagMessages(it.value(), setMask, unsetMask));
 
             if (!success) {
-                qWarning() << "Unable to service request to flag messages for account:" << it.key();
+                qCWarning(lcMessaging) << "Unable to service request to flag messages for account:" << it.key();
                 return false;
             }
         } else {
@@ -2355,7 +2355,7 @@ void ServiceHandler::deleteMessages(quint64 action, const QMailMessageIdList& me
 
     // Just delete all these messages from device and mark for deletion on server when exportUpdates is called
     if (!messageIds.isEmpty() && !QMailStore::instance()->removeMessages(QMailMessageKey::id(messageIds), QMailStore::CreateRemovalRecord)) {
-        qWarning() << "Unable to service request to delete messages";
+        qCWarning(lcMessaging) << "Unable to service request to delete messages";
         reportFailure(action, QMailServiceAction::Status::ErrFrameworkFault, tr("Could not delete messages"));
         return;
     }
@@ -2456,7 +2456,7 @@ bool ServiceHandler::dispatchOnlineCreateFolder(quint64 action, const QByteArray
         if (success) {
             return true;
         } else {
-            qWarning() << "Unable to service request to create folder for account:" << accountId;
+            qCWarning(lcMessaging) << "Unable to service request to create folder for account:" << accountId;
             return false;
         }
 
@@ -2492,7 +2492,7 @@ bool ServiceHandler::dispatchOnlineRenameFolder(quint64 action, const QByteArray
         if (success) {
             return true;
         } else {
-            qWarning() << "Unable to service request to rename folder id:" << folderId;
+            qCWarning(lcMessaging) << "Unable to service request to rename folder id:" << folderId;
             return false;
         }
 
@@ -2524,7 +2524,7 @@ bool ServiceHandler::dispatchOnlineDeleteFolder(quint64 action, const QByteArray
         if (source->deleteFolder(folderId)) {
             return true;
         } else {
-            qWarning() << "Unable to service request to delete folder id:" << folderId;
+            qCWarning(lcMessaging) << "Unable to service request to delete folder id:" << folderId;
             return false;
         }
     } else {
@@ -2558,7 +2558,7 @@ bool ServiceHandler::dispatchOnlineMoveFolder(quint64 action, const QByteArray &
         if (success) {
             return true;
         } else {
-            qWarning() << "Unable to service request to move folder id:" << folderId;
+            qCWarning(lcMessaging) << "Unable to service request to move folder id:" << folderId;
             return false;
         }
 
@@ -2645,7 +2645,7 @@ bool ServiceHandler::dispatchSearchMessages(quint64 action, const QByteArray &da
                 }
                 break;
             default:
-                qWarning() << "Unknown SearchType";
+                qCWarning(lcMessaging) << "Unknown SearchType";
                 break;
             }
 
@@ -2654,7 +2654,7 @@ bool ServiceHandler::dispatchSearchMessages(quint64 action, const QByteArray &da
                 sentSearch = true; //we've at least sent one
             } else {
                 //do it locally instead
-                qWarning() << "Unable to do remote search, doing it locally instead";
+                qCWarning(lcMessaging) << "Unable to do remote search, doing it locally instead";
                 mSearches.append(MessageSearch(action, QMailStore::instance()->queryMessages(filter, sort), bodyText));
                 QTimer::singleShot(0, this, SLOT(continueSearch()));
             }
@@ -2740,7 +2740,7 @@ void ServiceHandler::onProgressChanged(uint p, uint t, quint64 a)
 
 void ServiceHandler::onActionCompleted(bool success, quint64 action)
 {
-   qMailLog(Messaging) << "Action completed" << action << "result" << (success ? "success" : "failure");
+   qCDebug(lcMessaging) << "Action completed" << action << "result" << (success ? "success" : "failure");
    QMailMessageService *service = qobject_cast<QMailMessageService*>(sender());
    Q_ASSERT(service);
 
@@ -2749,7 +2749,7 @@ void ServiceHandler::onActionCompleted(bool success, quint64 action)
 
 void ServiceHandler::handleActionCompleted(bool success, QMailMessageService *service, quint64 action)
 {
-    qMailLog(Messaging) << "Action completed" << action << "result" << (success ? "success" : "failure");
+    qCDebug(lcMessaging) << "Action completed" << action << "result" << (success ? "success" : "failure");
     QMap<quint64, ActionData>::iterator it = mActiveActions.find(action);
     if (it != mActiveActions.end()) {
         ActionData &data(it.value());
@@ -2766,7 +2766,7 @@ void ServiceHandler::handleActionCompleted(bool success, QMailMessageService *se
                 failed = !QMailStore::instance()->updateMessagesMetaData(idsKey, unsetMask, false) || failed;
 
                 if (failed) {
-                    qWarning() << "Unable to flag messages:" << mSentIds;
+                    qCWarning(lcMessaging) << "Unable to flag messages:" << mSentIds;
                 }
 
                 // FWOD messages have already been uploaded to the remote server, don't try to upload twice
@@ -2927,7 +2927,7 @@ bool ServiceHandler::dispatchProtocolRequest(quint64 action, const QByteArray &d
                      ? source->protocolRequest(accountId, request, requestData, action)
                      : source->protocolRequest(accountId, request, requestData));
         if (!success) {
-            qWarning() << "Unable to service request to forward protocol-specific request to account:" << accountId;
+            qCWarning(lcMessaging) << "Unable to service request to forward protocol-specific request to account:" << accountId;
             return false;
         }
     } else {
@@ -3079,7 +3079,7 @@ void ServiceHandler::onActionCompleted(bool success)
         }
     }
 
-    qWarning() << "Would not determine server/action completing";
+    qCWarning(lcMessaging) << "Would not determine server/action completing";
     // See if there are pending requests
     QTimer::singleShot(0, this, SLOT(dispatchRequest()));
 }

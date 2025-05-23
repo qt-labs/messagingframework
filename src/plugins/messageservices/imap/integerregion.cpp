@@ -32,7 +32,7 @@
 ****************************************************************************/
 
 #include "integerregion.h"
-#include <qmaillog.h>
+#include "imaplog.h"
 #include <QRegularExpression>
 
 /*
@@ -298,7 +298,7 @@ IntegerRegion IntegerRegion::subtract(IntegerRegion other) const
             (*a).second = (*b).first - 1;
             ++a;
         } else {
-            qWarning() << "Unhandled IntegerRegion case a " << *a << " b " << *b;
+            qCWarning(lcIMAP) << "Unhandled IntegerRegion case a " << *a << " b " << *b;
             return result;
         }
     }
@@ -384,6 +384,7 @@ QList<int> IntegerRegion::toList(const QString &region)
 
 #if 0
 //TODO Convert these tests to standard qunit style
+#include <QDebug>
 
 /*
   Test function.
@@ -436,64 +437,64 @@ int IntegerRegion::tests()
         list << QString::number(v);
     }
 
-    qMailLog(Messaging) << "Constructing from QStringList " << list;
+    qDebug() << "Constructing from QStringList " << list;
 
     IntegerRegion ir(list);
-    qMailLog(Messaging) << "IntegerRegion = " << ir.toString();
-    qMailLog(Messaging) << "IntegerRegion::IntegerRegion(QStringList) test1"
-                        << ((ir.toString() == "12:13,16,20,22:24,27:28,34") ? "passed" : "failed");
-    qMailLog(Messaging) << "IntegerRegion::toList(QString) test1"
-                        << ((IntegerRegion::toList(ir.toString()) == values) ? "passed" : "failed");
-    qMailLog(Messaging) << "Adding 31. Insert new region between existing regions.";
+    qDebug() << "IntegerRegion = " << ir.toString();
+    qDebug() << "IntegerRegion::IntegerRegion(QStringList) test1"
+             << ((ir.toString() == "12:13,16,20,22:24,27:28,34") ? "passed" : "failed");
+    qDebug() << "IntegerRegion::toList(QString) test1"
+             << ((IntegerRegion::toList(ir.toString()) == values) ? "passed" : "failed");
+    qDebug() << "Adding 31. Insert new region between existing regions.";
     ir.add(31);
-    qMailLog(Messaging) << "IntegerRegion = " << ir.toString();
-    qMailLog(Messaging) << "Adding 14. Increment first region.";
+    qDebug() << "IntegerRegion = " << ir.toString();
+    qDebug() << "Adding 14. Increment first region.";
     ir.add(14);
-    qMailLog(Messaging) << "IntegerRegion = " << ir.toString();
-    qMailLog(Messaging) << "Adding 13. Ignore.";
+    qDebug() << "IntegerRegion = " << ir.toString();
+    qDebug() << "Adding 13. Ignore.";
     ir.add(13);
-    qMailLog(Messaging) << "IntegerRegion = " << ir.toString();
-    qMailLog(Messaging) << "Adding 11. Decrement first region.";
+    qDebug() << "IntegerRegion = " << ir.toString();
+    qDebug() << "Adding 11. Decrement first region.";
     ir.add(11);
-    qMailLog(Messaging) << "IntegerRegion = " << ir.toString();
-    qMailLog(Messaging) << "Adding 15. Decrement second region and coalesce.";
+    qDebug() << "IntegerRegion = " << ir.toString();
+    qDebug() << "Adding 15. Decrement second region and coalesce.";
     ir.add(15);
-    qMailLog(Messaging) << "IntegerRegion = " << ir.toString();
-    qMailLog(Messaging) << "Adding 26. Decrement lower bound.";
+    qDebug() << "IntegerRegion = " << ir.toString();
+    qDebug() << "Adding 26. Decrement lower bound.";
     ir.add(26);
-    qMailLog(Messaging) << "IntegerRegion = " << ir.toString();
-    qMailLog(Messaging) << "Adding 7. Insert new region at start of list";
+    qDebug() << "IntegerRegion = " << ir.toString();
+    qDebug() << "Adding 7. Insert new region at start of list";
     ir.add(7);
-    qMailLog(Messaging) << "IntegerRegion = " << ir.toString();
-    qMailLog(Messaging) << "Adding 42. Insert new region at end";
+    qDebug() << "IntegerRegion = " << ir.toString();
+    qDebug() << "Adding 42. Insert new region at end";
     ir.add(42);
-    qMailLog(Messaging) << "IntegerRegion " << ir.toString();
-    qMailLog(Messaging) << "Adding 43. Increment last region.";
+    qDebug() << "IntegerRegion " << ir.toString();
+    qDebug() << "Adding 43. Increment last region.";
     ir.add(43);
-    qMailLog(Messaging) << "IntegerRegion = " << ir.toString();
-    qMailLog(Messaging) << "Adding 25. Another coalesce.";
+    qDebug() << "IntegerRegion = " << ir.toString();
+    qDebug() << "Adding 25. Another coalesce.";
     ir.add(25);
-    qMailLog(Messaging) << "IntegerRegion = " << ir.toString();
-    qMailLog(Messaging) << "IntegerRegion::toString test2"
-                        << ((ir.toString() == "7,11:16,20,22:28,31,34,42:43") ? "passed" : "failed");
-    qMailLog(Messaging) << "IntegerRegion::cardinality test3"
-                        << ((ir.cardinality() == 19) ? "passed" : "failed");
+    qDebug() << "IntegerRegion = " << ir.toString();
+    qDebug() << "IntegerRegion::toString test2"
+             << ((ir.toString() == "7,11:16,20,22:28,31,34,42:43") ? "passed" : "failed");
+    qDebug() << "IntegerRegion::cardinality test3"
+             << ((ir.cardinality() == 19) ? "passed" : "failed");
 
-    qMailLog(Messaging) << "IntegerRegion cardinality() = " << ir.cardinality();
-    qMailLog(Messaging) << "IntegerRegion toStringList() = " << ir.toStringList();
-    qMailLog(Messaging) << "IntegerRegion::isIntegerRegion test4: "
-                    << (IntegerRegion::isIntegerRegion(ir.toStringList()) ? "passed" : "failed");
+    qDebug() << "IntegerRegion cardinality() = " << ir.cardinality();
+    qDebug() << "IntegerRegion toStringList() = " << ir.toStringList();
+    qDebug() << "IntegerRegion::isIntegerRegion test4: "
+             << (IntegerRegion::isIntegerRegion(ir.toStringList()) ? "passed" : "failed");
     QStringList hippo;
     hippo << "1" << "3" << "hippo" << "7";
-    qMailLog(Messaging) << "IntegerRegion::isIntegerRegion test5: "
-                    << (IntegerRegion::isIntegerRegion(hippo) ? "failed" : "passed");
+    qDebug() << "IntegerRegion::isIntegerRegion test5: "
+             << (IntegerRegion::isIntegerRegion(hippo) ? "failed" : "passed");
 
     QList<int> newValues;
     foreach (const QString &number, ir.toStringList()) {
         newValues << number.toInt();
     }
-    qMailLog(Messaging) << "IntegerRegion::toList(QString) test2"
-                        << ((IntegerRegion::toList(ir.toString()) == newValues) ? "passed" : "failed");
+    qDebug() << "IntegerRegion::toList(QString) test2"
+             << ((IntegerRegion::toList(ir.toString()) == newValues) ? "passed" : "failed");
 
     QString a("    --  -  --  --- -- -- -   --   -- -  -");
     QString b("  - -- -- ----  -   - -   -   -- --  -   ");
@@ -501,13 +502,13 @@ int IntegerRegion::tests()
     IntegerRegion ar = IntegerRegion::fromBinaryString(a);
     IntegerRegion br = IntegerRegion::fromBinaryString(b);
     IntegerRegion cr = ar.subtract(br);
-    qMailLog(Messaging) << "a " << ar.toString();
-    qMailLog(Messaging) << "b " << br.toString();
-    qMailLog(Messaging) << "a   " << IntegerRegion::toBinaryString(ar) << " - ";
-    qMailLog(Messaging) << "b   " << IntegerRegion::toBinaryString(br) << " = ";
-    qMailLog(Messaging) << "a-b " << IntegerRegion::toBinaryString(cr);
-    qMailLog(Messaging) << "c   " << c;
-    qMailLog(Messaging) << "IntegerRegion::subtract test6: "
+    qDebug() << "a " << ar.toString();
+    qDebug() << "b " << br.toString();
+    qDebug() << "a   " << IntegerRegion::toBinaryString(ar) << " - ";
+    qDebug() << "b   " << IntegerRegion::toBinaryString(br) << " = ";
+    qDebug() << "a-b " << IntegerRegion::toBinaryString(cr);
+    qDebug() << "c   " << c;
+    qDebug() << "IntegerRegion::subtract test6: "
                         << ((IntegerRegion::toBinaryString(cr) == c) ? "passed" : "failed");
     QString a2("     ---  --  ----  ----- ---- ---- ---     ---     --- --  -");
     QString b2("  -  --- --- ------  ---    -- --      ---    --- ---   --   ");
@@ -515,22 +516,22 @@ int IntegerRegion::tests()
     ar = IntegerRegion::fromBinaryString(a2);
     br = IntegerRegion::fromBinaryString(b2);
     cr = ar.subtract(br);
-    qMailLog(Messaging) << "a2 " << ar.toString();
-    qMailLog(Messaging) << "b2 " << br.toString();
-    qMailLog(Messaging) << "a   " << IntegerRegion::toBinaryString(ar) << " - ";
-    qMailLog(Messaging) << "b   " << IntegerRegion::toBinaryString(br) << " = ";
-    qMailLog(Messaging) << "a-b " << IntegerRegion::toBinaryString(cr);
-    qMailLog(Messaging) << "c   " << c2;
-    qMailLog(Messaging) << "IntegerRegion::subtract test7: "
-                        << ((IntegerRegion::toBinaryString(cr) == c2) ? "passed" : "failed");
+    qDebug() << "a2 " << ar.toString();
+    qDebug() << "b2 " << br.toString();
+    qDebug() << "a   " << IntegerRegion::toBinaryString(ar) << " - ";
+    qDebug() << "b   " << IntegerRegion::toBinaryString(br) << " = ";
+    qDebug() << "a-b " << IntegerRegion::toBinaryString(cr);
+    qDebug() << "c   " << c2;
+    qDebug() << "IntegerRegion::subtract test7: "
+             << ((IntegerRegion::toBinaryString(cr) == c2) ? "passed" : "failed");
 
     QString a3("1:7,9:15");
     QString b3("2:5,10:13,7,1,6,9,12:15");
     ar = IntegerRegion(b3);
-    qMailLog(Messaging) << "b3 " << b3;
-    qMailLog(Messaging) << "c3 " << ar.toString();
-    qMailLog(Messaging) << "IntegerRegion::fromString test8: "
-                        << ((ar.toString() == a3) ? "passed" : "failed");
+    qDebug() << "b3 " << b3;
+    qDebug() << "c3 " << ar.toString();
+    qDebug() << "IntegerRegion::fromString test8: "
+             << ((ar.toString() == a3) ? "passed" : "failed");
 
 
     values.clear();
@@ -549,57 +550,57 @@ int IntegerRegion::tests()
     ar = jr.subtract(ir);
     QString a4("15560,15564,15568,15570:15572,15574:15577,15583,15585,15588:15589,15591:15592,15594,15597:15598,15601,15603:15604,15608");
 
-    qMailLog(Messaging) << "IntegerRegion::subtractTest test9: "
-                        << ((ar.toString() == a4) ? "passed" : "failed");
+    qDebug() << "IntegerRegion::subtractTest test9: "
+             << ((ar.toString() == a4) ? "passed" : "failed");
 
     ir = IntegerRegion("1:20");
     jr = IntegerRegion("10:30");
     ar = jr.intersect(ir);
     QString a5("10:20");
-    qMailLog(Messaging) << "IntegerRegion::intersectionTest test10: "
-                        << ((ar.toString() == a5) ? "passed" : "failed");
+    qDebug() << "IntegerRegion::intersectionTest test10: "
+             << ((ar.toString() == a5) ? "passed" : "failed");
 
     ar = ir.intersect(jr);
-    qMailLog(Messaging) << "IntegerRegion::intersectionTest test11: "
-                        << ((ar.toString() == a5) ? "passed" : "failed");
+    qDebug() << "IntegerRegion::intersectionTest test11: "
+             << ((ar.toString() == a5) ? "passed" : "failed");
 
     ir = IntegerRegion("1:10");
     jr = IntegerRegion("20:30");
     ar = jr.intersect(ir);
     QString a6("");
-    qMailLog(Messaging) << "IntegerRegion::intersectionTest test12: "
-                        << ((ar.toString() == a6) ? "passed" : "failed");
+    qDebug() << "IntegerRegion::intersectionTest test12: "
+             << ((ar.toString() == a6) ? "passed" : "failed");
 
     ir = IntegerRegion("1:10");
     jr = IntegerRegion("20:30");
     ar = ir.intersect(jr);
     QString a7("");
-    qMailLog(Messaging) << "IntegerRegion::intersectionTest test13: "
-                        << ((ar.toString() == a7) ? "passed" : "failed");
+    qDebug() << "IntegerRegion::intersectionTest test13: "
+             << ((ar.toString() == a7) ? "passed" : "failed");
 
     ar = ir.intersect(ir);
     QString a8("1:10");
-    qMailLog(Messaging) << "IntegerRegion::intersectionTest test14: "
-                        << ((ar.toString() == a8) ? "passed" : "failed");
+    qDebug() << "IntegerRegion::intersectionTest test14: "
+             << ((ar.toString() == a8) ? "passed" : "failed");
 
     ir = IntegerRegion("1:4,6:8,9,10,30,1000,20000,30000");
     jr = IntegerRegion("1:30000");
     ar = ir.intersect(jr);
-    qMailLog(Messaging) << "IntegerRegion::intersectionTest test15: "
-                        << ((ar.toString() == ir.toString()) ? "passed" : "failed");
+    qDebug() << "IntegerRegion::intersectionTest test15: "
+             << ((ar.toString() == ir.toString()) ? "passed" : "failed");
     ar = jr.intersect(ir);
-    qMailLog(Messaging) << "IntegerRegion::intersectionTest test16: "
-                        << ((ar.toString() == ir.toString()) ? "passed" : "failed");
+    qDebug() << "IntegerRegion::intersectionTest test16: "
+             << ((ar.toString() == ir.toString()) ? "passed" : "failed");
 
     jr = IntegerRegion("2,5,7,100:10000,25000,26000,27000,28000");
     ar = jr.intersect(ir);
     QString a9("2,7,1000");
-    qMailLog(Messaging) << "IntegerRegion::intersectionTest test17: "
-                        << ((ar.toString() == a9) ? "passed" : "failed");
+    qDebug() << "IntegerRegion::intersectionTest test17: "
+             << ((ar.toString() == a9) ? "passed" : "failed");
 
     ar = ir.intersect(jr);
-    qMailLog(Messaging) << "IntegerRegion::intersectionTest test18: "
-                        << ((ar.toString() == a9) ? "passed" : "failed");
+    qDebug() << "IntegerRegion::intersectionTest test18: "
+             << ((ar.toString() == a9) ? "passed" : "failed");
 
     return 1;
 }

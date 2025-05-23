@@ -48,12 +48,13 @@
 #ifndef QT_NO_SSL
 #include <QSslSocket>
 #endif
-#include <qmaillog.h>
 #include <qmailaddress.h>
 #include <qmailstore.h>
 #include <qmailtransport.h>
 #include <qmailnamespace.h>
 #include <qmailauthenticator.h>
+
+Q_LOGGING_CATEGORY(lcSMTP, "org.qt.messageserver.smtp", QtWarningMsg)
 
 // The size of the buffer used when sending messages.
 // Only this many bytes is queued to be sent at a time.
@@ -133,17 +134,17 @@ QMailAccountId SmtpClient::account() const
 
 void SmtpClient::fetchCapabilities()
 {
-    qMailLog(SMTP) << "fetchCapabilities";
+    qCDebug(lcSMTP) << "fetchCapabilities";
     capabilities.clear();
 
     if (transport && transport->inUse()) {
-        qWarning() << "Cannot fetch capabilities; transport in use";
+        qCWarning(lcSMTP) << "Cannot fetch capabilities; transport in use";
         emit fetchCapabilitiesFinished();
         return;
     }
 
     if (!account().isValid()) {
-        qWarning() << "Cannot fetch capabilities; invalid account";
+        qCWarning(lcSMTP) << "Cannot fetch capabilities; invalid account";
         emit fetchCapabilitiesFinished();
         return;
     }
@@ -154,7 +155,7 @@ void SmtpClient::fetchCapabilities()
     config = QMailAccountConfiguration(account());
     SmtpConfiguration smtpConfig(config);
     if (smtpConfig.smtpServer().isEmpty()) {
-        qWarning() << "Cannot fetch capabilities without SMTP server configuration";
+        qCWarning(lcSMTP) << "Cannot fetch capabilities without SMTP server configuration";
         emit fetchCapabilitiesFinished();
         return;
     }
@@ -188,7 +189,7 @@ void SmtpClient::openTransport()
     status = Init;
     outstandingResponses = 0;
 
-    qMailLog(SMTP) << "Open SMTP connection";
+    qCDebug(lcSMTP) << "Open SMTP connection";
     SmtpConfiguration smtpConfig(config);
     transport->setAcceptUntrustedCertificates(smtpConfig.acceptUntrustedCertificates());
     transport->open(smtpConfig.smtpServer(), smtpConfig.smtpPort(),
@@ -197,7 +198,7 @@ void SmtpClient::openTransport()
 
 void SmtpClient::newConnection()
 {
-    qMailLog(SMTP) << "newConnection";
+    qCDebug(lcSMTP) << "newConnection";
 
     if (transport && transport->inUse()) {
         operationFailed(QMailServiceAction::Status::ErrConnectionInUse, tr("Cannot send message; transport in use"));
@@ -245,18 +246,18 @@ QMailServiceAction::Status::ErrorCode SmtpClient::addMail(const QMailMessage& ma
     // We shouldn't have anything left in our send list...
     if (mailList.isEmpty() && !sendSize.isEmpty()) {
         foreach (const QMailMessageId& id, sendSize.keys())
-            qMailLog(Messaging) << "Message" << id << "still in send map...";
+            qCWarning(lcSMTP) << "Message" << id << "still in send map...";
 
         sendSize.clear();
     }
 
     if (mail.status() & QMailMessage::HasUnresolvedReferences) {
-        qMailLog(Messaging) << "Cannot send SMTP message with unresolved references!";
+        qCWarning(lcSMTP) << "Cannot send SMTP message with unresolved references!";
         return QMailServiceAction::Status::ErrInvalidData;
     }
 
     if (mail.from().address().isEmpty()) {
-        qMailLog(Messaging) << "Cannot send SMTP message with empty from address!";
+        qCWarning(lcSMTP) << "Cannot send SMTP message with empty from address!";
         return QMailServiceAction::Status::ErrInvalidAddress;
     }
 
@@ -267,7 +268,7 @@ QMailServiceAction::Status::ErrorCode SmtpClient::addMail(const QMailMessage& ma
             sendTo.append(address.address());
     }
     if (sendTo.isEmpty()) {
-        qMailLog(Messaging) << "Cannot send SMTP message with empty recipient address!";
+        qCWarning(lcSMTP) << "Cannot send SMTP message with empty recipient address!";
         return QMailServiceAction::Status::ErrInvalidAddress;
     }
 
@@ -295,7 +296,7 @@ void SmtpClient::connected(QMailTransport::EncryptType encryptType)
 
     SmtpConfiguration smtpCfg(config);
     if (smtpCfg.smtpEncryption() == encryptType) {
-        qMailLog(SMTP) << "Connected";
+        qCDebug(lcSMTP) << "Connected";
         emit updateStatus(tr("Connected"));
     }
 
@@ -349,7 +350,7 @@ void SmtpClient::sendCommand(const char *data, int len, bool maskDebug)
     ++outstandingResponses;
 
     if (maskDebug) {
-        qMailLog(SMTP) << "SEND: <login hidden>";
+        qCDebug(lcSMTP) << "SEND: <login hidden>";
     } else {
         QString logCmd = QString::fromLatin1(data);
         QRegExp loginExp("^AUTH\\s[^\\s]+\\s");
@@ -357,7 +358,7 @@ void SmtpClient::sendCommand(const char *data, int len, bool maskDebug)
             logCmd = logCmd.left(loginExp.matchedLength()) + "<login hidden>";
         }
 
-        qMailLog(SMTP) << "SEND:" << logCmd;
+        qCDebug(lcSMTP) << "SEND:" << logCmd;
     }
 }
 
@@ -396,7 +397,7 @@ void SmtpClient::incomingData()
 
 void SmtpClient::processResponse(const QString &response)
 {
-    qMailLog(SMTP) << "RECV:" << response.left(response.length() - 2);
+    qCDebug(lcSMTP) << "RECV:" << response.left(response.length() - 2);
 
     delete authTimeout;
     authTimeout = 0;
@@ -514,7 +515,7 @@ void SmtpClient::nextAction(const QString &response)
                     account.setCustomField("qmf-smtp-capabilities-listed", "true");
                     account.setStatus(QMailAccount::CanTransmitViaReference, supportsReferences);
                     if (!QMailStore::instance()->updateAccount(&account)) {
-                        qWarning() << "Unable to update account" << account.id() << "to set CanTransmitViaReference";
+                        qCWarning(lcSMTP) << "Unable to update account" << account.id() << "to set CanTransmitViaReference";
                     }
                 }
 
@@ -532,7 +533,7 @@ void SmtpClient::nextAction(const QString &response)
                     if (authType != QMail::NoMechanism) {
                         smtpCfg.setSmtpAuthentication(authType);
                         if (!QMailStore::instance()->updateAccountConfiguration(&config)) {
-                            qWarning() << "Unable to update account" << config.id()
+                            qCWarning(lcSMTP) << "Unable to update account" << config.id()
                                        << "with auth type" << authType;
                         }
                     }
@@ -541,7 +542,7 @@ void SmtpClient::nextAction(const QString &response)
                 if (fetchingCapabilities) {
                     status = Done;
                     transport->close();
-                    qMailLog(SMTP) << "Closed connection";
+                    qCDebug(lcSMTP) << "Closed connection";
                     emit fetchCapabilitiesFinished();
                 } else {
                     // Proceed to TLS negotiation
@@ -659,13 +660,13 @@ void SmtpClient::nextAction(const QString &response)
             SmtpConfiguration smtpCfg(config);
             // reset method used and try again to authenticated from caps
             if (smtpCfg.smtpAuthFromCapabilities() && !authReset) {
-                qMailLog(SMTP) << "Resetting AUTH TYPE";
+                qCDebug(lcSMTP) << "Resetting AUTH TYPE";
                 authReset = true;
                 QMailAccountConfiguration accountConfig(smtpCfg.id());
                 SmtpConfigurationEditor smtpCfgEditor(&accountConfig);
                 smtpCfgEditor.setSmtpAuthentication(QMail::NoMechanism);
                 if (!QMailStore::instance()->updateAccount(nullptr, &accountConfig)) {
-                    qWarning() << "Unable to update account" << smtpCfg.id()
+                    qCWarning(lcSMTP) << "Unable to update account" << smtpCfg.id()
                                << "auth type.";
                     operationFailed(QMailServiceAction::Status::ErrConfiguration, response);
                 }
@@ -831,7 +832,7 @@ void SmtpClient::nextAction(const QString &response)
                 mailItr->mail.toRfc2822(dataStream, QMailMessage::TransmissionFormat);
             }
             messageLength = temporaryFile->size();
-            //qMailLog(SMTP) << "Body: queued" << messageLength << "bytes to" << temporaryFile->fileName();
+            //qCDebug(lcSMTP) << "Body: queued" << messageLength << "bytes to" << temporaryFile->fileName();
 
             // Now write the message to the transport in blocks, waiting for the bytes to be
             // written each time so there is no need to allocate large buffers to hold everything.
@@ -897,7 +898,7 @@ void SmtpClient::nextAction(const QString &response)
             if (msgId.isValid()) {
                 // Update the message to store the message-ID
                 if (!QMailStore::instance()->updateMessage(&mailItr->mail)) {
-                    qWarning() << "Unable to update message with Message-ID:" << msgId;
+                    qCWarning(lcSMTP) << "Unable to update message with Message-ID:" << msgId;
                 }
 
                 emit messageTransmitted(msgId);
@@ -928,7 +929,7 @@ void SmtpClient::nextAction(const QString &response)
 
         status = Done;
         transport->close();
-        qMailLog(SMTP) << "Closed connection";
+        qCDebug(lcSMTP) << "Closed connection";
 
         int count = mailList.count();
         if (count) {
@@ -943,7 +944,7 @@ void SmtpClient::nextAction(const QString &response)
     case Done:
     {
         // Supposed to be unused here
-        qWarning() << "nextAction - Unexpected status value: " << status;
+        qCWarning(lcSMTP) << "nextAction - Unexpected status value: " << status;
         break;
     }
 
@@ -978,7 +979,7 @@ void SmtpClient::operationFailed(int code, const QString &text)
     if (transport && transport->inUse()) {
         stopTransferring();
         transport->close();
-        qMailLog(SMTP) << "Closed connection:" << text;
+        qCDebug(lcSMTP) << "Closed connection:" << text;
     }
 
     if (fetchingCapabilities) {
@@ -1002,7 +1003,7 @@ void SmtpClient::operationFailed(QMailServiceAction::Status::ErrorCode code, con
     if (transport && transport->inUse()) {
         stopTransferring();
         transport->close();
-        qMailLog(SMTP) << "Closed connection:" << text;
+        qCDebug(lcSMTP) << "Closed connection:" << text;
     }
 
     if (fetchingCapabilities) {
@@ -1061,7 +1062,7 @@ void SmtpClient::sendMoreData(qint64 bytesWritten)
     // No more data to send
     if (temporaryFile->atEnd()) {
         stopTransferring();
-        qMailLog(SMTP) << "Body: sent:" << messageLength << "bytes";
+        qCDebug(lcSMTP) << "Body: sent:" << messageLength << "bytes";
         transport->stream().writeRawData("\r\n.\r\n", 5);
         return;
     }
@@ -1089,7 +1090,7 @@ void SmtpClient::sendMoreData(qint64 bytesWritten)
     waitingForBytes += dotstuffed.length();
 #endif
     transport->stream().writeRawData(dotstuffed.constData(), dotstuffed.length());
-    //qMailLog(SMTP) << "Body: sent a" << bytes << "byte block";
+    //qCDebug(lcSMTP) << "Body: sent a" << bytes << "byte block";
 }
 
 void SmtpClient::authExpired()
@@ -1115,7 +1116,7 @@ void SmtpClient::stopTransferring()
 
 void SmtpClient::onCredentialsStatusChanged()
 {
-    qMailLog(SMTP)  << "Got credentials status changed:" << credentials->status();
+    qCDebug(lcSMTP)  << "Got credentials status changed:" << credentials->status();
     disconnect(credentials, &QMailCredentialsInterface::statusChanged,
                this, &SmtpClient::onCredentialsStatusChanged);
     nextAction(QString());

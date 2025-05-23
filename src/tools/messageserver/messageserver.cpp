@@ -37,12 +37,20 @@
 #include <qmailmessage.h>
 #include <qmailstore.h>
 #include <QDataStream>
+#include <QTextStream>
 #include <QTimer>
 #include <QCoreApplication>
+#include <QDir>
+#include <QFile>
+#include <QSettings>
+
 #include <qmaillog.h>
 #include <qmailipc.h>
 #include <newcountnotifier.h>
 #include <qmailmessageserverplugin.h>
+
+#define LC_MESSAGING "org.qt.messageserver"
+#define LC_MAILSTORE "org.qt.mailstore"
 
 #include "qmailservice_adaptor.h"
 
@@ -66,6 +74,7 @@ MessageServer::MessageServer(QObject *parent)
       newMessageTotal(0),
       completionAttempted(false)
 {
+    readLogSettings();
 }
 
 MessageServer::~MessageServer()
@@ -74,9 +83,9 @@ MessageServer::~MessageServer()
     QDBusConnection dbus = QDBusConnection::sessionBus();
     dbus.unregisterObject("/messageserver");
     if (!dbus.unregisterService("org.qt.messageserver")) {
-        qWarning() << "Failed to unregister messageserver from D-Bus";
+        qCWarning(lcMessaging) << "Failed to unregister messageserver from D-Bus";
     } else {
-        qMailLog(Messaging) << "Unregistered messageserver from D-Bus";
+        qCDebug(lcMessaging) << "Unregistered messageserver from D-Bus";
     }
 
 #ifdef MESSAGESERVER_PLUGINS
@@ -86,7 +95,7 @@ MessageServer::~MessageServer()
 
 bool MessageServer::init()
 {
-    qMailLog(Messaging) << "MessageServer init begin";
+    qCDebug(lcMessaging) << "MessageServer init begin";
 
 #if defined(Q_OS_UNIX)
     // Unix signal handlers. We use the trick described here: http://doc.qt.io/qt-5/unix-signals.html
@@ -128,7 +137,7 @@ bool MessageServer::init()
 
     QMailStore *store = QMailStore::instance();
     if (store->initializationState() != QMailStore::Initialized) {
-        qWarning("Messaging DB Invalid: Messaging cannot operate due to database incompatibilty!");
+        qCWarning(lcMessaging) << "Messaging DB Invalid: Messaging cannot operate due to database incompatibilty!";
         // Do not close, however, or QPE will start another instance.
         return false;
     } else {
@@ -147,10 +156,10 @@ bool MessageServer::init()
     QDBusConnection dbus = QDBusConnection::sessionBus();
     if (!dbus.registerObject("/messageserver", handler) ||
         !dbus.registerService("org.qt.messageserver")) {
-        qWarning() << "Failed to register to D-Bus, aborting start";
+        qCWarning(lcMessaging) << "Failed to register to D-Bus, aborting start";
         return false;
     }
-    qMailLog(Messaging) << "Registered messageserver to D-Bus";
+    qCDebug(lcMessaging) << "Registered messageserver to D-Bus";
 
     connect(handler, &ServiceHandler::transmissionReady,
             this, &MessageServer::transmissionCompleted);
@@ -169,11 +178,10 @@ bool MessageServer::init()
     emit handler->actionsListed(QMailActionDataList());
 
 #ifdef MESSAGESERVER_PLUGINS
-    qMailLog(Messaging) << "Initiating messageserver plugins.";
-    QStringList availablePlugins = QMailMessageServerPluginFactory::keys();
-
-    for (int i = 0; i < availablePlugins.size(); i++) {
-        QMailMessageServerService *service = QMailMessageServerPluginFactory::createService(availablePlugins.at(i));
+    qCDebug(lcMessaging) << "Initiating messageserver plugins.";
+    for (const QString &plugin : QMailMessageServerPluginFactory::keys()) {
+        QMailMessageServerService *service = QMailMessageServerPluginFactory::createService(plugin);
+        qCDebug(lcMessaging) << "service from" << plugin << "created.";
         m_plugins.append(service);
     }
 #endif
@@ -277,7 +285,7 @@ void MessageServer::reportNewCounts()
                     // Ensure the client receives any generated events before the arrival notification
                     QMailStore::instance()->flushIpcNotifications();
                     if (!action->notify())
-                        qWarning() << "Unable to invoke service:" << serviceForType(type);
+                        qCWarning(lcMessaging) << "Unable to invoke service:" << serviceForType(type);
                 }
             }
         }
@@ -315,7 +323,7 @@ void MessageServer::response(bool handled)
 void MessageServer::error(const QString &message)
 {
     if (NewCountNotifier* action = static_cast<NewCountNotifier*>(sender())) {
-        qWarning() << "Unable to complete service:" << serviceForType(actionType[action]) << "-" << message;
+        qCWarning(lcMessaging) << "Unable to complete service:" << serviceForType(actionType[action]) << "-" << message;
         actionType.remove(action);
         action->deleteLater();
     }
@@ -424,8 +432,7 @@ void MessageServer::handleSigHup()
     char tmp;
     ::read(sighupFd[1], &tmp, sizeof(tmp));
 
-    // This is ~/.config/QtProject/Messageserver.conf
-    qMailLoggersRecreate("QtProject", "Messageserver", "Msgsrv");
+    readLogSettings();
 
     snHup->setEnabled(true);
 }
@@ -442,7 +449,7 @@ void MessageServer::handleSigTerm()
     char tmp;
     ::read(sigtermFd[1], &tmp, sizeof(tmp));
 
-    qMailLog(Messaging) << "Received SIGTERM, shutting down.";
+    qCDebug(lcMessaging) << "Received SIGTERM, shutting down.";
     QCoreApplication::exit();
 
     snTerm->setEnabled(true);
@@ -460,10 +467,120 @@ void MessageServer::handleSigInt()
     char tmp;
     ::read(sigintFd[1], &tmp, sizeof(tmp));
 
-    qMailLog(Messaging) << "Received SIGINT, shutting down.";
+    qCDebug(lcMessaging) << "Received SIGINT, shutting down.";
     QCoreApplication::exit();
 
     snInt->setEnabled(true);
+}
+
+static QtMessageHandler originalLogHandler = nullptr;
+static QFile logFile;
+
+static void logToFile(QtMsgType type,
+                      const QMessageLogContext &context, const QString &msg)
+{
+    if (logFile.isOpen()) {
+        static QTextStream out(&logFile);
+        out << QDateTime::currentDateTimeUtc().toString(Qt::ISODate);
+        switch (type) {
+        case QtDebugMsg:
+            out << " [D]";
+            break;
+        case QtInfoMsg:
+            out << " [I]";
+            break;
+        case QtWarningMsg:
+            out << " [W]";
+            break;
+        case QtCriticalMsg:
+            out << " [C]";
+            break;
+        case QtFatalMsg:
+            out << " [F]";
+            break;
+        default:
+            break;
+        }
+        if (context.category)
+            out << " " << context.category << ":";
+        out << " " << msg << '\n';
+        out.flush();
+    }
+
+    if (originalLogHandler)
+        originalLogHandler(type, context, msg);
+}
+
+void MessageServer::readLogSettings() const
+{
+    QSettings settings(QLatin1String("QtProject"), QLatin1String("Messageserver"));
+    const QStringList groups = settings.childGroups();
+    if (!groups.contains(QLatin1String("LogCategories"))) {
+        settings.beginGroup(QLatin1String("LogCategories"));
+        settings.setValue(QLatin1String("Messaging"), 0);
+        settings.setValue(QLatin1String("MailStore"), 0);
+        settings.setValue(QLatin1String("IMAP"), 0);
+        settings.setValue(QLatin1String("SMTP"), 0);
+        settings.setValue(QLatin1String("POP"), 0);
+        settings.endGroup();
+    }
+
+    // Deprecated logger
+    if (settings.value(QLatin1String("Syslog/Enabled")).toBool()) {
+        qCWarning(lcMessaging) << "Syslog is a deprecated logger, remove it from settings.";
+    }
+
+    settings.beginGroup(QLatin1String("FileLog"));
+    if (settings.value(QLatin1String("Enabled")).toBool()) {
+        QString fileName = settings.value(QLatin1String("Path")).toString();
+        if (fileName.startsWith(QStringLiteral("~/"))) {
+            fileName.replace(0, 1, QDir::homePath());
+        }
+        if (fileName != logFile.fileName()) {
+            logFile.close();
+            logFile.setFileName(fileName);
+        }
+        if (!logFile.isOpen()) {
+            logFile.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Unbuffered);
+        }
+    } else {
+        logFile.close();
+    }
+    settings.endGroup();
+    if (!originalLogHandler) {
+        originalLogHandler = qInstallMessageHandler(logToFile);
+    }
+
+    // Build rules from the setting file
+    QStringList rules;
+    settings.beginGroup(QLatin1String("LogCategories"));
+    for (const QString& key : settings.allKeys()) {
+        if (key == QLatin1String("Messaging")) {
+            rules.append(QLatin1String(settings.value(key).toBool()
+                                       ? LC_MESSAGING ".debug=true"
+                                       : LC_MESSAGING ".debug=false"));
+        } else if (key == QLatin1String("MailStore")) {
+            rules.append(QLatin1String(settings.value(key).toBool()
+                                       ? LC_MAILSTORE ".debug=true"
+                                       : LC_MAILSTORE ".debug=false"));
+        } else if (key == QLatin1String("IMAP")) {
+            rules.append(QLatin1String(settings.value(key).toBool()
+                                       ? LC_MESSAGING ".imap.debug=true"
+                                       : LC_MESSAGING ".imap.debug=false"));
+        } else if (key == QLatin1String("POP")) {
+            rules.append(QLatin1String(settings.value(key).toBool()
+                                       ? LC_MESSAGING ".pop.debug=true"
+                                       : LC_MESSAGING ".pop.debug=false"));
+        } else if (key == QLatin1String("SMTP")) {
+            rules.append(QLatin1String(settings.value(key).toBool()
+                                       ? LC_MESSAGING ".smtp.debug=true"
+                                       : LC_MESSAGING ".smtp.debug=false"));
+        }
+    };
+    settings.endGroup();
+    if (!rules.isEmpty()) {
+        QLoggingCategory::setFilterRules(rules.join('\n'));
+    }
 }
 
 #endif // defined(Q_OS_UNIX)

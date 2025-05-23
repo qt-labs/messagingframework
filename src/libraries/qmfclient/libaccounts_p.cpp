@@ -51,7 +51,7 @@ void reportAccountError(const Accounts::Error& error)
         break;
     case Accounts::Error::Deleted:
     case Accounts::Error::AccountNotFound:
-        qWarning() << "Accounts:" << error.message();
+        qCWarning(lcMessaging) << "Accounts:" << error.message();
         break;
     case Accounts::Error::Unknown:
     case Accounts::Error::Database:
@@ -79,7 +79,7 @@ bool AccountCompareProperty(Accounts::Account* account, Property value, QMailKey
                 return AccountSatisfyTheKey(account, accountKey);
             }
 
-            qMailLog(Messaging) << "Failed to convert argument";
+            qCWarning(lcMessaging) << "Failed to convert argument";
             return false;
         }
 
@@ -92,7 +92,7 @@ bool AccountCompareProperty(Accounts::Account* account, Property value, QMailKey
                 return value != argument;
 
             default:
-                qMailLog(Messaging) << "This comparator is not supported" << op;
+                qCWarning(lcMessaging) << "This comparator is not supported" << op;
                 break;
         }
 
@@ -115,7 +115,7 @@ bool AccountCompareProperty(Accounts::Account* account, Property value, QMailKey
                 return true;
 
             default:
-                qMailLog(Messaging) << "This comparator is not supported" << op;
+                qCWarning(lcMessaging) << "This comparator is not supported" << op;
                 break;
         }
     }
@@ -135,7 +135,7 @@ bool AccountCompareProperty(Accounts::Account*, quint64 value, QMailKey::Compara
         bool ok = false;
         quint64 argument = arguments.front().toULongLong(&ok);
         if (!ok) {
-            qMailLog(Messaging) << "Failed to convert to quing64";
+            qCWarning(lcMessaging) << "Failed to convert to quing64";
             return false;
         }
 
@@ -167,7 +167,7 @@ bool AccountCompareProperty(Accounts::Account*, quint64 value, QMailKey::Compara
                 return !(value & argument);
 
             default:
-                qMailLog(Messaging) << "This comparator is not supported" << op;
+                qCWarning(lcMessaging) << "This comparator is not supported" << op;
                 break;
         }
     } else {
@@ -189,7 +189,7 @@ bool AccountCompareProperty(Accounts::Account*, quint64 value, QMailKey::Compara
                 return true;
 
             default:
-                qMailLog(Messaging) << "This comparator is not supported" << op;
+                qCWarning(lcMessaging) << "This comparator is not supported" << op;
                 break;
         }
     }
@@ -206,7 +206,7 @@ bool AccountCompareProperty(Accounts::Account*, const QString& value, QMailKey::
 
     if (arguments.count() == 1) {
         if (!arguments.front().canConvert<QString>()) {
-            qMailLog(Messaging) << "Failed to convert to string";
+            qCWarning(lcMessaging) << "Failed to convert to string";
             return false;
         }
 
@@ -239,7 +239,7 @@ bool AccountCompareProperty(Accounts::Account*, const QString& value, QMailKey::
                 return !value.contains(argument);
 
             default:
-                qMailLog(Messaging) << "This comparator is not supported" << op;
+                qCWarning(lcMessaging) << "This comparator is not supported" << op;
                 break;
         }
     } else {
@@ -261,7 +261,7 @@ bool AccountCompareProperty(Accounts::Account*, const QString& value, QMailKey::
                 return true;
 
             default:
-                qMailLog(Messaging) << "This comparator is not supported" << op;
+                qCWarning(lcMessaging) << "This comparator is not supported" << op;
                 break;
         }
     }
@@ -303,7 +303,7 @@ bool AccountCompareProperty(Accounts::Account* account, QMailKey::Comparator op,
             break;
 
         default:
-            qMailLog(Messaging) << "This comparator is not supported" << op;
+            qCWarning(lcMessaging) << "This comparator is not supported" << op;
             break;
     }
     account->endGroup();
@@ -367,7 +367,7 @@ bool AccountSatisfyTheProperty(Accounts::Account* account, const QMailAccountKey
             return AccountCompareProperty(account, argument.op, argument.valueList);
 
         default:
-            qMailLog(Messaging) << "This property is not supported" << argument.property;
+            qCWarning(lcMessaging) << "This property is not supported" << argument.property;
             break;
     }
     return false;
@@ -478,7 +478,7 @@ QMailAccount LibAccountManager::account(const QMailAccountId &id) const
     }
     Accounts::ServiceList services = account->enabledServices();
     if (services.count() != 1) {
-        qWarning() << "Cannot handle several email services for account" << id;
+        qCWarning(lcMessaging) << "Cannot handle several email services for account" << id;
         return result;
     }
     Accounts::Service service = services.first();
@@ -559,7 +559,7 @@ QMailAccountConfiguration LibAccountManager::accountConfiguration(const QMailAcc
 
     Accounts::ServiceList services = account->enabledServices();
     if (services.count() != 1) {
-        qWarning() << "Cannot handle several email services for account" << id;
+        qCWarning(lcMessaging) << "Cannot handle several email services for account" << id;
         return result;
     }
 
@@ -627,7 +627,7 @@ QMailAccountIdList LibAccountManager::queryAccounts(const QMailAccountKey &key,
                 accountList.append(QMailAccountId(account->id()));
             } break;
         default:
-            qWarning() << "Cannot handle several email services for account" << accountID;
+            qCWarning(lcMessaging) << "Cannot handle several email services for account" << accountID;
             return QMailAccountIdList();
         }
 
@@ -645,14 +645,14 @@ bool LibAccountManager::addAccount(QMailAccount *account,
                                    QMailAccountConfiguration *config)
 {
     if (account->id().isValid() && getAccount(account->id())) {
-        qWarning() << "Account already exists in database, use update instead";
+        qCWarning(lcMessaging) << "Account already exists in database, use update instead";
         return false;
     }
 
     // Create new account in Accounts subsystem
     QSharedPointer<Accounts::Account> sharedAccount(manager->createAccount(QLatin1String("email")));
     if (!sharedAccount) {
-        qMailLog(Messaging) << "Failed to create account";
+        qCWarning(lcMessaging) << "Failed to create account";
         return false;
     }
 
@@ -661,11 +661,11 @@ bool LibAccountManager::addAccount(QMailAccount *account,
 
     Accounts::ServiceList services = sharedAccount->services(QLatin1String("e-mail"));
     if (!services.count()) {
-        qMailLog(Messaging) << "E-mail Services not found, make sure that *.service and *.provider files are properly installed.";
+        qCWarning(lcMessaging) << "E-mail Services not found, make sure that *.service and *.provider files are properly installed.";
         return false;
     }
     if (services.count() != 1) {
-        qWarning() << "Cannot handle several email services for account" << account->id();
+        qCWarning(lcMessaging) << "Cannot handle several email services for account" << account->id();
         return false;
     }
     Accounts::Service service = services.first();
@@ -750,7 +750,7 @@ bool LibAccountManager::removeAccounts(const QMailAccountIdList &ids)
         if (account) {
             account->remove();
             if (!account->syncAndBlock()) {
-                qWarning() << "cannot remove account" << accountID;
+                qCWarning(lcMessaging) << "cannot remove account" << accountID;
                 success = false;
             }
         }
@@ -831,7 +831,7 @@ bool LibAccountManager::updateSharedAccount(QMailAccount *account,
 
     Accounts::ServiceList services = sharedAccount->enabledServices();
     if (services.count() != 1) {
-        qWarning() << "Cannot handle several email services for account" << id;
+        qCWarning(lcMessaging) << "Cannot handle several email services for account" << id;
         return false;
     }
 
@@ -1031,7 +1031,7 @@ void LibAccountManager::clearContent()
             account->remove();
             account->syncAndBlock();
         } else {
-            qWarning() << Q_FUNC_INFO << "E-mail Services not found, make sure that *.service and *.provider files are properly installed and e-mail services are enabled.";
+            qCWarning(lcMessaging) << Q_FUNC_INFO << "E-mail Services not found, make sure that *.service and *.provider files are properly installed and e-mail services are enabled.";
             reportAccountError(manager->lastError());
         }
     }
@@ -1043,7 +1043,7 @@ QSharedPointer<Accounts::Account> LibAccountManager::getAccount(const QMailAccou
     QSharedPointer<Accounts::Account> account(Accounts::Account::fromId(manager.data(), id.toULongLong()));
 
     if (!account) {
-        qWarning() << Q_FUNC_INFO << "Account with was not found" ;
+        qCWarning(lcMessaging) << Q_FUNC_INFO << "Account with was not found" ;
         reportAccountError(manager->lastError());
         return account;
     }

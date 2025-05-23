@@ -207,7 +207,7 @@ static QByteArray fromUnicode(const QString& input, const QByteArray& charset)
         if (QTextCodec* textCodec = QMailCodec::codecForName(charset))
             return textCodec->fromUnicode(input);
 
-        qWarning() << "fromUnicode: unable to find codec for charset:" << charset;
+        qCWarning(lcMessaging) << "fromUnicode: unable to find codec for charset:" << charset;
     }
 
     return to7BitAscii(input.toLatin1());
@@ -220,7 +220,7 @@ static QString toUnicode(const QByteArray& input, const QByteArray& charset, con
         if (QTextCodec* textCodec = QMailCodec::codecForName(charset))
             return textCodec->toUnicode(input);
 
-        qWarning() << "toUnicode: unable to find codec for charset:" << charset;
+        qCWarning(lcMessaging) << "toUnicode: unable to find codec for charset:" << charset;
     } else {
         QByteArray autoCharset = QMailCodec::autoDetectEncoding(input).toLatin1();
         // We don't trust on Encoding Detection for the case of "ISO-8859-* charsets.
@@ -229,7 +229,7 @@ static QString toUnicode(const QByteArray& input, const QByteArray& charset, con
             if (!autoCharset.isEmpty() && textCodec)
                 return textCodec->toUnicode(input);
 
-            qWarning() << "toUnicode: unable to find codec for autodetected charset:" << autoCharset;
+            qCWarning(lcMessaging) << "toUnicode: unable to find codec for autodetected charset:" << autoCharset;
         }
     }
     if (is7BitAscii(input)) {
@@ -240,7 +240,7 @@ static QString toUnicode(const QByteArray& input, const QByteArray& charset, con
         if (QTextCodec* textCodec = QMailCodec::codecForName(bodyCharset))
             return textCodec->toUnicode(input);
 
-        qWarning() << "toUnicode: unable to find codec for charset:" << charset;
+        qCWarning(lcMessaging) << "toUnicode: unable to find codec for charset:" << charset;
     }
     return QString::fromLatin1(to7BitAscii(QString::fromLatin1(input.constData(), input.length())));
 }
@@ -411,7 +411,7 @@ static QList<QByteArray> splitUtf8(const QByteArray& input, int maximumEncoded)
         return result;
     }
 
-    qMailLog(Messaging) << Q_FUNC_INFO << "Need to cut the UTF-8 string !!!";
+    qCDebug(lcMessaging) << Q_FUNC_INFO << "Need to cut the UTF-8 string !!!";
 
     // Need to cut the utf8 string.
     QByteArray str(input);
@@ -422,7 +422,7 @@ static QList<QByteArray> splitUtf8(const QByteArray& input, int maximumEncoded)
         // Check if we reached a valid cutting point.
         int index = maxUtf8Chars;
         while (!isFirstCodePoint(iter--)) {
-            qMailLog(Messaging) << Q_FUNC_INFO << "Cutting point not valid, looking for the previous one !!!";
+            qCDebug(lcMessaging) << Q_FUNC_INFO << "Cutting point not valid, looking for the previous one !!!";
             Q_ASSERT (index >= 0);
             index--;
         }
@@ -431,7 +431,7 @@ static QList<QByteArray> splitUtf8(const QByteArray& input, int maximumEncoded)
         result.append(str.left(index));
         str = str.mid(index);
 
-        qMailLog(Messaging) << Q_FUNC_INFO << "The STR is still too long !!!";
+        qCDebug(lcMessaging) << Q_FUNC_INFO << "The STR is still too long !!!";
 
     } while (str.length() > maxUtf8Chars);
 
@@ -989,7 +989,7 @@ namespace findBody
                 break;
             }
         }
-        //qWarning() << Q_FUNC_INFO << "Multipart alternative message without body";
+        //qCWarning(lcMessaging) << Q_FUNC_INFO << "Multipart alternative message without body";
         return false;
     }
 
@@ -1011,7 +1011,7 @@ namespace findBody
                     bodyPart = i;
                 break;
             default:
-                qWarning() << Q_FUNC_INFO << "Multipart related message with unexpected subpart";
+                qCWarning(lcMessaging) << Q_FUNC_INFO << "Multipart related message with unexpected subpart";
                 // Default to handling as MultipartMixed
                 if (inMultipartMixed(part, ctx))
                     bodyPart = i;
@@ -1070,7 +1070,7 @@ namespace findBody
             return inMultipartSigned(part, ctx);
 
         default:
-            qWarning() << Q_FUNC_INFO << "Multipart signed message with unexpected multipart type";
+            qCWarning(lcMessaging) << Q_FUNC_INFO << "Multipart signed message with unexpected multipart type";
             // Default to handling as MultipartMixed
             return inMultipartMixed(part, ctx);
         }
@@ -1100,7 +1100,7 @@ namespace findBody
                     return true;
                 break;
             default:
-                qWarning() << Q_FUNC_INFO << "Multipart mixed message with unexpected multipart type";
+                qCWarning(lcMessaging) << Q_FUNC_INFO << "Multipart mixed message with unexpected multipart type";
                 // Default to handling as MultipartMixed
                 if (inMultipartMixed(part, ctx))
                     return true;
@@ -1348,7 +1348,7 @@ namespace attachments
             return -2;
         }
         if (depth > maxDepth) {
-            qWarning() << Q_FUNC_INFO << "Maximum depth reached in message!!!";
+            qCWarning(lcMessaging) << Q_FUNC_INFO << "Maximum depth reached in message!!!";
             return -1;
         }
         int diff;
@@ -1395,7 +1395,7 @@ namespace attachments
             return;
         }
         if (depth > maxDepth) {
-            qWarning() << Q_FUNC_INFO << "Maximum depth reached in message!!!";
+            qCWarning(lcMessaging) << Q_FUNC_INFO << "Maximum depth reached in message!!!";
             return;
         }
         int diff;
@@ -1409,7 +1409,7 @@ namespace attachments
             if (part) {
                 imageParts << part;
             } else {
-                qWarning() << Q_FUNC_INFO << "location"
+                qCWarning(lcMessaging) << Q_FUNC_INFO << "location"
                            << location.toString(true)
                            << "not found in container";
             }
@@ -1439,7 +1439,7 @@ namespace attachments
             return;
         }
         if (depth > maxDepth) {
-            qWarning() << Q_FUNC_INFO << "Maximum depth reached in message!!!";
+            qCWarning(lcMessaging) << Q_FUNC_INFO << "Maximum depth reached in message!!!";
             return;
         }
         int diff;
@@ -1453,7 +1453,7 @@ namespace attachments
             if (part) {
                 attachmentParts << part;
             } else {
-                qWarning() << Q_FUNC_INFO << "location"
+                qCWarning(lcMessaging) << Q_FUNC_INFO << "location"
                            << location.toString(true)
                            << "not found in container";
             }
@@ -1541,7 +1541,7 @@ namespace attachments
             const QString &imagePath = htmlImagesMap.value(imageID);
             const QFileInfo fi(imagePath);
             if (!fi.isFile()) {
-                qWarning() << Q_FUNC_INFO << ":" << imagePath << "is not regular file. Cannot attach.";
+                qCWarning(lcMessaging) << Q_FUNC_INFO << ":" << imagePath << "is not regular file. Cannot attach.";
                 continue;
             }
 
@@ -1584,7 +1584,7 @@ namespace attachments
 
             const QFileInfo fi(attachmentPath);
             if (!fi.isFile()) {
-                qWarning() << Q_FUNC_INFO << ":" << attachmentPath << "is not regular file. Cannot attach.";
+                qCWarning(lcMessaging) << Q_FUNC_INFO << ":" << attachmentPath << "is not regular file. Cannot attach.";
                 continue;
             }
 
@@ -2059,7 +2059,7 @@ static void outputHeaderPart(QDataStream& out, const QByteArray& inText, int* li
     QRegularExpression syntacticBreak(QLatin1String(";|,"));
 
     if (text.length() > maxHeaderLength) {
-        qWarning() << "Maximum header length exceeded, truncating mail header";
+        qCWarning(lcMessaging) << "Maximum header length exceeded, truncating mail header";
         text.truncate(maxHeaderLength);
     }
 
@@ -2106,7 +2106,7 @@ static void outputHeaderPart(QDataStream& out, const QByteArray& inText, int* li
                     ++lastIndex;
                 } else {
                     // We couldn't find any high-level syntactic break either - just break at the last char
-                    //qWarning() << "Unable to break header field at white space or syntactic break";
+                    //qCWarning(lcMessaging) << "Unable to break header field at white space or syntactic break";
                     lastIndex = remaining;
                 }
             }
@@ -2146,7 +2146,7 @@ void QMailMessageHeaderFieldPrivate::output(QDataStream& out) const
         return;
 
     if (_structured) {
-        qWarning() << "Unable to output structured header field:" << _id;
+        qCWarning(lcMessaging) << "Unable to output structured header field:" << _id;
         return;
     }
 
@@ -2610,7 +2610,7 @@ void QMailMessageContentType::setType(const QByteArray& type)
         // Note - if there is a sub-type, setting type to null will destroy it
         setContent(type);
     } else if (type.contains(';') || type.contains('/')) {
-        qWarning() << Q_FUNC_INFO << "wrong usage of setType(), consider using setSubType() or setParameter()" << type;
+        qCWarning(lcMessaging) << Q_FUNC_INFO << "wrong usage of setType(), consider using setSubType() or setParameter()" << type;
 
     } else {
         QByteArray content(type);
@@ -3371,7 +3371,7 @@ static bool unicodeConvertingCharset(const QByteArray& charset)
     }
     else
     {
-        qWarning() << "unicodeConvertingCharset: unable to find codec for charset:" << charset;
+        qCWarning(lcMessaging) << "unicodeConvertingCharset: unable to find codec for charset:" << charset;
     }
 
     return false;
@@ -3401,7 +3401,7 @@ bool QMailMessageBodyPrivate::toFile(const QString& file, QMailMessageBody::Enco
     QFile outFile(file);
     if (!outFile.open(QIODevice::WriteOnly))
     {
-        qWarning() << "Unable to open for write:" << file;
+        qCWarning(lcMessaging) << "Unable to open for write:" << file;
         return false;
     }
 
@@ -3989,7 +3989,7 @@ const QMailMessagePart& QMailMessagePartContainerPrivate::partAt(const QMailMess
             part = &(partList->at(index - 1));
             partList = &(part->impl<const QMailMessagePartContainerPrivate>()->_messageParts);
         } else {
-            qMailLog(Messaging) << Q_FUNC_INFO << "Invalid index, container does not have a part at " << index;
+            qCWarning(lcMessaging) << Q_FUNC_INFO << "Invalid index, container does not have a part at " << index;
             Q_ASSERT(false);
         }
     }
@@ -4008,7 +4008,7 @@ QMailMessagePart& QMailMessagePartContainerPrivate::partAt(const QMailMessagePar
             part = &((*partList)[index - 1]);
             partList = &(part->impl<QMailMessagePartContainerPrivate>()->_messageParts);
         } else {
-            qMailLog(Messaging) << Q_FUNC_INFO << "Invalid index, container does not have a part at " << index;
+            qCWarning(lcMessaging) << Q_FUNC_INFO << "Invalid index, container does not have a part at " << index;
             Q_ASSERT(false);
         }
     }
@@ -5381,7 +5381,7 @@ void QMailMessagePartContainer::setHtmlAndPlainTextBody(const QMailMessageBody& 
             bodyContainer = &partAt(0);
             break;
         default:
-            qWarning() << Q_FUNC_INFO << "Wrong multipart type: " << multipartType();
+            qCWarning(lcMessaging) << Q_FUNC_INFO << "Wrong multipart type: " << multipartType();
             Q_ASSERT(false);
             break;
         }
@@ -5647,7 +5647,7 @@ void QMailMessagePartPrivate::output(QDataStream **out, bool addMimePreamble, bo
             if (!_resolution.isEmpty()) {
                 **out << DataString(_resolution.toLatin1());
             } else {
-                qWarning() << "QMailMessagePartPrivate::output - unresolved reference part!";
+                qCWarning(lcMessaging) << "QMailMessagePartPrivate::output - unresolved reference part!";
             }
 
             if (func) {
@@ -6390,7 +6390,7 @@ QString QMailMessagePart::writeBodyTo(const QString &path) const
     if (!directory.exists()) {
         if ((directory.isAbsolute() && !QDir::root().mkpath(path))
             || (!directory.isAbsolute() && !QDir::current().mkpath(path))) {
-            qWarning() << "Could not create directory to save file " << path;
+            qCWarning(lcMessaging) << "Could not create directory to save file " << path;
             return QString();
         }
     }
@@ -6410,7 +6410,7 @@ QString QMailMessagePart::writeBodyTo(const QString &path) const
         filepath = directory.filePath(QString::fromLatin1("%1(%2)%3").arg(fileName).arg(id++).arg(ext));
 
     if (!body().toFile(filepath, QMailMessageBody::Decoded)) {
-        qWarning() << "Could not write part data to file " << filepath;
+        qCWarning(lcMessaging) << "Could not write part data to file " << filepath;
         return QString();
     }
 
@@ -6686,7 +6686,7 @@ void QMailMessageMetaDataPrivate::setUnmodified()
 quint64 QMailMessageMetaDataPrivate::registerFlag(const QString &name)
 {
     if (!QMailStore::instance()->registerMessageStatusFlag(name)) {
-        qMailLog(Messaging) << "Unable to register message status flag:" << name << "!";
+        qCWarning(lcMessaging) << "Unable to register message status flag:" << name << "!";
     }
 
     return QMailMessage::statusMask(name);
@@ -7246,7 +7246,7 @@ void QMailMessageMetaData::setMessageType(QMailMessageMetaData::MessageType type
         case QMailMessage::System:
             break;
         default:
-            qWarning() << "QMailMessageMetaData::setMessageType:" << type;
+            qCWarning(lcMessaging) << "QMailMessageMetaData::setMessageType:" << type;
             return;
     }
 
@@ -7631,7 +7631,8 @@ QString QMailMessageMetaData::contentScheme() const
 bool QMailMessageMetaData::setContentScheme(const QString &scheme)
 {
     if (!impl(this)->_contentScheme.isEmpty() && (impl(this)->_contentScheme != scheme)) {
-        qMailLog(Messaging) << "Warning - modifying existing content scheme from:" << impl(this)->_contentScheme << "to:" << scheme;
+        qCWarning(lcMessaging) << "modifying existing content scheme from:"
+                               << impl(this)->_contentScheme << "to:" << scheme;
     }
 
     impl(this)->setContentScheme(scheme);
@@ -7857,7 +7858,7 @@ void QMailMessagePrivate::fromRfc2822(const LongString &ls)
         QByteArray mimeVersion = headerField("MIME-Version");
         QByteArray minimalVersion = QMailMessageHeaderField::removeWhitespace(QMailMessageHeaderField::removeComments(mimeVersion));
         if (!mimeVersion.isEmpty() && (minimalVersion != "1.0")) {
-            qWarning() << "Unknown MIME-Version:" << mimeVersion;
+            qCWarning(lcMessaging) << "Unknown MIME-Version:" << mimeVersion;
         } else if (_multipartType != QMailMessagePartContainer::MultipartNone) {
             parseMimeMultipart(_header, ls, true);
         } else {
@@ -8847,7 +8848,7 @@ QMailMessage QMailMessage::fromRfc2822(LongString& ls)
             if (sl.length() == 2) {
                 mail.metaDataImpl()->setDate(QMailTimeStamp(sl.at(1)));
             } else {
-                qWarning() << "Ill formatted message, bad Received field";
+                qCWarning(lcMessaging) << "Ill formatted message, bad Received field";
             }
         } else {
             mail.metaDataImpl()->setDate(QMailTimeStamp::currentDateTime());
@@ -8885,7 +8886,7 @@ bool QMailMessage::extractUndecodedData(const LongString &ls)
         if (pos == -1 || (CRindex > -1 && CRindex < pos))
             pos = CRindex;
         if (pos == -1) {
-            qWarning() << "extractUndecodedData: unable to find line terminator.";
+            qCWarning(lcMessaging) << "extractUndecodedData: unable to find line terminator.";
             return false;
         }
 

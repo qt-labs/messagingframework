@@ -38,12 +38,12 @@
 #include "imapstructure.h"
 #include "integerregion.h"
 #include "imaptransport.h"
+#include "imaplog.h"
 
 #include <QTemporaryFile>
 #include <QFileInfo>
 #include <QUrl>
 #include <QRegularExpression>
-#include <qmaillog.h>
 #include <qmailaccountconfiguration.h>
 #include <qmailmessage.h>
 #include <qmailmessageserver.h>
@@ -397,7 +397,7 @@ private:
 
 bool ImapState::continuationResponse(ImapContext *, const QString &line)
 {
-    qWarning() << "Unexpected continuation response!" << line;
+    qCWarning(lcIMAP) << "Unexpected continuation response!" << line;
     return false;
 }
 
@@ -405,7 +405,7 @@ void ImapState::untaggedResponse(ImapContext *c, const QString &line)
 {
     int index = line.indexOf("[ALERT]", Qt::CaseInsensitive);
     if (index != -1) {
-        qWarning() << line.mid(index).toLatin1();
+        qCWarning(lcIMAP) << line.mid(index).toLatin1();
     } else if (line.indexOf("[CAPABILITY", 0) != -1) {
         int start = 0;
         QString temp = token(line, '[', ']', &start);
@@ -423,7 +423,7 @@ void ImapState::taggedResponse(ImapContext *c, const QString &line)
 {
     int index = line.indexOf("[ALERT]", Qt::CaseInsensitive);
     if (index != -1)
-        qWarning() << line.mid(index).toLatin1();
+        qCWarning(lcIMAP) << line.mid(index).toLatin1();
 
     c->operationCompleted(mCommand, mStatus);
 }
@@ -462,7 +462,7 @@ void ImapState::log(const QString &note)
         result = "OpBad";
         break;
     }
-    qMailLog(MessagingState) << note << mName << result;
+    qCDebug(lcIMAP) << note << mName << result;
 }
 
 
@@ -591,8 +591,8 @@ void LoginState::setConfiguration(const QMailAccountConfiguration &config, const
         if (authType != QMail::NoMechanism) {
             imapCfg.setMailAuthentication(authType);
             if (!QMailStore::instance()->updateAccountConfiguration(&_config)) {
-                qWarning() << "Unable to update account" << config.id()
-                           << "with auth type" << authType;
+                qCWarning(lcMailStore) << "Unable to update account" << config.id()
+                                       << "with auth type" << authType;
             }
         }
     }
@@ -729,7 +729,7 @@ QString CreateState::transmit(ImapContext *c)
     }
 
     if (name.contains(c->protocol()->delimiter())) {
-        qWarning() << "Unsupported: folder name contains IMAP delimiter" << name << c->protocol()->delimiter();
+        qCWarning(lcIMAP) << "Unsupported: folder name contains IMAP delimiter" << name << c->protocol()->delimiter();
         emit folderCreated(makePath(c, parent, name), false);
         c->operationCompleted(command(), OpFailed);
         return QString();
@@ -755,7 +755,7 @@ void CreateState::taggedResponse(ImapContext *c, const QString &line)
 
 QString CreateState::error(const QString &line)
 {
-    qWarning() << "CreateState::error:" << line;
+    qCWarning(lcIMAP) << "CreateState::error:" << line;
     emit folderCreated(_mailboxes.first().second, false);
     return ImapState::error(line);
 }
@@ -768,7 +768,7 @@ QString CreateState::makePath(ImapContext *c, const QMailFolderId &parent, const
         if (!c->protocol()->delimiterUnknown())
             path = QMailFolder(parent).path() + c->protocol()->delimiter();
         else
-            qWarning() << "Cannot create a child folder, without a delimiter";
+            qCWarning(lcIMAP) << "Cannot create a child folder, without a delimiter";
 
     }
     return (path + QMailCodec::encodeModifiedUtf7(name));
@@ -827,7 +827,7 @@ void DeleteState::taggedResponse(ImapContext *c, const QString &line)
 
 QString DeleteState::error(const QString &line)
 {
-    qWarning() << "DeleteState::error:" << line;
+    qCWarning(lcIMAP) << "DeleteState::error:" << line;
     emit folderDeleted(_mailboxList.first(), false);
     return ImapState::error(line);
 }
@@ -876,7 +876,7 @@ QString RenameState::transmit(ImapContext *c)
     QString from = _mailboxNames.last().first.path();
     QString to =  buildNewPath(c, _mailboxNames.last().first, _mailboxNames.last().second);
     if (_mailboxNames.last().second.contains(c->protocol()->delimiter())) {
-        qWarning() << "Unsupported: new name contains IMAP delimiter" << _mailboxNames.last().second
+        qCWarning(lcIMAP) << "Unsupported: new name contains IMAP delimiter" << _mailboxNames.last().second
                    << c->protocol()->delimiter();
         emit folderRenamed(from, to, false);
         c->operationCompleted(command(), OpFailed);
@@ -902,7 +902,7 @@ void RenameState::taggedResponse(ImapContext *c, const QString &line)
 
 QString RenameState::error(const QString &line)
 {
-    qWarning() << "RenameState::error:" << line;
+    qCWarning(lcIMAP) << "RenameState::error:" << line;
     emit folderRenamed(_mailboxNames.first().first, _mailboxNames.first().second, false);
     return ImapState::error(line);
 }
@@ -981,7 +981,7 @@ void MoveState::taggedResponse(ImapContext *c, const QString &line)
 
 QString MoveState::error(const QString &line)
 {
-    qWarning() << "MoveState::error:" << line;
+    qCWarning(lcIMAP) << "MoveState::error:" << line;
     emit folderMoved(_mailboxParents.first().first, QString(), _mailboxParents.first().second, false);
     return ImapState::error(line);
 }
@@ -1116,7 +1116,7 @@ void ListState::untaggedResponse(ImapContext *c, const QString &line)
                 delimiter = token(delimiter, '"', '"', &pos);
             }
             if (delimiter.length() != 1)
-                qWarning() << "Delimiter length is" << delimiter.length() << "while should only be 1 character";
+                qCWarning(lcIMAP) << "Delimiter length is" << delimiter.length() << "while should only be 1 character";
             c->protocol()->setDelimiter(*delimiter.begin());
         }
     }
@@ -1448,7 +1448,7 @@ void SelectedState::untaggedResponse(ImapContext *c, const QString &line)
             --exists;
             c->setExists(exists);
         } else {
-            qWarning() << "Unexpected expunge from empty message list";
+            qCWarning(lcIMAP) << "Unexpected expunge from empty message list";
         }
     } else {
         ImapState::untaggedResponse(c, line);
@@ -1744,7 +1744,7 @@ QString SearchMessageState::transmit(ImapContext *c)
     QStringList searchQueries = convertKey(search.key);
 
     if (searchQueries.isEmpty()) {
-        qWarning() << "Unsupported: search query didn't include any search key we support for IMAP";
+        qCWarning(lcIMAP) << "Unsupported: search query didn't include any search key we support for IMAP";
         c->operationCompleted(command(), OpFailed);
         return QString();
     }
@@ -1816,7 +1816,7 @@ QStringList SearchMessageState::convertValue(const QVariant &value, const QMailM
             result.append(QString("%1)").arg(QString(sender)));
             return result;
         } else {
-            qWarning() << "Comparer " << comparer << " is unhandled for sender comparison";
+            qCWarning(lcIMAP) << "Comparer " << comparer << " is unhandled for sender comparison";
         }
         break;
     }
@@ -1838,7 +1838,7 @@ QStringList SearchMessageState::convertValue(const QVariant &value, const QMailM
             result.append(QString("%1)))").arg(recipients));
             return result;
         } else {
-            qWarning() << "Comparer " << comparer << " is unhandled for recipients comparison";
+            qCWarning(lcIMAP) << "Comparer " << comparer << " is unhandled for recipients comparison";
         }
         break;
     }
@@ -1854,7 +1854,7 @@ QStringList SearchMessageState::convertValue(const QVariant &value, const QMailM
             result.append(QString("%1)").arg(QString(subject)));
             return result;
         } else {
-            qWarning() << "Comparer " << comparer << " is unhandled for subject comparison";
+            qCWarning(lcIMAP) << "Comparer " << comparer << " is unhandled for subject comparison";
         }
         break;
     }
@@ -1882,7 +1882,7 @@ QStringList SearchMessageState::convertValue(const QVariant &value, const QMailM
         else if (comparer == QMailKey::Equal) // ..cause real men know how many bytes they're looking for
             return QStringList(QString("LARGER %1 SMALLER %2").arg(size-1).arg(size+1));
         else
-            qWarning() << "Unknown comparer: " << comparer << "for size";
+            qCWarning(lcIMAP) << "Unknown comparer: " << comparer << "for size";
         break;
     }
     case QMailMessageKey::ParentAccountId:
@@ -1906,7 +1906,7 @@ QStringList SearchMessageState::convertValue(const QVariant &value, const QMailM
     case QMailMessageKey::Custom:
         break;
     default:
-        qWarning() << "Property " << property << " still not handled for search.";
+        qCWarning(lcIMAP) << "Property " << property << " still not handled for search.";
     }
     return QStringList();
 }
@@ -1991,13 +1991,13 @@ QStringList SearchMessageState::combine(const QList<QStringList> &searchKeys, co
         return result;
     } else if (combiner == QMailKey::None) {
         if (searchKeys.count() != 1) {
-            qWarning() << "Attempting to combine more than thing, without a combiner?";
+            qCWarning(lcIMAP) << "Attempting to combine more than thing, without a combiner?";
             return QStringList();
         } else {
             return searchKeys.first();
         }
     } else {
-        qWarning() << "Unable to combine with an unknown combiner: " << combiner;
+        qCWarning(lcIMAP) << "Unable to combine with an unknown combiner: " << combiner;
         return QStringList();
     }
 }
@@ -2023,7 +2023,7 @@ void SearchMessageState::untaggedResponse(ImapContext *c, const QString &line)
         }
         countStr = token(line, ' ', '\n', &index);
         if (check.toLower() != "count") {
-            qWarning() << "Bad ESEARCH result, count expected";
+            qCWarning(lcIMAP) << "Bad ESEARCH result, count expected";
         }
         count = countStr.toUInt(&ok);
         c->setUidList(QStringList());
@@ -2451,7 +2451,7 @@ void UidFetchState::untaggedResponse(ImapContext *c, const QString &line)
                 }
             }
         } else {
-            qWarning() << "untaggedResponse: Unable to find fetch parameters for:" << str;
+            qCWarning(lcIMAP) << "untaggedResponse: Unable to find fetch parameters for:" << str;
         }
     } else {
         SelectedState::untaggedResponse(c, line);
@@ -2465,7 +2465,7 @@ void UidFetchState::taggedResponse(ImapContext *c, const QString &line)
 
         IntegerRegion missingUids = fp.mExpectedMessages.subtract(fp.mReceivedMessages);
         foreach(const QString &uid, missingUids.toStringList()) {
-            qWarning() << "Message not found " << uid;
+            qCWarning(lcIMAP) << "Message not found " << uid;
             emit nonexistentUid(messageUid(c->mailbox().id, uid));
         }
     }
@@ -2489,7 +2489,7 @@ void UidFetchState::literalResponse(ImapContext *c, const QString &line)
                 }
             }
         } else {
-            qWarning() << "Literal data received with invalid literal index!";
+            qCWarning(lcIMAP) << "Literal data received with invalid literal index!";
         }
     }
 }
@@ -2523,7 +2523,7 @@ bool UidFetchState::appendLiteralData(ImapContext *c, const QString &preceding)
             }
         }
     } else {
-        qWarning() << "Literal data appended with invalid literal index!";
+        qCWarning(lcIMAP) << "Literal data appended with invalid literal index!";
     }
 
     return true;
@@ -2675,7 +2675,7 @@ void UidCopyState::taggedResponse(ImapContext *c, const QString &line)
 
             // Report the completed copies
             if (copiedUids.count() != createdUids.count()) {
-                qWarning() << "Mismatched COPYUID output:" << copiedUids << "!=" << createdUids;
+                qCWarning(lcIMAP) << "Mismatched COPYUID output:" << copiedUids << "!=" << createdUids;
             } else {
                 const QString &mailbox();
 
@@ -2991,7 +2991,7 @@ void ImapContextFSM::setState(ImapState* s)
     if (!mPendingStates.isEmpty() || (mState->status() == OpPending)) {
         // This state is not yet active, but its command will be pipelined
         if (!s->permitsPipelining()) {
-            qMailLog(IMAP) << protocol()->objectName() << "Unable to issue command simultaneously:" << s->command();
+            qCWarning(lcIMAP) << protocol()->objectName() << "Unable to issue command simultaneously:" << s->command();
             operationCompleted(s->command(), OpFailed);
         } else {
             s->log(protocol()->objectName() + "Tx:");
@@ -3081,7 +3081,7 @@ bool ImapProtocol::open( const ImapConfiguration& config, qint64 bufferSize)
 {
     if ( _transport && _transport->inUse() ) {
         QString msg("Cannot open account; transport in use");
-        qMailLog(IMAP) << objectName() << msg;
+        qCWarning(lcIMAP) << objectName() << msg;
         emit connectionError(QMailServiceAction::Status::ErrConnectionInUse, msg);
         return false;
     }
@@ -3117,12 +3117,12 @@ bool ImapProtocol::open( const ImapConfiguration& config, qint64 bufferSize)
 #endif
     }
 
-    qMailLog(IMAP) << objectName() << "About to open connection" << config.mailUserName() << config.mailServer(); // useful to see object name
+    qCDebug(lcIMAP) << objectName() << "About to open connection" << config.mailUserName() << config.mailServer(); // useful to see object name
     _transport->setAcceptUntrustedCertificates(config.acceptUntrustedCertificates());
     _transport->open(config.mailServer(), config.mailPort(), static_cast<QMailTransport::EncryptType>(config.mailEncryption()));
 
     if (bufferSize) {
-        qMailLog(IMAP) << objectName() << "Setting read buffer size to" << bufferSize;
+        qCDebug(lcIMAP) << objectName() << "Setting read buffer size to" << bufferSize;
         _transport->socket().setReadBufferSize(bufferSize);
     }
 
@@ -3471,7 +3471,7 @@ void ImapProtocol::sendData(const QString &cmd, bool maskDebug)
     _transport->imapWrite(&output);
 
     if (maskDebug) {
-        qMailLog(IMAP) << objectName() << (compress() ? "SENDC:" : "SEND") << "SEND: <login hidden>";
+        qCDebug(lcIMAP) << objectName() << (compress() ? "SENDC:" : "SEND") << "SEND: <login hidden>";
     } else {
         QString logCmd(cmd);
         QRegularExpression authExp("^[^\\s]+\\sAUTHENTICATE\\s[^\\s]+\\s", QRegularExpression::CaseInsensitiveOption);
@@ -3485,7 +3485,7 @@ void ImapProtocol::sendData(const QString &cmd, bool maskDebug)
                 logCmd = cmd.left(loginMatch.capturedLength()) + "<password hidden>";
             }
         }
-        qMailLog(IMAP) << objectName() << (compress() ? "SENDC:" : "SEND") << qPrintable(logCmd);}
+        qCDebug(lcIMAP) << objectName() << (compress() ? "SENDC:" : "SEND") << qPrintable(logCmd);}
 }
 
 void ImapProtocol::sendDataLiteral(const QString &cmd, uint length)
@@ -3611,7 +3611,7 @@ void ImapProtocol::processResponse(QString line)
 
         // Process the literal data line
         if (literal.length() > 1) {
-            qMailLog(ImapData) << objectName() << qPrintable(literal.left(literal.length() - 2));
+            qCDebug(lcIMAP) << objectName() << qPrintable(literal.left(literal.length() - 2));
         }
 
         _stream.append(literal);
@@ -3627,9 +3627,9 @@ void ImapProtocol::processResponse(QString line)
 
         if (outstandingLiteralData == 0) {
             // We have received all the literal data
-            qMailLog(IMAP) << objectName() << qPrintable(QString("RECV: <%1 literal bytes received>").arg(_stream.length()));
+            qCDebug(lcIMAP) << objectName() << qPrintable(QString("RECV: <%1 literal bytes received>").arg(_stream.length()));
             if (remainder.length() > 2) {
-                qMailLog(IMAP) << objectName() << "RECV:" << qPrintable(remainder.left(remainder.length() - 2));
+                qCDebug(lcIMAP) << objectName() << "RECV:" << qPrintable(remainder.left(remainder.length() - 2));
             }
 
             _unprocessedInput = precedingLiteral();
@@ -3661,7 +3661,7 @@ void ImapProtocol::processResponse(QString line)
         }
     } else {
         if (line.length() > 1) {
-            qMailLog(IMAP) << objectName() << "RECV:" << qPrintable(line.left(line.length() - 2));
+            qCDebug(lcIMAP) << objectName() << "RECV:" << qPrintable(line.left(line.length() - 2));
         }
 
         // Is this line followed by a literal data segment?
@@ -3747,7 +3747,7 @@ OperationStatus ImapProtocol::commandResponse( QString in )
     start = in.indexOf( ' ', start );
     int stop = in.indexOf( ' ', start + 1 );
     if (start == -1 || stop == -1) {
-        qMailLog(IMAP) << objectName() << qPrintable("could not parse command response: " + in);
+        qCWarning(lcIMAP) << objectName() << qPrintable("could not parse command response: " + in);
         return OpFailed;
     }
 
@@ -3813,7 +3813,7 @@ QString ImapProtocol::url(const QMailMessagePart::Location &location, bool absol
             result.append(";urlauth=submit+");
             result.append(QUrl::toPercentEncoding(imapCfg.mailUserName()));
         } else {
-            qWarning() << "url auth, no user name found";
+            qCWarning(lcIMAP) << "url auth, no user name found";
         }
     }
 
@@ -3924,7 +3924,7 @@ void ImapProtocol::createMail(const QString &uid, const QDateTime &timeStamp, in
     // Workaround for message buffer file being deleted
     QFileInfo newFile(_fsm->buffer().fileName());
     if (!newFile.exists()) {
-        qWarning() << "Unable to find message buffer file";
+        qCWarning(lcIMAP) << "Unable to find message buffer file";
         _fsm->buffer().detach();
     }
 }
@@ -3936,7 +3936,7 @@ void ImapProtocol::createPart(const QString &uid, const QString &section, const 
     // Workaround for message part buffer file being deleted
     QFileInfo newFile(_fsm->buffer().fileName());
     if (!newFile.exists()) {
-        qWarning() << "Unable to find message part buffer file";
+        qCWarning(lcIMAP) << "Unable to find message part buffer file";
         _fsm->buffer().detach();
     }
 }
@@ -3948,7 +3948,7 @@ void ImapProtocol::createPartHeader(const QString &uid, const QString &section, 
     // Workaround for message part buffer file being deleted
     QFileInfo newFile(_fsm->buffer().fileName());
     if (!newFile.exists()) {
-        qWarning() << "Unable to find message part buffer file";
+        qCWarning(lcIMAP) << "Unable to find message part buffer file";
         _fsm->buffer().detach();
     }
 }

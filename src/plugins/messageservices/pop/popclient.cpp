@@ -36,6 +36,7 @@
 #include "popclient.h"
 #include "popauthenticator.h"
 #include "popconfiguration.h"
+#include "poplog.h"
 #include <longstream_p.h>
 #include <qmailstore.h>
 #include <qmailmessagebuffer.h>
@@ -221,9 +222,9 @@ void PopClient::setupAccount() const
     if (account.status() & QMailAccount::CanCreateFolders) {
         account.setStatus(QMailAccount::CanCreateFolders, false);
         if (!QMailStore::instance()->updateAccount(&account)) {
-            qWarning() << "Unable to update account" << account.id() << "to CanCreateFolders" << false;
+            qCWarning(lcMailStore) << "Unable to update account" << account.id() << "to CanCreateFolders" << false;
         } else {
-            qMailLog(POP) << "CanCreateFolders for " << account.id() << "changed to" << false;
+            qCWarning(lcMailStore) << "CanCreateFolders for " << account.id() << "changed to" << false;
         }
     }
 }
@@ -247,9 +248,9 @@ void PopClient::setupFolders() const
         folder.setStatus(QMailFolder::ChildCreationPermitted, false);
         folder.setStatus(QMailFolder::MessagesPermitted, true);
         if (!QMailStore::instance()->updateFolder(&folder)) {
-            qWarning() << "Unable to update flags for POP folder" << folder.id() << folder.path();
+            qCWarning(lcMailStore) << "Unable to update flags for POP folder" << folder.id() << folder.path();
         } else {
-            qMailLog(POP) <<  "Flags for POP folder" << folder.id() << folder.path() << "updated";
+            qCWarning(lcMailStore) <<  "Flags for POP folder" << folder.id() << folder.path() << "updated";
         }
     }
 }
@@ -308,7 +309,7 @@ bool PopClient::findInbox()
     // get/create child folder
     QMailFolderIdList folderList = QMailStore::instance()->queryFolders(QMailFolderKey::parentAccountId(account.id()));
     if (folderList.count() > 1) {
-        qWarning() << "Pop account has more than one child folder, account" << account.id();
+        qCWarning(lcMailStore) << "Pop account has more than one child folder, account" << account.id();
         folderId = folderList.first();
         result = true;
     } else if (folderList.count() == 1) {
@@ -322,11 +323,11 @@ bool PopClient::findInbox()
         childFolder.setStatus(QMailFolder::MessagesPermitted, true);
 
         if (!QMailStore::instance()->addFolder(&childFolder))
-            qWarning() << "Unable to add child folder to pop account";
+            qCWarning(lcMailStore) << "Unable to add child folder to pop account";
         folderId = childFolder.id();
         account.setStandardFolder(QMailFolder::InboxFolder, folderId);
         if (!QMailStore::instance()->updateAccount(&account)) {
-            qWarning() << "Unable to update account" << account.id();
+            qCWarning(lcMailStore) << "Unable to update account" << account.id();
         }
     }
     partialContent = QMailFolder(folderId).status() & QMailFolder::PartialContent;
@@ -348,7 +349,7 @@ void PopClient::setSelectedMails(const SelectionMap& data)
     // We shouldn't have anything left in our retrieval list...
     if (!retrievalSize.isEmpty()) {
         foreach (const QString& uid, retrievalSize.keys())
-            qMailLog(POP) << "Message" << uid << "still in retrieve map...";
+            qCWarning(lcPOP) << "Message" << uid << "still in retrieve map...";
 
         retrievalSize.clear();
     }
@@ -380,7 +381,7 @@ void PopClient::connected(QMailTransport::EncryptType encryptType)
 {
     PopConfiguration popCfg(config);
     if (popCfg.mailEncryption() == encryptType) {
-        qMailLog(POP) << "Connected";
+        qCDebug(lcPOP) << "Connected";
         emit updateStatus(tr("Connected"));
     }
 
@@ -437,7 +438,7 @@ void PopClient::sendCommand(const char *data, int len)
             logData = logData.left(passExp.matchedLength()) + "<password hidden>";
         }
 
-        qMailLog(POP) << "SEND:" << logData;
+        qCDebug(lcPOP) << "SEND:" << logData;
     }
 }
 
@@ -471,7 +472,7 @@ void PopClient::incomingData()
 void PopClient::processResponse(const QString &response)
 {
     if ((response.length() > 1) && (status != MessageDataRetr) && (status != MessageDataTop)) {
-        qMailLog(POP) << "RECV:" << qPrintable(response.left(response.length() - 2));
+        qCDebug(lcPOP) << "RECV:" << qPrintable(response.left(response.length() - 2));
     }
 
     bool waitForInput = false;
@@ -687,7 +688,7 @@ void PopClient::processResponse(const QString &response)
     case DeleteMessage:
     case Done:
     case Quit:
-        qWarning() << "processResponse requested from inappropriate state:" << status;
+        qCWarning(lcPOP) << "processResponse requested from inappropriate state:" << status;
         break;
     }
 
@@ -847,7 +848,7 @@ void PopClient::nextAction()
         } else {
             // No more messages to be fetched - are there any to be deleted?
             if (!obsoleteUids.isEmpty()) {
-                qMailLog(POP) << qPrintable(QString::number(obsoleteUids.count()) + " messages in mailbox to be deleted");
+                qCDebug(lcPOP) << qPrintable(QString::number(obsoleteUids.count()) + " messages in mailbox to be deleted");
                 emit updateStatus(tr("Removing old messages"));
 
                 nextStatus = DeleteMessage;
@@ -906,7 +907,7 @@ void PopClient::nextAction()
 
             pos = msgPosFromUidl(uid);
             if (pos == -1) {
-                qMailLog(POP) << "Not sending delete for unlisted UID:" << uid;
+                qCDebug(lcPOP) << "Not sending delete for unlisted UID:" << uid;
                 if (deleting) {
                     QMailMessageKey accountKey(QMailMessageKey::parentAccountId(config.id()));
                     QMailMessageKey uidKey(QMailMessageKey::serverUid(uid));
@@ -974,7 +975,7 @@ void PopClient::nextAction()
 
     // The following cases do not initiate actions:
     case TLS:
-        qWarning() << "nextAction requested from inappropriate state:" << status;
+        qCWarning(lcPOP) << "nextAction requested from inappropriate state:" << status;
         waitForInput = true;
         break;
     }
@@ -1155,7 +1156,7 @@ void PopClient::createMail()
     int detachedSize = dataStream->length();
     QString detachedFile = dataStream->detach();
 
-    qMailLog(POP) << qPrintable(QString("RECV: <%1 message bytes received>").arg(detachedSize));
+    qCDebug(lcPOP) << qPrintable(QString("RECV: <%1 message bytes received>").arg(detachedSize));
 
     QMailMessage *mail(new QMailMessage(QMailMessage::fromRfc2822File(detachedFile)));
     _bufferedMessages.append(mail);
@@ -1213,7 +1214,7 @@ void PopClient::createMail()
         if (file.open(QFile::ReadOnly)) {
             contents = file.read(2048);
         }
-        qMailLog(POP) << "Bad message retrieved serverUid" << mail->serverUid() << "contents" << contents;
+        qCDebug(lcPOP) << "Bad message retrieved serverUid" << mail->serverUid() << "contents" << contents;
     }
 
     classifier.classifyMessage(*mail);
@@ -1268,14 +1269,14 @@ void PopClient::retrieveOperationCompleted()
         QMailFolder folder(folderId);
         folder.setStatus(QMailFolder::PartialContent, partialContent);
         if (!QMailStore::instance()->updateFolder(&folder))
-            qWarning() << "Unable to update folder" << folder.id() << "to set PartialContent";
+            qCWarning(lcMailStore) << "Unable to update folder" << folder.id() << "to set PartialContent";
     }
 
     if (!selected) {
         QMailAccount account(accountId());
         account.setLastSynchronized(QMailTimeStamp::currentDateTime());
         if (!QMailStore::instance()->updateAccount(&account))
-            qWarning() << "Unable to update account" << account.id() << "to set lastSynchronized";
+            qCWarning(lcMailStore) << "Unable to update account" << account.id() << "to set lastSynchronized";
     }
 
     // This retrieval may have been asynchronous
@@ -1356,7 +1357,7 @@ void PopClient::removeAllFromBuffer(QMailMessage *message)
 
 void PopClient::onCredentialsStatusChanged()
 {
-    qMailLog(POP)  << "Got credentials status changed:" << credentials->status();
+    qCDebug(lcPOP)  << "Got credentials status changed:" << credentials->status();
     disconnect(credentials, &QMailCredentialsInterface::statusChanged,
                this, &PopClient::onCredentialsStatusChanged);
     nextAction();

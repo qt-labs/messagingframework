@@ -90,6 +90,7 @@ private:
 
     void updateNewMessageCounts();
 
+    void readLogSettings() const;
 
     ServiceHandler *handler;
     StoreHandler *storeHandler;

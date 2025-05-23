@@ -76,7 +76,7 @@ QMailMessageServicePlugin *mapping(const QString &key)
     if (it != pluginMap()->end())
         return it.value();
 
-    qMailLog(Messaging) << "Unable to map service for key:" << key;
+    qCWarning(lcMessaging) << "Unable to map service for key:" << key;
     return 0;
 }
 
@@ -1108,7 +1108,7 @@ void QMailMessageSource::deleteMessages()
     // Just remove these locally and store a deletion record for later synchronization
     QMailMessageKey idsKey(QMailMessageKey::id(d->_ids));
     if (!QMailStore::instance()->removeMessages(idsKey, messageRemovalOption())) {
-        qMailLog(Messaging) << "Unable to remove messages!";
+        qCWarning(lcMailStore) << "Unable to remove messages!";
     } else {
         emit d->_service->progressChanged(total, total);
         emit messagesDeleted(d->_ids);
@@ -1131,7 +1131,7 @@ void QMailMessageSource::copyMessages()
     QStorageInfo storageInfo(QMail::tempPath());
 
     if (storageInfo.bytesAvailable() < (size + 1024*10)) {
-        qMailLog(Messaging) << "Insufficient space to copy messages to folder:" << d->_destinationId << "bytes required:" << size;
+        qCWarning(lcMailStore) << "Insufficient space to copy messages to folder:" << d->_destinationId << "bytes required:" << size;
         emit d->_service->statusChanged(QMailServiceAction::Status(QMailServiceAction::Status::ErrFileSystemFull, tr("Insufficient space to copy messages to folder"), QMailAccountId(), d->_destinationId, QMailMessageId()));
         successful = false;
     }
@@ -1151,7 +1151,7 @@ void QMailMessageSource::copyMessages()
             message.setParentFolderId(d->_destinationId);
 
             if (!QMailStore::instance()->addMessage(&message)) {
-                qMailLog(Messaging) << "Unable to copy messages to folder:" << d->_destinationId << "for account:" << message.parentAccountId();
+                qCWarning(lcMailStore) << "Unable to copy messages to folder:" << d->_destinationId << "for account:" << message.parentAccountId();
 
                 emit d->_service->statusChanged(QMailServiceAction::Status(QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to copy messages for account"), message.parentAccountId(), d->_destinationId, QMailMessageId()));
                 successful = false;
@@ -1179,7 +1179,7 @@ void QMailMessageSource::moveMessages()
 
     QMailMessageKey idsKey(QMailMessageKey::id(d->_ids));
     if (!QMailStore::instance()->updateMessagesMetaData(idsKey, QMailMessageKey::ParentFolderId, metaData)) {
-        qMailLog(Messaging) << "Unable to move messages to folder:" << d->_destinationId;
+        qCWarning(lcMailStore) << "Unable to move messages to folder:" << d->_destinationId;
     } else {
         emit d->_service->progressChanged(total, total);
         emit messagesMoved(d->_ids);
@@ -1214,10 +1214,10 @@ bool QMailMessageSource::modifyMessageFlags(const QMailMessageIdList &ids, quint
 {
     QMailMessageKey idsKey(QMailMessageKey::id(ids));
     if (setMask && !QMailStore::instance()->updateMessagesMetaData(idsKey, setMask, true)) {
-        qMailLog(Messaging) << "Unable to flag messages:" << ids;
+        qCWarning(lcMailStore) << "Unable to flag messages:" << ids;
     } else {
         if (unsetMask && !QMailStore::instance()->updateMessagesMetaData(idsKey, unsetMask, false)) {
-            qMailLog(Messaging) << "Unable to flag messages:" << ids;
+            qCWarning(lcMailStore) << "Unable to flag messages:" << ids;
         } else {
             emit messagesFlagged(ids);
             return true;
@@ -2320,8 +2320,10 @@ static int reservedPushConnections = 0;
 int QMailMessageService::reservePushConnections(int connections)
 {
     if (connections + reservedPushConnections > QMail::maximumPushConnections()) {
-        qWarning() << Q_FUNC_INFO << "Unable to reserve" << connections + reservedPushConnections
-                   << "push connections, as only" << QMail::maximumPushConnections() << "connections allowed.";
+        qCWarning(lcMessaging) << Q_FUNC_INFO << "Unable to reserve"
+                               << connections + reservedPushConnections
+                               << "push connections, as only" << QMail::maximumPushConnections()
+                               << "connections allowed.";
         return 0;
     }
     reservedPushConnections += connections;
@@ -2336,7 +2338,9 @@ int QMailMessageService::reservePushConnections(int connections)
 void QMailMessageService::releasePushConnections(int connections)
 {
     if (connections > reservedPushConnections) {
-        qWarning() << Q_FUNC_INFO << "Unable to release" << connections << "push connections, as only" << reservedPushConnections << "connections reserved.";
+        qCWarning(lcMessaging) << Q_FUNC_INFO << "Unable to release"
+                               << connections << "push connections, as only"
+                               << reservedPushConnections << "connections reserved.";
         reservedPushConnections = 0;
     } else {
         reservedPushConnections -= connections;

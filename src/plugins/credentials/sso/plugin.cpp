@@ -85,8 +85,8 @@ bool SSOCredentials::init(const QMailServiceConfiguration &svcCfg)
     }
     parameters.insert("UserName", svcCfg.value(QStringLiteral("username")));
 
-    qMailLog(Messaging) << "Creating SSO identity for the service" << service()
-                        << "from account" << id() << "with creds id" << credentialsId;
+    qCDebug(lcMessaging) << "Creating SSO identity for the service" << service()
+                         << "from account" << id() << "with creds id" << credentialsId;
     return SSOManager::init(credentialsId, method, mechanism, parameters);
 }
 

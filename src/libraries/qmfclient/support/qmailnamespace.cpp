@@ -110,21 +110,21 @@ QDateTime QMail::lastDbUpdated()
     QDir dir(database_path);
 
     if (!dir.exists()) {
-        qWarning() << Q_FUNC_INFO << " database dir doesn't exist";
+        qCWarning(lcMailStore) << Q_FUNC_INFO << " database dir doesn't exist";
         return QDateTime();
     }
 
     QStringList entries(dir.entryList(QDir::NoFilter, QDir::Time));
 
     if (entries.empty()) {
-        qWarning() << Q_FUNC_INFO << " found nothing in database dir";
+        qCWarning(lcMailStore) << Q_FUNC_INFO << " found nothing in database dir";
         return QDateTime();
     }
 
     QFileInfo info(dir, entries.first());
 
     if (!info.exists()) {
-        qWarning() << Q_FUNC_INFO << "Could not open file we just found?";
+        qCWarning(lcMailStore) << Q_FUNC_INFO << "Could not open file we just found?";
         return QDateTime();
     }
 
@@ -212,7 +212,7 @@ void QMail::closeDatabase()
     QDatabaseInstanceData* instance = databaseDataInstance()->localData();
 
     if (instance->init) {
-        qMailLog(Messaging) << "closing database";
+        qCDebug(lcMailStore) << "closing database";
         instance->init = false;
         QSqlDatabase::removeDatabase(instance->dbConnectionName());
     } // else nothing todo
@@ -229,7 +229,7 @@ QSqlDatabase QMail::createDatabase()
     if (instance->init) {
         db = QSqlDatabase::database(instance->dbConnectionName());
     } else {
-        qMailLog(Messaging) << "opening database";
+        qCDebug(lcMailStore) << "opening database";
         db = QSqlDatabase::addDatabase(QLatin1String("QSQLITE"), instance->dbConnectionName());
 
         QDir dbDir(dataPath() + QLatin1String("database"));
@@ -413,7 +413,7 @@ QMap<QByteArray, QStringList> standardFolderTranslations()
 
     QFile file(QLatin1String(":/qmf/translations.conf"));
     if (!file.open(QIODevice::ReadOnly | QIODevice::Text)) {
-        qWarning() << "Unable to read " << "translations";
+        qCWarning(lcMessaging) << "Unable to read " << "translations";
         return folderTranslations;
     }
 
@@ -493,19 +493,19 @@ bool detectStandardFolder(const QMailAccountId &accountId, StandardFolderInfo st
         folderId = folders.first();
 
         if (folderId.isValid()) {
-            qMailLog(Messaging) << "Setting folder: " << QMailFolder(folderId).displayName();
+            qCDebug(lcMailStore) << "Setting folder: " << QMailFolder(folderId).displayName();
             QMailFolder folder(folderId);
             folder.setStatus(flag,true);
             account.setStandardFolder(standardFolder, folderId);
             if (!QMailStore::instance()->updateAccount(&account)) {
-                qWarning() << "Unable to update account" << account.id() << "to set standard folder" << QMailFolder(folderId).displayName();
+                qCWarning(lcMailStore) << "Unable to update account" << account.id() << "to set standard folder" << QMailFolder(folderId).displayName();
             }
             QMailMessageKey folderKey(QMailMessageKey::parentFolderId(folderId));
             if (!QMailStore::instance()->updateMessagesMetaData(folderKey, messageFlag, true)) {
-                qWarning() << "Unable to update messages in folder" << folderId << "to set flag" << messageFlag;
+                qCWarning(lcMailStore) << "Unable to update messages in folder" << folderId << "to set flag" << messageFlag;
             }
             if (!QMailStore::instance()->updateFolder(&folder)) {
-                qWarning() << "Unable to update folder" << folderId;
+                qCWarning(lcMailStore) << "Unable to update folder" << folderId;
             }
             return true;
         }

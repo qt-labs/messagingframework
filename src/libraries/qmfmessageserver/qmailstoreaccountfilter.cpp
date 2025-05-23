@@ -32,6 +32,7 @@
 ****************************************************************************/
 
 #include "qmailstoreaccountfilter.h"
+#include <qmaillog.h>
 #include <QHash>
 #include <QMetaMethod>
 #include <QMetaObject>
@@ -105,7 +106,7 @@ void QMailStoreEvents::registerConnection(const QMetaMethod &signal, const QMail
 
     QHash<QMetaMethod, ConnectionType>::iterator it = _connections.find(signal);
     if (it == _connections.end()) {
-        qWarning() << "QMailStoreEvents::registerConnection - No such signal:" << signal.methodSignature();
+        qCWarning(lcMailStore) << "QMailStoreEvents::registerConnection - No such signal:" << signal.methodSignature();
     } else {
         ConnectionType &connection(it.value());
 
@@ -122,7 +123,7 @@ void QMailStoreEvents::deregisterConnection(const QMetaMethod &signal, const QMa
 {
     QHash<QMetaMethod, ConnectionType>::iterator it = _connections.find(signal);
     if (it == _connections.end()) {
-        qWarning() << "QMailStoreEvents::deregisterConnection - No such signal:" << signal.methodSignature();
+        qCWarning(lcMailStore) << "QMailStoreEvents::deregisterConnection - No such signal:" << signal.methodSignature();
     } else {
         ConnectionType &connection(it.value());
 

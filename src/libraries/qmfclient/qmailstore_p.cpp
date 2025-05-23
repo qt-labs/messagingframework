@@ -892,7 +892,7 @@ void QMailStorePrivate::accountsRemotelyChanged(QMailStore::ChangeType changeTyp
         emit q_ptr->accountContentsModified(ids);
         break;
     default:
-        qWarning() << "Unhandled remote account notification";
+        qCWarning(lcMailStore) << "Unhandled remote account notification";
         break;
     }
 }
@@ -908,7 +908,7 @@ void QMailStorePrivate::messageRemovalRecordsRemotelyChanged(QMailStore::ChangeT
         emit q_ptr->messageRemovalRecordsRemoved(ids);
         break;
     default:
-        qWarning() << "Unhandled remote message removal record notification";
+        qCWarning(lcMailStore) << "Unhandled remote message removal record notification";
         break;
     }
 }
@@ -946,7 +946,7 @@ void QMailStorePrivate::foldersRemotelyChanged(QMailStore::ChangeType changeType
         emit q_ptr->folderContentsModified(ids);
         break;
     default:
-        qWarning() << "Unhandled remote folder notification";
+        qCWarning(lcMailStore) << "Unhandled remote folder notification";
         break;
     }
 }
@@ -974,7 +974,7 @@ void QMailStorePrivate::threadsRemotelyChanged(QMailStore::ChangeType changeType
         emit q_ptr->threadContentsModified(ids);
         break;
     default:
-        qWarning() << "Unhandled remote thread notification";
+        qCWarning(lcMailStore) << "Unhandled remote thread notification";
         break;
     }
 }
@@ -1002,7 +1002,7 @@ void QMailStorePrivate::messagesRemotelyChanged(QMailStore::ChangeType changeTyp
         emit q_ptr->messageContentsModified(ids);
         break;
     default:
-        qWarning() << "Unhandled remote account notification";
+        qCWarning(lcMailStore) << "Unhandled remote account notification";
         break;
     }
 }
@@ -1030,7 +1030,7 @@ void QMailStorePrivate::messageMetaDataRemotelyChanged(QMailStore::ChangeType ch
             emit q_ptr->messageDataUpdated(data);
             break;
         default:
-            qWarning() << "Unhandled remote message meta data notification";
+            qCWarning(lcMailStore) << "Unhandled remote message meta data notification";
             break;
         }
     }

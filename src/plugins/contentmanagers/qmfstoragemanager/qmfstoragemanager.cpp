@@ -149,7 +149,7 @@ void syncFile(QSharedPointer<QFile> file)
     if (handle != -1)
         ::fdatasync(handle);
     else
-        qWarning() << "Could not get file handle for fdatasync";
+        qCWarning(lcMailStore) << "Could not get file handle for fdatasync";
 #else
     ::fsync(file->handle());
 #endif
@@ -168,7 +168,7 @@ QmfStorageManager::QmfStorageManager(QObject *parent)
     // Make sure messages body path exists
     QDir dir(path);
     if (!dir.exists() && !dir.mkpath(path)) {
-        qMailLog(Messaging) << "Unable to create messages storage directory " << path;
+        qCWarning(lcMailStore) << "Unable to create messages storage directory " << path;
     }
 
     if (QMailStore *store = QMailStore::instance()) {
@@ -213,7 +213,7 @@ QMailStore::ErrorCode QmfStorageManager::addOrRename(QMailMessage *message, cons
     QSharedPointer<QFile> file(new QFile(filePath));
 
     if (!file->open(QIODevice::WriteOnly)) {
-        qWarning() << "Unable to open new message content file:" << filePath;
+        qCWarning(lcMailStore) << "Unable to open new message content file:" << filePath;
         return (pathOnDefault(filePath) ? QMailStore::FrameworkFault : QMailStore::ContentInaccessible);
     }
 
@@ -226,9 +226,9 @@ QMailStore::ErrorCode QmfStorageManager::addOrRename(QMailMessage *message, cons
          !addOrRenameParts(message, message->contentIdentifier(), existingIdentifier, durability))) {
         // Remove the file
         file->close();
-        qMailLog(Messaging) << "Unable to save message content, removing temporary file:" << filePath;
+        qCWarning(lcMailStore) << "Unable to save message content, removing temporary file:" << filePath;
         if (!QFile::remove(filePath)){
-            qMailLog(Messaging) << "Unable to remove temporary message content file:" << filePath;
+            qCWarning(lcMailStore) << "Unable to remove temporary message content file:" << filePath;
         }
 
         // Try to remove any parts that were created
@@ -268,7 +268,7 @@ QMailStore::ErrorCode QmfStorageManager::update(QMailMessage *message, QMailCont
         // but if NoDurability don't delete existing content, it should be deleted later
         code = remove(existingIdentifier);
         if (code != QMailStore::NoError) {
-            qMailLog(Messaging) << "Unable to remove superseded message content:" << existingIdentifier;
+            qCWarning(lcMailStore) << "Unable to remove superseded message content:" << existingIdentifier;
             return code;
         }
     }
@@ -284,7 +284,7 @@ QMailStore::ErrorCode QmfStorageManager::ensureDurability()
 
         // Durability is not disabled
 #if defined(Q_OS_WIN)
-        qWarning() << "Unable to call sync on Windows.";
+        qCWarning(lcMailStore) << "Unable to call sync on Windows.";
 #else
         ::sync();
 #endif
@@ -308,7 +308,7 @@ QMailStore::ErrorCode QmfStorageManager::ensureDurability(const QList<QString> &
 
     // Can't just sync identifiers, also must sync message parts
 #if defined(Q_OS_WIN)
-            qWarning() << "Unable to call sync in ensureDurability.";
+            qCWarning(lcMailStore) << "Unable to call sync in ensureDurability.";
 #else
             ::sync();
 #endif
@@ -323,12 +323,12 @@ QMailStore::ErrorCode QmfStorageManager::remove(const QString &identifier)
     QFileInfo fi(identifier);
     QString path(fi.absoluteFilePath());
     if (QFile::exists(path) && !QFile::remove(path)) {
-        qMailLog(Messaging) << "Unable to remove content file:" << identifier;
+        qCWarning(lcMailStore) << "Unable to remove content file:" << identifier;
         result = QMailStore::ContentNotRemoved;
     }
 
     if (!removeParts(identifier)) {
-        qMailLog(Messaging) << "Unable to remove part content files for:" << identifier;
+        qCWarning(lcMailStore) << "Unable to remove part content files for:" << identifier;
         result = QMailStore::ContentNotRemoved;
     }
 
@@ -364,7 +364,7 @@ struct ReferenceLoader
             }
 
             if (reference.isEmpty() || (part.referenceType() == QMailMessagePart::None)) {
-                qMailLog(Messaging) << "Unable to resolve reference from:" << value;
+                qCWarning(lcMailStore) << "Unable to resolve reference from:" << value;
                 return false;
             }
 
@@ -439,7 +439,7 @@ QMailStore::ErrorCode QmfStorageManager::load(const QString &identifier, QMailMe
         }
     }
     if (!QFile::exists(path)) {
-        qMailLog(Messaging) << "Unable to load nonexistent content file:" << identifier;
+        qCWarning(lcMailStore) << "Unable to load nonexistent content file:" << identifier;
         return (pathOnDefault(path) ? QMailStore::FrameworkFault : QMailStore::ContentInaccessible);
     }
 
@@ -448,14 +448,14 @@ QMailStore::ErrorCode QmfStorageManager::load(const QString &identifier, QMailMe
     // Load the reference information from the meta data into our content object
     ReferenceLoader refLoader(message);
     if (!result.foreachPart<ReferenceLoader&>(refLoader)) {
-        qMailLog(Messaging) << "Unable to resolve references for:" << identifier;
+        qCWarning(lcMailStore) << "Unable to resolve references for:" << identifier;
         return QMailStore::FrameworkFault;
     }
 
     // Load the content of each part
     PartLoader partLoader(path);
     if (!result.foreachPart<PartLoader&>(partLoader)) {
-        qMailLog(Messaging) << "Unable to load parts for:" << identifier;
+        qCWarning(lcMailStore) << "Unable to load parts for:" << identifier;
         return QMailStore::FrameworkFault;
     }
 
@@ -492,9 +492,9 @@ bool QmfStorageManager::init()
                 svcCfg.setValue("servicetype", "storage");
 
                 if (QMailStore::instance()->updateAccountConfiguration(&config)) {
-                    qMailLog(Messaging) << "Added storage configuration for account" << accountId;
+                    qCWarning(lcMailStore) << "Added storage configuration for account" << accountId;
                 } else {
-                    qWarning() << "Unable to add missing storage configuration for account:" << accountId;
+                    qCWarning(lcMailStore) << "Unable to add missing storage configuration for account:" << accountId;
                     return false;
                 }
             }
@@ -513,7 +513,7 @@ void QmfStorageManager::clearContent()
     QString path(messagesBodyPath(QMailAccountId()));
     QDir dir(path);
     if (!dir.exists() && !dir.mkpath(path)) {
-        qMailLog(Messaging) << "Unable to recreate messages storage directory " << path;
+        qCWarning(lcMailStore) << "Unable to recreate messages storage directory " << path;
     }
 }
 
@@ -573,17 +573,17 @@ static bool storePartUndecoded(const QMailMessagePart &part, const QString &file
     // We need to write the content to a new file
     QSharedPointer<QFile> file(new QFile(partFilePath));
     if (!file->open(QIODevice::WriteOnly)) {
-        qWarning() << "Unable to open new message part content file:" << partFilePath;
+        qCWarning(lcMailStore) << "Unable to open new message part content file:" << partFilePath;
         return false;
     }
 
     // Write the part content to file
     QByteArray undecodedData = part.undecodedData();
     if (file->write(undecodedData) != undecodedData.length()) {
-        qMailLog(Messaging) << "Unable to save message part content, removing temporary file:" << partFilePath;
+        qCWarning(lcMailStore) << "Unable to save message part content, removing temporary file:" << partFilePath;
         file->close();
         if (!QFile::remove(partFilePath)){
-            qWarning()  << "Unable to remove temporary message part content file:" << partFilePath;
+            qCWarning(lcMailStore)  << "Unable to remove temporary message part content file:" << partFilePath;
         }
         return false;
     }
@@ -644,17 +644,17 @@ struct PartStorer
             // We need to write the content to a new file
             QSharedPointer<QFile> file(new QFile(partFilePath));
             if (!file->open(QIODevice::WriteOnly)) {
-                qWarning() << "Unable to open new message part content file:" << partFilePath;
+                qCWarning(lcMailStore) << "Unable to open new message part content file:" << partFilePath;
                 return false;
             }
 
             // Write the part content to file
             QDataStream out(file.data());
             if (!part.body().toStream(out, outputFormat) || (out.status() != QDataStream::Ok)) {
-                qMailLog(Messaging) << "Unable to save message part content, removing temporary file:" << partFilePath;
+                qCWarning(lcMailStore) << "Unable to save message part content, removing temporary file:" << partFilePath;
                 file->close();
                 if (!QFile::remove(partFilePath)){
-                    qWarning()  << "Unable to remove temporary message part content file:" << partFilePath;
+                    qCWarning(lcMailStore)  << "Unable to remove temporary message part content file:" << partFilePath;
                 }
                 return false;
             }
@@ -678,7 +678,7 @@ bool QmfStorageManager::addOrRenameParts(QMailMessage *message, const QString &f
     QString partDirectory(messagePartDirectory(fileName));
     if (!QDir(partDirectory).exists()) {
         if (!QDir::root().mkpath(partDirectory)) {
-            qMailLog(Messaging) << "Unable to create directory for message part content:" << partDirectory;
+            qCWarning(lcMailStore) << "Unable to create directory for message part content:" << partDirectory;
             return false;
         }
     }
@@ -688,7 +688,7 @@ bool QmfStorageManager::addOrRenameParts(QMailMessage *message, const QString &f
     bool allowRename = (durability != QMailContentManager::NoDurability);
     PartStorer partStorer(message, fileName, existing, (durable ? 0 : &openParts), allowRename);
     if (!const_cast<const QMailMessage*>(message)->foreachPart(partStorer)) {
-        qMailLog(Messaging) << "Unable to store parts for message:" << fileName;
+        qCWarning(lcMailStore) << "Unable to store parts for message:" << fileName;
         return false;
     }
 
@@ -713,14 +713,14 @@ bool QmfStorageManager::removeParts(const QString &fileName)
         foreach (const QString &entry, dir.entryList()) {
             if ((entry != QString('.')) && (entry != QLatin1String(".."))) {
                 if (!dir.remove(entry)) {
-                    qMailLog(Messaging) << "Unable to remove part file:" << entry;
+                    qCWarning(lcMailStore) << "Unable to remove part file:" << entry;
                     result = false;
                 }
             }
         }
 
         if (!QDir::root().rmdir(dir.absolutePath())) {
-            qMailLog(Messaging) << "Unable to remove directory for message part content:" << partDirectory;
+            qCWarning(lcMailStore) << "Unable to remove directory for message part content:" << partDirectory;
             result = false;
         }
     }

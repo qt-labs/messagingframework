@@ -8,6 +8,7 @@ QT = core network qmfclient qmfclient-private qmfmessageserver qmfmessageserver-
 
 HEADERS += imapclient.h \
            imapconfiguration.h \
+           imaplog.h \
            imapmailboxproperties.h \
            imapprotocol.h \
            imapservice.h \
@@ -21,6 +22,7 @@ HEADERS += imapclient.h \
 
 SOURCES += imapclient.cpp \
            imapconfiguration.cpp \
+           imaplog.cpp \
            imapprotocol.cpp \
            imapservice.cpp \
            imapstructure.cpp \

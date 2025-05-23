@@ -53,7 +53,7 @@ ContentPluginMap init(QMailPluginManager& manager)
     }
 
     if (map.isEmpty()) {
-        qMailLog(Messaging) << "No content manager plugins found. Message content will not be available.";
+        qCWarning(lcMailStore) << "No content manager plugins found. Message content will not be available.";
     }
 
     return map;
@@ -84,7 +84,7 @@ QMailContentManager *mapping(const QString &scheme)
     if (it != contentPlugins().end())
         return it.value();
 
-    qMailLog(Messaging) << "Unable to map content manager for scheme:" << scheme;
+    qCWarning(lcMailStore) << "Unable to map content manager for scheme:" << scheme;
     return 0;
 }
 

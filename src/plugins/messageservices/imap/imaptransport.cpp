@@ -32,7 +32,7 @@
 ****************************************************************************/
 
 #include "imaptransport.h"
-#include <qmaillog.h>
+#include "imaplog.h"
 
 #include <QBuffer>
 #include <QDataStream>
@@ -321,7 +321,7 @@ void ImapTransport::imapClose()
 void ImapTransport::test()
 {
 #if 0
-    qMailLog(IMAP) << "Rfc1951Compressor and Rfc1951Decompressor functional testing running...";
+    qCDebug(lcIMAP) << "Rfc1951Compressor and Rfc1951Decompressor functional testing running...";
     // Mainly aiming to test for bounday conditions
     // So make the compression/decompression buffers about the same size as the input/output
     QByteArray data("This\n is some test data.\r\n The quick brown fox jumps over the lazy dog. 0123456789.\r\n");
@@ -346,13 +346,13 @@ void ImapTransport::test()
                         output += decompressor.readLine();
                     }
                     if (input != output) {
-                        qMailLog(IMAP) << "Test failure: input" << input.toHex() << "output" << output.toHex();
+                        qCWarning(lcIMAP) << "Test failure: input" << input.toHex() << "output" << output.toHex();
                         Q_ASSERT(input == output);
                     }
                 }
             }
         }
     }
-    qMailLog(IMAP) << "Rfc1951Compressor and Rfc1951Decompressor functional testing completed OK";
+    qCDebug(lcIMAP) << "Rfc1951Compressor and Rfc1951Decompressor functional testing completed OK";
 #endif
 }

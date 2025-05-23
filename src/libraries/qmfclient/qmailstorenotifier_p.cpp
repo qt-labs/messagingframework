@@ -218,7 +218,7 @@ void QMailStoreNotifier::notifyAccountsChange(QMailStore::ChangeType changeType,
             accountContentsModifiedBuffer += idsSet;
             break;
         default:
-            qMailLog(Messaging) << "Unhandled account notification received";
+            qCWarning(lcMessaging) << "Unhandled account notification received";
             break;
         }
     } else {
@@ -253,7 +253,7 @@ void QMailStoreNotifier::notifyMessagesChange(QMailStore::ChangeType changeType,
             messageContentsModifiedBuffer += idsSet;
             break;
         default:
-            qMailLog(Messaging) << "Unhandled message notification received";
+            qCWarning(lcMessaging) << "Unhandled message notification received";
             break;
         }
     } else {
@@ -286,7 +286,7 @@ void QMailStoreNotifier::notifyMessagesDataChange(QMailStore::ChangeType changeT
             updateMessagesDataBuffer.append(data);
             break;
         default:
-            qMailLog(Messaging) << "Unhandled folder notification received";
+            qCWarning(lcMessaging) << "Unhandled folder notification received";
             break;
         }
 
@@ -365,7 +365,7 @@ void QMailStoreNotifier::notifyThreadsChange(QMailStore::ChangeType changeType, 
             threadContentsModifiedBuffer += idsSet;
             break;
         default:
-            qMailLog(Messaging) << "Unhandled folder notification received";
+            qCWarning(lcMessaging) << "Unhandled folder notification received";
             break;
         }
     } else {
@@ -401,7 +401,7 @@ void QMailStoreNotifier::notifyFoldersChange(QMailStore::ChangeType changeType, 
             folderContentsModifiedBuffer += idsSet;
             break;
         default:
-            qMailLog(Messaging) << "Unhandled folder notification received";
+            qCWarning(lcMessaging) << "Unhandled folder notification received";
             break;
         }
     } else {
@@ -430,7 +430,7 @@ void QMailStoreNotifier::notifyMessageRemovalRecordsChange(QMailStore::ChangeTyp
             removeMessageRemovalRecordsBuffer += idsSet;
             break;
         default:
-            qMailLog(Messaging) << "Unhandled message removal record notification received";
+            qCWarning(lcMessaging) << "Unhandled message removal record notification received";
             break;
         }
     } else {

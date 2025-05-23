@@ -33,6 +33,7 @@
 
 #include "imapsettings.h"
 #include "imapconfiguration.h"
+#include "imaplog.h"
 #include <emailfoldermodel.h>
 #include <qmailaccount.h>
 #include <qmailaccountconfiguration.h>
@@ -290,7 +291,7 @@ ImapSettings::ImapSettings()
         pushFolderList = new PushFolderList(this, gridLayout);
         connect(pushCheckBox, SIGNAL(stateChanged(int)), pushFolderList, SLOT(setPushEnabled(int)));
     } else {
-        qWarning() << "Gridlayout not found";
+        qCWarning(lcIMAP) << "Gridlayout not found";
     }
 }
 
@@ -510,7 +511,7 @@ void ImapSettings::setStandardFolder(QMailAccount *account, QMailFolder::Standar
     else if (folderType == QMailFolder::OutboxFolder)
         folder.setStatus(QMailFolder::Outgoing, true);
     else
-        qWarning() << "Unable to set unsupported folder type";
+        qCWarning(lcIMAP) << "Unable to set unsupported folder type";
 
     QMailStore::instance()->updateFolder(&folder);
 

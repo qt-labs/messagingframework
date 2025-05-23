@@ -572,7 +572,7 @@ QMailFolderId QMailAccount::standardFolder(QMailFolder::StandardFolder folder) c
 void QMailAccount::setStandardFolder(QMailFolder::StandardFolder folder, const QMailFolderId &folderId)
 {
     if (folder == QMailFolder::OutboxFolder) {
-        qWarning() << "Cannot configure Outbox for account!";
+        qCWarning(lcMessaging) << "Cannot configure Outbox for account!";
     } else {
         if (folderId == QMailFolderId()) {
             // Resetting to default

@@ -34,6 +34,7 @@
 #include "popauthenticator.h"
 
 #include "popconfiguration.h"
+#include "poplog.h"
 
 #include <qmailauthenticator.h>
 #include <qmailtransport.h>
@@ -50,14 +51,14 @@ bool PopAuthenticator::useEncryption(const PopConfiguration &svcCfg,
 
     if (!capabilities.contains("STLS")) {
         if (useTLS) {
-            qWarning() << "Server does not support TLS - continuing unencrypted";
+            qCWarning(lcPOP) << "Server does not support TLS - continuing unencrypted";
         }
     } else {
         if (useTLS) {
             return true;
         } else {
             if (!capabilities.contains("USER")) {
-                qWarning() << "Server does not support unencrypted USER - using encryption";
+                qCWarning(lcPOP) << "Server does not support unencrypted USER - using encryption";
                 return true;
             }
         }

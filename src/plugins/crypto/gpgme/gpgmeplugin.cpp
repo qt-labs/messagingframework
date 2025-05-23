@@ -35,6 +35,7 @@
 ****************************************************************************/
 
 #include "gpgmeplugin.h"
+#include <qmaillog.h>
 
 QMailCryptoGPG::QMailCryptoGPG() : QMailCryptoGPGME(GPGME_PROTOCOL_OpenPGP)
 {
@@ -77,7 +78,7 @@ QMailCryptoFwd::SignatureResult QMailCryptoGPG::sign(QMailMessagePartContainer *
                                                      const QStringList &keys) const
 {
     if (!part) {
-        qWarning() << "unable to sign a NULL part.";
+        qCWarning(lcMessaging) << "unable to sign a NULL part.";
         return QMailCryptoFwd::UnknownError;
     }
 
@@ -119,7 +120,7 @@ bool QMailCryptoGPG::canDecrypt(const QMailMessagePartContainer &part) const
 QMailCryptoFwd::DecryptionResult QMailCryptoGPG::decrypt(QMailMessagePartContainer *part) const
 {
     if (!part) {
-        qWarning() << "unable to decrypt a NULL part.";
+        qCWarning(lcMessaging) << "unable to decrypt a NULL part.";
         return QMailCryptoFwd::DecryptionResult();
     }
 

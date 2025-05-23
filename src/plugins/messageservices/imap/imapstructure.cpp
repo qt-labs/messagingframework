@@ -32,10 +32,9 @@
 ****************************************************************************/
 
 #include "imapstructure.h"
+#include "imaplog.h"
 
-#include <qmaillog.h>
 #include <qmailmessage.h>
-
 
 namespace {
 
@@ -278,7 +277,7 @@ QMailMessageContentDisposition fromDispositionDescription(const QString &desc, c
         if (details.count() > 1) {
             const QStringList parameters(decomposeElements(details.at(1)));
             if (parameters.count() % 2)
-                qWarning() << "Incorrect fromDispositionDescription parameters:" << parameters;
+                qCWarning(lcIMAP) << "Incorrect fromDispositionDescription parameters:" << parameters;
             QStringList::const_iterator it = parameters.begin(), end = parameters.end();
             for ( ; (it != end) && (it + 1 != end); ++it) {
                 disposition.setParameter((*it).toLatin1(), (*(it + 1)).toLatin1());
@@ -315,7 +314,7 @@ void setBodyFromDescription(const QStringList &details, QMailMessagePartContaine
     // [2]: parameter list
     const QStringList parameters(decomposeElements(details.at(2)));
     if (parameters.count() % 2) {
-        qWarning() << "Incorrect setBodyFromDescription parameters:" << parameters;
+        qCWarning(lcIMAP) << "Incorrect setBodyFromDescription parameters:" << parameters;
         if (wellFormed) {
             *wellFormed = false;
         }
@@ -420,7 +419,7 @@ void setMultipartFromDescription(const QStringList &structure, QMailMessagePartC
         const QStringList parameters(decomposeElements(details.at(1)));
         QStringList::const_iterator it = parameters.begin(), end = parameters.end();
         if (parameters.count() % 2) {
-            qWarning() << "Incorrect setMultipartFromDescription parameter count" << parameters.last();
+            qCWarning(lcIMAP) << "Incorrect setMultipartFromDescription parameter count" << parameters.last();
             if (wellFormed) {
                 *wellFormed = false;
             }
@@ -490,7 +489,7 @@ void setPartContentFromStructure(const QStringList &structure, QMailMessagePart 
             if (structure.count() == 1) {
                 QStringList details(decomposeElements(message));
                 if (details.count() < 7) {
-                    qWarning() << "Ill-formed part structure:" << details;
+                    qCWarning(lcIMAP) << "Ill-formed part structure:" << details;
                     if (wellFormed) {
                         *wellFormed = false;
                     }
@@ -523,7 +522,7 @@ bool setMessageContentFromStructure(const QStringList &structure, QMailMessage *
             if (structure.count() == 1) {
                 QStringList details(decomposeElements(description));
                 if (details.count() < 7) {
-                    qWarning() << "Ill-formed body structure:" << details;
+                    qCWarning(lcIMAP) << "Ill-formed body structure:" << details;
                     wellFormed = false;
                 } else {
                     setBodyFromDescription(details, message, &size, &wellFormed);
