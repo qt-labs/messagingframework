@@ -135,6 +135,8 @@ private slots:
     void copyAndAssign();
 
     void unterminatedDoubleQuote();
+
+    void readReceipt();
 };
 
 QTEST_MAIN(tst_QMailMessage)
@@ -1680,4 +1682,47 @@ void tst_QMailMessage::unterminatedDoubleQuote()
     m1.setSubject( testString );
     QMailMessage m2(QMailMessage::fromRfc2822(m1.toRfc2822()));
     QCOMPARE( m2.subject(), testString );
+}
+
+void tst_QMailMessage::readReceipt()
+{
+    const QMailAddress jane(QLatin1String("Jane Sender <Jane_Sender@example.org>"));
+    const QMailAddress joe(QLatin1String("Joe Recipient <Joe_Recipient@example.com>"));
+    const QString subject = QLatin1String("Testing message disposition notification");
+    QMailMessage message;
+    message.requestReadReceipt(jane);
+    message.setHeaderField(QLatin1String("Message-ID"), QLatin1String("12345"));
+    message.setTo(joe);
+    message.setSubject(subject);
+    QCOMPARE(message.readReceiptRequestAddress(), jane);
+
+    const QString reportingUA = QLatin1String("joes-pc.cs.example.com; Foomail 97.1");
+    const QString receiptBody = QLatin1String("The message has been displayed.");
+    QMailMessage readReceipt = QMailMessage::asReadReceipt(message, receiptBody,
+                                                           QLatin1String("Re: "),
+                                                           reportingUA);
+
+    QCOMPARE(readReceipt.messageType(), QMailMessageMetaData::Email);
+    QCOMPARE(readReceipt.responseType(), QMailMessageMetaData::Reply);
+    QCOMPARE(readReceipt.from(), joe);
+    QCOMPARE(readReceipt.to(), QList<QMailAddress>() << jane);
+    QCOMPARE(readReceipt.subject(), QLatin1String("Re: ") + subject);
+    QCOMPARE(readReceipt.multipartType(), QMailMessagePartContainer::MultipartReport);
+    QCOMPARE(readReceipt.partCount(), uint(2));
+
+    const QMailMessagePart &body = readReceipt.partAt(0);
+    QVERIFY(body.hasBody());
+    QCOMPARE(body.body().data(), receiptBody);
+
+    const QMailMessagePart &receipt = readReceipt.partAt(1);
+    QVERIFY(receipt.contentType().matches("message", "disposition-notification"));
+    QCOMPARE(receipt.headerField(QLatin1String("Reporting-UA"),
+                                 QMailMessageHeaderField::UnstructuredField).content(), reportingUA.toUtf8());
+    QVERIFY(receipt.headerField(QLatin1String("Original-Recipient")).content().isEmpty());
+    QCOMPARE(receipt.headerField(QLatin1String("Final-Recipient")).content(), joe.address().toUtf8());
+    QCOMPARE(receipt.headerField(QLatin1String("Original-Message-ID")).content(),
+             message.headerField(QLatin1String("Message-ID")).content());
+    QCOMPARE(receipt.headerField(QLatin1String("Disposition"),
+                                 QMailMessageHeaderField::UnstructuredField).content(),
+             QByteArray("manual-action/MDN-sent-manually; displayed"));
 }

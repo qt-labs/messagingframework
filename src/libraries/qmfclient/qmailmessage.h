@@ -720,6 +720,11 @@ public:
     static QMailMessage fromRfc2822(const QByteArray &ba);
     static QMailMessage fromRfc2822File(const QString& fileName);
     static QMailMessage fromSkeletonRfc2822File(const QString& fileName);
+    static QMailMessage asReadReceipt(const QMailMessage& message, const QString &bodyText,
+                                      const QString &subjectPrefix = QString(),
+                                      const QString &reportingUA = QString(),
+                                      DispositionNotificationMode mode = Manual,
+                                      DispositionNotificationType type = Displayed);
 
     QMailMessage();
     QMailMessage(const QMailMessageId& id);
@@ -729,6 +734,9 @@ public:
     void toRfc2822(QDataStream& out, EncodingFormat format = TransmissionFormat) const;
 
     QList<QMailMessage::MessageChunk> toRfc2822Chunks(EncodingFormat format = TransmissionFormat) const;
+
+    QMailAddress readReceiptRequestAddress() const;
+    void requestReadReceipt(const QMailAddress &address);
 
     using QMailMessagePartContainer::partAt;
 

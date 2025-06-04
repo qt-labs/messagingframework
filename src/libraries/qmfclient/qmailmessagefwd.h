@@ -194,6 +194,18 @@ public:
         Reference
     };
 
+    enum DispositionNotificationMode {
+        Manual = 0,
+        Automatic
+    };
+
+    enum DispositionNotificationType {
+        Displayed = 0,
+        Deleted,
+        Dispatched,
+        Processed
+    };
+
     typedef QPair<ChunkType, QByteArray> MessageChunk;
 };
 

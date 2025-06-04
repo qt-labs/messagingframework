@@ -8148,6 +8148,142 @@ QMailMessage QMailMessage::fromSkeletonRfc2822File(const QString& fileName)
 }
 
 /*!
+    Constructs a read receipt message, as defined in RFC8098. An invalid message
+    is returned if the original \a message does not request a read receipt.
+    RFC8098 describes that a human readable \a bodyText should be set-up as
+    first part of the read receipt message. If \a subjectPrefix is provided, the
+    subject of the original message is kept and prefixed with \a subjectPrefix.
+    If not, a default subject is set as in the RFC example.
+*/
+QMailMessage QMailMessage::asReadReceipt(const QMailMessage &message, const QString &bodyText,
+                                         const QString &subjectPrefix,
+                                         const QString &reportingUA,
+                                         QMailMessage::DispositionNotificationMode mode,
+                                         QMailMessage::DispositionNotificationType type)
+{
+    const QMailAddress mdnAddress = message.readReceiptRequestAddress();
+    if (mdnAddress.isNull()) {
+        qCWarning(lcMessaging) << "Initial message does not request for a message disposition notification.";
+        return QMailMessage();
+    }
+
+    QMailMessage readReceipt;
+    readReceipt.setMessageType(QMailMessage::Email);
+    readReceipt.setDate(QMailTimeStamp::currentDateTime());
+    readReceipt.setResponseType(QMailMessageMetaDataFwd::Reply);
+    readReceipt.setParentAccountId(message.parentAccountId());
+
+    const QMailAddress from = message.parentAccountId().isValid()
+        ? QMailAccount(message.parentAccountId()).fromAddress()
+        : message.to().first();
+    if (from.isGroup()) {
+        // Try to match one of the group address with the
+        // to: field of the original message.
+        QSet<QString> addresses;
+        for (const QMailAddress &to : message.to()) {
+            addresses.insert(to.address());
+        }
+        for (const QMailAddress &sub : from.groupMembers()) {
+            if (addresses.contains(sub.address())) {
+                readReceipt.setFrom(sub);
+                break;
+            }
+        }
+        if (readReceipt.from().isNull()) {
+            qCWarning(lcMessaging) << "Cannot find matching address, sending read receipt from first address.";
+            readReceipt.setFrom(from.groupMembers().first());
+        }
+    } else {
+        readReceipt.setFrom(from);
+    }
+    readReceipt.setTo(mdnAddress);
+    if (subjectPrefix.isEmpty()) {
+        readReceipt.setSubject(QLatin1String("Disposition notification"));
+    } else {
+        readReceipt.setSubject(message.subject().prepend(subjectPrefix));
+    }
+
+    readReceipt.setMultipartType(QMailMessagePartContainerFwd::MultipartReport,
+                                 QList<QMailMessageHeaderField::ParameterType>()
+                                 << QMailMessageHeaderField::ParameterType("report-type",
+                                                                           "disposition-notification"));
+
+    QMailMessagePart body =
+        QMailMessagePart::fromData(bodyText.toUtf8(),
+                                   QMailMessageContentDisposition(QMailMessageContentDisposition::None),
+                                   QMailMessageContentType("text/plain"),
+                                   QMailMessageBody::Base64);
+    readReceipt.appendPart(body);
+
+    // creating report part
+    QMailMessagePart disposition =
+        QMailMessagePart::fromData(QString(),
+                                   QMailMessageContentDisposition(QMailMessageContentDisposition::None),
+                                   QMailMessageContentType("message/disposition-notification"),
+                                   QMailMessageBody::SevenBit);
+    if (!reportingUA.isEmpty())
+        disposition.setHeaderField(QLatin1String("Reporting-UA"), reportingUA);
+    const QByteArray originalRecipient = message.headerField(QLatin1String("Original-Recipient")).content();
+    if (!originalRecipient.isEmpty()) {
+        disposition.setHeaderField(QLatin1String("Original-Recipient"), QString::fromUtf8(originalRecipient));
+    }
+    disposition.setHeaderField(QLatin1String("Final-Recipient"), readReceipt.from().address());
+    const QByteArray messageId = message.headerField(QLatin1String("Message-ID")).content();
+    if (!messageId.isEmpty()) {
+        disposition.setHeaderField(QLatin1String("Original-Message-ID"),
+                                   QString::fromUtf8(messageId));
+    }
+    QString dispositionField;
+    if (mode == Manual) {
+        dispositionField.append(QLatin1String("manual-action/MDN-sent-manually;"));
+    } else {
+        dispositionField.append(QLatin1String("automatic-action/MDN-sent-automatically;"));
+    }
+    switch (type) {
+    case Displayed:
+        dispositionField.append(QLatin1String(" displayed")); break;
+    case Deleted:
+        dispositionField.append(QLatin1String(" deleted")); break;
+    case Dispatched:
+        dispositionField.append(QLatin1String(" dispatched")); break;
+    case Processed:
+        dispositionField.append(QLatin1String(" processed")); break;
+    default:
+        break;
+    }
+    disposition.setHeaderField(QLatin1String("Disposition"), dispositionField);
+    readReceipt.appendPart(disposition);
+
+    return readReceipt;
+}
+
+/*!
+    Returns the address at which a disposition notification should be sent.
+    A null QMailAddress is returned if the message does not request any
+    read receipt.
+*/
+QMailAddress QMailMessage::readReceiptRequestAddress() const
+{
+    const QMailMessageHeaderField &mdnHeader = headerField(QLatin1String("Disposition-Notification-To"));
+    return (mdnHeader.isNull()) ? QMailAddress() : QMailAddress(QString::fromUtf8(mdnHeader.content()));
+}
+
+/*!
+    Setup the message to request or not a read receipt, according to
+    RFC 8098. \a address is the e-mail address the receipt should be
+    sent to. When \a address is null, no read receipt is requested.
+*/
+void QMailMessage::requestReadReceipt(const QMailAddress &address)
+{
+    static const QString mdnId = QLatin1String("Disposition-Notification-To");
+    if (address.isNull()) {
+        removeHeaderField(mdnId);
+    } else {
+        setHeaderField(mdnId, address.toString());
+    }
+}
+
+/*!
     Returns true if the message contains a part with the location \a location.
 */
 bool QMailMessage::contains(const QMailMessagePart::Location& location) const
