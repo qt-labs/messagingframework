@@ -4876,7 +4876,11 @@ QMailMessageContentDisposition QMailMessagePartContainer::contentDisposition() c
 */
 void QMailMessagePartContainer::setContentDisposition(const QMailMessageContentDisposition &disposition)
 {
-    setHeaderField(QLatin1String("Content-Disposition"), QLatin1String(disposition.toString(false, false)));
+    if (disposition.type() != QMailMessageContentDisposition::None)
+        setHeaderField(QLatin1String("Content-Disposition"),
+                       QLatin1String(disposition.toString(false, false)));
+    else
+        removeHeaderField(QLatin1String("Content-Disposition"));
 }
 
 /*!
