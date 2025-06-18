@@ -786,6 +786,8 @@ public:
     virtual QString inReplyTo() const;
     virtual void setInReplyTo(const QString &s);
 
+    void setInResponseTo(const QMailMessage &msg);
+
     virtual uint contentSize() const;
     virtual void setContentSize(uint size);
 

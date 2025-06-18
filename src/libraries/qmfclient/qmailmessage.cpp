@@ -8564,6 +8564,34 @@ void QMailMessage::setInReplyTo(const QString &messageId)
 }
 
 /*!
+    Setup In-Reply-To: and References: header fields according to RFC2822
+    section 3.6.4. Also internally set the metadata inResponseTo to point
+    to the id() of \a msg, if valid.
+ */
+void QMailMessage::setInResponseTo(const QMailMessage &msg)
+{
+    if (msg.id().isValid()) {
+        setInResponseTo(msg.id());
+    }
+    QString references(msg.headerFieldText(QLatin1String("References")));
+    if (references.isEmpty()) {
+        references = msg.inReplyTo();
+    }
+    const QString precursorId(msg.headerFieldText(QLatin1String("Message-ID")));
+    if (!precursorId.isEmpty()) {
+        setInReplyTo(precursorId);
+
+        if (!references.isEmpty()) {
+            references.append(' ');
+        }
+        references.append(precursorId);
+    }
+    if (!references.isEmpty()) {
+        setHeaderField(QLatin1String("References"), references);
+    }
+}
+
+/*!
     Returns a list of all the recipients specified for the message, either as To, CC, or BCC addresses.
 
     \sa to(), cc(), bcc(), hasRecipients()

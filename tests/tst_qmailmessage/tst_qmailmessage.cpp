@@ -112,6 +112,8 @@ private slots:
     void inReplyTo();
     void setInReplyTo();
 
+    void setInResponseTo();
+
     void setSingleHeaderField();
 /*
     void status();
@@ -1285,6 +1287,32 @@ void tst_QMailMessage::setInReplyTo()
 {
     testHeader("In-Reply-To", &QMailMessage::setInReplyTo, &QMailMessage::inReplyTo, true);
     testSingleHeader("In-Reply-To");
+}
+
+void tst_QMailMessage::setInResponseTo()
+{
+    const QString id = QLatin1String("12345");
+    const QString id2 = QLatin1String("1234");
+    QMailMessage message;
+    message.setHeaderField(QLatin1String("Message-ID"), id);
+    message.setHeaderField(QLatin1String("References"), id2);
+
+    QMailMessage reply;
+    reply.setInResponseTo(message);
+    QCOMPARE(reply.inReplyTo(), id);
+    QCOMPARE(reply.headerField(QLatin1String("References")).content(),
+             QString::fromLatin1("%1 %2").arg(id2).arg(id).toUtf8());
+
+    QMailMessage noref;
+    noref.setHeaderField(QLatin1String("Message-ID"), id);
+    noref.setInReplyTo(id2);
+
+    QMailMessage forward;
+    forward.setInResponseTo(noref);
+    QCOMPARE(forward.inReplyTo(), id);
+    QCOMPARE(forward.headerField(QLatin1String("References")).content(),
+             QString::fromLatin1("%1 %2").arg(id2).arg(id).toUtf8());
+
 }
 
 void tst_QMailMessage::serverUid()
