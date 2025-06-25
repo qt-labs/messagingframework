@@ -135,6 +135,7 @@ bool SSOManager::start(const QString &method, const QString &mechanism,
         sessionData = oauth2Data;
     }
     if (m_session) {
+        qCDebug(lcMessaging) << "SSO: starting credentials retrieval.";
         m_status = Fetching;
         emit statusChanged();
         sessionData.setUiPolicy(SignOn::NoUserInteractionPolicy);
@@ -208,6 +209,7 @@ void SSOManager::onError(const SignOn::Error &code)
         || code.type() == SignOn::Error:: UserInteraction) {
         invalidate();
     }
+    qCDebug(lcMessaging) << "SSO: got error response," << m_errorMessage;
 
     emit statusChanged();
 }

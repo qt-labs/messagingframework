@@ -402,6 +402,7 @@ void PopClient::transportError(int status, QString msg)
 
 void PopClient::closeConnection()
 {
+    qCDebug(lcPOP) << "closing connection, account" << config.id();
     inactiveTimer.stop();
 
     if (transport) {
@@ -438,7 +439,7 @@ void PopClient::sendCommand(const char *data, int len)
             logData = logData.left(passExp.matchedLength()) + "<password hidden>";
         }
 
-        qCDebug(lcPOP) << "SEND:" << logData;
+        qCDebug(lcPOP) << "[" << config.id() << "]" << "SEND:" << logData;
     }
 }
 
@@ -472,7 +473,7 @@ void PopClient::incomingData()
 void PopClient::processResponse(const QString &response)
 {
     if ((response.length() > 1) && (status != MessageDataRetr) && (status != MessageDataTop)) {
-        qCDebug(lcPOP) << "RECV:" << qPrintable(response.left(response.length() - 2));
+        qCDebug(lcPOP) << "[" << config.id() << "]" << "RECV:" << qPrintable(response.left(response.length() - 2));
     }
 
     bool waitForInput = false;
@@ -744,6 +745,7 @@ void PopClient::nextAction()
     }
     case Connected:
     {
+        qCDebug(lcPOP) << "connected, checking credentials status" << credentials->status();
         if (credentials->status() == QMailCredentialsInterface::Ready) {
             emit updateStatus(tr("Logging in"));
 
@@ -961,6 +963,7 @@ void PopClient::nextAction()
     }
     case Quit:
     {
+        qCDebug(lcPOP) << "[" << config.id() << "]" << "logging out.";
         emit updateStatus(tr("Logging out"));
         nextStatus = Exit;
         nextCommand = "QUIT";
@@ -1294,6 +1297,7 @@ void PopClient::deactivateConnection()
 {
     const int inactivityPeriod = 20 * 1000;
 
+    qCDebug(lcPOP) << "starting inactivity timer for account" << config.id();
     inactiveTimer.start(inactivityPeriod);
     selected = false;
 }
