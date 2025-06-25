@@ -121,6 +121,8 @@ bool SSOManager::start(const QString &method, const QString &mechanism,
                     this, &SSOManager::onResponse);
             connect(m_session, &SignOn::AuthSession::error,
                     this, &SSOManager::onError);
+        } else {
+            m_errorMessage = QStringLiteral("identity cannot create session.");
         }
     } else if (method == QLatin1String("oauth2")) {
         // A session already exists, but a request for
@@ -133,10 +135,10 @@ bool SSOManager::start(const QString &method, const QString &mechanism,
         sessionData = oauth2Data;
     }
     if (m_session) {
-        sessionData.setUiPolicy(SignOn::NoUserInteractionPolicy);
-        m_session->process(sessionData, mechanism);
         m_status = Fetching;
         emit statusChanged();
+        sessionData.setUiPolicy(SignOn::NoUserInteractionPolicy);
+        m_session->process(sessionData, mechanism);
     }
     return m_session != nullptr;
 }
