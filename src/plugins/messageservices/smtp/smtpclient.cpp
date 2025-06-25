@@ -1119,5 +1119,6 @@ void SmtpClient::onCredentialsStatusChanged()
     qCDebug(lcSMTP)  << "Got credentials status changed:" << credentials->status();
     disconnect(credentials, &QMailCredentialsInterface::statusChanged,
                this, &SmtpClient::onCredentialsStatusChanged);
-    nextAction(QString());
+    if (status == Authenticate)
+        nextAction(QString());
 }

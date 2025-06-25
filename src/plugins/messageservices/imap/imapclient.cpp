@@ -1793,19 +1793,19 @@ void ImapClient::onCredentialsStatusChanged()
 
     disconnect(_credentials, &QMailCredentialsInterface::statusChanged,
                this, &ImapClient::onCredentialsStatusChanged);
-    switch (_credentials->status()) {
-    case (QMailCredentialsInterface::Ready): {
-        QMailAccountConfiguration config(_accountId);
-        _protocol.sendLogin(config, _credentials);
-        break;
-    }
-    case (QMailCredentialsInterface::Failed):
-        if (_protocol.inUse()) {
-            operationFailed(QMailServiceAction::Status::ErrLoginFailed, _credentials->lastError());
+    if (_protocol.inUse()) {
+        switch (_credentials->status()) {
+        case (QMailCredentialsInterface::Ready): {
+            QMailAccountConfiguration config(_accountId);
+            _protocol.sendLogin(config, _credentials);
+            break;
         }
-        break;
-    default:
-        break;
+        case (QMailCredentialsInterface::Failed):
+            operationFailed(QMailServiceAction::Status::ErrLoginFailed, _credentials->lastError());
+            break;
+        default:
+            break;
+        }
     }
 }
 

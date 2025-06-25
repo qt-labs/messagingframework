@@ -1360,5 +1360,6 @@ void PopClient::onCredentialsStatusChanged()
     qCDebug(lcPOP)  << "Got credentials status changed:" << credentials->status();
     disconnect(credentials, &QMailCredentialsInterface::statusChanged,
                this, &PopClient::onCredentialsStatusChanged);
-    nextAction();
+    if (status == Connected)
+        nextAction();
 }
