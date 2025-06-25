@@ -185,8 +185,8 @@ void PopClient::newConnection()
         return;
     }
 
-    if (credentials) {
-        credentials->init(popCfg);
+    if (credentials && !credentials->init(popCfg)) {
+        qCWarning(lcPOP) << "credential initialisation error:" << credentials->lastError();
     }
 
     if (!selected) {
