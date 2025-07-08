@@ -48,6 +48,9 @@
 SSOManager::SSOManager(QObject *parent)
     : QMailCredentialsInterface(parent)
 {
+    m_timeout.setSingleShot(true);
+    m_timeout.setInterval(30000);
+    connect(&m_timeout, &QTimer::timeout, this, &SSOManager::onSessionTimeout);
 }
 
 SSOManager::~SSOManager()
@@ -65,6 +68,9 @@ bool SSOManager::init(uint credentialsId, const QString &method,
     m_credentialIds = credentialsId;
     m_errorMessage.clear();
     if (m_status != Invalid) {
+        qCDebug(lcMessaging) << "SSO: init credentials while status" << m_status;
+        if (m_session && m_status == Fetching)
+            m_session->cancel();
         m_status = Invalid;
         emit statusChanged();
     }
@@ -121,6 +127,8 @@ bool SSOManager::start(const QString &method, const QString &mechanism,
                     this, &SSOManager::onResponse);
             connect(m_session, &SignOn::AuthSession::error,
                     this, &SSOManager::onError);
+            connect(m_session, &SignOn::AuthSession::stateChanged,
+                    this, &SSOManager::onStateChanged);
         } else {
             m_errorMessage = QStringLiteral("identity cannot create session.");
         }
@@ -140,6 +148,7 @@ bool SSOManager::start(const QString &method, const QString &mechanism,
         emit statusChanged();
         sessionData.setUiPolicy(SignOn::NoUserInteractionPolicy);
         m_session->process(sessionData, mechanism);
+        m_timeout.start();
     }
     return m_session != nullptr;
 }
@@ -152,6 +161,7 @@ void SSOManager::deinit()
         m_session = nullptr;
         delete m_identity;
         m_identity = nullptr;
+        m_timeout.stop();
     }
     m_credentialIds = 0;
     m_status = Invalid;
@@ -195,14 +205,17 @@ QString SSOManager::accessToken() const
 
 void SSOManager::onResponse(const SignOn::SessionData &sessionData)
 {
+    m_timeout.stop();
     m_status = Ready;
     m_sessionData = sessionData;
+    qCDebug(lcMessaging) << "SSO: got response.";
 
     emit statusChanged();
 }
 
 void SSOManager::onError(const SignOn::Error &code)
 {
+    m_timeout.stop();
     m_status = Failed;
     m_errorMessage = QString::fromLatin1("SSO error %1: %2").arg(code.type()).arg(code.message());
     if (code.type() == SignOn::Error::InvalidCredentials
@@ -212,4 +225,21 @@ void SSOManager::onError(const SignOn::Error &code)
     qCDebug(lcMessaging) << "SSO: got error response," << m_errorMessage;
 
     emit statusChanged();
+}
+
+void SSOManager::onStateChanged(SignOn::AuthSession::AuthSessionState state,
+                                const QString &message)
+{
+    qCDebug(lcMessaging) << "SSO: process state changed:" << state << message;
+}
+
+void SSOManager::onSessionTimeout()
+{
+    qCDebug(lcMessaging) << "SSO: timeout while status" << m_status;
+    if (m_session && m_status == Fetching) {
+        m_session->cancel();
+        // Even after cancellation, the session is sometimes unable to get a
+        // response to any new process(). So restart it completely.
+        deinit();
+    }
 }

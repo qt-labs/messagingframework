@@ -44,6 +44,7 @@
 
 #include <qmailcredentials.h>
 
+#include <QTimer>
 #include <SignOn/Identity>
 #include <SignOn/SessionData>
 
@@ -71,6 +72,9 @@ private:
                const QVariantMap &parameters);
     void onResponse(const SignOn::SessionData &sessionData);
     void onError(const SignOn::Error &code);
+    void onStateChanged(SignOn::AuthSession::AuthSessionState state,
+                        const QString &message);
+    void onSessionTimeout();
 
     uint m_credentialIds = 0;
     SignOn::Identity *m_identity = nullptr;
@@ -79,6 +83,7 @@ private:
     Status m_status = Invalid;
     QString m_errorMessage;
     QString m_username;
+    QTimer m_timeout;
 };
 
 #endif
