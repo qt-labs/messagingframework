@@ -1,4 +1,6 @@
 set(QMF_SOURCES
+  ../../src/plugins/messageservices/imap/imaplog.h
+  ../../src/plugins/messageservices/imap/imaplog.cpp
   ../../src/plugins/messageservices/imap/imapconfiguration.h
   ../../src/plugins/messageservices/imap/imapconfiguration.cpp)
 

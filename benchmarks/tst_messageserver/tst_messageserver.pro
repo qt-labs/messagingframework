@@ -21,6 +21,7 @@ HEADERS += benchmarkcontext.h \
            qscopedconnection.h \
            testfsusage.h \
            $$IMAP_PLUGIN/imapconfiguration.h \
+           $$IMAP_PLUGIN/imaplog.h \
            $$MESSAGE_SERVER/mailmessageclient.h \
            $$MESSAGE_SERVER/messageserver.h \
            $$MESSAGE_SERVER/servicehandler.h \
@@ -31,6 +32,7 @@ SOURCES += benchmarkcontext.cpp \
            testfsusage.cpp \
            tst_messageserver.cpp \
            $$IMAP_PLUGIN/imapconfiguration.cpp \
+           $$IMAP_PLUGIN/imaplog.cpp \
            $$MESSAGE_SERVER/mailmessageclient.cpp \
            $$MESSAGE_SERVER/messageserver.cpp \
            $$MESSAGE_SERVER/prepareaccounts.cpp \
