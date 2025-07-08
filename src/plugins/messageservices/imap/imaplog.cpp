@@ -34,3 +34,4 @@
 #include "imaplog.h"
 
 Q_LOGGING_CATEGORY(lcIMAP, "org.qt.messageserver.imap", QtWarningMsg)
+Q_LOGGING_CATEGORY(lcIMAPState, "org.qt.messageserver.imap.state", QtWarningMsg)

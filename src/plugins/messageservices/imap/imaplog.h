@@ -39,5 +39,6 @@
 #include <QLoggingCategory>
 
 Q_DECLARE_LOGGING_CATEGORY(lcIMAP)
+Q_DECLARE_LOGGING_CATEGORY(lcIMAPState)
 
 #endif

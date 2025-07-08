@@ -462,7 +462,7 @@ void ImapState::log(const QString &note)
         result = "OpBad";
         break;
     }
-    qCDebug(lcIMAP) << note << mName << result;
+    qCDebug(lcIMAPState) << note << mName << result;
 }
 
 
@@ -2994,7 +2994,7 @@ void ImapContextFSM::setState(ImapState* s)
             qCWarning(lcIMAP) << protocol()->objectName() << "Unable to issue command simultaneously:" << s->command();
             operationCompleted(s->command(), OpFailed);
         } else {
-            s->log(protocol()->objectName() + "Tx:");
+            s->log(protocol()->objectName() + " Tx:");
             QString tag = s->transmit(this);
             mPendingStates.append(qMakePair(s, tag));
         }
@@ -3003,7 +3003,7 @@ void ImapContextFSM::setState(ImapState* s)
         mState = s;
 
         // We can enter the new state and transmit its command
-        mState->log(protocol()->objectName() + "Begin:");
+        mState->log(protocol()->objectName() + " Begin:");
         QString tag = mState->transmit(this);
         mState->enter(this);
         mState->setTag(tag);
@@ -3023,11 +3023,11 @@ void ImapContextFSM::stateCompleted()
         // We can now enter the new state
         if (nextState.second.isEmpty()) {
             // This state has not transmitted a command yet
-            mState->log(protocol()->objectName() + "Tx:");
+            mState->log(protocol()->objectName() + " Tx:");
             nextState.second = mState->transmit(this);
         }
 
-        mState->log(protocol()->objectName() + "Begin:");
+        mState->log(protocol()->objectName() + " Begin:");
         mState->enter(this);
         mState->setTag(nextState.second);
     }
@@ -3551,7 +3551,7 @@ void ImapProtocol::continuation(ImapCommand command, const QString &recv)
 
 void ImapProtocol::operationCompleted(ImapCommand command, OperationStatus status)
 {
-    _fsm->state()->log(objectName() + "End:");
+    _fsm->state()->log(objectName() + " End:");
     clearResponse();
 
     emit completed(command, status);
@@ -3694,7 +3694,7 @@ void ImapProtocol::nextAction(const QString &line)
         _fsm->setStatus(commandResponse(line));
         if (_fsm->status() != OpOk) {
             _lastError = _fsm->error(line);
-            _fsm->log(objectName() + "End:");
+            _fsm->log(objectName() + " End:");
             operationCompleted(_fsm->command(), _fsm->status());
             return;
         }
