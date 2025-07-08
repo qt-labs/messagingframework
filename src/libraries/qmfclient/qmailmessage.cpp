@@ -8568,7 +8568,7 @@ void QMailMessage::setInReplyTo(const QString &messageId)
     section 3.6.4. Also internally set the metadata inResponseTo to point
     to the id() of \a msg, if valid.
  */
-void QMailMessage::setInResponseTo(const QMailMessage &msg)
+void QMailMessage::setReplyReferences(const QMailMessage &msg)
 {
     if (msg.id().isValid()) {
         setInResponseTo(msg.id());
