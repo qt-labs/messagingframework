@@ -45,7 +45,6 @@
 class Rfc1951Compressor;
 class Rfc1951Decompressor;
 
-//TODO: Make the imap* functions in the base class virtual. Binary incompatible change (BIC)
 class ImapTransport : public QMailTransport
 {
     Q_OBJECT
@@ -56,7 +55,7 @@ public:
 
     // Read line-oriented data from the transport (must have an open connection)
     bool imapCanReadLine();
-    bool imapBytesAvailable();
+    bool imapBytesAvailable() const;
     QByteArray imapReadLine();
     QByteArray imapReadAll();
 
@@ -65,7 +64,7 @@ public:
 
     // Set/Get RFC1951 compression state
     void setCompress(bool comp);
-    bool compress();
+    bool compress() const;
 
     void imapClose();
 

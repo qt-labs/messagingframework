@@ -253,7 +253,7 @@ bool ImapTransport::imapCanReadLine()
     }
 }
 
-bool ImapTransport::imapBytesAvailable()
+bool ImapTransport::imapBytesAvailable() const
 {
     if (!compress()) {
         return bytesAvailable();
@@ -303,7 +303,7 @@ void ImapTransport::setCompress(bool comp)
     }
 }
 
-bool ImapTransport::compress()
+bool ImapTransport::compress() const
 {
     return _compress;
 }

@@ -3534,9 +3534,9 @@ void ImapProtocol::incomingData()
         }
     }
 
-    if (_transport->bytesAvailable()) {
+    if (_transport->imapBytesAvailable()) {
         // If there is an incomplete line, read it from the socket buffer to ensure we get readyRead signal next time
-        _lineBuffer.append(_transport->readAll());
+        _lineBuffer.append(_transport->imapReadAll());
     }
 
     _incomingDataTimer.stop();
