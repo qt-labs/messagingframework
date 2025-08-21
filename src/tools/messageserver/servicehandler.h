@@ -34,7 +34,6 @@
 #ifndef SERVICEHANDLER_H
 #define SERVICEHANDLER_H
 
-#include <QByteArray>
 #include <QFile>
 #include <QLinkedList>
 #include <QList>
@@ -49,12 +48,22 @@
 #include <qmailmessageservice.h>
 
 class QMailServiceConfiguration;
+class Request;
+
+enum SearchType {
+    NoLimit = 0,
+    Limit = 1,
+    Count = 2
+};
 
 class ServiceHandler : public QObject
 {
     Q_OBJECT
 
 public:
+    typedef bool (ServiceHandler::*RequestServicer)(Request*);
+    typedef void (ServiceHandler::*CompletionSignal)(quint64);
+
     ServiceHandler(QObject* parent);
     ~ServiceHandler();
 
@@ -203,20 +212,14 @@ private slots:
 
     void expireAction();
 
-    void reportFailures();
+    void reportPastFailures();
 
 private:
-    enum SearchType {
-        NoLimit = 0,
-        Limit = 1,
-        Count = 2
-    };
-
     void handleActionCompleted(bool, QMailMessageService *, quint64);
 
     void searchMessages(quint64 action, const QMailMessageKey &filter, const QString &bodyText,
                         QMailSearchAction::SearchSpecification spec, quint64 limit, const QMailMessageSortKey &sort,
-                        ServiceHandler::SearchType searchType);
+                        SearchType searchType);
 
     QMailAccountId transmissionAccountId(const QMailAccountId &accountId) const;
 
@@ -238,7 +241,6 @@ private:
     void registerAccountService(const QMailAccountId &accountId, const QMailServiceConfiguration &svcCfg);
     QMailMessageService *createService(const QString &service, const QMailAccountId &accountId);
 
-    struct Request;
     bool servicesAvailable(const Request &services) const;
     bool serviceAvailable(QPointer<QMailMessageService> service) const;
 
@@ -254,40 +256,37 @@ private:
 
     quint64 serviceAction(QMailMessageService *service) const;
 
-    typedef bool (ServiceHandler::*RequestServicer)(quint64, const QByteArray &);
-    typedef void (ServiceHandler::*CompletionSignal)(quint64);
-
-    void enqueueRequest(quint64 action, const QByteArray &data, const QSet<QMailMessageService*> &services,
-                        RequestServicer servicer, CompletionSignal completion, QMailServerRequestType description,
+    void enqueueRequest(Request *req, quint64 action, const QSet<QMailMessageService*> &services,
+                        RequestServicer servicer, CompletionSignal completion,
                         const QSet<QMailMessageService*> &preconditions = QSet<QMailMessageService*>());
 
-    bool dispatchPrepareMessages(quint64 action, const QByteArray& data);
-    bool dispatchTransmitMessages(quint64 action, const QByteArray& data);
-    bool dispatchTransmitMessage(quint64 action, const QByteArray& data);
-    bool dispatchRetrieveFolderListAccount(quint64, const QByteArray &data);
-    bool dispatchRetrieveFolderList(quint64, const QByteArray &data);
-    bool dispatchRetrieveMessageList(quint64, const QByteArray &data);
-    bool dispatchRetrieveMessageLists(quint64, const QByteArray &data);
-    bool dispatchRetrieveNewMessages(quint64, const QByteArray &data);
-    bool dispatchCreateStandardFolders(quint64, const QByteArray &data);
-    bool dispatchRetrieveMessages(quint64, const QByteArray &data);
-    bool dispatchRetrieveMessagePart(quint64, const QByteArray &data);
-    bool dispatchRetrieveMessageRange(quint64, const QByteArray &data);
-    bool dispatchRetrieveMessagePartRange(quint64, const QByteArray &data);
-    bool dispatchRetrieveAll(quint64, const QByteArray &data);
-    bool dispatchExportUpdates(quint64, const QByteArray &data);
-    bool dispatchSynchronize(quint64, const QByteArray &data);
-    bool dispatchOnlineDeleteMessages(quint64 action, const QByteArray &data);
-    bool dispatchOnlineCopyMessages(quint64 action, const QByteArray &data);
-    bool dispatchCopyToLocal(quint64 action, const QByteArray &data);
-    bool dispatchOnlineMoveMessages(quint64 action, const QByteArray &data);
-    bool dispatchOnlineFlagMessagesAndMoveToStandardFolder(quint64 action, const QByteArray &data);
-    bool dispatchOnlineCreateFolder(quint64 action, const QByteArray &data);
-    bool dispatchOnlineDeleteFolder(quint64 action, const QByteArray &data);
-    bool dispatchOnlineRenameFolder(quint64 action, const QByteArray &data);
-    bool dispatchOnlineMoveFolder(quint64 action, const QByteArray &data);
-    bool dispatchSearchMessages(quint64 action, const QByteArray &data);
-    bool dispatchProtocolRequest(quint64 action, const QByteArray &data);
+    bool dispatchPrepareMessages(Request *req);
+    bool dispatchTransmitAccountMessages(Request *req);
+    bool dispatchTransmitMessage(Request *req);
+    bool dispatchRetrieveFolderListAccount(Request *req);
+    bool dispatchRetrieveFolderList(Request *req);
+    bool dispatchRetrieveMessageList(Request *req);
+    bool dispatchRetrieveMessageLists(Request *req);
+    bool dispatchRetrieveNewMessages(Request *req);
+    bool dispatchCreateStandardFolders(Request *req);
+    bool dispatchRetrieveMessages(Request *req);
+    bool dispatchRetrieveMessagePart(Request *req);
+    bool dispatchRetrieveMessageRange(Request *req);
+    bool dispatchRetrieveMessagePartRange(Request *req);
+    bool dispatchRetrieveAll(Request *req);
+    bool dispatchExportUpdates(Request *req);
+    bool dispatchSynchronize(Request *req);
+    bool dispatchOnlineDeleteMessages(Request *req);
+    bool dispatchOnlineCopyMessages(Request *req);
+    bool dispatchCopyToLocal(Request *req);
+    bool dispatchOnlineMoveMessages(Request *req);
+    bool dispatchOnlineFlagMessagesAndMoveToStandardFolder(Request *req);
+    bool dispatchOnlineCreateFolder(Request *req);
+    bool dispatchOnlineDeleteFolder(Request *req);
+    bool dispatchOnlineRenameFolder(Request *req);
+    bool dispatchOnlineMoveFolder(Request *req);
+    bool dispatchSearchMessages(Request *req);
+    bool dispatchProtocolRequest(Request *req);
 
     void reportFailure(quint64, QMailServiceAction::Status::ErrorCode, const QString& = QString(),
                        const QMailAccountId& = QMailAccountId(), const QMailFolderId& = QMailFolderId(),
@@ -311,7 +310,7 @@ private:
     class ActionData
     {
     public:
-        QMailServerRequestType description;
+        QMailServerRequestType requestType;
         QSet<QPointer<QMailMessageService> > services;
         CompletionSignal completion;
         quint64 unixTimeExpiry;
@@ -327,20 +326,7 @@ private:
 
     QMap<QPointer<QMailMessageService>, quint64> mServiceAction;
 
-    static const int ExpirySeconds = 120;
-
-    struct Request
-    {
-        quint64 action;
-        QByteArray data;
-        QSet<QPointer<QMailMessageService> > services;
-        QSet<QPointer<QMailMessageService> > preconditions;
-        RequestServicer servicer;
-        CompletionSignal completion;
-        QMailServerRequestType description;
-    };
-
-    QList<Request> mRequests;
+    QList<QSharedPointer<Request>> mRequests;
 
     class MessageSearch
     {
@@ -380,6 +366,20 @@ private:
 
     QSet<QMailAccountId> _retrievalAccountIds;
     QSet<QMailAccountId> _transmissionAccountIds;
+};
+
+class Request
+{
+public:
+    Request(QMailServerRequestType requestType) : requestType(requestType) {}
+    virtual ~Request() {}
+
+    quint64 action;
+    QSet<QPointer<QMailMessageService> > services;
+    QSet<QPointer<QMailMessageService> > preconditions;
+    ServiceHandler::RequestServicer servicer;
+    ServiceHandler::CompletionSignal completion;
+    QMailServerRequestType requestType;
 };
 
 #endif
