@@ -76,8 +76,7 @@ PopClient::PopClient(const QMailAccountId &id, QObject* parent)
       transport(0),
       testing(false),
       pendingDeletes(false),
-      credentials(QMailCredentialsFactory::getCredentialsHandlerForAccount(config)),
-      loginFailed(false)
+      credentials(QMailCredentialsFactory::getCredentialsHandlerForAccount(config))
 {
     inactiveTimer.setSingleShot(true);
     connect(&inactiveTimer, SIGNAL(timeout()), this, SLOT(connectionInactive()));
@@ -526,12 +525,11 @@ void PopClient::processResponse(const QString &response)
     {
         if (response[0] != '+') {
             // Authentication failed
-            if (!loginFailed) {
-                loginFailed = true;
+            credentials->authFailureNotice(QStringLiteral("messageserver5"));
+            if (credentials->shouldRetryAuth()) {
                 newConnection();
                 return;
             } else {
-                credentials->invalidate(QStringLiteral("messageserver5"));
                 operationFailed(QMailServiceAction::Status::ErrLoginFailed, "");
             }
         } else {
@@ -768,7 +766,7 @@ void PopClient::nextAction()
     }
     case Auth:
     {
-        loginFailed = false;
+        credentials->authSuccessNotice(QStringLiteral("messageserver5"));
         if (testing) {
             nextStatus = Done;
         } else {

@@ -60,6 +60,10 @@ public:
               const QVariantMap &parameters = QVariantMap());
     void deinit();
 
+    void authSuccessNotice(const QString &source = QString()) override;
+    void authFailureNotice(const QString &source = QString()) override;
+    bool shouldRetryAuth() const override;
+
     Status status() const override;
     QString lastError() const override;
 
@@ -84,6 +88,7 @@ private:
     QString m_errorMessage;
     QString m_username;
     QTimer m_timeout;
+    bool m_retry = false;
 };
 
 #endif

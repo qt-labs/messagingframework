@@ -399,8 +399,7 @@ ImapClient::ImapClient(const QMailAccountId &id, QObject* parent)
       _requestRapidClose(false),
       _rapidClosing(false),
       _pushConnectionsReserved(0),
-      _credentials(QMailCredentialsFactory::getCredentialsHandlerForAccount(QMailAccountConfiguration(id))),
-      _loginFailed(false)
+      _credentials(QMailCredentialsFactory::getCredentialsHandlerForAccount(QMailAccountConfiguration(id)))
 {
     static int count(0);
     ++count;
@@ -547,12 +546,11 @@ void ImapClient::checkCommandResponse(ImapCommand command, OperationStatus statu
 
             case IMAP_Login:
             {
-                if (!_loginFailed) {
-                    _loginFailed = true;
+                _credentials->authFailureNotice(QStringLiteral("messageserver5"));
+                if (_credentials->shouldRetryAuth()) {
                     _protocol.close();
                     newConnection();
                 } else {
-                    _credentials->invalidate(QStringLiteral("messageserver5"));
                     operationFailed(QMailServiceAction::Status::ErrLoginFailed, _protocol.lastError());
                 }
                 return;
@@ -588,7 +586,9 @@ void ImapClient::checkCommandResponse(ImapCommand command, OperationStatus statu
             operationFailed(QMailServiceAction::Status::ErrNoConnection, _protocol.lastError());
             return;
         case IMAP_Login:
-            _loginFailed = (status != OpOk);
+            if (status == OpOk) {
+                _credentials->authSuccessNotice(QStringLiteral("messageserver5"));
+            }
             break;
         default:
             break;

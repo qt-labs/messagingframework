@@ -212,6 +212,39 @@ QMailCredentialsPlugin::~QMailCredentialsPlugin()
 {
 }
 
+/*!
+    \class QMailCredentialsInterface
+
+    \preliminary
+    \ingroup libmessageserver
+
+    \brief The QMailCredentialsInterface describes how authentication credentials can be retrieved
+
+    This interface has to be implemented by mechanisms that can retrieve and
+    expose authentication credentials. For instance, credentials can be stored
+    in the mail database, see the PlainCredentials implementation. But credentials
+    can also be stored outside QMF and retrieved by another process.
+
+    When an email protocol implementation requires to authenticate, it first
+    call init() with the associated account configuration for this service.
+    The name of the plugin used for this protocol is saved as a service
+    configuration under key 'auth/plugin'.
+
+    Then, it waits for the credential implementation to expose a 'Ready'
+    status before using the retrieved values to authenticate. In case of
+    error while retrieving the credentials, the status should be changed
+    to 'Failed'.
+
+    When the mail server returns from the authentication process,
+    the credential plugin is noticed with authSuccessNotice() being called
+    by the protocol implementations on success, and authFailureNotice() on
+    error.
+
+    On authentication error, the credential plugin can either request the
+    protocol implementations to retry authentication with refreshed credentials,
+    or invalidate the stored credentials and let the protocol implementations
+    fail with an authentication error.
+*/
 class QMailCredentialsInterfacePrivate
 {
 public:
@@ -231,6 +264,17 @@ QMailCredentialsInterface::~QMailCredentialsInterface()
 {
 }
 
+/*!
+    This function is called by the protocol implementations each time
+    credentials are needed in a connection with a mail server. Parameters
+    to retrieve the credentials can be stored in @svcCfg.
+
+    When credentials are available, the credential implementation should
+    change the status to 'Ready'. If retrieving credentials is done
+    asynchronously, it should set the status to 'Fetching'.
+
+    Returns true if credentials can be retrieved, false on error, see lastError().
+*/
 bool QMailCredentialsInterface::init(const QMailServiceConfiguration &svcCfg)
 {
     d->m_id = svcCfg.id();
@@ -267,6 +311,53 @@ QString QMailCredentialsInterface::accessToken() const
     return QString();
 }
 
+/*!
+    This function is called by the protocol implementations when the mail
+    servers return from the authentication process with success.
+*/
+void QMailCredentialsInterface::authSuccessNotice(const QString &source)
+{
+    Q_UNUSED(source);
+}
+
+/*!
+    This function is called by the protocol implementations when the mail
+    servers return an authentication error with the provided credentials.
+
+    By default, credentials are invalidated on authentication failure.
+
+    Credential implementations can override this function to defer
+    invalidation if needed. For instance in the case of internal caching
+    requiring to refresh credentials...
+*/
+void QMailCredentialsInterface::authFailureNotice(const QString &source)
+{
+    invalidate(source);
+}
+
+/*!
+    This function is called by the protocol implementations after an
+    authentication error to decide if the credential implementions
+    allow to retry to authenticate with refreshed credentials.
+
+    By default, there is no refreshing mechanism and the protocol
+    implementations can finish with an authentication failure.
+
+    It returns true when the credential implementations allow to
+    internally refresh the credentials and a new authentication
+    attempt can immediately be done by the protocol implementations.
+*/
+bool QMailCredentialsInterface::shouldRetryAuth() const
+{
+    return false;
+}
+
+/*!
+    This function is used to mark that the stored credentials are not
+    working anymore. Credential implementation can override this method
+    to implement a mechanism that would notify that credentials need
+    to be reset by the user.
+*/
 void QMailCredentialsInterface::invalidate(const QString &source)
 {
     if (id().isValid()) {

@@ -70,8 +70,9 @@ public:
 
     virtual bool init(const QMailServiceConfiguration &svcCfg);
 
-    virtual bool isInvalidated();
-    virtual void invalidate(const QString &source = QString());
+    virtual void authSuccessNotice(const QString &source = QString());
+    virtual void authFailureNotice(const QString &source = QString());
+    virtual bool shouldRetryAuth() const;
 
     virtual Status status() const = 0;
     virtual QString lastError() const = 0;
@@ -85,6 +86,10 @@ public:
 
 Q_SIGNALS:
     void statusChanged();
+
+protected:
+    virtual void invalidate(const QString &source);
+    virtual bool isInvalidated();
 
 private:
     QScopedPointer<QMailCredentialsInterfacePrivate> d;

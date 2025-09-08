@@ -181,7 +181,6 @@ private:
     QMultiMap<QMailMessageId,QString> detachedTempFiles;
 
     QMailCredentialsInterface *_credentials;
-    bool _loginFailed;
 };
 
 #endif

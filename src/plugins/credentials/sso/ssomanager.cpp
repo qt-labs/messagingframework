@@ -69,8 +69,13 @@ bool SSOManager::init(uint credentialsId, const QString &method,
     m_errorMessage.clear();
     if (m_status != Invalid) {
         qCDebug(lcMessaging) << "SSO: init credentials while status" << m_status;
-        if (m_session && m_status == Fetching)
+        if (m_session && m_status == Fetching) {
             m_session->cancel();
+        } else if (m_status == Ready) {
+            // Credentials were already retrieved and are already available.
+            // No need to start a new session.
+            return true;
+        }
         m_status = Invalid;
         emit statusChanged();
     }
@@ -119,7 +124,6 @@ bool SSOManager::start(const QString &method, const QString &mechanism,
         m_session = nullptr;
     }
 
-    SignOn::SessionData sessionData(parameters);
     if (!m_session) {
         m_session = m_identity->createSession(method);
         if (m_session) {
@@ -132,20 +136,21 @@ bool SSOManager::start(const QString &method, const QString &mechanism,
         } else {
             m_errorMessage = QStringLiteral("identity cannot create session.");
         }
-    } else if (method == QLatin1String("oauth2")) {
-        // A session already exists, but a request for
-        // data is again desired. It means that the use
-        // of the previous credentials failed. Try to
-        // refresh the access token.
-        OAuth2PluginNS::OAuth2PluginData oauth2Data
-            = sessionData.data<OAuth2PluginNS::OAuth2PluginData>();
-        oauth2Data.setForceTokenRefresh(true);
-        sessionData = oauth2Data;
     }
     if (m_session) {
         qCDebug(lcMessaging) << "SSO: starting credentials retrieval.";
         m_status = Fetching;
         emit statusChanged();
+        SignOn::SessionData sessionData(parameters);
+        if (method == QLatin1String("oauth2") && m_retry) {
+            // Retrying a oauth2 authentication process. The use
+            // of the previous credentials failed. Try to
+            // refresh the access token.
+            OAuth2PluginNS::OAuth2PluginData oauth2Data
+                = sessionData.data<OAuth2PluginNS::OAuth2PluginData>();
+            oauth2Data.setForceTokenRefresh(true);
+            sessionData = oauth2Data;
+        }
         sessionData.setUiPolicy(SignOn::NoUserInteractionPolicy);
         m_session->process(sessionData, mechanism);
         m_timeout.start();
@@ -165,6 +170,30 @@ void SSOManager::deinit()
     }
     m_credentialIds = 0;
     m_status = Invalid;
+}
+
+void SSOManager::authSuccessNotice(const QString &source)
+{
+    Q_UNUSED(source);
+
+    m_retry = false;
+}
+
+void SSOManager::authFailureNotice(const QString &source)
+{
+    m_status = Invalid;
+    emit statusChanged();
+    if (m_retry)
+        invalidate(source);
+
+    // Retry authentication process on first failure, assuming cached
+    // values are not up-to-date and need to be refreshed.
+    m_retry = !m_retry;
+}
+
+bool SSOManager::shouldRetryAuth() const
+{
+    return m_retry;
 }
 
 QMailCredentialsInterface::Status SSOManager::status() const
@@ -220,7 +249,7 @@ void SSOManager::onError(const SignOn::Error &code)
     m_errorMessage = QString::fromLatin1("SSO error %1: %2").arg(code.type()).arg(code.message());
     if (code.type() == SignOn::Error::InvalidCredentials
         || code.type() == SignOn::Error:: UserInteraction) {
-        invalidate();
+        invalidate(QStringLiteral("messageserver5"));
     }
     qCDebug(lcMessaging) << "SSO: got error response," << m_errorMessage;
 

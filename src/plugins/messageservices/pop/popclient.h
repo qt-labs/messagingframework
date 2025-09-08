@@ -188,7 +188,6 @@ private:
     bool pendingDeletes;
 
     QMailCredentialsInterface *credentials;
-    bool loginFailed;
 };
 
 #endif
