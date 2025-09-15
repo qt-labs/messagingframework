@@ -92,12 +92,6 @@ PopSettings::PopSettings()
 
     mailPortInput->setValidator(new PortValidator(this));
     mailPasswInput->setEchoMode(QLineEdit::Password);
-
-#ifdef QT_NO_SSL
-    encryptionIncoming->hide();
-    lblEncryptionIncoming->hide();
-#endif
-
 }
 
 void PopSettings::intervalCheckChanged(int enabled)
@@ -114,9 +108,7 @@ void PopSettings::displayConfiguration(const QMailAccount &, const QMailAccountC
         mailPasswInput->setText("");
         mailServerInput->setText("");
         mailPortInput->setText("110");
-#ifndef QT_NO_SSL
         encryptionIncoming->setCurrentIndex(0);
-#endif
         intervalCheckBox->setChecked(false);
         roamingCheckBox->setChecked(false);
     } else {
@@ -126,9 +118,7 @@ void PopSettings::displayConfiguration(const QMailAccount &, const QMailAccountC
         mailPasswInput->setText(popConfig.mailPassword());
         mailServerInput->setText(popConfig.mailServer());
         mailPortInput->setText(QString::number(popConfig.mailPort()));
-#ifndef QT_NO_SSL
         encryptionIncoming->setCurrentIndex(static_cast<int>(popConfig.mailEncryption()));
-#endif
         deleteCheckBox->setChecked(popConfig.canDeleteMail());
         maxSize->setValue(popConfig.maxMailSize());
         thresholdCheckBox->setChecked(popConfig.maxMailSize() != -1);
@@ -162,9 +152,7 @@ bool PopSettings::updateAccount(QMailAccount *account, QMailAccountConfiguration
     popConfig.setMailPassword(mailPasswInput->text());
     popConfig.setMailServer(mailServerInput->text());
     popConfig.setMailPort(port == -1 ? 110 : port);
-#ifndef QT_NO_SSL
     popConfig.setMailEncryption(static_cast<QMailTransport::EncryptType>(encryptionIncoming->currentIndex()));
-#endif
     popConfig.setDeleteMail(deleteCheckBox->isChecked());
     popConfig.setMaxMailSize(thresholdCheckBox->isChecked() ? maxSize->value() : -1);
     popConfig.setAutoDownload(false );

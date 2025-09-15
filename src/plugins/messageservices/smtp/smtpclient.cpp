@@ -45,9 +45,8 @@
 #include <QNetworkInterface>
 #include <QRandomGenerator>
 #include <QRegExp>
-#ifndef QT_NO_SSL
 #include <QSslSocket>
-#endif
+
 #include <qmailaddress.h>
 #include <qmailstore.h>
 #include <qmailtransport.h>
@@ -180,10 +179,8 @@ void SmtpClient::openTransport()
                 this, SIGNAL(updateStatus(QString)));
         connect(transport, SIGNAL(errorOccurred(int,QString)),
                 this, SLOT(transportError(int,QString)));
-#ifndef QT_NO_SSL
         connect(transport, SIGNAL(sslErrorOccured(QMailServiceAction::Status::ErrorCode,QString)),
                 this, SIGNAL(connectionError(QMailServiceAction::Status::ErrorCode,QString)));
-#endif
     }
 
     status = Init;
@@ -300,14 +297,12 @@ void SmtpClient::connected(QMailTransport::EncryptType encryptType)
         emit updateStatus(tr("Connected"));
     }
 
-#ifndef QT_NO_SSL
     if ((smtpCfg.smtpEncryption() == QMailTransport::Encrypt_TLS) && (status == TLS)) {
         // We have entered TLS mode - restart the SMTP dialog
         QByteArray ehlo("EHLO " + localName(transport->socket().localAddress()));
         sendCommand(ehlo);
         status = Helo;
     }
-#endif
 }
 
 void SmtpClient::transportError(int errorCode, QString msg)
@@ -557,12 +552,8 @@ void SmtpClient::nextAction(const QString &response)
     }
     case StartTLS:
     {
-#ifndef QT_NO_SSL
         SmtpConfiguration smtpCfg(config);
         const bool useTLS(smtpCfg.smtpEncryption() == QMailTransport::Encrypt_TLS);
-#else
-        const bool useTLS(false);
-#endif
 
         if (useTLS && !transport->isEncrypted()) {
             sendCommand("STARTTLS");
@@ -576,10 +567,8 @@ void SmtpClient::nextAction(const QString &response)
     case TLS:
     {
         if (responseCode == 220) {
-#ifndef QT_NO_SSL
             // Switch into encrypted mode
             transport->switchToEncrypted();
-#endif
         } else  {
             operationFailed(QMailServiceAction::Status::ErrUnknownResponse, response);
         }
@@ -1041,7 +1030,6 @@ void SmtpClient::sendMoreData(qint64 bytesWritten)
     Q_ASSERT(status == Body && temporaryFile);
 
     // Check if we have any pending data still waiting to be sent.
-#ifndef QT_NO_SSL
     Q_UNUSED(bytesWritten)
     QSslSocket *socket = qobject_cast<QSslSocket*>(&(transport->socket()));
     Q_ASSERT(socket);
@@ -1050,15 +1038,6 @@ void SmtpClient::sendMoreData(qint64 bytesWritten)
         // There is still pending data to be written.
         return;
     }
-#else
-    waitingForBytes -= bytesWritten;
-
-    // If anyone else writes bytes we end up with a negative value... just reset to 0 when that happens.
-    if (waitingForBytes < 0) waitingForBytes = 0;
-
-    // Don't send more data until all bytes have been written.
-    if (waitingForBytes) return;
-#endif
 
     // No more data to send
     if (temporaryFile->atEnd()) {
@@ -1087,9 +1066,6 @@ void SmtpClient::sendMoreData(qint64 bytesWritten)
         }
     }
 
-#ifdef QT_NO_SSL
-    waitingForBytes += dotstuffed.length();
-#endif
     transport->stream().writeRawData(dotstuffed.constData(), dotstuffed.length());
     //qCDebug(lcSMTP) << "Body: sent a" << bytes << "byte block";
 }

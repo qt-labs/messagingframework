@@ -678,10 +678,8 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
             ImapConfiguration imapCfg(config);
             bool supportsReferences(_protocol.capabilities().contains("URLAUTH", Qt::CaseInsensitive) &&
                                     _protocol.capabilities().contains("CATENATE", Qt::CaseInsensitive)
-#if !defined(QT_NO_SSL)
                                     // No FWOD support for IMAPS
                                     && (static_cast<QMailTransport::EncryptType>(imapCfg.mailEncryption()) != QMailTransport::Encrypt_SSL)
-#endif
                                    );
 
             if (((account.status() & QMailAccount::CanReferenceExternalData) && !supportsReferences) ||

@@ -44,6 +44,7 @@
 #include <QFileInfo>
 #include <QUrl>
 #include <QRegularExpression>
+
 #include <qmailaccountconfiguration.h>
 #include <qmailmessage.h>
 #include <qmailmessageserver.h>
@@ -53,9 +54,6 @@
 #include <qmailcodec.h>
 #include <qmailauthenticator.h>
 
-#ifndef QT_NO_SSL
-#include <QSslError>
-#endif
 
 // Pack both the source mailbox path and the numeric UID into the UID value
 // that we store for IMAP messages.  This will allow us find the owner
@@ -320,9 +318,7 @@ public:
     const ImapMailboxProperties &mailbox() { return mProtocol->mailbox(); }
 
     LongStream &buffer() { return mProtocol->_stream; }
-#ifndef QT_NO_SSL
     void switchToEncrypted() { mProtocol->_transport->switchToEncrypted(); mProtocol->clearResponse(); }
-#endif
     bool literalResponseCompleted() { return (mProtocol->literalDataRemaining() == 0); }
 
     // Update the protocol's mailbox properties
@@ -544,12 +540,8 @@ QString StartTlsState::transmit(ImapContext *c)
 
 void StartTlsState::taggedResponse(ImapContext *c, const QString &)
 {
-#ifndef QT_NO_SSL
     // Switch to encrypted comms mode
     c->switchToEncrypted();
-#else
-    Q_UNUSED(c)
-#endif
 }
 
 
@@ -3111,10 +3103,8 @@ bool ImapProtocol::open( const ImapConfiguration& config, qint64 bufferSize)
                 this, SLOT(connected(QMailTransport::EncryptType)));
         connect(_transport, SIGNAL(readyRead()),
                 this, SLOT(incomingData()));
-#ifndef QT_NO_SSL
         connect(_transport, SIGNAL(sslErrorOccured(QMailServiceAction::Status::ErrorCode,QString)),
                 this, SIGNAL(connectionError(QMailServiceAction::Status::ErrorCode,QString)));
-#endif
     }
 
     qCDebug(lcIMAP) << objectName() << "About to open connection" << config.mailUserName() << config.mailServer(); // useful to see object name
@@ -3444,13 +3434,9 @@ void ImapProtocol::sendEnable(const QString &extensions)
 
 void ImapProtocol::connected(QMailTransport::EncryptType encryptType)
 {
-#ifndef QT_NO_SSL
     if (encryptType == QMailTransport::Encrypt_TLS) {
         emit completed(IMAP_StartTLS, OpOk);
     }
-#else
-    Q_UNUSED(encryptType);
-#endif
 }
 
 void ImapProtocol::errorHandling(int status, QString msg)

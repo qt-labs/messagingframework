@@ -129,8 +129,6 @@ void PopConfigurationEditor::setMailPort(int i)
     setValue("port", QString::number(i));
 }
 
-#ifndef QT_NO_SSL
-
 void PopConfigurationEditor::setMailEncryption(int t)
 {
     setValue("encryption", QString::number(t));
@@ -140,8 +138,6 @@ void PopConfigurationEditor::setAcceptUntrustedCertificates(bool v)
 {
     setValue("acceptUntrustedCertificates", QString::number(v ? 1 : 0));
 }
-
-#endif
 
 void PopConfigurationEditor::setDeleteMail(bool b)
 {

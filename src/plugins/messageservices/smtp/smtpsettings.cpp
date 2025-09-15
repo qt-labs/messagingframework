@@ -125,15 +125,12 @@ QValidator::State PortValidator::validate(QString &str, int &) const
 
 const SmtpConfiguration::AuthType authenticationType[] = {
     SmtpConfiguration::Auth_NONE,
-#ifndef QT_NO_SSL
     SmtpConfiguration::Auth_LOGIN,
     SmtpConfiguration::Auth_PLAIN,
-#endif
     SmtpConfiguration::Auth_CRAMMD5,
     SmtpConfiguration::Auth_INCOMING
 };
 
-#ifndef QT_NO_SSL
 int authenticationIndex(int type)
 {
     const int numTypes = sizeof(authenticationType)/sizeof(SmtpConfiguration::AuthType);
@@ -143,7 +140,6 @@ int authenticationIndex(int type)
 
     return 0;
 }
-#endif
 
 }
 
@@ -167,17 +163,6 @@ SmtpSettings::SmtpSettings()
     smtpPortInput->setValidator(new PortValidator(this));
 
     smtpPasswordInput->setEchoMode(QLineEdit::Password);
-
-#ifdef QT_NO_SSL
-    encryption->hide();
-    lblEncryption->hide();
-    authentication->hide();
-    lblAuthentication->hide();
-    smtpUsernameInput->hide();
-    lblSmtpUsername->hide();
-    smtpPasswordInput->hide();
-    lblSmtpPassword->hide();
-#endif
 }
 
 void SmtpSettings::sigPressed()
@@ -206,7 +191,6 @@ void SmtpSettings::emailModified()
 
 void SmtpSettings::authChanged(int index)
 {
-#ifndef QT_NO_SSL
     SmtpConfiguration::AuthType type = authenticationType[index];
     bool enableCredentials = (type == SmtpConfiguration::Auth_LOGIN
                               || type == SmtpConfiguration::Auth_PLAIN
@@ -221,17 +205,12 @@ void SmtpSettings::authChanged(int index)
         smtpUsernameInput->clear();
         smtpPasswordInput->clear();
     }
-#else
-    Q_UNUSED(index);
-#endif
 }
 
 void SmtpSettings::displayConfiguration(const QMailAccount &account, const QMailAccountConfiguration &config)
 {
-#ifndef QT_NO_SSL
     // Any reason to re-enable this facility?
     //authentication->setItemText(3, tr("Incoming");
-#endif
 
     if (!config.services().contains(serviceKey)) {
         // New account
@@ -239,7 +218,6 @@ void SmtpSettings::displayConfiguration(const QMailAccount &account, const QMail
         emailInput->setText("");
         smtpServerInput->setText("");
         smtpPortInput->setText("25");
-#ifndef QT_NO_SSL
         smtpUsernameInput->setText("");
         smtpPasswordInput->setText("");
         encryption->setCurrentIndex(0);
@@ -248,7 +226,6 @@ void SmtpSettings::displayConfiguration(const QMailAccount &account, const QMail
         lblSmtpUsername->setEnabled(false);
         smtpPasswordInput->setEnabled(false);
         lblSmtpPassword->setEnabled(false);
-#endif
         signature.clear();
     } else {
         SmtpConfiguration smtpConfig(config);
@@ -256,7 +233,6 @@ void SmtpSettings::displayConfiguration(const QMailAccount &account, const QMail
         emailInput->setText(smtpConfig.emailAddress());
         smtpServerInput->setText(smtpConfig.smtpServer());
         smtpPortInput->setText(QString::number(smtpConfig.smtpPort()));
-#ifndef QT_NO_SSL
         smtpUsernameInput->setText(smtpConfig.smtpUsername());
         smtpPasswordInput->setText(smtpConfig.smtpPassword());
         authentication->setCurrentIndex(authenticationIndex(smtpConfig.smtpAuthentication()));
@@ -270,7 +246,6 @@ void SmtpSettings::displayConfiguration(const QMailAccount &account, const QMail
         lblSmtpUsername->setEnabled(enableCredentials);
         smtpPasswordInput->setEnabled(enableCredentials);
         lblSmtpPassword->setEnabled(enableCredentials);
-#endif
         defaultMailCheckBox->setChecked(account.status() & QMailAccount::PreferredSender);
         sigCheckBox->setChecked(account.status() & QMailAccount::AppendSignature);
         setSignatureButton->setEnabled(sigCheckBox->isChecked());
@@ -315,14 +290,12 @@ bool SmtpSettings::updateAccount(QMailAccount *account, QMailAccountConfiguratio
     smtpConfig.setEmailAddress(address);
     smtpConfig.setSmtpServer(smtpServerInput->text());
     smtpConfig.setSmtpPort(port);
-#ifndef QT_NO_SSL
     smtpConfig.setSmtpUsername(smtpUsernameInput->text());
     smtpConfig.setSmtpPassword(smtpPasswordInput->text());
     int index(authentication->currentIndex());
     Q_ASSERT(index >= 0);
     smtpConfig.setSmtpAuthentication(authenticationType[index]);
     smtpConfig.setSmtpEncryption(static_cast<QMailTransport::EncryptType>(encryption->currentIndex()));
-#endif
 
     account->setStatus(QMailAccount::PreferredSender, defaultMailCheckBox->isChecked());
     account->setStatus(QMailAccount::AppendSignature, sigCheckBox->isChecked());

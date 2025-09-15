@@ -53,10 +53,8 @@ class SmtpConfiguration : public QMailServiceConfiguration
 public:
     enum AuthType {
         Auth_NONE = QMail::NoMechanism,
-#ifndef QT_NO_SSL
         Auth_LOGIN = QMail::LoginMechanism,
         Auth_PLAIN = QMail::PlainMechanism,
-#endif
         Auth_CRAMMD5 = QMail::CramMd5Mechanism,
         Auth_XOAUTH2 = QMail::XOAuth2Mechanism,
         Auth_INCOMING = 5
@@ -70,10 +68,8 @@ public:
     QString smtpServer() const;
     int smtpPort() const;
     bool acceptUntrustedCertificates() const;
-#ifndef QT_NO_SSL
     QString smtpUsername() const;
     QString smtpPassword() const;
-#endif
     int smtpAuthentication() const;
     int smtpEncryption() const;
     bool smtpAuthFromCapabilities() const;
@@ -88,13 +84,11 @@ public:
     void setEmailAddress(const QString &str);
     void setSmtpServer(const QString &str);
     void setSmtpPort(int i);
-#ifndef QT_NO_SSL
     void setAcceptUntrustedCertificates(bool v);
     void setSmtpUsername(const QString& username);
     void setSmtpPassword(const QString& password);
     void setSmtpAuthentication(int t);
     void setSmtpEncryption(int t);
-#endif
     void setSmtpAuthFromCapabilities(bool v);
 };
 

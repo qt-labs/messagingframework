@@ -40,16 +40,12 @@
 #include <QObject>
 #include <QAbstractSocket>
 #include <QTimer>
-#ifndef QT_NO_SSL
 #include <QSslError>
-#endif
 
 QT_BEGIN_NAMESPACE
 
 class QString;
-#ifndef QT_NO_SSL
 class QSslSocket;
-#endif
 
 QT_END_NAMESPACE
 
@@ -60,10 +56,8 @@ class MESSAGESERVER_EXPORT QMailTransport : public QObject
 public:
     enum EncryptType {
         Encrypt_NONE = 0,
-#ifndef QT_NO_SSL
         Encrypt_SSL = 1,
         Encrypt_TLS = 2
-#endif
     };
 
     QMailTransport(const char* name);
@@ -75,10 +69,8 @@ public:
     void setAcceptUntrustedCertificates(bool accept);
     bool acceptUntrustedCertificates() const;
 
-#ifndef QT_NO_SSL
     // If connection is not currently encrypted, switch to encrypted mode
     void switchToEncrypted();
-#endif
 
     // Close the current connection
     void close();
@@ -112,9 +104,7 @@ Q_SIGNALS:
 
     void errorOccurred(int status, QString);
     void updateStatus(const QString &);
-#ifndef QT_NO_SSL
     void sslErrorOccured(QMailServiceAction::Status::ErrorCode, QString);
-#endif
 
 public Q_SLOTS:
     void errorHandling(int errorCode, QString msg);
@@ -123,16 +113,12 @@ public Q_SLOTS:
 protected Q_SLOTS:
     void connectionEstablished();
     void hostConnectionTimeOut();
-#ifndef QT_NO_SSL
     void encryptionEstablished();
     void connectionFailed(const QList<QSslError>& errors);
-#endif
 
-#ifndef QT_NO_SSL
 protected:
     // Override to modify certificate error handling
     virtual QMailServiceAction::Status::ErrorCode classifyCertificateErrors(const QList<QSslError>& errors);
-#endif
 
 private:
     void createSocket(EncryptType encryptType);
@@ -142,10 +128,7 @@ private:
     class Socket;
 
     Socket *mSocket;
-
-#ifndef QT_NO_SSL
     EncryptType encryption;
-#endif
     QDataStream *mStream;
     const char *mName;
     QTimer connectToHostTimeOut;

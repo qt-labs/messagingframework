@@ -38,10 +38,6 @@
 
 #include <qmailtransport.h>
 
-#ifndef QT_NO_SSL
-#include <QSslError>
-#endif
-
 class Rfc1951Compressor;
 class Rfc1951Decompressor;
 

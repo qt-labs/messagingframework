@@ -32,15 +32,11 @@
 ****************************************************************************/
 
 #include "qmailtransport.h"
+
 #include <QFile>
 #include <QTimer>
-
-#ifndef QT_NO_SSL
 #include <QSslSocket>
 #include <QSslError>
-#else
-#include <QTcpSocket>
-#endif
 
 #include <QNetworkProxy>
 #include <QUrl>
@@ -48,14 +44,7 @@
 #include <qmaillog.h>
 #include <qmailnamespace.h>
 
-#ifndef QT_NO_SSL
-typedef QSslSocket BaseSocketType;
-#else
-typedef QTcpSocket BaseSocketType;
-#endif
-
-
-class QMailTransport::Socket : public BaseSocketType
+class QMailTransport::Socket : public QSslSocket
 {
     Q_OBJECT
 
@@ -68,7 +57,7 @@ public:
 protected:
     qint64 writeData(const char *data, qint64 maxSize) override
     {
-        qint64 rv = BaseSocketType::writeData(data, maxSize);
+        qint64 rv = QSslSocket::writeData(data, maxSize);
         if (rv > 0)
             written += rv;
 
@@ -80,13 +69,11 @@ private:
 };
 
 QMailTransport::Socket::Socket(QObject *parent)
-    : BaseSocketType(parent),
+    : QSslSocket(parent),
       written(0)
 {
-#ifndef QT_NO_SSL
     // We'll connect to servers offering any variant of encryption
     setProtocol(QSsl::AnyProtocol);
-#endif
 
     // we are library and if application sets proxy somewhere else
     // nothing is done here
@@ -144,9 +131,7 @@ QMailTransport::QMailTransport(const char* name)
       mInUse(false),
       mAcceptUntrustedCertificates(false)
 {
-#ifndef QT_NO_SSL
     encryption = Encrypt_NONE;
-#endif
     mSocket = 0;
     mStream = 0;
     connect( &connectToHostTimeOut, SIGNAL(timeout()), this, SLOT(hostConnectionTimeOut()) );
@@ -188,35 +173,23 @@ qint64 QMailTransport::bytesSinceMark() const
 */
 void QMailTransport::createSocket(EncryptType encryptType)
 {
-    if (mSocket)
-    {
-#ifndef QT_NO_SSL
+    if (mSocket) {
         // Note: socket recycling doesn't seem to work in SSL mode...
         if (mSocket->mode() == QSslSocket::UnencryptedMode &&
-            (encryptType == Encrypt_NONE || encryptType == Encrypt_TLS))
-        {
+            (encryptType == Encrypt_NONE || encryptType == Encrypt_TLS)) {
             // The socket already exists in the correct mode
             return;
-        }
-        else
-        {
-#endif
+        } else {
             // We need to create a new socket in the correct mode
             delete mStream;
             mSocket->deleteLater();
-#ifndef QT_NO_SSL
         }
-#endif
     }
 
     mSocket = new Socket(this);
-#ifndef QT_NO_SSL
     encryption = encryptType;
     connect(mSocket, &QSslSocket::encrypted, this, &QMailTransport::encryptionEstablished);
     connect(mSocket, &QSslSocket::sslErrors, this, &QMailTransport::connectionFailed);
-#else
-    Q_UNUSED(encryptType);
-#endif
 
     const int bufferLimit = 101*1024; // Limit memory used when downloading
     mSocket->setReadBufferSize( bufferLimit );
@@ -247,17 +220,12 @@ void QMailTransport::open(const QString& url, int port, EncryptType encryptionTy
     createSocket(encryptionType);
     emit updateStatus(tr("DNS lookup"));
 
-#ifndef QT_NO_SSL
     qCDebug(lcMessaging) << "Opening connection - " << url << ':' << port
                          << (encryptionType == Encrypt_SSL ? " SSL" : (encryptionType == Encrypt_TLS ? " TLS" : ""));
     if (mailEncryption() == Encrypt_SSL)
         mSocket->connectToHostEncrypted(url, port);
     else
         mSocket->connectToHost(url, port);
-#else
-    qCDebug(lcMessaging) << "Opening connection - " << url << ':' << port;
-    mSocket->connectToHost(url, port);
-#endif
 }
 
 void QMailTransport::setAcceptUntrustedCertificates(bool accept)
@@ -270,7 +238,6 @@ bool QMailTransport::acceptUntrustedCertificates() const
     return mAcceptUntrustedCertificates;
 }
 
-#ifndef QT_NO_SSL
 /*!
     Switches the socket from unencrypted to encrypted mode.
 */
@@ -279,7 +246,6 @@ void QMailTransport::switchToEncrypted()
     if (mSocket->mode() == QSslSocket::UnencryptedMode)
         mSocket->startClientEncryption();
 }
-#endif
 
 /*!
     Closes the socket, flushing any previously unwritten data.
@@ -396,7 +362,6 @@ void QMailTransport::hostConnectionTimeOut()
     errorHandling(QAbstractSocket::SocketTimeoutError, tr("Connection timed out"));
 }
 
-#ifndef QT_NO_SSL
 /*! \internal */
 void QMailTransport::encryptionEstablished()
 {
@@ -459,7 +424,6 @@ QMailServiceAction::Status::ErrorCode QMailTransport::classifyCertificateErrors(
                            << (failed ? "failed:" : "warnings:") << text;
     return rv;
 }
-#endif
 
 /*! \internal */
 void QMailTransport::errorHandling(int status, QString msg)
@@ -488,11 +452,7 @@ void QMailTransport::socketError(QAbstractSocket::SocketError status)
 */
 QMailTransport::EncryptType QMailTransport::mailEncryption() const
 {
-#ifndef QT_NO_SSL
     return encryption;
-#else
-    return Encrypt_NONE;
-#endif
 }
 
 /*!

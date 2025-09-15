@@ -230,8 +230,6 @@ void ImapConfigurationEditor::setMailPort(int i)
     setValue("port", QString::number(i));
 }
 
-#ifndef QT_NO_SSL
-
 void ImapConfigurationEditor::setMailEncryption(int t)
 {
     setValue("encryption", QString::number(t));
@@ -246,8 +244,6 @@ void ImapConfigurationEditor::setAcceptUntrustedCertificates(bool v)
 {
     setValue("acceptUntrustedCertificates", QString::number(v ? 1 : 0));
 }
-
-#endif
 
 void ImapConfigurationEditor::setDeleteMail(bool b)
 {

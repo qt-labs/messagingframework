@@ -112,10 +112,8 @@ void PopClient::createTransport()
         connect(transport, SIGNAL(connected(QMailTransport::EncryptType)), this, SLOT(connected(QMailTransport::EncryptType)));
         connect(transport, SIGNAL(errorOccurred(int,QString)), this, SLOT(transportError(int,QString)));
         connect(transport, SIGNAL(readyRead()), this, SLOT(incomingData()));
-#ifndef QT_NO_SSL
         connect(transport, SIGNAL(sslErrorOccured(QMailServiceAction::Status::ErrorCode,QString)),
                 this, SIGNAL(connectionError(QMailServiceAction::Status::ErrorCode,QString)));
-#endif
     }
 }
 
@@ -127,10 +125,8 @@ void PopClient::deleteTransport()
         disconnect(transport, SIGNAL(connected(QMailTransport::EncryptType)), this, SLOT(connected(QMailTransport::EncryptType)));
         disconnect(transport, SIGNAL(errorOccurred(int,QString)), this, SLOT(transportError(int,QString)));
         disconnect(transport, SIGNAL(readyRead()), this, SLOT(incomingData()));
-#ifndef QT_NO_SSL
         disconnect(transport, SIGNAL(sslErrorOccured(QMailServiceAction::Status::ErrorCode,QString)),
                 this, SIGNAL(connectionError(QMailServiceAction::Status::ErrorCode,QString)));
-#endif
 
         // A Qt socket remains in an unusuable state for a short time after closing,
         // thus it can't be immediately reused
@@ -384,14 +380,12 @@ void PopClient::connected(QMailTransport::EncryptType encryptType)
         emit updateStatus(tr("Connected"));
     }
 
-#ifndef QT_NO_SSL
     if ((popCfg.mailEncryption() != QMailTransport::Encrypt_SSL) && (status == TLS)) {
         // We have entered TLS mode - restart the connection
         capabilities.clear();
         status = Init;
         nextAction();
     }
-#endif
 }
 
 void PopClient::transportError(int status, QString msg)
@@ -514,10 +508,8 @@ void PopClient::processResponse(const QString &response)
             operationFailed(QMailServiceAction::Status::ErrLoginFailed, "");
         } else {
             // Switch into encrypted mode and wait for encrypted connection event
-#ifndef QT_NO_SSL
             transport->switchToEncrypted();
             waitForInput = true;
-#endif
         }
         break;
     }

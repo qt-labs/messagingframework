@@ -44,11 +44,6 @@
 bool ImapAuthenticator::useEncryption(const ImapConfiguration &svcCfg,
                                       const QStringList &capabilities)
 {
-#ifdef QT_NO_SSL
-    Q_UNUSED(svcCfg)
-    Q_UNUSED(capabilities)
-    return false;
-#else
     bool useTLS(svcCfg.mailEncryption() == QMailTransport::Encrypt_TLS);
 
     if (!capabilities.contains("STARTTLS")) {
@@ -62,7 +57,6 @@ bool ImapAuthenticator::useEncryption(const ImapConfiguration &svcCfg,
     }
 
     return QMailAuthenticator::useEncryption(svcCfg, capabilities);
-#endif
 }
 
 QList<QByteArray> ImapAuthenticator::getAuthentication(const ImapConfiguration &svcCfg,

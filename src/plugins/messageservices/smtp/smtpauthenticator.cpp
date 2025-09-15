@@ -48,9 +48,7 @@ QList<QByteArray> SmtpAuthenticator::getAuthentication(const SmtpConfiguration &
     if (svcCfg.smtpAuthentication() == SmtpConfiguration::Auth_XOAUTH2) {
         result << QByteArray("AUTH XOAUTH2");
         result << QString::fromLatin1("user=%1\001auth=Bearer %2\001\001").arg(svcCfg.smtpUsername()).arg(credentials.accessToken()).toUtf8().toBase64();
-    }
-#ifndef QT_NO_SSL
-    else if (svcCfg.smtpAuthentication() == SmtpConfiguration::Auth_LOGIN) {
+    } else if (svcCfg.smtpAuthentication() == SmtpConfiguration::Auth_LOGIN) {
         result << QByteArray("AUTH LOGIN");
         result << credentials.username().toUtf8().toBase64();
         result << credentials.password().toUtf8().toBase64();
@@ -60,7 +58,6 @@ QList<QByteArray> SmtpAuthenticator::getAuthentication(const SmtpConfiguration &
         result << QByteArray("AUTH PLAIN ") + QByteArray(username + '\0' + username + '\0' + password).toBase64();
         result << QByteArray(username + '\0' + username + '\0' + password).toBase64();
     }
-#endif
 
     return result;
 }

@@ -42,11 +42,6 @@
 bool PopAuthenticator::useEncryption(const PopConfiguration &svcCfg,
                                      const QStringList &capabilities)
 {
-#ifdef QT_NO_SSL
-    Q_UNUSED(svcCfg)
-    Q_UNUSED(capabilities)
-    return false;
-#else
     bool useTLS(svcCfg.mailEncryption() == QMailTransport::Encrypt_TLS);
 
     if (!capabilities.contains("STLS")) {
@@ -65,7 +60,6 @@ bool PopAuthenticator::useEncryption(const PopConfiguration &svcCfg,
     }
 
     return QMailAuthenticator::useEncryption(svcCfg, capabilities);
-#endif
 }
 
 QList<QByteArray> PopAuthenticator::getAuthentication(const PopConfiguration &svcCfg,
