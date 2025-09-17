@@ -75,19 +75,14 @@ private:
     QSet<QMailMessageId> noMessages, allMessages, allEmailMessages;
 };
 
-QTEST_MAIN(tst_qmailthread)
-#include "tst_qmailthread.moc"
-
 #define CRLF "\015\012"
 
 tst_qmailthread::tst_qmailthread()
 {
-
 }
 
 tst_qmailthread::~tst_qmailthread()
 {
-
 }
 
 void tst_qmailthread::initTestCase()
@@ -691,3 +686,5 @@ void tst_qmailthread::test_threadKeys()
     QCOMPARE(skey1, skey4);
 }
 
+QTEST_MAIN(tst_qmailthread)
+#include "tst_qmailthread.moc"

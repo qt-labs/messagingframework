@@ -53,9 +53,8 @@ private:
 };
 
 LessThanFunctorA::LessThanFunctorA(const QMailAccountSortKey& sortKey)
-:
-    mSortKey(sortKey),
-    mInvalidatedList(false)
+    : mSortKey(sortKey)
+    , mInvalidatedList(false)
 {
 }
 
@@ -67,8 +66,7 @@ bool LessThanFunctorA::operator()(const QMailAccountId& first, const QMailAccoun
     QMailAccountKey secondKey(QMailAccountKey::id(second));
 
     QMailAccountIdList results = QMailStore::instance()->queryAccounts(firstKey | secondKey, mSortKey);
-    if (results.count() != 2)
-    {
+    if (results.count() != 2) {
         mInvalidatedList = true;
         return false;
     }
@@ -110,12 +108,11 @@ public:
 QMailAccountListModelPrivate::QMailAccountListModelPrivate(const QMailAccountKey& key,
                                                            const QMailAccountSortKey& sortKey,
                                                            bool synchronizeEnabled)
-:
-    key(key),
-    sortKey(sortKey),
-    synchronizeEnabled(synchronizeEnabled),
-    populated(false),
-    needSynchronize(true)
+    : key(key)
+    , sortKey(sortKey)
+    , synchronizeEnabled(synchronizeEnabled)
+    , populated(false)
+    , needSynchronize(true)
 {
 }
 
@@ -196,9 +193,8 @@ QMailAccountIdList::iterator QMailAccountListModelPrivate::lowerBound(const QMai
 */
 
 QMailAccountListModel::QMailAccountListModel(QObject* parent)
-:
-    QAbstractListModel(parent),
-    d(new QMailAccountListModelPrivate(QMailAccountKey(),QMailAccountSortKey(),true))
+    : QAbstractListModel(parent)
+    , d(new QMailAccountListModelPrivate(QMailAccountKey(), QMailAccountSortKey(), true))
 {
     connect(QMailStore::instance(),
             SIGNAL(accountsAdded(QMailAccountIdList)),
@@ -399,7 +395,7 @@ void QMailAccountListModel::accountsUpdated(const QMailAccountIdList& ids)
                 continue;
 
             d->deletionId = id;
-            beginRemoveRows(QModelIndex(),index,index);
+            beginRemoveRows(QModelIndex(), index, index);
             d->idList.removeAt(index);
             endRemoveRows();
             d->deletionId = QMailAccountId();
@@ -540,4 +536,3 @@ void QMailAccountListModel::fullRefresh()
     d->populated = false;
     endResetModel();
 }
-

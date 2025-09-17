@@ -85,4 +85,3 @@ QByteArray PopAuthenticator::getResponse(const PopConfiguration &svcCfg,
 {
     return QMailAuthenticator::getResponse(svcCfg, challenge, credentials);
 }
-

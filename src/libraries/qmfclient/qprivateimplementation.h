@@ -112,7 +112,7 @@ public:
         if (ref_count.deref() == 0 && delete_function && self) {
             (*delete_function)(self);
             return true;
-        } else  {
+        } else {
             return false;
         }
     }

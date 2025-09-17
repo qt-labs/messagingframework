@@ -327,4 +327,3 @@ void MailKeyImpl<Key>::deserialize(const QDBusArgument& stream)
 }
 
 #endif
-

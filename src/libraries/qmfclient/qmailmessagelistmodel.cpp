@@ -676,4 +676,3 @@ const QMailMessageModelImplementation *QMailMessageListModel::impl() const
 {
     return d;
 }
-

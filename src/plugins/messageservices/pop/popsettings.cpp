@@ -166,4 +166,3 @@ bool PopSettings::updateAccount(QMailAccount *account, QMailAccountConfiguration
 
     return true;
 }
-

@@ -127,6 +127,5 @@ void tst_QMailAccountConfiguration::test_service()
     QCOMPARE(service.listValue(QStringLiteral("some element list")), list2);
 }
 
-
 #include "tst_qmailaccountconfiguration.moc"
 QTEST_MAIN(tst_QMailAccountConfiguration)

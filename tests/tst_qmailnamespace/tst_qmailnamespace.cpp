@@ -49,12 +49,12 @@ private slots:
     void test_qmailnamespace();
 };
 
-QTEST_MAIN(tst_QMailnamespace)
-
-#include "tst_qmailnamespace.moc"
-
 void tst_QMailnamespace::test_qmailnamespace()
 {
     messageServerPath();
     messageSettingsPath();
 }
+
+QTEST_MAIN(tst_QMailnamespace)
+
+#include "tst_qmailnamespace.moc"

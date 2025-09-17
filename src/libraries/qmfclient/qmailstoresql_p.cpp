@@ -1207,8 +1207,7 @@ void appendWhereValues<QMailMessageKey::ArgumentType>(const QMailMessageKey::Arg
 {
     const MessageKeyArgumentExtractor extractor(a);
 
-    switch (a.property)
-    {
+    switch (a.property) {
     case QMailMessageKey::Id:
         if (a.valueList.count() < IdLookupThreshold) {
             values += extractor.id();
@@ -1403,8 +1402,7 @@ void appendWhereValues<QMailAccountKey::ArgumentType>(const QMailAccountKey::Arg
 {
     const AccountKeyArgumentExtractor extractor(a);
 
-    switch (a.property)
-    {
+    switch (a.property) {
     case QMailAccountKey::Id:
         values += extractor.id();
         break;
@@ -1511,8 +1509,7 @@ void appendWhereValues<QMailFolderKey::ArgumentType>(const QMailFolderKey::Argum
 {
     const FolderKeyArgumentExtractor extractor(a);
 
-    switch (a.property)
-    {
+    switch (a.property) {
     case QMailFolderKey::Id:
         values += extractor.id();
         break;
@@ -1649,8 +1646,7 @@ void appendWhereValues<QMailThreadKey::ArgumentType>(const QMailThreadKey::Argum
 {
     const ThreadKeyArgumentExtractor extractor(a);
 
-    switch (a.property)
-    {
+    switch (a.property) {
     case QMailThreadKey::Id:
         values += extractor.id();
         break;
@@ -1763,8 +1759,7 @@ QString buildOrderClause(const ArgumentListType &list, const QString &alias)
 
 QString operatorString(QMailKey::Comparator op, bool multipleArgs = false, bool patternMatch = false, bool bitwiseMultiples = false)
 {
-    switch (op)
-    {
+    switch (op) {
     case Equal:
         return QLatin1String(multipleArgs ? " IN " : (patternMatch ? " LIKE " : " = "));
 
@@ -1798,8 +1793,7 @@ QString operatorString(QMailKey::Comparator op, bool multipleArgs = false, bool 
 
 QString combineOperatorString(QMailKey::Combiner op)
 {
-    switch (op)
-    {
+    switch (op) {
     case And:
         return QLatin1String(" AND ");
 
@@ -1875,8 +1869,7 @@ QString whereClauseItem<QMailAccountKey>(const QMailAccountKey &, const QMailAcc
 
         QString expression = columnExpression(columnName, a.op, a.valueList, patternMatching, bitwise, noCase);
 
-        switch (a.property)
-        {
+        switch (a.property) {
         case QMailAccountKey::Id:
             if (a.valueList.first().canConvert<QMailAccountKey>()) {
                 QMailAccountKey subKey = a.valueList.first().value<QMailAccountKey>();
@@ -1942,8 +1935,7 @@ QString whereClauseItem<QMailMessageKey>(const QMailMessageKey &key, const QMail
 
         QString expression = columnExpression(columnName, a.op, a.valueList, patternMatching, bitwise, noCase);
 
-        switch (a.property)
-        {
+        switch (a.property) {
         case QMailMessageKey::Id:
             if (a.valueList.count() >= IdLookupThreshold) {
                 q << baseExpression(columnName, a.op, true) << "( SELECT id FROM " << QMailStoreSql::temporaryTableName(a) << ")";
@@ -2114,8 +2106,7 @@ QString whereClauseItem<QMailFolderKey>(const QMailFolderKey &key, const QMailFo
 
         QString expression = columnExpression(columnName, a.op, a.valueList, false, bitwise, noCase);
 
-        switch (a.property)
-        {
+        switch (a.property) {
         case QMailFolderKey::Id:
             if (a.valueList.first().canConvert<QMailFolderKey>()) {
                 QMailFolderKey subKey = a.valueList.first().value<QMailFolderKey>();
@@ -2227,8 +2218,7 @@ QString whereClauseItem<QMailThreadKey>(const QMailThreadKey &, const QMailThrea
 
         QString expression = columnExpression(columnName, a.op, a.valueList, false, false, noCase);
 
-        switch (a.property)
-        {
+        switch (a.property) {
         case QMailThreadKey::Id:
             if (a.valueList.first().canConvert<QMailThreadKey>()) {
                 QMailThreadKey subKey = a.valueList.first().value<QMailThreadKey>();
@@ -3316,8 +3306,7 @@ void QMailStoreSql::extractMessageMetaData(const QSqlRecord& r,
     const MessageRecord messageRecord(r, recordProperties);
 
     foreach (QMailMessageKey::Property p, messagePropertyList()) {
-        switch (properties & p)
-        {
+        switch (properties & p) {
         case QMailMessageKey::Id:
             metaData->setId(messageRecord.id());
             break;
@@ -3574,8 +3563,7 @@ QVariantList QMailStoreSql::messageValues(const QMailMessageKey::Properties& pro
         properties &= ~QMailMessageKey::ContentIdentifier;
 
     foreach (QMailMessageKey::Property p, messagePropertyList()) {
-        switch (properties & p)
-        {
+        switch (properties & p) {
             case QMailMessageKey::Id:
                 values.append(extractor.id());
                 break;
@@ -3680,8 +3668,7 @@ QVariantList QMailStoreSql::threadValues(const QMailThreadKey::Properties &prop,
 
     QMailThreadKey::Properties properties(prop);
     foreach (QMailThreadKey::Property p, threadPropertyList()) {
-        switch (properties & p)
-        {
+        switch (properties & p) {
             case QMailThreadKey::Id:
                 values.append(thread.id().toULongLong());
                 break;
@@ -3977,8 +3964,8 @@ bool QMailStoreSql::upgradeTimeStampToUtc()
     qCDebug(lcMailStore) << Q_FUNC_INFO << "Time stamp for " << allMessageIds.count() << " will be updated ";
 
     QMailMessageKey::Properties updateDateProperties = QMailMessageKey::TimeStamp | QMailMessageKey::ReceptionTimeStamp;
-    foreach(const QMailMessageId &updateId, allMessageIds)
-    {
+
+    foreach (const QMailMessageId &updateId, allMessageIds) {
         const QMailMessageMetaData m(updateId);
         const MessageValueExtractor<QMailMessageMetaData> extractor(m);
         QVariantList bindValues;
@@ -4350,14 +4337,12 @@ bool QMailStoreSql::purgeObsoleteFiles()
             uriElements[extractUriElements(contentUri).first].append(extractUriElements(contentUri).second);
         }
 
-        for ( QMap<QString, QStringList>::iterator it(uriElements.begin()) ; it != uriElements.end() ; ++it)
-        {
+        for (QMap<QString, QStringList>::iterator it(uriElements.begin()) ; it != uriElements.end() ; ++it) {
             QStringList schemes(QStringList() << QMailContentManagerFactory::defaultFilterScheme()
                                               << it.key()
                                               << QMailContentManagerFactory::defaultIndexerScheme());
 
-            foreach(QString const& scheme, schemes)
-            {
+            foreach (QString const& scheme, schemes) {
                 if (!scheme.isEmpty()) {
                     QMailContentManager *manager(QMailContentManagerFactory::create(scheme));
                     if (!manager)
@@ -5261,14 +5246,12 @@ void QMailStoreSql::removeExpiredData(const QStringList& contentUris)
         foreach (const QString& contentUri, contentUris) {
             uriElements[extractUriElements(contentUri).first].append(extractUriElements(contentUri).second);
 
-            for ( QMap<QString, QStringList>::iterator it(uriElements.begin()) ; it != uriElements.end() ; ++it)
-            {
+            for (QMap<QString, QStringList>::iterator it(uriElements.begin()) ; it != uriElements.end() ; ++it) {
                 QStringList schemes(QStringList() << QMailContentManagerFactory::defaultFilterScheme()
                                                   << it.key()
                                                   << QMailContentManagerFactory::defaultIndexerScheme());
 
-                foreach(QString const& scheme, schemes)
-                {
+                foreach (QString const& scheme, schemes) {
                     if (!scheme.isEmpty()) {
                         QMailContentManager *manager(QMailContentManagerFactory::create(scheme));
                         if (!manager)
@@ -5821,7 +5804,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptAddMessage(QMailMessage *mess
 
     QList<QMailContentManager*> contentManagers;
 
-    foreach(QString scheme, QStringList()
+    foreach (QString scheme, QStringList()
                                 << QMailContentManagerFactory::defaultFilterScheme()
                                 << message->contentScheme()
                                 << QMailContentManagerFactory::defaultIndexerScheme())
@@ -5838,7 +5821,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptAddMessage(QMailMessage *mess
 
     }
 
-    foreach(QMailContentManager *manager, contentManagers) {
+    foreach (QMailContentManager *manager, contentManagers) {
         QMailStore::ErrorCode code = manager->add(message, durability(commitOnSuccess));
         if (code != QMailStore::NoError) {
             setLastError(code);
@@ -5850,7 +5833,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptAddMessage(QMailMessage *mess
     AttemptResult result = attemptAddMessage(static_cast<QMailMessageMetaData*>(message), identifier, references, out, t, commitOnSuccess);
     if (result != Success) {
         bool obsoleted(false);
-        foreach(QMailContentManager *manager, contentManagers) {
+        foreach (QMailContentManager *manager, contentManagers) {
             // Try to remove the content file we added
             QMailStore::ErrorCode code = manager->remove(message->contentIdentifier());
             if (code != QMailStore::NoError && !obsoleted) {
@@ -6666,8 +6649,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptUpdateMessage(QMailMessageMet
                                               << metaData->contentScheme()
                                               << QMailContentManagerFactory::defaultIndexerScheme());
 
-            foreach(QString const& scheme, schemes)
-            {
+            foreach (QString const& scheme, schemes) {
                 if (!scheme.isEmpty()) {
                     if (QMailContentManager *contentManager = QMailContentManagerFactory::create(scheme)) {
                         QString contentUri(::contentUri(*metaData));
@@ -6846,8 +6828,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptUpdateMessage(QMailMessageMet
 
             // Check NB#294937. Sometimes metaData contains 0 as a parentThreadId
             // and that is really bad for a thread mode.
-            if (!metaData->parentThreadId().isValid())
-            {
+            if (!metaData->parentThreadId().isValid()) {
                 //Dirty hack to fix NB#297007, but at least it is better then nothing
                 QMailMessageMetaData data(metaData->id());
                 if (data.parentThreadId().isValid())
@@ -7216,7 +7197,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptUpdateMessagesStatus(const QM
 
                     while (!bindMessagesIds.isEmpty()) {
                         bindMessagesIdsBatch.clear();
-                        bindMessagesIdsBatch = bindMessagesIds.mid(0,500);
+                        bindMessagesIdsBatch = bindMessagesIds.mid(0, 500);
                         if (bindMessagesIds.count() > 500) {
                             bindMessagesIds = bindMessagesIds.mid(500);
                         } else {
@@ -8195,11 +8176,10 @@ QMailStoreSql::AttemptResult QMailStoreSql::messagePredecessor(QMailMessageMetaD
             QMap<quint64, quint64> predecessor;
 
             {
-
                 // Find the predecessor message for every message in the same thread as us or the thread of any potential predecessor of us
                 QVariantList vl;
                 vl << messageId;
-                foreach(quint64 p, potentialPredecessors) {
+                foreach (quint64 p, potentialPredecessors) {
                     vl << p;
                 }
                 QSqlQuery query(simpleQuery(QString::fromLatin1("SELECT id,responseid FROM mailmessages WHERE parentaccountid = %1 AND parentthreadid IN (SELECT parentthreadid FROM mailmessages WHERE id IN %2)")
@@ -8568,44 +8548,34 @@ bool QMailStoreSql::checkPreconditions(const QMailFolder& folder, bool update)
     //if the parent is valid, check that it exists
     //if the account is valid, check that is exists
 
-    if (!update)
-    {
-        if (folder.id().isValid())
-        {
+    if (!update) {
+        if (folder.id().isValid()) {
             qCWarning(lcMailStore) << "Folder exists, use update instead of add.";
             return false;
         }
-    }
-    else
-    {
-        if (!folder.id().isValid())
-        {
+    } else {
+        if (!folder.id().isValid()) {
             qCWarning(lcMailStore) << "Folder does not exist, use add instead of update.";
             return false;
         }
 
-        if (folder.parentFolderId().isValid() && folder.parentFolderId() == folder.id())
-        {
+        if (folder.parentFolderId().isValid() && folder.parentFolderId() == folder.id()) {
             qCWarning(lcMailStore) << "A folder cannot be a child to itself";
             return false;
         }
     }
 
-    if (folder.parentFolderId().isValid())
-    {
-        if (!idExists(folder.parentFolderId()))
-        {
+    if (folder.parentFolderId().isValid()) {
+        if (!idExists(folder.parentFolderId())) {
             qCWarning(lcMailStore) << "Parent folder does not exist!";
             return false;
         }
     }
 
-    if (folder.parentAccountId().isValid())
-    {
+    if (folder.parentAccountId().isValid()) {
         if ((withAccountTables
              ? !idExists(folder.parentAccountId())
-             : !externalAccountIdExists(folder.parentAccountId())))
-        {
+             : !externalAccountIdExists(folder.parentAccountId()))) {
             qCWarning(lcMailStore) << "Parent account does not exist!";
             return false;
         }
@@ -8620,8 +8590,7 @@ bool QMailStoreSql::recalculateThreadsColumns(const QMailThreadIdList& modifiedT
     {
         QVariantList bindValues;
         QVariantList bindValuesBatch;
-        foreach (const QMailThreadId& threadId, modifiedThreads)
-        {
+        foreach (const QMailThreadId& threadId, modifiedThreads) {
             bindValues << threadId.toULongLong();
         }
 
@@ -8652,8 +8621,7 @@ bool QMailStoreSql::recalculateThreadsColumns(const QMailThreadIdList& modifiedT
         }
     }
 
-    foreach (const QMailThreadId& threadId, modifiedThreads)
-    {
+    foreach (const QMailThreadId& threadId, modifiedThreads) {
         // if all thread's messages were deleted we should delete thread as well.
         if (!existedMessagesMap.keys().contains(threadId)) {
             deletedThreads.append(threadId);
@@ -8671,8 +8639,7 @@ bool QMailStoreSql::recalculateThreadsColumns(const QMailThreadIdList& modifiedT
         quint64 status = 0;
         QStringList senders;
         const QMailMessageMetaDataList &threadsMessagesList = existedMessagesMap.value(threadId);
-        for (const QMailMessageMetaData& data : threadsMessagesList)
-        {
+        for (const QMailMessageMetaData& data : threadsMessagesList) {
             // Messages moved to Draft or Trash folder should not being counted.
             QMailAccount account(data.parentAccountId());
             QMailFolderId trashFolderId = account.standardFolder(QMailFolder::TrashFolder);
@@ -8916,8 +8883,7 @@ bool QMailStoreSql::deleteMessages(const QMailMessageKey& key,
             }
 
             Q_ASSERT(messageIdList.size() == newResponseIdList.size());
-            if (messageIdList.size())
-            {
+            if (messageIdList.size()) {
                 // Link any descendants of the messages to the deleted messages' predecessor
                 QSqlQuery query(batchQuery(QLatin1String("UPDATE mailmessages SET responseid=? WHERE id=?"),
                                            QVariantList() << QVariant(newResponseIdList) << QVariant(messageIdList),

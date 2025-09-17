@@ -37,7 +37,6 @@
 #include <qmailglobal.h>
 #include <qmailstore.h>
 
-
 class QMailStoreAccountFilterPrivate;
 class QMailStoreEvents;
 

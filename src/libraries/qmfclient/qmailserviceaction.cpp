@@ -212,7 +212,7 @@ void QMailServiceActionPrivate::clearSubActions()
 {
         if (_pendingActions.count())
             disconnectSubAction(_pendingActions.first().action);
-        foreach(ActionCommand a, _pendingActions) {
+        foreach (ActionCommand a, _pendingActions) {
             // Don't delete QObject while it's emitting a signal
             a.action->deleteLater();
         }

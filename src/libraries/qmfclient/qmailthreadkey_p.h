@@ -60,5 +60,4 @@ public:
     QMailThreadKeyPrivate(const ListType &valueList, QMailThreadKey::Property p, QMailKey::Comparator c) : Impl(valueList, p, c) {}
 };
 
-
 #endif

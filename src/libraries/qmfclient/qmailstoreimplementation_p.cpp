@@ -313,4 +313,3 @@ bool QMailStoreNullImplementation::initStore()
 {
     return false;
 }
-

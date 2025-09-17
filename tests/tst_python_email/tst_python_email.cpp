@@ -1961,4 +1961,3 @@ CRLF;
     QVERIFY( msg.contentType().isParameterEncoded("name") == false );
     QCOMPARE( QMailMessageHeaderField::decodeParameter(msg.contentType().name()), QString("My Document For You") );
 }
-

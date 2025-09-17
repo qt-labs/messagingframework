@@ -502,4 +502,3 @@ bool QMailTimeStamp::operator>= (const QMailTimeStamp& other) const
 {
     return d->operator>=(*other.d);
 }
-

@@ -92,10 +92,6 @@ private slots:
     void testSerialization();
 };
 
-QTEST_MAIN(tst_QMailMessagePart)
-#include "tst_qmailmessagepart.moc"
-
-
 tst_QMailMessagePart::tst_QMailMessagePart()
 {
     setQMailMessageBoundaryString(BOUNDARY);
@@ -491,3 +487,6 @@ void tst_QMailMessagePart::testBody()
     QCOMPARE(part.multipartType(), QMailMessagePart::MultipartNone);
     QCOMPARE(part.partCount(), static_cast<uint>(0));
 }
+
+QTEST_MAIN(tst_QMailMessagePart)
+#include "tst_qmailmessagepart.moc"

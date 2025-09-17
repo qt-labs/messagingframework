@@ -63,10 +63,6 @@ private:
     QSet<QMailMessageId> noMessages, allMessages, allEmailMessages;
 };
 
-QTEST_MAIN(tst_QMail_SortKeys)
-
-#include "tst_qmail_sortkeys.moc"
-
 void tst_QMail_SortKeys::initTestCase()
 {
     // Instantiate the store to initialise the values of the status flags and create the standard folders
@@ -500,3 +496,7 @@ void tst_QMail_SortKeys::test_messagesortkey()
     ids = QMailStore::instance()->queryMessages(key, QMailMessageSortKey::rfcId());
     QCOMPARE(ids.count(), allMessages.count());
 }
+
+QTEST_MAIN(tst_QMail_SortKeys)
+
+#include "tst_qmail_sortkeys.moc"

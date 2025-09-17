@@ -69,10 +69,6 @@ private:
 
 };
 
-QTEST_MAIN(tst_QMailMessageSet)
-
-#include "tst_qmailmessageset.moc"
-
 void tst_QMailMessageSet::initTestCase()
 {
     // Instantiate the store to initialise the values of the status flags and create the standard folders
@@ -512,3 +508,7 @@ void tst_QMailMessageSet::test_messagesetcontainer()
     model.removeDescendants();
     QCOMPARE(model.count(), 0);
 }
+
+QTEST_MAIN(tst_QMailMessageSet)
+
+#include "tst_qmailmessageset.moc"

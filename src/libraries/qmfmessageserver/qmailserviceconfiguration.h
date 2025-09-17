@@ -72,5 +72,4 @@ private:
     QMailAccountConfiguration::ServiceConfiguration *_config;
 };
 
-
 #endif

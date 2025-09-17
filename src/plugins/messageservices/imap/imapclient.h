@@ -178,7 +178,7 @@ private:
     QVector<QMailMessage*> _bufferedMessages;
     int _pushConnectionsReserved;
 
-    QMultiMap<QMailMessageId,QString> detachedTempFiles;
+    QMultiMap<QMailMessageId, QString> detachedTempFiles;
 
     QMailCredentialsInterface *_credentials;
 };

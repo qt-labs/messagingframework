@@ -40,7 +40,7 @@
 
 namespace {
 
-static bool needsQuotes(const QString& src)
+bool needsQuotes(const QString& src)
 {
     QRegularExpression specials(QLatin1String("[<>\\[\\]:;@\\\\,.]"));
 
@@ -154,7 +154,7 @@ void Decommentor::process(QChar character, bool quoted, bool escaped, int commen
     Q_UNUSED(escaped)
 }
 
-static QString removeComments(const QString& input, bool (QChar::*classifier)() const, bool acceptedResult = true)
+QString removeComments(const QString& input, bool (QChar::*classifier)() const, bool acceptedResult = true)
 {
     Decommentor decommentor(classifier, acceptedResult);
     decommentor.processCharacters(input);
@@ -409,14 +409,14 @@ QStringList AddressListGenerator::result()
     return _result;
 }
 
-static QStringList generateAddressList(const QString& list)
+QStringList generateAddressList(const QString& list)
 {
     AddressListGenerator generator;
     generator.processCharacters(list);
     return generator.result();
 }
 
-static bool containsMultipleFields(const QString& input)
+bool containsMultipleFields(const QString& input)
 {
     // There is no shortcut; we have to parse the addresses
     AddressListGenerator generator;
@@ -457,7 +457,7 @@ bool GroupDetector::result() const
     return _listTerminator;
 }
 
-static bool containsGroupSpecifier(const QString& input)
+bool containsGroupSpecifier(const QString& input)
 {
     GroupDetector detector;
     detector.processCharacters(input);
@@ -478,7 +478,7 @@ void WhitespaceRemover::process(QChar character, bool quoted, bool escaped, int 
         _result.append(character);
 }
 
-static QString removeWhitespace(const QString& input)
+QString removeWhitespace(const QString& input)
 {
     WhitespaceRemover remover;
     remover.processCharacters(input);
@@ -566,7 +566,7 @@ void QuoteDisplayName::finished()
     }
 }
 
-static QString quoteIfNecessary(const QString& input)
+QString quoteIfNecessary(const QString& input)
 {
     QuoteDisplayName quoteDisplayName;
     quoteDisplayName.processCharacters(input);
@@ -616,8 +616,7 @@ void parseMailbox(QString& input, QString& name, QString& address, QString& suff
 {
     // See if there is a trailing suffix
     int pos = input.indexOf(QLatin1String("/TYPE="));
-    if (pos != -1)
-    {
+    if (pos != -1) {
         suffix = input.mid(pos + 6);
         input = input.left(pos);
     }
@@ -625,19 +624,13 @@ void parseMailbox(QString& input, QString& name, QString& address, QString& suff
     // Separate the email address from the name
     QPair<int, int> delimiters = findDelimiters(input);
 
-    if (delimiters.first == -1 && delimiters.second == -1)
-    {
+    if (delimiters.first == -1 && delimiters.second == -1) {
         name = address = input.trimmed();
-    }
-    else
-    {
-        if (delimiters.first == -1)
-        {
+    } else {
+        if (delimiters.first == -1) {
             // Unmatched '>'
             address = input.left( delimiters.second );
-        }
-        else
-        {
+        } else {
             name = input.left( delimiters.first );
 
             if (delimiters.second == -1)
@@ -707,23 +700,18 @@ QMailAddressPrivate::QMailAddressPrivate(const QString& addressText)
     : _group(false),
       _searchCompleted(false)
 {
-    if (!addressText.isEmpty())
-    {
+    if (!addressText.isEmpty()) {
         QString input = addressText.trimmed();
 
         // See whether this address is a group
-        if (containsGroupSpecifier(input))
-        {
+        if (containsGroupSpecifier(input)) {
             QRegularExpressionMatch match = QRegularExpression(QLatin1String("(.*):(.*);")).match(input);
-            if (match.hasMatch())
-            {
+            if (match.hasMatch()) {
                 _name = match.captured(1).trimmed();
                 _address = match.captured(2).trimmed();
                 _group = true;
             }
-        }
-        else
-        {
+        } else {
             parseMailbox(input, _name, _address, _suffix);
             setComponents(_name, _address);
         }
@@ -735,14 +723,11 @@ QMailAddressPrivate::QMailAddressPrivate(const QString& name, const QString& add
       _searchCompleted(false)
 {
     // See whether the address part contains a group
-    if (containsMultipleFields(address))
-    {
+    if (containsMultipleFields(address)) {
         _name = name;
         _address = address;
         _group = true;
-    }
-    else
-    {
+    } else {
         setComponents(name, address);
     }
 }
@@ -841,22 +826,22 @@ QString QMailAddressPrivate::toString(bool forceDelimited) const
 {
     QString result;
 
-    if ( _name == _address )
+    if (_name == _address)
         return _name;
 
     if ( _group ) {
         result.append( _name ).append( QLatin1String(": ") ).append( _address ).append( QChar::fromLatin1(';') );
     } else {
         // If there are any 'special' characters in the name it needs to be quoted
-        if ( !_name.isEmpty() ) {
+        if (!_name.isEmpty()) {
             result = ::quoteIfNecessary(_name);
         }
-        if ( !_address.isEmpty() ) {
-            if ( !forceDelimited && result.isEmpty() ) {
+        if (!_address.isEmpty()) {
+            if (!forceDelimited && result.isEmpty()) {
                 result = _address;
             } else {
-                if ( !result.isEmpty() )
-                    result.append( QChar::fromLatin1(' ') );
+                if (!result.isEmpty())
+                    result.append(QChar::fromLatin1(' '));
                 result.append( QChar::fromLatin1('<') ).append( _address ).append( QChar::fromLatin1('>') );
             }
         }
@@ -1170,6 +1155,4 @@ Q_IMPLEMENT_USER_METATYPE(QMailAddress)
 
 Q_IMPLEMENT_USER_METATYPE_TYPEDEF(QMailAddressList, QMailAddressList)
 
-
 //Q_IMPLEMENT_USER_METATYPE_NO_OPERATORS(QList<QMailAddress>)
-

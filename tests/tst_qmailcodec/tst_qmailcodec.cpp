@@ -69,11 +69,6 @@ private slots:
     void encodeDecodeModifiedUtf7();
 };
 
-QTEST_MAIN(tst_QMailCodec)
-
-#include "tst_qmailcodec.moc"
-
-
 tst_QMailCodec::tst_QMailCodec()
 {
 }
@@ -171,8 +166,7 @@ void tst_QMailCodec::encode()
     QCOMPARE(reversed, plaintext);
 
     // Ensure that the byte-array-to-byte-array conversion matches the QString-to-byte-array conversion
-    if (codec)
-    {
+    if (codec) {
         QByteArray octet_data = codec->fromUnicode(plaintext);
         QByteArray base64_data;
         {
@@ -208,8 +202,7 @@ void tst_QMailCodec::encode()
     }
     QCOMPARE(reversed, plaintext);
 
-    if (codec)
-    {
+    if (codec) {
         // Ensure that the byte-array-to-byte-array conversion matches
         QByteArray octet_data = codec->fromUnicode(plaintext);
         QByteArray qp_data;
@@ -233,8 +226,7 @@ void tst_QMailCodec::encode()
         QCOMPARE(reversed, octet_data);
     }
 
-    if (!qp2047_encoded.isEmpty())
-    {
+    if (!qp2047_encoded.isEmpty()) {
         // Test the the quoted-printable encoding works, conforming to RFC 2047
         {
             QMailQuotedPrintableCodec qpCodec(QMailQuotedPrintableCodec::Text, QMailQuotedPrintableCodec::Rfc2047);
@@ -255,8 +247,7 @@ void tst_QMailCodec::encode()
         encoded = ptCodec.encode(plaintext, charset);
     }
 
-    if (codec)
-    {
+    if (codec) {
         QByteArray octet_data = codec->fromUnicode(plaintext);
         QCOMPARE(encoded, octet_data);
     }
@@ -457,8 +448,7 @@ void tst_QMailCodec::line_lengths()
             QCOMPARE(reversed, plaintext);
         }
 
-        if (!qp2047_encoded.isEmpty())
-        {
+        if (!qp2047_encoded.isEmpty()) {
             {
                 QMailQuotedPrintableCodec codec(QMailQuotedPrintableCodec::Text, QMailQuotedPrintableCodec::Rfc2047);
                 encoded = codec.encode(plaintext, charset);
@@ -725,3 +715,6 @@ void tst_QMailCodec::encodeDecodeModifiedUtf7()
     QCOMPARE(QMailCodec::encodeModifiedUtf7(QString()), QString());
 }
 
+QTEST_MAIN(tst_QMailCodec)
+
+#include "tst_qmailcodec.moc"

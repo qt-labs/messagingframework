@@ -35,7 +35,7 @@
 #include <qmaillog.h>
 #include <QMap>
 
-typedef QMap<QString,QIcon> IconMap;
+typedef QMap<QString, QIcon> IconMap;
 
 static QIcon loadIcon(const char *themeIdentifier, const char *resourceFallback)
 {

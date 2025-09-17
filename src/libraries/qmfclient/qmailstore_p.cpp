@@ -301,8 +301,7 @@ void QMailStorePrivate::updateMessageValues(const QMailMessageKey::Properties& p
     QPair<QString, QString> uriElements;
 
     foreach (QMailMessageKey::Property p, messagePropertyList()) {
-        switch (properties & p)
-        {
+        switch (properties & p) {
             case QMailMessageKey::Id:
                 metaData->setId(values.id());
                 break;
@@ -754,7 +753,7 @@ void QMailStorePrivate::preloadHeaderCache(const QMailMessageId& id) const
                 ++highIt;
                 if (highIt == end) {
                     ascend = false;
-                } else  {
+                } else {
                     if (!messageCache.contains(*highIt)) {
                         idBatch.append(*highIt);
                         ++count;
@@ -829,7 +828,7 @@ void QMailStorePrivate::preloadThreadCache(const QMailThreadId& id) const
                 ++highIt;
                 if (highIt == end) {
                     ascend = false;
-                } else  {
+                } else {
                     if (!threadCache.contains(*highIt)) {
                         idBatch.append(*highIt);
                         ++count;
@@ -1014,8 +1013,7 @@ void QMailStorePrivate::messageMetaDataRemotelyChanged(QMailStore::ChangeType ch
 
         QMailMessageIdList ids;
 
-        for (const QMailMessageMetaData& metaData : data)
-        {
+        for (const QMailMessageMetaData& metaData : data) {
             messageCache.insert(metaData);
             uidCache.insert(qMakePair(metaData.parentAccountId(), metaData.serverUid()), metaData.id());
 
@@ -1043,7 +1041,7 @@ void QMailStorePrivate::messagePropertiesRemotelyChanged(const QMailMessageIdLis
 {
     Q_ASSERT(!ids.contains(QMailMessageId()));
 
-    foreach(const QMailMessageId& id, ids) {
+    foreach (const QMailMessageId& id, ids) {
 
         if (messageCache.contains(id)) {
             QMailMessageMetaData metaData = messageCache.lookup(id);
@@ -1051,8 +1049,7 @@ void QMailStorePrivate::messagePropertiesRemotelyChanged(const QMailMessageIdLis
                 metaData.setCustomFields(data.customFields());
             }
             foreach (QMailMessageKey::Property p, messagePropertyList()) {
-                switch (properties & p)
-                {
+                switch (properties & p) {
                 case QMailMessageKey::Id:
                     metaData.setId(data.id());
                     break;
@@ -1150,7 +1147,7 @@ void QMailStorePrivate::messageStatusRemotelyChanged(const QMailMessageIdList& i
 {
     Q_ASSERT(!ids.contains(QMailMessageId()));
 
-    foreach(const QMailMessageId& id, ids) {
+    foreach (const QMailMessageId& id, ids) {
 
         if (messageCache.contains(id)) {
             QMailMessageMetaData metaData = messageCache.lookup(id);

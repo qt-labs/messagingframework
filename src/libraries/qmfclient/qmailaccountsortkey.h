@@ -99,4 +99,3 @@ private:
 Q_DECLARE_USER_METATYPE(QMailAccountSortKey)
 
 #endif
-

@@ -70,7 +70,7 @@ IntegerRegion::IntegerRegion(const QStringList &uids)
 {
     // Performance note currently O(n^2), n = uids.count()
     // TODO: sort uids if they are not already sorted
-    foreach(const QString &uid, uids) {
+    foreach (const QString &uid, uids) {
         bool ok(false);
         uint number = uid.toUInt(&ok);
         if (ok)
@@ -88,7 +88,7 @@ IntegerRegion::IntegerRegion(const QString &uidString)
     // Performance note currently O(n^2), n = uids.count()
     // TODO: sort uids in uidString if they are not already sorted
     QStringList rangeList = uidString.split(",", Qt::SkipEmptyParts);
-    foreach(const QString &s, rangeList) {
+    foreach (const QString &s, rangeList) {
         bool ok = false;
         int index = s.indexOf(":");
         if (index == -1) {
@@ -144,7 +144,7 @@ uint IntegerRegion::cardinality() const
 {
     uint result(0);
 
-    foreach( const IntegerRange &range, mRangeList)
+    foreach ( const IntegerRange &range, mRangeList)
         result += range.second - range.first + 1;
 
     return result;
@@ -174,7 +174,7 @@ int IntegerRegion::minimum() const
 QStringList IntegerRegion::toStringList() const
 {
     QStringList result;
-    foreach(const IntegerRange &range, mRangeList) {
+    foreach (const IntegerRange &range, mRangeList) {
         result += QString::number(range.first);
         for (int i = range.first + 1; i <= range.second; ++i)
             result += QString::number(i);
@@ -189,7 +189,7 @@ QString IntegerRegion::toString() const
 {
     QString result;
     bool first(true);
-    foreach(const IntegerRange &range, mRangeList) {
+    foreach (const IntegerRange &range, mRangeList) {
         if (!first)
             result += ",";
         result += QString::number(range.first);
@@ -340,7 +340,7 @@ IntegerRegion IntegerRegion::intersect(IntegerRegion other) const
 */
 bool IntegerRegion::isIntegerRegion(QStringList uids)
 {
-    foreach(const QString &uid, uids) {
+    foreach (const QString &uid, uids) {
         bool ok(false);
         uid.toUInt(&ok);
         if (!ok)
@@ -411,7 +411,7 @@ QString IntegerRegion::toBinaryString(const IntegerRegion &ir)
 {
     QString result;
     int last(0);
-    foreach(const QString &s, ir.toStringList()) {
+    foreach (const QString &s, ir.toStringList()) {
         bool ok;
         int value = s.toInt(&ok);
         for (int i = last; i < value; ++i)

@@ -202,7 +202,6 @@ void QMailThread::setLastDate(const QMailTimeStamp &value)
     d->lastDate = value;
 }
 
-
 QMailTimeStamp QMailThread::startedDate() const
 {
     return d->startedDate;
@@ -212,7 +211,6 @@ void QMailThread::setStartedDate(const QMailTimeStamp &value)
 {
     d->startedDate = value;
 }
-
 
 quint64 QMailThread::status() const
 {

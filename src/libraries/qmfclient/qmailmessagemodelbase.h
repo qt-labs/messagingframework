@@ -39,7 +39,6 @@
 #include "qmailmessagekey.h"
 #include "qmailmessagesortkey.h"
 
-
 class QMailMessageModelImplementation
 {
 public:

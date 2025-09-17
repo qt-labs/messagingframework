@@ -452,7 +452,7 @@ QList<StandardFolderInfo> standardFolders()
 {
     QList<StandardFolderInfo> standardFoldersList;
 
-    QMap<QByteArray,QStringList> folderTranslations = standardFolderTranslations();
+    QMap<QByteArray, QStringList> folderTranslations = standardFolderTranslations();
 
     if (!folderTranslations.empty()) {
         standardFoldersList << StandardFolderInfo(QLatin1String("\\Inbox"), QMailFolder::Incoming, QMailFolder::InboxFolder, QMailMessage::Incoming, folderTranslations.value("inbox"))
@@ -495,7 +495,7 @@ bool detectStandardFolder(const QMailAccountId &accountId, StandardFolderInfo st
         if (folderId.isValid()) {
             qCDebug(lcMailStore) << "Setting folder: " << QMailFolder(folderId).displayName();
             QMailFolder folder(folderId);
-            folder.setStatus(flag,true);
+            folder.setStatus(flag, true);
             account.setStandardFolder(standardFolder, folderId);
             if (!QMailStore::instance()->updateAccount(&account)) {
                 qCWarning(lcMailStore) << "Unable to update account" << account.id() << "to set standard folder" << QMailFolder(folderId).displayName();

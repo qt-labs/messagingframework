@@ -158,4 +158,3 @@ IdleNetworkSession::Error IdleNetworkSession::error() const
     Q_D(const IdleNetworkSession);
     return d->error();
 }
-

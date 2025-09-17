@@ -57,10 +57,6 @@ private:
     SmtpClient *mClient = nullptr;
 };
 
-QTEST_MAIN(tst_SmtpClient)
-
-#include "tst_smtp.moc"
-
 void tst_SmtpClient::initTestCase()
 {
     QMailAccount account;
@@ -134,3 +130,7 @@ void tst_SmtpClient::test_auth()
     QCOMPARE(updateStatus.takeFirst().first(), QString::fromLatin1("Connected"));
     QCOMPARE(updateStatus.takeFirst().first(), QString::fromLatin1("Connected"));
 }
+
+QTEST_MAIN(tst_SmtpClient)
+
+#include "tst_smtp.moc"

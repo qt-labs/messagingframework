@@ -96,5 +96,4 @@ public:
     QMailMessageServiceConfigurator *createServiceConfigurator() override;
 };
 
-
 #endif

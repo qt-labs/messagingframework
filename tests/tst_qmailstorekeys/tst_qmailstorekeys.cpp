@@ -137,10 +137,6 @@ private:
     QSet<QMailMessageId> noMessages, allMessages, allEmailMessages;
 };
 
-QTEST_MAIN(tst_QMailStoreKeys)
-
-#include "tst_qmailstorekeys.moc"
-
 tst_QMailStoreKeys::tst_QMailStoreKeys()
 {
 }
@@ -2473,3 +2469,7 @@ void tst_QMailStoreKeys::threadedModel()
     QCOMPARE(model.idFromIndex(model.index(1, 0)), inboxMessage1);
     QCOMPARE(model.idFromIndex(model.index(0, 0, model.indexFromId(inboxMessage1))), inboxMessage2);
 }
+
+QTEST_MAIN(tst_QMailStoreKeys)
+
+#include "tst_qmailstorekeys.moc"

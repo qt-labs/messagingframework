@@ -163,4 +163,3 @@ void PopConfigurationEditor::setIntervalCheckRoamingEnabled(bool b)
 {
     setValue("intervalCheckRoamingEnabled", QString::number(b ? 1 : 0));
 }
-

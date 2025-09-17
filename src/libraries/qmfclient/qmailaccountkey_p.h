@@ -48,7 +48,6 @@
 #include "qmailaccountkey.h"
 #include "mailkeyimpl_p.h"
 
-
 class QMailAccountKeyPrivate : public MailKeyImpl<QMailAccountKey>
 {
 public:
@@ -61,6 +60,4 @@ public:
     QMailAccountKeyPrivate(const ListType &ids, QMailAccountKey::Property p, QMailKey::Comparator c) : Impl(ids, p, c) {}
 };
 
-
 #endif
-

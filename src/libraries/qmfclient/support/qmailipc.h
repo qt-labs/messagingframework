@@ -159,4 +159,3 @@ struct QMetaTypeRegister
     Q_IMPLEMENT_USER_METATYPE_NO_OPERATORS(TYPE)
 
 #endif //QMAILIPC_H
-

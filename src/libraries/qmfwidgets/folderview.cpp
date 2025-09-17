@@ -212,7 +212,7 @@ void FolderView::dataChanged(const QModelIndex& topLeft, const QModelIndex& bott
 
     if (topLeft == currentIndex() || bottomRight == currentIndex())
         emit selectionUpdated();
-    QTreeView::dataChanged(topLeft,bottomRight);
+    QTreeView::dataChanged(topLeft, bottomRight);
 }
 
 namespace {

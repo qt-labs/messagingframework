@@ -41,9 +41,7 @@
 
 using namespace QMailKey;
 
-
 Q_IMPLEMENT_USER_METATYPE(QMailThreadKey)
-
 
 /*!
     \class QMailThreadKey

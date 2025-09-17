@@ -296,4 +296,3 @@ QMailMessageServiceConfigurator *SmtpServicePlugin::createServiceConfigurator()
 }
 
 #include "smtpservice.moc"
-

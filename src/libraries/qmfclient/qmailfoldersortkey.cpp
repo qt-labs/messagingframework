@@ -293,6 +293,4 @@ QMailFolderSortKey QMailFolderSortKey::status(quint64 mask, Qt::SortOrder order)
     return QMailFolderSortKey(Status, order, mask);
 }
 
-
 Q_IMPLEMENT_USER_METATYPE(QMailFolderSortKey)
-

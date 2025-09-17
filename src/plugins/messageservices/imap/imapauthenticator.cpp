@@ -89,4 +89,3 @@ QByteArray ImapAuthenticator::getResponse(const ImapConfiguration &svcCfg,
 {
     return QMailAuthenticator::getResponse(svcCfg, challenge, credentials);
 }
-

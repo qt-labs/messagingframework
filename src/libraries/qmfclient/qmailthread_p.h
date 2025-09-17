@@ -61,5 +61,4 @@ public:
     quint64 status;
 };
 
-
 #endif // QMAILTHREAD_P_H

@@ -221,11 +221,6 @@ private slots:
     void basicTest();
 };
 
-QTEST_MAIN(tst_QPrivateImplementation)
-
-#include "tst_qprivateimplementation.moc"
-
-
 tst_QPrivateImplementation::tst_QPrivateImplementation()
 {
 }
@@ -289,3 +284,6 @@ void tst_QPrivateImplementation::basicTest()
     QCOMPARE(b1.toString(), marge + ':' + evergreen);
 }
 
+QTEST_MAIN(tst_QPrivateImplementation)
+
+#include "tst_qprivateimplementation.moc"

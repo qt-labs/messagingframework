@@ -36,8 +36,7 @@
 //stub for alternate handling, currently does nothing
 
 NewCountNotifier::NewCountNotifier(QMailMessage::MessageType, int)
-:
-    QObject()
+    : QObject()
 {
 }
 
@@ -55,4 +54,3 @@ bool NewCountNotifier::notify()
 void NewCountNotifier::notify(QMailMessage::MessageType, int)
 {
 }
-

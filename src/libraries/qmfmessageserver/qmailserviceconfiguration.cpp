@@ -233,4 +233,3 @@ void QMailServiceConfiguration::setValue(const QString &name, const QString &val
         _config->setValue(name, value);
     }
 }
-

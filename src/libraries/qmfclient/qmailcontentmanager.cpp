@@ -438,7 +438,7 @@ QMailContentManager::~QMailContentManager()
 QMailStore::ErrorCode QMailContentManager::remove(const QList<QString> &identifiers)
 {
      QMailStore::ErrorCode returnError(QMailStore::NoError);
-    foreach(QString const &identifier, identifiers) {
+    foreach (QString const &identifier, identifiers) {
         QMailStore::ErrorCode err(remove(identifier));
         if (returnError == QMailStore::NoError) // report the first failure, but continue.
             returnError = err;
@@ -446,7 +446,6 @@ QMailStore::ErrorCode QMailContentManager::remove(const QList<QString> &identifi
 
     return returnError;
 }
-
 
 /*!
     Directs the content manager to perform any initialization tasks required.
@@ -475,4 +474,3 @@ QMailContentManager::ManagerRole QMailContentManager::role() const
 {
     return StorageRole;
 }
-

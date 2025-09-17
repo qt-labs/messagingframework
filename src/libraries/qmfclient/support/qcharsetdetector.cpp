@@ -682,7 +682,7 @@ QStringList QCharsetDetector::getAllDetectableCharsets()
     // ksc5601.1987-0 cp949 Big5-HKSCS big5-0 big5hkscs-0
 
     QStringList availableCodecsQt;
-    foreach(const QByteArray &ba, QTextCodec::availableCodecs())
+    foreach (const QByteArray &ba, QTextCodec::availableCodecs())
         availableCodecsQt << QString::fromLatin1(ba);
 
     // Charsets detectable by libicu 4.4.2:
@@ -776,7 +776,7 @@ QStringList QCharsetDetector::getAllDetectableCharsets()
     uenum_close(en);
 
     // remove all charsets not supported by QTextCodec and all duplicates:
-    foreach(const QString &cs, allDetectableCharsetsICU) {
+    foreach (const QString &cs, allDetectableCharsetsICU) {
         if (availableCodecsQt.contains(cs) && !d->_allDetectableCharsets.contains(cs))
             d->_allDetectableCharsets << cs;
     }

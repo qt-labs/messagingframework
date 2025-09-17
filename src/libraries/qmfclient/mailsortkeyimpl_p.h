@@ -144,4 +144,3 @@ void MailSortKeyImpl<Key>::deserialize(Stream &stream)
 }
 
 #endif
-

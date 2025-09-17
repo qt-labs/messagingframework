@@ -694,7 +694,7 @@ bool QmfStorageManager::addOrRenameParts(QMailMessage *message, const QString &f
 
     if (durability == QMailContentManager::NoDurability)
       return true; // Don't sync parts, they should be sync'd later
-    foreach(QSharedPointer<QFile> part, openParts) {
+    foreach (QSharedPointer<QFile> part, openParts) {
         syncLater(part);
     }
 

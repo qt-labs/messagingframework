@@ -276,7 +276,7 @@ void MessageServer::reportNewCounts()
             if (it.value() != messageCounts[type]) {
                 // This type's count has changed since last reported
 
-                if ( NewCountNotifier* action = new NewCountNotifier(type,it.value())) {
+                if ( NewCountNotifier* action = new NewCountNotifier(type, it.value())) {
                     actionType[action] = type;
 
                     connect(action, SIGNAL(response(bool)), this, SLOT(response(bool)));

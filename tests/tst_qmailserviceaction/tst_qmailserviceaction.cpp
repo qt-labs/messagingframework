@@ -67,10 +67,6 @@ private:
     QSet<QMailMessageId> noMessages, allMessages, allEmailMessages;
 };
 
-QTEST_MAIN(tst_QMailServiceAction)
-
-#include "tst_qmailserviceaction.moc"
-
 void tst_QMailServiceAction::initTestCase()
 {
     // Instantiate the store to initialise the values of the status flags and create the standard folders
@@ -459,3 +455,7 @@ void tst_QMailServiceAction::test_searchaction()
 //    action.searchMessages(QMailMessageKey::customField("present"), QString(), QMailSearchAction::Local);
 //    QCOMPARE(match.count(), 1);
 }
+
+QTEST_MAIN(tst_QMailServiceAction)
+
+#include "tst_qmailserviceaction.moc"

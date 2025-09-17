@@ -1097,8 +1097,7 @@ void ListState::untaggedResponse(ImapContext *c, const QString &line)
     flags = token(str, '(', ')', &index);
 
     delimiter = token(str, ' ', ' ', &index);
-    if (c->protocol()->delimiterUnknown()) //only figure it out precisely if needed
-    {
+    if (c->protocol()->delimiterUnknown()) { //only figure it out precisely if needed
         if (delimiter == "NIL") {
             c->protocol()->setFlatHierarchy(true);
         } else {
@@ -2456,7 +2455,7 @@ void UidFetchState::taggedResponse(ImapContext *c, const QString &line)
         FetchParameters &fp(mParameters[mCurrentIndex]);
 
         IntegerRegion missingUids = fp.mExpectedMessages.subtract(fp.mReceivedMessages);
-        foreach(const QString &uid, missingUids.toStringList()) {
+        foreach (const QString &uid, missingUids.toStringList()) {
             qCWarning(lcIMAP) << "Message not found " << uid;
             emit nonexistentUid(messageUid(c->mailbox().id, uid));
         }
@@ -3327,8 +3326,7 @@ void ImapProtocol::sendExamine(const QMailFolder &mailbox)
 void ImapProtocol::sendCreate(const QMailFolderId &parentFolderId, const QString &name)
 {
     QString mailboxPath;
-    if (parentFolderId.isValid())
-    {
+    if (parentFolderId.isValid()) {
         if (delimiterUnknown()) {
             sendDiscoverDelimiter();
         }

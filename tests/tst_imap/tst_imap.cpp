@@ -57,10 +57,6 @@ private:
     ImapClient *mClient = nullptr;
 };
 
-QTEST_MAIN(tst_ImapClient)
-
-#include "tst_imap.moc"
-
 void tst_ImapClient::initTestCase()
 {
     QMailAccount account;
@@ -102,14 +98,13 @@ public:
         if (op != OpOk)
             qWarning() << "Test response to cmd:" << cmd << " is not ok: " << op;
 
-        switch (cmd)
-            {
-            case IMAP_Login:
-                context->operationCompleted();
-                break;
-            default:
-                qWarning() << "Unhandled test response:" << cmd;
-            }
+        switch (cmd) {
+        case IMAP_Login:
+            context->operationCompleted();
+            break;
+        default:
+            qWarning() << "Unhandled test response:" << cmd;
+        }
     }
 };
 
@@ -129,3 +124,7 @@ void tst_ImapClient::test_connection()
     QCOMPARE(updateStatus.takeFirst().first().toString(), QString::fromLatin1("Checking capabilities"));
     QCOMPARE(updateStatus.takeFirst().first().toString(), QString::fromLatin1("Logging in"));
 }
+
+QTEST_MAIN(tst_ImapClient)
+
+#include "tst_imap.moc"

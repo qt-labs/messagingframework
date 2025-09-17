@@ -55,7 +55,7 @@ QString messageAddressText(const QMailMessageMetaData& m, bool incoming)
                 text += QLatin1String(", ...");
 
             return text;
-        } else  {
+        } else {
             return qApp->translate("QMailMessageModelBase", "Draft message");
         }
     }
@@ -209,7 +209,7 @@ QVariant QMailMessageModelBase::data(const QMailMessageMetaData &message, int ro
     {
         case Qt::DisplayRole:
         case MessageAddressTextRole:
-            return messageAddressText(message,incoming);
+            return messageAddressText(message, incoming);
 
         case MessageSizeTextRole:
             return messageSizeText(message);
@@ -238,7 +238,7 @@ QVariant QMailMessageModelBase::data(const QMailMessageMetaData &message, int ro
             return message.subject();
 
         case MessageFilterTextRole:
-            return QString(messageAddressText(message,incoming) + QChar::Space + message.subject());
+            return QString(messageAddressText(message, incoming) + QChar::Space + message.subject());
 
         case MessageBodyTextRole:
         {

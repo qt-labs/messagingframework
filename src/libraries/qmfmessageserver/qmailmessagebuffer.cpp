@@ -212,7 +212,8 @@ void QMailMessageBuffer::flush()
         messageFlush();
 }
 
-int QMailMessageBuffer::messagePending() {
+int QMailMessageBuffer::messagePending()
+{
     return d->waitingForFlush.size();
 }
 
@@ -222,7 +223,8 @@ int QMailMessageBuffer::maximumBufferSize() const
     return 1024*900;
 }
 
-bool QMailMessageBuffer::isFull() {
+bool QMailMessageBuffer::isFull()
+{
     if (messagePending() >= d->maxPending) {
         return true;
     }
@@ -259,4 +261,3 @@ void QMailMessageBuffer::removeCallback(QMailMessageBufferFlushCallback *callbac
         }
     }
 }
-

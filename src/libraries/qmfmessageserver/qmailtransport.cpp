@@ -207,8 +207,7 @@ void QMailTransport::createSocket(EncryptType encryptType)
 */
 void QMailTransport::open(const QString& url, int port, EncryptType encryptionType)
 {
-    if (mSocket && mSocket->isOpen())
-    {
+    if (mSocket && mSocket->isOpen()) {
         qCWarning(lcMessaging) << "Failed to open connection - already open!";
         return;
     }
@@ -491,6 +490,4 @@ QMailTransport::EncryptType QMailTransport::mailEncryption() const
     This signal is emitted when a change in status is reported.  The new status is described by \a status.
 */
 
-
 #include "qmailtransport.moc"
-

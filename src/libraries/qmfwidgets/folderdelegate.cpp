@@ -94,7 +94,7 @@ void FolderDelegate::drawDisplay(QPainter *painter, const QStyleOptionViewItem &
 QSize FolderDelegate::sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
     // Ensure that we use the full width for our item
-    QSize base(QItemDelegate::sizeHint(option,index));
+    QSize base(QItemDelegate::sizeHint(option, index));
     return QSize(qMax(base.width(), option.rect.width()), base.height());
 }
 

@@ -86,4 +86,3 @@
     \value Present Tests whether the specified property is present in the QMailStore object.
     \value Absent Tests whether the specified property is absent in the QMailStore object.
 */
-

@@ -339,6 +339,4 @@ private:
     QModelIndex parentIndex(QMailMessageSet *item, int column) const;
 };
 
-
 #endif
-

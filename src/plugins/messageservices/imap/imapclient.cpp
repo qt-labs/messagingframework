@@ -1247,7 +1247,7 @@ void ImapClient::dataFetched(const QString &uid, const QString &section, const Q
         mail = new QMailMessage(uid, _accountId);
     }
 
-    detachedTempFiles.insert(mail->id(),fileName); // multi
+    detachedTempFiles.insert(mail->id(), fileName); // multi
 
     if (mail->id().isValid()) {
         if (section.isEmpty()) {
@@ -1402,7 +1402,7 @@ void ImapClient::partHeaderFetched(const QString &uid, const QString &section, c
         mail = new QMailMessage(uid, _accountId);
     }
 
-    detachedTempFiles.insert(mail->id(),fileName); // multi
+    detachedTempFiles.insert(mail->id(), fileName); // multi
 
     if (mail->id().isValid() && !section.isEmpty()) {
         // This is data for a sub-part of the message
@@ -1691,7 +1691,7 @@ QMailFolderIdList ImapClient::configurationIdleFolderIds()
     QMailFolderIdList folderIds;
     if (!imapCfg.pushEnabled())
         return folderIds;
-    foreach(QString folderName, imapCfg.pushFolders()) {
+    foreach (QString folderName, imapCfg.pushFolders()) {
         QMailFolderId idleFolderId(mailboxId(folderName));
         if (idleFolderId.isValid()) {
             folderIds.append(idleFolderId);
@@ -1708,7 +1708,7 @@ void ImapClient::monitor(const QMailFolderIdList &mailboxIds)
         _idleTimer.stop();
     }
 
-    foreach(const QMailFolderId &id, _monitored.keys()) {
+    foreach (const QMailFolderId &id, _monitored.keys()) {
         if (!mailboxIds.contains(id)) {
             qCDebug(lcIMAP) << "stop monitoring folder" << id;
             IdleProtocol *protocol = _monitored.take(id);
@@ -1725,7 +1725,7 @@ void ImapClient::monitor(const QMailFolderIdList &mailboxIds)
         return;
     }
 
-    foreach(QMailFolderId id, mailboxIds) {
+    foreach (QMailFolderId id, mailboxIds) {
         if (!_monitored.contains(id)) {
             qCDebug(lcIMAP) << "start monitoring folder" << id;
             ++count;

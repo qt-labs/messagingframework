@@ -80,10 +80,6 @@ private slots:
     void implementationbase();
 };
 
-QTEST_MAIN(tst_QMailStore)
-
-#include "tst_qmailstore.moc"
-
 #define CRLF "\015\012"
 
 tst_QMailStore::tst_QMailStore()
@@ -1568,8 +1564,7 @@ void tst_QMailStore::remove1000Messages()
 
     static const int largeMessageCount = 10;
 
-    for (int i = 0; i < largeMessageCount; ++i)
-    {
+    for (int i = 0; i < largeMessageCount; ++i) {
         QMailMessage message1;
         message1.setServerUid(QString("%1|Just some message").arg(i));
         message1.setParentAccountId(account.id());
@@ -1593,8 +1588,7 @@ void tst_QMailStore::remove1000Messages()
 
     //with message removal record
 
-    for (int i = 0; i < largeMessageCount; ++i)
-    {
+    for (int i = 0; i < largeMessageCount; ++i) {
         QMailMessage message1;
         message1.setServerUid(QString("Just some message$%1").arg(i));
         message1.setParentAccountId(account.id());
@@ -1827,5 +1821,8 @@ void tst_QMailStore::implementationbase()
 
     impl.setRetrievalInProgress(QMailAccountIdList()<<account1.id());
     impl.notifyRetrievalInProgress(QMailAccountIdList()<<account1.id());
-
 }
+
+QTEST_MAIN(tst_QMailStore)
+
+#include "tst_qmailstore.moc"

@@ -140,4 +140,3 @@
 
     Reads the contents of a QMailKeyArgument from \a stream.
 */
-

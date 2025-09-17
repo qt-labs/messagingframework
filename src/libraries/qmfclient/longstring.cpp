@@ -96,18 +96,15 @@ static int insensitiveIndexOf(const QByteArray& target, const QByteArray &source
         it = begin + len + from;
     }
 
-    while (it < end)
-    {
-        if (toupper(*it++) == toupper(*matchBegin))
-        {
+    while (it < end) {
+        if (toupper(*it++) == toupper(*matchBegin)) {
             const char* restart = it;
 
             // See if the remainder matches
             const char* searchIt = it;
             const char* matchIt = matchBegin + 1;
 
-            do
-            {
+            do {
                 if (matchIt == matchEnd)
                     return ((it - 1) - begin);
 
@@ -147,8 +144,7 @@ static int insensitiveIndexOf(const QByteArray& target, const QByteArray &source
     while (haystack <= end) {
         hashHaystack += *(haystack + ol_minus_1);
         if (hashHaystack == hashNeedle  && *needle == *haystack
-             && strncasecmp(needle, haystack, ol) == 0)
-        {
+             && strncasecmp(needle, haystack, ol) == 0) {
             return haystack - source.data();
         }
         REHASH(*haystack);
@@ -237,7 +233,8 @@ LongStringFileMapping::~LongStringFileMapping()
     }
 }
 
-bool LongStringFileMapping::mapped() const {
+bool LongStringFileMapping::mapped() const
+{
     if (!buffer || !fileMap.contains(filename))
         return false;
 
@@ -655,4 +652,3 @@ template void LongString::serialize<QDataStream>(QDataStream&) const;
 template void LongString::deserialize<QDataStream>(QDataStream&);
 template void LongString::serialize(QDBusArgument&) const;
 template void LongString::deserialize(const QDBusArgument&);
-

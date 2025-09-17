@@ -126,4 +126,3 @@ const QDBusArgument &operator>>(const QDBusArgument &in, QmfList<T> &list)
 }
 
 #endif // QMF_QMFLIST_H
-

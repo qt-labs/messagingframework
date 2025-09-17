@@ -129,14 +129,14 @@ void PushFolderList::setAccountId(const QMailAccountId &id)
 void PushFolderList::setHasFolders(bool hasFolders)
 {
     _hasFolders = hasFolders;
-    foreach(QWidget *widget, _widgets)
+    foreach (QWidget *widget, _widgets)
         widget->setEnabled(_hasFolders && _pushEnabled);
 }
 
 void PushFolderList::setPushEnabled(int pushEnabled)
 {
     _pushEnabled = (pushEnabled != Qt::Unchecked);
-    foreach(QWidget *widget, _widgets)
+    foreach (QWidget *widget, _widgets)
         widget->setEnabled(_hasFolders && _pushEnabled);
 }
 
@@ -179,11 +179,11 @@ void PushFolderList::addRow(const QString &s)
 void PushFolderList::populate(const QStringList &pushFolderNames)
 {
     _items = 0;
-    foreach(QWidget *widget, _widgets) {
+    foreach (QWidget *widget, _widgets) {
         _parentLayout->removeWidget(widget);
         delete widget;
     }
-    foreach(QHBoxLayout *layout, _layouts) {
+    foreach (QHBoxLayout *layout, _layouts) {
         _parentLayout->removeItem(layout);
         delete layout;
     }
@@ -194,7 +194,7 @@ void PushFolderList::populate(const QStringList &pushFolderNames)
     _dirButtons.clear();
     QStringList folderNames(pushFolderNames);
     folderNames.append("");
-    foreach(const QString &s, folderNames) {
+    foreach (const QString &s, folderNames) {
         addRow(s);
     }
 }
@@ -231,7 +231,7 @@ void PushFolderList::selectFolder()
 QStringList PushFolderList::folderNames()
 {
     QStringList result;
-    foreach(QLineEdit* edit, _dirTexts) {
+    foreach (QLineEdit* edit, _dirTexts) {
         if (!edit->text().isEmpty())
             result.append(edit->text());
     }
@@ -508,4 +508,3 @@ void ImapSettings::setStandardFolder(QMailAccount *account, QMailFolder::Standar
 }
 
 #include "imapsettings.moc"
-

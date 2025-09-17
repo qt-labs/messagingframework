@@ -625,5 +625,3 @@ QMailFolderKey QMailFolderKey::customField(const QString &name, const QString &v
 {
     return QMailFolderKey(Custom, QStringList() << QMailKey::stringValue(name) << QMailKey::stringValue(value), QMailKey::comparator(cmp));
 }
-
-

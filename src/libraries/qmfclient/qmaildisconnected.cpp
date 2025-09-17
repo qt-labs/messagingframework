@@ -287,7 +287,7 @@ void QMailDisconnected::rollBackUpdates(const QMailAccountId &mailAccountId)
     }
 
     // undo moves
-    foreach(const QMailMessageId& id, movedIds) {
+    foreach (const QMailMessageId& id, movedIds) {
         QMailMessageMetaData mail(id);
         mail.setParentFolderId(mail.previousParentFolderId());
         mail.setPreviousParentFolderId(QMailFolderId());
@@ -360,7 +360,7 @@ void QMailDisconnected::moveToStandardFolder(const QMailMessageIdList& ids, QMai
 {
     QList<QMailMessageMetaData *> messages; // Using this for efficient update
 
-    foreach(const QMailMessageId &id, ids) {
+    foreach (const QMailMessageId &id, ids) {
         QMailMessageMetaData *msg = new QMailMessageMetaData(id);
         QMailFolderId folderId(QMailAccount(msg->parentAccountId()).standardFolder(standardFolder)); // will be cached
         QMailFolder folder;
@@ -455,11 +455,11 @@ void QMailDisconnected::copyToStandardFolder(const QMailMessageIdList& ids, QMai
 {
     QMailAccountIdList allAccounts = QMailStore::instance()->queryAccounts();
 
-    foreach(const QMailAccountId& id, allAccounts) {
+    foreach (const QMailAccountId& id, allAccounts) {
         QMailAccount account(id);
         QMailFolderId standardFolderId = account.standardFolder(standardFolder);
         if (standardFolderId.isValid())
-            copyToFolder(ids,standardFolderId);
+            copyToFolder(ids, standardFolderId);
    }
 }
 
@@ -492,8 +492,8 @@ void QMailDisconnected::copyToFolder(const QMailMessageIdList& ids, const QMailF
         copy.setParentAccountId(mail.parentAccountId());
         copy.setSize(mail.size());
         copy.setStatus(mail.status());
-        copy.setStatus(QMailMessage::LocalOnly,true);
-        copy.setStatus(QMailMessage::Removed,false);
+        copy.setStatus(QMailMessage::LocalOnly, true);
+        copy.setStatus(QMailMessage::Removed, false);
         syncStatusWithFolder(copy);
         QMailStore::instance()->addMessage(&copy);
     }
@@ -582,9 +582,6 @@ void QMailDisconnected::restoreToPreviousFolder(const QMailMessageKey& key)
 
     if (!messages.empty()) {
         QMailStore::instance()->updateMessages(messages);
-        foreach (QMailMessageMetaData *messagePointer, messages) {
-            delete messagePointer;
-        }
+        qDeleteAll(messages);
     }
 }
-

@@ -305,7 +305,4 @@ QMailThreadSortKey QMailThreadSortKey::status(quint64 mask, Qt::SortOrder order)
     return QMailThreadSortKey(Status, order, mask);
 }
 
-
-
 Q_IMPLEMENT_USER_METATYPE(QMailThreadSortKey)
-

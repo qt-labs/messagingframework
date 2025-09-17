@@ -135,26 +135,22 @@ static int insensitiveIndexOf(const QByteArray& content, const QByteArray& conta
     const char* const end = begin + container.length() - (content.length() - 1);
 
     const char* it = begin + from;
-    while (it < end)
-    {
-        if (toupper(*it++) == toupper(*matchBegin))
-        {
+    while (it < end) {
+        if (toupper(*it++) == toupper(*matchBegin)) {
             const char* restart = it;
 
             // See if the remainder matches
             const char* searchIt = it;
             const char* matchIt = matchBegin + 1;
 
-            do
-            {
+            do {
                 if (matchIt == matchEnd)
                     return ((it - 1) - begin);
 
                 // We may find the next place to search in our scan
                 if ((restart == it) && (*searchIt == *(it - 1)))
                     restart = searchIt;
-            }
-            while (toupper(*searchIt++) == toupper(*matchIt++));
+            } while (toupper(*searchIt++) == toupper(*matchIt++));
 
             // No match
             it = restart;
@@ -182,15 +178,11 @@ static QByteArray charsetForInput(const QString& input)
 
     const QChar* it = input.constData();
     const QChar* const end = it + input.length();
-    for ( ; it != end; ++it)
-    {
-        if ((*it).unicode() > 0xff)
-        {
+    for ( ; it != end; ++it) {
+        if ((*it).unicode() > 0xff) {
             // Multi-byte characters included - we need to use UTF-8
             return QByteArray("UTF-8");
-        }
-        else if (!latin1 && ((*it).unicode() > 0x7f))
-        {
+        } else if (!latin1 && ((*it).unicode() > 0x7f)) {
             // We need encoding from latin-1
             latin1 = true;
         }
@@ -201,8 +193,7 @@ static QByteArray charsetForInput(const QString& input)
 
 static QByteArray fromUnicode(const QString& input, const QByteArray& charset)
 {
-    if (!charset.isEmpty() && (insensitiveIndexOf("ascii", charset) == -1))
-    {
+    if (!charset.isEmpty() && (insensitiveIndexOf("ascii", charset) == -1)) {
         // See if we can convert using the nominated charset
         if (QTextCodec* textCodec = QMailCodec::codecForName(charset))
             return textCodec->fromUnicode(input);
@@ -265,61 +256,59 @@ static QMailMessageBody::TransferEncoding encodingForName(const QByteArray& name
 
 static const char* nameForEncoding(QMailMessageBody::TransferEncoding te)
 {
-    switch ( te )
-    {
-        case QMailMessageBody::SevenBit:
-            return "7bit";
-        case QMailMessageBody::EightBit:
-            return "8bit";
-        case QMailMessageBody::QuotedPrintable:
-            return "quoted-printable";
-        case QMailMessageBody::Base64:
-            return "base64";
-        case QMailMessageBody::Binary:
-            return "binary";
-        case QMailMessageBody::NoEncoding:
-            break;
+    switch (te) {
+    case QMailMessageBody::SevenBit:
+        return "7bit";
+    case QMailMessageBody::EightBit:
+        return "8bit";
+    case QMailMessageBody::QuotedPrintable:
+        return "quoted-printable";
+    case QMailMessageBody::Base64:
+        return "base64";
+    case QMailMessageBody::Binary:
+        return "binary";
+    case QMailMessageBody::NoEncoding:
+        break;
     }
 
-    return 0;
+    return nullptr;
 }
 
 static QMailCodec* codecForEncoding(QMailMessageBody::TransferEncoding te, bool textualData)
 {
-    switch ( te )
-    {
-        case QMailMessageBody::NoEncoding:
-        case QMailMessageBody::Binary:
+    switch (te) {
+    case QMailMessageBody::NoEncoding:
+    case QMailMessageBody::Binary:
+        return new QMailPassThroughCodec();
+
+    case QMailMessageBody::SevenBit:
+    case QMailMessageBody::EightBit:
+        if (textualData) {
+            return static_cast<QMailCodec*>(new QMailLineEndingCodec());
+        } else {
             return new QMailPassThroughCodec();
+        }
 
-        case QMailMessageBody::SevenBit:
-        case QMailMessageBody::EightBit:
-            if (textualData) {
-                return static_cast<QMailCodec*>(new QMailLineEndingCodec());
-            } else {
-                return new QMailPassThroughCodec();
-            }
+    case QMailMessageBody::QuotedPrintable:
+        if (textualData) {
+            return new QMailQuotedPrintableCodec(
+                        QMailQuotedPrintableCodec::Text,
+                        QMailQuotedPrintableCodec::Rfc2045);
+        } else {
+            return new QMailQuotedPrintableCodec(
+                        QMailQuotedPrintableCodec::Binary,
+                        QMailQuotedPrintableCodec::Rfc2045);
+        }
 
-        case QMailMessageBody::QuotedPrintable:
-            if (textualData) {
-                return new QMailQuotedPrintableCodec(
-                    QMailQuotedPrintableCodec::Text,
-                    QMailQuotedPrintableCodec::Rfc2045);
-            } else {
-                return new QMailQuotedPrintableCodec(
-                    QMailQuotedPrintableCodec::Binary,
-                    QMailQuotedPrintableCodec::Rfc2045);
-            }
-
-        case QMailMessageBody::Base64:
-            if (textualData) {
-                return new QMailBase64Codec(QMailBase64Codec::Text);
-            } else {
-                return new QMailBase64Codec(QMailBase64Codec::Binary);
-            }
+    case QMailMessageBody::Base64:
+        if (textualData) {
+            return new QMailBase64Codec(QMailBase64Codec::Text);
+        } else {
+            return new QMailBase64Codec(QMailBase64Codec::Binary);
+        }
     }
 
-    return 0;
+    return nullptr;
 }
 
 static QMailCodec* codecForEncoding(QMailMessageBody::TransferEncoding te, const QMailMessageContentType& content)
@@ -336,26 +325,20 @@ static QPair<QByteArray, QByteArray> encodedText(const QByteArray& encodedWord)
 
     // Find the parts of the input
     index[0] = encodedWord.indexOf("=?");
-    if (index[0] != -1)
-    {
+    if (index[0] != -1) {
         index[1] = encodedWord.indexOf('?', index[0] + 2);
-        if (index[1] != -1)
-        {
+        if (index[1] != -1) {
             index[2] = encodedWord.indexOf('?', index[1] + 1);
             index[3] = encodedWord.lastIndexOf("?=");
-            if ((index[2] != -1) && (index[3] > index[2]))
-            {
+            if ((index[2] != -1) && (index[3] > index[2])) {
                 QByteArray charset = QMail::unquoteString(encodedWord.mid(index[0] + 2, (index[1] - index[0] - 2)));
                 QByteArray encoding = encodedWord.mid(index[1] + 1, (index[2] - index[1] - 1)).toUpper();
                 QByteArray encoded = encodedWord.mid(index[2] + 1, (index[3] - index[2] - 1));
 
-                if (encoding == "Q")
-                {
+                if (encoding == "Q") {
                     QMailQuotedPrintableCodec codec(QMailQuotedPrintableCodec::Text, QMailQuotedPrintableCodec::Rfc2047);
                     result = qMakePair(codec.decode(encoded), charset);
-                }
-                else if (encoding == "B")
-                {
+                } else if (encoding == "B") {
                     QMailBase64Codec codec(QMailBase64Codec::Binary);
                     result = qMakePair(codec.decode(encoded), charset);
                 }
@@ -382,8 +365,7 @@ static QByteArray generateEncodedWord(const QByteArray& codec, char encoding, co
 {
     QByteArray result;
 
-    foreach (const QByteArray& item, list)
-    {
+    foreach (const QByteArray& item, list) {
         if (!result.isEmpty())
             result.append(' ');
 
@@ -449,8 +431,7 @@ static QList<QByteArray> split(const QByteArray& input, const QByteArray& separa
 
     int index = -1;
     int lastIndex = -1;
-    do
-    {
+    do {
         lastIndex = index;
         index = input.indexOf(separator, lastIndex + 1);
 
@@ -476,8 +457,7 @@ static QByteArray encodeWord(const QString &text, const QByteArray& cs, bool* en
     int maximumEncoded = 75 - 7 - charset.length();
 
     // If this is an encodedWord, we need to include any whitespace that we don't want to lose
-    if (insensitiveIndexOf("utf-8", charset) == 0)
-    {
+    if (insensitiveIndexOf("utf-8", charset) == 0) {
         QList<QByteArray> listEnc;
         QList<QByteArray> list = splitUtf8(text.toUtf8(), maximumEncoded);
         foreach (const QByteArray &item, list) {
@@ -487,9 +467,7 @@ static QByteArray encodeWord(const QString &text, const QByteArray& cs, bool* en
         }
 
         return generateEncodedWord(charset, 'B', listEnc);
-    }
-    else if (insensitiveIndexOf("iso-8859-", charset) == 0)
-    {
+    } else if (insensitiveIndexOf("iso-8859-", charset) == 0) {
         QMailQuotedPrintableCodec codec(QMailQuotedPrintableCodec::Text, QMailQuotedPrintableCodec::Rfc2047, maximumEncoded);
         QByteArray encoded = codec.encode(text, charset);
         return generateEncodedWord(charset, 'Q', split(encoded, "=\r\n"));
@@ -583,42 +561,32 @@ static QList<Token> tokenSequence(const QString& input)
 
     const QChar* it = input.constData();
     const QChar* const end = it + input.length();
-    if (it != end)
-    {
+    if (it != end) {
         const QChar* token = it;
         EncodingTokenType state = ((*it) == QChar::fromLatin1('"') ? Quote : ((*it).isSpace() ? Whitespace : Word));
 
-        for (++it; it != end; ++it)
-        {
-            if (!escaped && (*it == QChar::fromLatin1('\\')))
-            {
+        for (++it; it != end; ++it) {
+            if (!escaped && (*it == QChar::fromLatin1('\\'))) {
                 escaped = true;
                 continue;
             }
 
-            if (state == Quote)
-            {
+            if (state == Quote) {
                 // This quotation mark is a token by itself
                 result.append(makeToken(state, token, it, escaped));
 
                 state = ((*it) == QChar::fromLatin1('"') && !escaped ? Quote : ((*it).isSpace() ? Whitespace : Word));
                 token = it;
-            }
-            else if (state == Whitespace)
-            {
-                if (!(*it).isSpace())
-                {
+            } else if (state == Whitespace) {
+                if (!(*it).isSpace()) {
                     // We have passed the end of this whitespace-sequence
                     result.append(makeToken(state, token, it, escaped));
 
                     state = ((*it) == QChar::fromLatin1('"') && !escaped ? Quote : Word);
                     token = it;
                 }
-            }
-            else
-            {
-                if ((*it).isSpace() || ((*it) == QChar::fromLatin1('"') && !escaped))
-                {
+            } else {
+                if ((*it).isSpace() || ((*it) == QChar::fromLatin1('"') && !escaped)) {
                     // We have passed the end of this word
                     result.append(makeToken(state, token, it, escaped));
 
@@ -645,15 +613,12 @@ static QByteArray encodeWordSequence(const QString& str, const QByteArray& chars
     QString quotedText;
     QString heldWhitespace;
 
-    foreach (const Token& token, tokenSequence(str))
-    {
+    foreach (const Token& token, tokenSequence(str)) {
         QString chars = QString::fromRawData(token.second.first, token.second.second);
 
         // See if we're processing some quoted words
-        if (quoted)
-        {
-            if (token.first == Quote)
-            {
+        if (quoted) {
+            if (token.first == Quote) {
                 // We have reached the end of a quote sequence
                 quotedText.append(chars);
 
@@ -668,24 +633,16 @@ static QByteArray encodeWordSequence(const QString& str, const QByteArray& chars
                 if (lastEncoded && tokenEncoded)
                     result.append(' ');
                 result.append(output);
-            }
-            else
-            {
+            } else {
                 quotedText.append(chars);
             }
-        }
-        else
-        {
-            if (token.first == Quote)
-            {
+        } else {
+            if (token.first == Quote) {
                 // This token begins a quoted sequence
                 quotedText = chars;
                 quoted = true;
-            }
-            else
-            {
-                if (token.first == Word)
-                {
+            } else {
+                if (token.first == Word) {
                     bool lastEncoded = tokenEncoded;
 
                     // See if this token needs encoding
@@ -695,9 +652,7 @@ static QByteArray encodeWordSequence(const QString& str, const QByteArray& chars
                     if (lastEncoded && tokenEncoded)
                         result.append(' ');
                     result.append(output);
-                }
-                else // whitespace
-                {
+                } else { // whitespace
                     // If the last token was an encoded-word, we may need to include this
                     // whitespace into the next token
                     if (tokenEncoded)
@@ -710,8 +665,7 @@ static QByteArray encodeWordSequence(const QString& str, const QByteArray& chars
     }
 
     // Process trailing text after unmatched double quote character
-    if (quoted)
-    {
+    if (quoted) {
         bool lastEncoded = tokenEncoded;
 
         QByteArray output = encodeWord(heldWhitespace + quotedText, charset, &tokenEncoded);
@@ -747,17 +701,15 @@ static QString decodeParameterText(const QByteArray& text, const QByteArray& cha
 
     // Decode any encoded bytes in the data
     const char* it = text.constData();
-    for (const char* const end = it + text.length(); it != end; ++it)
-    {
-        if (*it == '%')
-        {
+    for (const char* const end = it + text.length(); it != end; ++it) {
+        if (*it == '%') {
             if ((end - it) > 2)
                 decoded.append(hexValue(it + 1));
 
             it += 2;
-        }
-        else
+        } else {
             decoded.append(*it);
+        }
     }
 
     // Decoded contains a bytestream - decode to unicode text if possible
@@ -795,8 +747,7 @@ static QByteArray generateEncodedParameter(const QByteArray& charset, const QByt
 
     // If the charset contains a language part, extract it
     int index = result.indexOf('*');
-    if (index != -1)
-    {
+    if (index != -1) {
         // If no language is specified, use the extracted part
         if (lang.isEmpty())
             lang = result.mid(index + 1);
@@ -1604,7 +1555,7 @@ namespace attachments
                 disposition.setParameter("filename*", QMailMessageContentDisposition::encodeParameter(input, "UTF-8"));
             }
 
-            container->appendPart(QMailMessagePart::fromFile(filePath, disposition,attach_type, QMailMessageBody::Base64,
+            container->appendPart(QMailMessagePart::fromFile(filePath, disposition, attach_type, QMailMessageBody::Base64,
                                                              QMailMessageBody::RequiresEncoding));
             addedSome = true;
         }
@@ -1662,8 +1613,7 @@ static bool validExtension(const QByteArray& trailer, int* number = Q_NULLPTR, b
     // Extensions according to RFC 2231:
     QRegularExpressionMatch extensionFormat =
         QRegularExpression(QLatin1String("^(?:\\*(\\d+))?(\\*?)$")).match(QLatin1String(trailer));
-    if (extensionFormat.hasMatch())
-    {
+    if (extensionFormat.hasMatch()) {
         if (number)
             *number = extensionFormat.captured(1).toInt();
         if (encoded)
@@ -1683,8 +1633,7 @@ static bool matchingParameter(const QByteArray& name, const QByteArray& other, b
     if (index == -1)
         return false;
 
-    if (index > 0)
-    {
+    if (index > 0) {
         // Ensure that every preceding character is whitespace
         QByteArray leader(other.left(index).trimmed());
         if (!leader.isEmpty())
@@ -1697,8 +1646,7 @@ static bool matchingParameter(const QByteArray& name, const QByteArray& other, b
         index = other.length();
 
     // Ensure that there is only whitespace between the matched name and the end of the name
-    if ((index - lastIndex) > 1)
-    {
+    if ((index - lastIndex) > 1) {
         QByteArray trailer(other.mid(lastIndex + 1, (index - lastIndex)).trimmed());
         if (!trailer.isEmpty())
             return validExtension(trailer, 0, encoded);
@@ -1725,8 +1673,7 @@ void QMailMessageHeaderFieldPrivate::parse(const QByteArray& text, bool structur
     const char* token = begin;
     const char* it = begin;
     const char* separator = 0;
-    for (bool quoted = false; it != end; ++it)
-    {
+    for (bool quoted = false; it != end; ++it) {
         if (*it == '"') {
             quoted = !quoted;
         }
@@ -1745,26 +1692,22 @@ void QMailMessageHeaderFieldPrivate::parse(const QByteArray& text, bool structur
             if (separator == 0) {
                 // This is a parameter separator
                 separator = it;
-            }
-            else  {
+            } else {
                 // It would be nice to identify extra '=' chars, but it's too hard
                 // to separate them from encoded-word formations...
                 //malformed = true;
             }
-        }
-        else if (*it == ';' && !quoted && structured) {
+        } else if (*it == ';' && !quoted && structured) {
             // This is the end of a token
             if (_content.isEmpty()) {
                 _content = QByteArray(token, (it - token)).trimmed();
-            }
-            else if ((separator > token) && ((separator + 1) < it)) {
+            } else if ((separator > token) && ((separator + 1) < it)) {
                 QByteArray name = QByteArray(token, (separator - token)).trimmed();
                 QByteArray value = QByteArray(separator + 1, (it - separator - 1)).trimmed();
 
                 if (!name.isEmpty() && !value.isEmpty())
                     addParameter(name, value);
-            }
-            else {
+            } else {
                 malformed = true;
             }
 
@@ -1776,18 +1719,15 @@ void QMailMessageHeaderFieldPrivate::parse(const QByteArray& text, bool structur
     if (token != end) {
         if (_id.isEmpty()) {
             _id = QByteArray(token, (end - token)).trimmed();
-        }
-        else if (_content.isEmpty()) {
+        } else if (_content.isEmpty()) {
             _content = QByteArray(token, (end - token)).trimmed();
-        }
-        else if ((separator > token) && ((separator + 1) < end) && !malformed) {
+        } else if ((separator > token) && ((separator + 1) < end) && !malformed) {
             QByteArray name = QByteArray(token, (separator - token)).trimmed();
             QByteArray value = QByteArray(separator + 1, (end - separator - 1)).trimmed();
 
             if (!name.isEmpty() && !value.isEmpty())
                 addParameter(name, value);
-        }
-        else if (_structured) {
+        } else if (_structured) {
             malformed = true;
         }
     }
@@ -1886,8 +1826,7 @@ void QMailMessageHeaderFieldPrivate::setParameter(const QByteArray& name, const 
         // We have multiple pieces to insert
         QList<QByteArray> pieces;
         QByteArray input(value);
-        do
-        {
+        do {
             int splitPoint = maxInputLength;
             if (encoded && input.length() > maxInputLength) {
                 int percentPosition = input.indexOf("%", maxInputLength - 2);
@@ -2042,8 +1981,7 @@ QByteArray QMailMessageHeaderFieldPrivate::toString(bool includeName, bool prese
         result += _content;
     }
 
-    if (_structured)
-    {
+    if (_structured) {
         foreach (const QMailMessageContentType::ParameterType& parameter, (presentable ? parameters() : _parameters))
             result.append("; ").append(parameter.first).append('=').append(protectedParameter(parameter.second));
     }
@@ -2175,8 +2113,7 @@ QString QMailMessageHeaderFieldPrivate::decodedContent() const
 {
     QString result(QMailMessageHeaderField::decodeContent(_content));
 
-    if (_structured)
-    {
+    if (_structured) {
         foreach (const QMailMessageContentType::ParameterType& parameter, _parameters) {
             QString decoded;
             if (parameterEncoded(parameter.first))
@@ -2557,12 +2494,9 @@ QMailMessageContentType::QMailMessageContentType(const QByteArray& type)
     // Although a conforming CT must be: <type> "/" <subtype> without whitespace,
     // we'll be a bit more accepting
     int index = type.indexOf('/');
-    if (index == -1)
-    {
+    if (index == -1) {
         content = type.trimmed();
-    }
-    else
-    {
+    } else {
         QByteArray primaryType = type.left(index).trimmed();
         QByteArray secondaryType = type.mid(index + 1).trimmed();
 
@@ -2647,8 +2581,7 @@ QByteArray QMailMessageContentType::subType() const
 void QMailMessageContentType::setSubType(const QByteArray& subType)
 {
     QByteArray primaryType(type());
-    if (!primaryType.isEmpty())
-    {
+    if (!primaryType.isEmpty()) {
         if (!subType.isEmpty())
             primaryType.append('/').append(subType);
 
@@ -3022,8 +2955,7 @@ static bool matchingId(const QByteArray& id, const QByteArray& other, bool allow
     if (index == -1)
         return false;
 
-    if (index > 0)
-    {
+    if (index > 0) {
         // Ensure that every preceding character is whitespace
         QByteArray leader(other.left(index).trimmed());
         if (!leader.isEmpty())
@@ -3039,8 +2971,7 @@ static bool matchingId(const QByteArray& id, const QByteArray& other, bool allow
         index = other.length() - 1;
 
     // Ensure that there is only whitespace between the matched ID and the end of the ID
-    if ((index - lastIndex) > 1)
-    {
+    if ((index - lastIndex) > 1) {
         QByteArray trailer(other.mid(lastIndex + 1, (index - lastIndex)).trimmed());
         if (!trailer.isEmpty())
             return false;
@@ -3265,6 +3196,7 @@ void QMailMessageBodyPrivate::ensureCharsetExist()
         } else {
             autoCharset = QMailCodec::autoDetectEncoding(data).toLatin1();
         }
+
         if (!autoCharset.isEmpty() && (insensitiveIndexOf("ISO-8859-", autoCharset) == -1)) {
             QByteArray best(QMailCodec::bestCompatibleCharset(autoCharset, true));
             if (!best.isEmpty()) {
@@ -3314,8 +3246,7 @@ void QMailMessageBodyPrivate::fromStream(QDataStream& in, const QMailMessageCont
         te = QMailMessageBody::SevenBit;
 
     QMailCodec* codec = codecForEncoding(te, content);
-    if (codec)
-    {
+    if (codec) {
         // Stream to the buffer, encoding as required
         QByteArray encoded;
         {
@@ -3338,8 +3269,7 @@ void QMailMessageBodyPrivate::fromStream(QTextStream& in, const QMailMessageCont
     _bodyData = LongString();
 
     QMailCodec* codec = codecForEncoding(te, content);
-    if (codec)
-    {
+    if (codec) {
         QByteArray encoded;
         {
             QDataStream out(&encoded, QIODevice::WriteOnly);
@@ -3364,13 +3294,10 @@ void QMailMessageBodyPrivate::fromStream(QTextStream& in, const QMailMessageCont
 static bool unicodeConvertingCharset(const QByteArray& charset)
 {
     // See if this is a unicode-capable codec
-    if (QTextCodec* textCodec = QMailCodec::codecForName(charset, true))
-    {
+    if (QTextCodec* textCodec = QMailCodec::codecForName(charset, true)) {
         const QChar multiByteChar = static_cast<char16_t>(0x1234);
         return textCodec->canEncode(multiByteChar);
-    }
-    else
-    {
+    } else {
         qCWarning(lcMessaging) << "unicodeConvertingCharset: unable to find codec for charset:" << charset;
     }
 
@@ -3382,11 +3309,9 @@ static QByteArray extractionCharset(const QMailMessageContentType& type)
     QByteArray charset;
 
     // Find the charset for this data, if it is text data
-    if (insensitiveEqual(type.type(), "text"))
-    {
+    if (insensitiveEqual(type.type(), "text")) {
         charset = type.charset();
-        if (!charset.isEmpty())
-        {
+        if (!charset.isEmpty()) {
             // If the codec can't handle multi-byte characters, don't extract to/from unicode
             if (!unicodeConvertingCharset(charset))
                 charset = QByteArray();
@@ -3399,8 +3324,7 @@ static QByteArray extractionCharset(const QMailMessageContentType& type)
 bool QMailMessageBodyPrivate::toFile(const QString& file, QMailMessageBody::EncodingFormat format) const
 {
     QFile outFile(file);
-    if (!outFile.open(QIODevice::WriteOnly))
-    {
+    if (!outFile.open(QIODevice::WriteOnly)) {
         qCWarning(lcMessaging) << "Unable to open for write:" << file;
         return false;
     }
@@ -3414,8 +3338,7 @@ bool QMailMessageBodyPrivate::toFile(const QString& file, QMailMessageBody::Enco
         te = QMailMessageBody::Binary;
 
     QMailCodec* codec = codecForEncoding(te, _type);
-    if (codec)
-    {
+    if (codec) {
         bool result = false;
 
         // Find the charset for this data, if it is text data
@@ -3423,17 +3346,14 @@ bool QMailMessageBodyPrivate::toFile(const QString& file, QMailMessageBody::Enco
 
         QDataStream* in = _bodyData.dataStream();
         // Empty charset indicates no unicode encoding; encoded return data means binary streams
-        if (charset.isEmpty() || encodeOutput)
-        {
+        if (charset.isEmpty() || encodeOutput) {
             // We are dealing with binary data
             QDataStream out(&outFile);
             if (encodeOutput)
                 codec->encode(out, *in);
             else
                 codec->decode(out, *in);
-        }
-        else // we should probably check that charset matches this->charset
-        {
+        } else { // we should probably check that charset matches this->charset
             // We are dealing with unicode text data, which we want in unencoded form
             QTextStream out(&outFile);
 
@@ -3463,21 +3383,17 @@ bool QMailMessageBodyPrivate::toStream(QDataStream& out, QMailMessageBody::Encod
         te = QMailMessageBody::Binary;
 
     QMailCodec* codec = codecForEncoding(te, _type);
-    if (codec)
-    {
+    if (codec) {
         bool result = false;
 
         QByteArray charset(extractionCharset(_type));
-        if (!charset.isEmpty() && !_filename.isEmpty() && encodeOutput)
-        {
+        if (!charset.isEmpty() && !_filename.isEmpty() && encodeOutput) {
             // This data must be unicode in the file
             QTextStream* in = _bodyData.textStream();
             codec->encode(out, *in, charset);
             result = (in->status() == QTextStream::Ok);
             delete in;
-        }
-        else
-        {
+        } else {
             QDataStream* in = _bodyData.dataStream();
             if (encodeOutput)
                 codec->encode(out, *in);
@@ -3509,8 +3425,7 @@ bool QMailMessageBodyPrivate::toStream(QTextStream& out) const
         te = QMailMessageBody::Binary;
 
     QMailCodec* codec = codecForEncoding(te, _type);
-    if (codec)
-    {
+    if (codec) {
         bool result = false;
 
         QDataStream* in = _bodyData.dataStream();
@@ -4023,8 +3938,7 @@ void QMailMessagePartContainerPrivate::setHeader(const QMailMessageHeader& partH
     defaultContentType(parent);
 
     QByteArray contentType = headerField("Content-Type");
-    if (!contentType.isEmpty())
-    {
+    if (!contentType.isEmpty()) {
         // Extract the stored parts from the supplied field
         QMailMessageContentType type(contentType);
         _multipartType = QMailMessagePartContainer::multipartTypeForName(type.content());
@@ -4040,20 +3954,15 @@ void QMailMessagePartContainerPrivate::defaultContentType(const QMailMessagePart
     QByteArray contentType = headerField("Content-Type");
     bool useDefault = contentType.isEmpty();
 
-    if (!useDefault)
-    {
+    if (!useDefault) {
         type = QMailMessageContentType(contentType);
 
-        if (type.type().isEmpty() || type.subType().isEmpty())
-        {
+        if (type.type().isEmpty() || type.subType().isEmpty()) {
             useDefault = true;
-        }
-        else if (insensitiveEqual(type.content(), "application/octet-stream"))
-        {
+        } else if (insensitiveEqual(type.content(), "application/octet-stream")) {
             // Sender's client might not know what type, but maybe we do. Try...
             QByteArray contentDisposition = headerField("Content-Disposition");
-            if (!contentDisposition.isEmpty())
-            {
+            if (!contentDisposition.isEmpty()) {
                 QMailMessageContentDisposition disposition(contentDisposition);
 
                 QList<QMimeType> mimeTypes = QMimeDatabase().mimeTypesForFileName(QString::fromUtf8(disposition.filename()));
@@ -4065,12 +3974,10 @@ void QMailMessagePartContainerPrivate::defaultContentType(const QMailMessagePart
         }
     }
 
-    if (useDefault && parent)
-    {
+    if (useDefault && parent) {
         // Note that the default is 'message/rfc822' when the parent is 'multipart/digest'
         QMailMessageContentType parentType = parent->contentType();
-        if (parentType.matches("multipart", "digest"))
-        {
+        if (parentType.matches("multipart", "digest")) {
             type.setType("message");
             type.setSubType("rfc822");
             updateHeaderField(type.id(), type.toString(false, false));
@@ -4078,8 +3985,7 @@ void QMailMessagePartContainerPrivate::defaultContentType(const QMailMessagePart
         }
     }
 
-    if (useDefault)
-    {
+    if (useDefault) {
         type.setType("text");
         type.setSubType("plain");
         type.setCharset("us-ascii");
@@ -4196,7 +4102,7 @@ void QMailMessagePartContainerPrivate::setMultipartType(QMailMessagePartContaine
 
         if (_multipartType == QMailMessagePartContainer::MultipartNone) {
             removeHeaderField("Content-Type");
-        } else  {
+        } else {
             QMailMessageContentType contentType = updateContentType(headerField("Content-Type"), _multipartType, _boundary);
             foreach (const QMailMessageHeaderField::ParameterType& param, parameters)
                 contentType.setParameter(param.first, param.second);
@@ -4345,8 +4251,7 @@ void QMailMessagePartContainerPrivate::updateHeaderField(const QByteArray &id, c
     _header.update(id, content);
     setDirty();
 
-    if (insensitiveEqual(plainId(id), "Content-Type"))
-    {
+    if (insensitiveEqual(plainId(id), "Content-Type")) {
         // Extract the stored parts from the supplied field
         QMailMessageContentType type(content);
         _multipartType = QMailMessagePartContainer::multipartTypeForName(type.content());
@@ -4373,8 +4278,7 @@ void QMailMessagePartContainerPrivate::appendHeaderField(const QByteArray &id, c
     _header.append( id, content );
     setDirty();
 
-    if (insensitiveEqual(plainId(id), "Content-Type"))
-    {
+    if (insensitiveEqual(plainId(id), "Content-Type")) {
         // Extract the stored parts from the supplied field
         QMailMessageContentType type(content);
         _multipartType = QMailMessagePartContainer::multipartTypeForName(type.content());
@@ -4392,8 +4296,7 @@ void QMailMessagePartContainerPrivate::removeHeaderField(const QByteArray &id)
     _header.remove(id);
     setDirty();
 
-    if (insensitiveEqual(plainId(id), "Content-Type"))
-    {
+    if (insensitiveEqual(plainId(id), "Content-Type")) {
         // Extract the stored parts from the supplied field
         _multipartType = QMailMessagePartContainer::MultipartNone;
         _boundary = QByteArray();
@@ -4536,16 +4439,14 @@ void QMailMessagePartContainerPrivate::parseMimeMultipart(const QMailMessageHead
     if (endPos == -1)
         endPos = body.length() - 1;
 
-    while ((startPos != -1) && (startPos < endPos))
-    {
+    while ((startPos != -1) && (startPos < endPos)) {
         // Skip the boundary line
         startPos = body.indexOf(lineFeed, startPos);
 
         if (startPos > 0 && body.mid(startPos - 1, 1).indexOf(QByteArray(1, QMailMessage::CarriageReturn)) != -1)
             startPos--;
 
-        if ((startPos != -1) && (startPos < endPos))
-        {
+        if ((startPos != -1) && (startPos < endPos)) {
             // Parse the section up to the next boundary marker
             int nextPos = body.indexOf(partDelimiter, startPos);
 
@@ -5140,46 +5041,27 @@ QMailMessagePartContainer::MultipartType QMailMessagePartContainer::multipartTyp
 */
 QByteArray QMailMessagePartContainer::nameForMultipartType(QMailMessagePartContainer::MultipartType type)
 {
-    switch (type)
-    {
-        case QMailMessagePartContainer::MultipartSigned:
-        {
+    switch (type) {
+    case QMailMessagePartContainer::MultipartSigned:
             return "multipart/signed";
-        }
-        case QMailMessagePartContainer::MultipartEncrypted:
-        {
-            return "multipart/encrypted";
-        }
-        case QMailMessagePartContainer::MultipartMixed:
-        {
-            return "multipart/mixed";
-        }
-        case QMailMessagePartContainer::MultipartAlternative:
-        {
-            return "multipart/alternative";
-        }
-        case QMailMessagePartContainer::MultipartDigest:
-        {
-            return "multipart/digest";
-        }
-        case QMailMessagePartContainer::MultipartParallel:
-        {
-            return "multipart/parallel";
-        }
-        case QMailMessagePartContainer::MultipartRelated:
-        {
-            return "multipart/related";
-        }
-        case QMailMessagePartContainer::MultipartFormData:
-        {
-            return "multipart/form-data";
-        }
-        case QMailMessagePartContainer::MultipartReport:
-        {
-            return "multipart/report";
-        }
-        case QMailMessagePartContainer::MultipartNone:
-            break;
+    case QMailMessagePartContainer::MultipartEncrypted:
+        return "multipart/encrypted";
+    case QMailMessagePartContainer::MultipartMixed:
+        return "multipart/mixed";
+    case QMailMessagePartContainer::MultipartAlternative:
+        return "multipart/alternative";
+    case QMailMessagePartContainer::MultipartDigest:
+        return "multipart/digest";
+    case QMailMessagePartContainer::MultipartParallel:
+        return "multipart/parallel";
+    case QMailMessagePartContainer::MultipartRelated:
+        return "multipart/related";
+    case QMailMessagePartContainer::MultipartFormData:
+        return "multipart/form-data";
+    case QMailMessagePartContainer::MultipartReport:
+        return "multipart/report";
+    case QMailMessagePartContainer::MultipartNone:
+        break;
     }
 
     return QByteArray();
@@ -8678,8 +8560,7 @@ bool QMailMessage::partialContentAvailable() const
 /*! \reimp */
 QString QMailMessage::preview() const
 {
-    if (partContainerImpl()->previewDirty())
-    {
+    if (partContainerImpl()->previewDirty()) {
         const_cast<QMailMessage*>(this)->refreshPreview();
     }
 

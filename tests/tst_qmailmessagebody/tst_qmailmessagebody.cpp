@@ -89,19 +89,12 @@ private slots:
     void toFile();
 };
 
-QTEST_MAIN(tst_QMailMessageBody)
-
-#include "tst_qmailmessagebody.moc"
-
 static QByteArray encode(const QByteArray& input, QMailMessageBody::TransferEncoding encoding)
 {
-    if (encoding == QMailMessageBody::Base64)
-    {
+    if (encoding == QMailMessageBody::Base64) {
         QMailBase64Codec codec(QMailBase64Codec::Text);
         return codec.encode(input);
-    }
-    else if (encoding == QMailMessageBody::QuotedPrintable)
-    {
+    } else if (encoding == QMailMessageBody::QuotedPrintable) {
         QMailQuotedPrintableCodec codec(QMailQuotedPrintableCodec::Text, QMailQuotedPrintableCodec::Rfc2045);
         return codec.encode(input);
     }
@@ -111,18 +104,13 @@ static QByteArray encode(const QByteArray& input, QMailMessageBody::TransferEnco
 
 static QByteArray encode(const QString& input, const QByteArray& charset, QMailMessageBody::TransferEncoding encoding)
 {
-    if (encoding == QMailMessageBody::Base64)
-    {
+    if (encoding == QMailMessageBody::Base64) {
         QMailBase64Codec codec(QMailBase64Codec::Text);
         return codec.encode(input, charset);
-    }
-    else if (encoding == QMailMessageBody::QuotedPrintable)
-    {
+    } else if (encoding == QMailMessageBody::QuotedPrintable) {
         QMailQuotedPrintableCodec codec(QMailQuotedPrintableCodec::Text, QMailQuotedPrintableCodec::Rfc2045);
         return codec.encode(input, charset);
-    }
-    else
-    {
+    } else {
         QMailPassThroughCodec codec;
         return codec.encode(input, charset);
     }
@@ -537,8 +525,8 @@ void tst_QMailMessageBody::fromFile()
     QTemporaryFile file(QString("%1/%2").arg(QDir::tempPath()).arg(metaObject()->className()));
     QVERIFY( file.open() );
     QString name = file.fileName();
-    if ( !string_input.isEmpty() )
-    {
+
+    if (!string_input.isEmpty()) {
         {
             QTextStream out( &file );
             out << string_input;
@@ -553,9 +541,7 @@ void tst_QMailMessageBody::fromFile()
         QCOMPARE( body.contentType().type().toLower(), content_properties[0].toLatin1().toLower() );
         QCOMPARE( body.contentType().subType().toLower(), content_properties[1].toLatin1().toLower() );
         QCOMPARE( body.contentType().charset().toLower(), content_properties[2].toLatin1().toLower() );
-    }
-    else
-    {
+    } else {
         {
             QDataStream out( &file );
             out.writeRawData( bytearray_input.constData(), bytearray_input.length() );
@@ -682,27 +668,21 @@ void tst_QMailMessageBody::toFile()
     QMailMessageContentType contentType( type );
 
     // Create a body from whatever data was supplied
-    if ( !string_input.isEmpty() )
-    {
+    if (!string_input.isEmpty()) {
         QMailMessageBody body = QMailMessageBody::fromData( string_input, contentType, QMailMessageBody::Base64 );
         body.toFile( name, format );
-    }
-    else
-    {
+    } else {
         QMailMessageBody body = QMailMessageBody::fromData( bytearray_input, contentType, QMailMessageBody::Base64, QMailMessageBody::RequiresEncoding );
         body.toFile( name, format );
     }
 
     QVERIFY( file.open() );
-    if ( !string_input.isEmpty() && format == QMailMessageBody::Decoded )
-    {
+    if (!string_input.isEmpty() && format == QMailMessageBody::Decoded) {
         // Read the string from the file and compare
         QTextStream in( &file );
         QString data = in.readAll();
         QCOMPARE( data, string_input );
-    }
-    else
-    {
+    } else {
         // Find the size of the file data
         QFileInfo fi( name );
         QByteArray data( fi.size(), '\0' );
@@ -711,14 +691,14 @@ void tst_QMailMessageBody::toFile()
         QDataStream in( &file );
         in.readRawData( data.data(), data.length() );
 
-        if ( !bytearray_output.isEmpty() )
-        {
+        if (!bytearray_output.isEmpty()) {
             QCOMPARE( data, bytearray_output );
-        }
-        else
-        {
+        } else {
             QCOMPARE( data, bytearray_input );
         }
     }
 }
 
+QTEST_MAIN(tst_QMailMessageBody)
+
+#include "tst_qmailmessagebody.moc"

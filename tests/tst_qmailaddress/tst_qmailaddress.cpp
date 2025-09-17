@@ -84,11 +84,6 @@ private slots:
     void removeWhitespace();
 };
 
-QTEST_MAIN(tst_QMailAddress)
-
-#include "tst_qmailaddress.moc"
-
-
 tst_QMailAddress::tst_QMailAddress()
 {
 }
@@ -1274,3 +1269,6 @@ void tst_QMailAddress::removeWhitespace()
     QTEST( QMailAddress::removeWhitespace(input), "output" );
 }
 
+QTEST_MAIN(tst_QMailAddress)
+
+#include "tst_qmailaddress.moc"

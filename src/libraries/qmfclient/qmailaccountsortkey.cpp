@@ -261,4 +261,3 @@ QMailAccountSortKey QMailAccountSortKey::iconPath(Qt::SortOrder order)
 }
 
 Q_IMPLEMENT_USER_METATYPE(QMailAccountSortKey)
-

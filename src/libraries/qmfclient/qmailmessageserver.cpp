@@ -1122,4 +1122,3 @@ Q_IMPLEMENT_USER_METATYPE_TYPEDEF(QMailMessageCountMap, QMailMessageCountMap)
 */
 
 #include "qmailmessageserver.moc"
-

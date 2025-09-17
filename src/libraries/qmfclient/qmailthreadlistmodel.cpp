@@ -51,9 +51,8 @@ private:
 };
 
 LessThanFunctorT::LessThanFunctorT(const QMailThreadSortKey& sortKey)
-:
-    mSortKey(sortKey),
-    mInvalidatedList(false)
+    : mSortKey(sortKey)
+    , mInvalidatedList(false)
 {
 }
 
@@ -65,8 +64,7 @@ bool LessThanFunctorT::operator()(const QMailThreadId& first, const QMailThreadI
     QMailThreadKey secondKey(QMailThreadKey::id(second));
 
     QMailThreadIdList results = QMailStore::instance()->queryThreads(firstKey | secondKey, mSortKey);
-    if (results.count() != 2)
-    {
+    if (results.count() != 2) {
         mInvalidatedList = true;
         return false;
     }
@@ -123,7 +121,7 @@ QMailThreadListModelPrivate::~QMailThreadListModelPrivate()
 
 void QMailThreadListModelPrivate::initialize() const
 {
-    idList = QMailStore::instance()->queryThreads(key,sortKey);
+    idList = QMailStore::instance()->queryThreads(key, sortKey);
     init = true;
     needSynchronize = false;
 }
@@ -200,7 +198,7 @@ QMailThreadIdList::iterator QMailThreadListModelPrivate::lowerBound(const QMailT
 QMailThreadListModel::QMailThreadListModel(QObject* parent)
 :
     QAbstractListModel(parent),
-    d(new QMailThreadListModelPrivate(QMailThreadKey(),QMailThreadSortKey(),true))
+    d(new QMailThreadListModelPrivate(QMailThreadKey(), QMailThreadSortKey(), true))
 {
     connect(QMailStore::instance(),
             SIGNAL(threadsAdded(QMailThreadIdList)),
@@ -251,8 +249,7 @@ QVariant QMailThreadListModel::data(const QModelIndex& index, int role) const
 
     QMailThread thread(id);
 
-    switch (role)
-    {
+    switch (role) {
     case Qt::DisplayRole:
         return thread.subject();
     case ThreadIdRole:
@@ -348,32 +345,27 @@ void QMailThreadListModel::threadsAdded(const QMailThreadIdList& ids)
     if (results.isEmpty())
         return;
 
-    if (!d->sortKey.isEmpty())
-    {
-        foreach(const QMailThreadId &id,results)
-        {
+    if (!d->sortKey.isEmpty()) {
+        foreach (const QMailThreadId &id, results) {
             LessThanFunctorT lessThan(d->sortKey);
 
             //if sorting the list fails, then resort to a complete refresh
-            if (lessThan.invalidatedList())
+            if (lessThan.invalidatedList()) {
                 fullRefresh();
-            else
-            {
+            } else {
                 QMailThreadIdList::iterator itr = d->lowerBound(id, lessThan);
                 int newIndex = (itr - d->idList.begin());
 
-                beginInsertRows(QModelIndex(),newIndex,newIndex);
+                beginInsertRows(QModelIndex(), newIndex, newIndex);
                 d->idList.insert(itr, id);
                 endInsertRows();
             }
         }
-    }
-    else
-    {
+    } else {
         int index = d->idList.count();
 
-        beginInsertRows(QModelIndex(),index,(index + results.count() - 1));
-        foreach(const QMailThreadId &id,results)
+        beginInsertRows(QModelIndex(), index, (index + results.count() - 1));
+        foreach (const QMailThreadId &id, results)
             d->idList.append(id);
         endInsertRows();
     }
@@ -400,18 +392,16 @@ void QMailThreadListModel::threadsUpdated(const QMailThreadIdList& ids)
     QMailThreadIdList validIds = QMailStore::instance()->queryThreads(idKey & d->key);
 
     //if the key is empty the id's will be returned valid and invalid
-    if (!d->key.isEmpty())
-    {
+    if (!d->key.isEmpty()) {
         QMailThreadIdList invalidIds = QMailStore::instance()->queryThreads(idKey & ~d->key);
-        foreach(const QMailThreadId &id,invalidIds)
-        {
+        foreach (const QMailThreadId &id, invalidIds) {
             //get the index
             int index = d->idList.indexOf(id);
             if (index == -1)
                 continue;
 
             d->deletionId = id;
-            beginRemoveRows(QModelIndex(),index,index);
+            beginRemoveRows(QModelIndex(), index, index);
             d->idList.removeAt(index);
             endRemoveRows();
             d->deletionId = QMailThreadId();
@@ -420,42 +410,33 @@ void QMailThreadListModel::threadsUpdated(const QMailThreadIdList& ids)
 
     LessThanFunctorT lessThan(d->sortKey);
 
-    foreach(const QMailThreadId &id, validIds)
-    {
+    foreach (const QMailThreadId &id, validIds) {
         int index = d->idList.indexOf(id);
-        if (index == -1) //insert
-        {
-            if (lessThan.invalidatedList())
+        if (index == -1) { //insert
+            if (lessThan.invalidatedList()) {
                 fullRefresh();
-            else
-            {
+            } else {
                 QMailThreadIdList::iterator itr = d->lowerBound(id, lessThan);
                 int newIndex = (itr - d->idList.begin());
 
-                beginInsertRows(QModelIndex(),newIndex,newIndex);
+                beginInsertRows(QModelIndex(), newIndex, newIndex);
                 d->idList.insert(itr, id);
                 endInsertRows();
             }
-        }
-        else //update
-        {
-            if (lessThan.invalidatedList())
+        } else { //update
+            if (lessThan.invalidatedList()) {
                 fullRefresh();
-            else
-            {
+            } else {
                 QMailThreadIdList::iterator itr = d->lowerBound(id, lessThan);
                 int newIndex = (itr - d->idList.begin());
 
-                if ((newIndex == index) || (newIndex == index + 1))
-                {
+                if ((newIndex == index) || (newIndex == index + 1)) {
                     // This item would be inserted either immediately before or after itself
-                    QModelIndex modelIndex = createIndex(index,0);
-                    emit dataChanged(modelIndex,modelIndex);
-                }
-                else
-                {
+                    QModelIndex modelIndex = createIndex(index, 0);
+                    emit dataChanged(modelIndex, modelIndex);
+                } else {
                     d->deletionId = id;
-                    beginRemoveRows(QModelIndex(),index,index);
+                    beginRemoveRows(QModelIndex(), index, index);
                     d->idList.removeAt(index);
                     endRemoveRows();
                     d->deletionId = QMailThreadId();
@@ -463,7 +444,7 @@ void QMailThreadListModel::threadsUpdated(const QMailThreadIdList& ids)
                     if (newIndex > index)
                         --newIndex;
 
-                    beginInsertRows(QModelIndex(),newIndex,newIndex);
+                    beginInsertRows(QModelIndex(), newIndex, newIndex);
                     d->idList.insert(newIndex, id);
                     endInsertRows();
                 }
@@ -484,14 +465,13 @@ void QMailThreadListModel::threadsRemoved(const QMailThreadIdList& ids)
     if (!d->init)
         d->initialize();
 
-    foreach(const QMailThreadId &id, ids)
-    {
+    foreach (const QMailThreadId &id, ids) {
         int index = d->indexOf(id);
         if (index == -1)
             continue;
 
         d->deletionId = id;
-        beginRemoveRows(QModelIndex(),index,index);
+        beginRemoveRows(QModelIndex(), index, index);
         d->idList.removeAt(index);
         endRemoveRows();
         d->deletionId = QMailThreadId();
@@ -522,7 +502,7 @@ QModelIndex QMailThreadListModel::indexFromId(const QMailThreadId& id) const
     //if the id does not exist return null
     int index = d->indexOf(id);
     if (index != -1) {
-        return createIndex(index,0);
+        return createIndex(index, 0);
     }
 
     return QModelIndex();
@@ -564,4 +544,3 @@ void QMailThreadListModel::fullRefresh()
     endResetModel();
     emit modelChanged();
 }
-

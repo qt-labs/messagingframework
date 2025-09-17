@@ -80,8 +80,7 @@ namespace QMail
         // If a string has double-quote as the first and last characters, return the string
         // between those characters
         int length = src.length();
-        if (length)
-        {
+        if (length) {
             typename StringType::const_iterator const begin = src.constData();
             typename StringType::const_iterator const last = begin + length - 1;
 
@@ -101,8 +100,7 @@ namespace QMail
 
         // Return the input string surrounded by double-quotes, which are added if not present
         int length = src.length();
-        if (length)
-        {
+        if (length) {
             result.reserve(length + 2);
 
             typename StringType::const_iterator begin = src.constData();

@@ -60,5 +60,4 @@ public:
     QMailMessageKeyPrivate(const ListType &valueList, QMailMessageKey::Property p, QMailKey::Comparator c) : Impl(valueList, p, c) {}
 };
 
-
 #endif

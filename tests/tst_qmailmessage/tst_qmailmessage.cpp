@@ -141,10 +141,6 @@ private slots:
     void readReceipt();
 };
 
-QTEST_MAIN(tst_QMailMessage)
-
-#include "tst_qmailmessage.moc"
-
 static void testHeader(const QString& name, void (QMailMessage::*setter)(const QString&), QString (QMailMessage::*getter)() const, bool expandEncodedWords = false)
 {
     QString value1("This is a string value");
@@ -1754,3 +1750,7 @@ void tst_QMailMessage::readReceipt()
                                  QMailMessageHeaderField::UnstructuredField).content(),
              QByteArray("manual-action/MDN-sent-manually; displayed"));
 }
+
+QTEST_MAIN(tst_QMailMessage)
+
+#include "tst_qmailmessage.moc"

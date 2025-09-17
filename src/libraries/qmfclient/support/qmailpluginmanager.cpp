@@ -121,7 +121,7 @@ public:
     ~QMailPluginManagerPrivate();
 
 public:
-    QMap<QString,QPluginLoader*> pluginMap;
+    QMap<QString, QPluginLoader*> pluginMap;
 };
 
 QMailPluginManagerPrivate::QMailPluginManagerPrivate(const QString& path)
@@ -130,13 +130,13 @@ QMailPluginManagerPrivate::QMailPluginManagerPrivate(const QString& path)
     QStringList coreLibraryPaths = QCoreApplication::libraryPaths();
     libraryPaths.append(coreLibraryPaths);
 
-    foreach(QString libraryPath, libraryPaths) {
+    foreach (QString libraryPath, libraryPaths) {
         QDir dir(libraryPath);
         //Change into the sub directory, and make sure it's readable
         if (!dir.cd(path) || !dir.isReadable())
             continue;
 
-        foreach(const QString &libname, dir.entryList(pluginFilePatterns(), QDir::Files)) {
+        foreach (const QString &libname, dir.entryList(pluginFilePatterns(), QDir::Files)) {
             QString libfile = dir.absoluteFilePath(libname);
             if (pluginMap.contains(libname))
                 pluginMap[libname]->setFileName(libfile);

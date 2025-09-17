@@ -162,7 +162,7 @@ protected:
     TransferState _transferState;
     QString _baseFolder;
     bool _error;
-    QMap<QString,bool> _folder;
+    QMap<QString, bool> _folder;
 };
 
 class ImapCreateFolderStrategy : public ImapStrategy
@@ -742,7 +742,7 @@ protected:
     QStringList _createdUids;
     int _messagesAdded;
     QStringList _obsoleteDestinationUids;
-    QMap<QString,QString> _remember;
+    QMap<QString, QString> _remember;
 };
 
 class ImapMoveMessagesStrategy : public ImapCopyMessagesStrategy

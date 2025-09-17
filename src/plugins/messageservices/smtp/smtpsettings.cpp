@@ -154,7 +154,7 @@ SmtpSettings::SmtpSettings()
     connect(setSignatureButton, SIGNAL(clicked()), this, SLOT(sigPressed()));
     connect(authentication, SIGNAL(currentIndexChanged(int)), this, SLOT(authChanged(int)));
     connect(emailInput, SIGNAL(textChanged(QString)), this, SLOT(emailModified()));
-    connect(sigCheckBox,SIGNAL(clicked(bool)),setSignatureButton,SLOT(setEnabled(bool)));
+    connect(sigCheckBox, SIGNAL(clicked(bool)), setSignatureButton, SLOT(setEnabled(bool)));
 
     const QString uncapitalised("email noautocapitalization");
 
@@ -310,6 +310,4 @@ bool SmtpSettings::updateAccount(QMailAccount *account, QMailAccountConfiguratio
     return true;
 }
 
-
 #include "smtpsettings.moc"
-

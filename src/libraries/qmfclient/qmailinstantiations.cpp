@@ -79,4 +79,3 @@ Q_IMPLEMENT_USER_METATYPE_ENUM(QMailServiceAction::Status::ErrorCode)
 Q_IMPLEMENT_USER_METATYPE_ENUM(QMailRetrievalAction::RetrievalSpecification)
 
 Q_IMPLEMENT_USER_METATYPE_ENUM(QMailSearchAction::SearchSpecification)
-

@@ -561,4 +561,3 @@ QStringList getMessageStructure(const QString &field)
 
     return QStringList();
 }
-

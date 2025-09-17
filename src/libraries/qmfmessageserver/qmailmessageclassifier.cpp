@@ -224,4 +224,3 @@ bool QMailMessageClassifier::classifyMessage(QMailMessage& message)
 
     return false;
 }
-

@@ -710,5 +710,3 @@ uint qHash(const QMailThreadId &id)
 {
     return qHash(id.toULongLong());
 }
-
-

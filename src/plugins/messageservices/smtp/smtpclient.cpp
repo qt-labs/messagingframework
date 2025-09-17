@@ -569,7 +569,7 @@ void SmtpClient::nextAction(const QString &response)
         if (responseCode == 220) {
             // Switch into encrypted mode
             transport->switchToEncrypted();
-        } else  {
+        } else {
             operationFailed(QMailServiceAction::Status::ErrUnknownResponse, response);
         }
         break;
@@ -742,7 +742,7 @@ void SmtpClient::nextAction(const QString &response)
                 sendCommand("RCPT TO:<" + *it + ">");
                 status = MRcv;
             }
-        } else  {
+        } else {
             operationFailed(QMailServiceAction::Status::ErrUnknownResponse, response);
         }
         break;
@@ -1079,8 +1079,7 @@ void SmtpClient::authExpired()
 
 void SmtpClient::stopTransferring()
 {
-    if (temporaryFile)
-    {
+    if (temporaryFile) {
         if (transport->isEncrypted())
             disconnect(&(transport->socket()), SIGNAL(encryptedBytesWritten(qint64)), this, SLOT(sendMoreData(qint64)));
         else

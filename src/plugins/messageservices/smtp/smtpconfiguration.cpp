@@ -102,7 +102,7 @@ SmtpConfigurationEditor::SmtpConfigurationEditor(QMailAccountConfiguration *conf
 
 void SmtpConfigurationEditor::setUserName(const QString& str)
 {
-    setValue("username",str);
+    setValue("username", str);
 }
 
 void SmtpConfigurationEditor::setEmailAddress(const QString &str)

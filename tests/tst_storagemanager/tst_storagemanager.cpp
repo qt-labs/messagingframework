@@ -64,9 +64,6 @@ private:
 
 };
 
-QTEST_MAIN(tst_StorageManager)
-#include "tst_storagemanager.moc"
-
 #define CRLF "\015\012"
 
 QMailAccountConfiguration tst_StorageManager::makeConfig(const QString &accountName)
@@ -259,6 +256,7 @@ void tst_StorageManager::test_remove()
 
 void tst_StorageManager::test_update()
 {
-
 }
 
+QTEST_MAIN(tst_StorageManager)
+#include "tst_storagemanager.moc"

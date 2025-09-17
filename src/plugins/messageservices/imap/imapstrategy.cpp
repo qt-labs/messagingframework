@@ -67,7 +67,7 @@ QString stripFolderPrefix(const QString &str)
 QStringList stripFolderPrefix(const QStringList &list)
 {
     QStringList result;
-    foreach(const QString &uid, list) {
+    foreach (const QString &uid, list) {
         result.append(stripFolderPrefix(uid));
     }
     return result;
@@ -135,7 +135,7 @@ bool purge(ImapStrategyContextBase *context, const QMailMessageKey &removedKey)
 {
     bool result(true);
     QStringList vanishedIds;
-    for (const QMailMessageMetaData& r : QMailStore::instance()->messagesMetaData(removedKey, QMailMessageKey::ServerUid))  {
+    for (const QMailMessageMetaData& r : QMailStore::instance()->messagesMetaData(removedKey, QMailMessageKey::ServerUid)) {
         const QString &uid(r.serverUid());
         // We might have a deletion record for this UID
         vanishedIds << uid;
@@ -182,7 +182,7 @@ bool updateMessagesMetaData(ImapStrategyContextBase *context,
         qCWarning(lcMailStore) << "Unable to update un-removed message metadata for account:" << context->accountId();
     }
 
-    for (const QMailMessageMetaData& r : QMailStore::instance()->messagesMetaData(nonexistentKey, QMailMessageKey::ServerUid))  {
+    for (const QMailMessageMetaData& r : QMailStore::instance()->messagesMetaData(nonexistentKey, QMailMessageKey::ServerUid)) {
         const QString &uid(r.serverUid());
         // We might have a deletion record for this UID
         if (!QMailStore::instance()->purgeMessageRemovalRecords(context->accountId(), QStringList() << uid)) {
@@ -328,10 +328,8 @@ QSet<QMailFolderId> foldersApplicableTo(QMailMessageKey const& messagekey, QSet<
             QSet<QMailFolderId> & included = isNegated ? r.second : r.first;
             QSet<QMailFolderId> & excluded = isNegated ? r.first : r.second;
 
-            for (QMailMessageKey::ArgumentType const& arg : key.arguments())
-            {
-                switch (arg.property)
-                {
+            for (QMailMessageKey::ArgumentType const& arg : key.arguments()) {
+                switch (arg.property) {
                 case QMailMessageKey::ParentFolderId:
                     if (arg.op == QMailKey::Equal || arg.op == QMailKey::Includes) {
                         Q_ASSERT(arg.valueList.count() == 1);
@@ -489,8 +487,7 @@ void ImapStrategyContextBase::operationCompleted()
     QMailMessageBuffer::instance()->flush();
 
     // Update the status on any folders we modified
-    for (QSet<QMailFolderId>::iterator it(_modifiedFolders.begin()) ; it != _modifiedFolders.end(); it = _modifiedFolders.erase(it))
-    {
+    for (QSet<QMailFolderId>::iterator it(_modifiedFolders.begin()) ; it != _modifiedFolders.end(); it = _modifiedFolders.erase(it)) {
         QMailFolder folder(*it);
         _client->updateFolderCountStatus(&folder);
 
@@ -710,8 +707,7 @@ void ImapCreateFolderStrategy::transition(ImapStrategyContextBase* context, cons
     if (op != OpOk)
         qCWarning(lcIMAP) << "IMAP Response to cmd:" << cmd << " is not ok: " << op;
 
-    switch (cmd)
-    {
+    switch (cmd) {
     case IMAP_Login:
         handleLogin(context);
         break;
@@ -775,8 +771,7 @@ void ImapDeleteFolderStrategy::transition(ImapStrategyContextBase* context, cons
     if (op != OpOk)
         qCWarning(lcIMAP) << "IMAP Response to cmd:" << cmd << " is not ok: " << op;
 
-    switch (cmd)
-    {
+    switch (cmd) {
     case IMAP_Login:
         handleLogin(context);
         break;
@@ -816,7 +811,7 @@ void ImapDeleteFolderStrategy::deleteFolder(const QMailFolderId &folderId, ImapS
     QMailFolderKey childKey(QMailFolderKey::parentFolderId(folderId));
     QMailFolderIdList childrenList = QMailStore::instance()->queryFolders(childKey);
 
-    foreach(QMailFolderId fid, childrenList) {
+    foreach (QMailFolderId fid, childrenList) {
         deleteFolder(fid, context);
     }
 
@@ -848,8 +843,7 @@ void ImapRenameFolderStrategy::transition(ImapStrategyContextBase* context, cons
     if (op != OpOk)
         qCWarning(lcIMAP) << "IMAP Response to cmd:" << cmd << " is not ok: " << op;
 
-    switch (cmd)
-    {
+    switch (cmd) {
     case IMAP_Login:
         handleLogin(context);
         break;
@@ -937,8 +931,7 @@ void ImapMoveFolderStrategy::transition(ImapStrategyContextBase* context, const 
     if (op != OpOk)
         qCWarning(lcIMAP) << "IMAP Response to cmd:" << cmd << " is not ok: " << op;
 
-    switch (cmd)
-    {
+    switch (cmd) {
     case IMAP_Login:
         handleLogin(context);
         break;
@@ -1049,30 +1042,19 @@ void ImapPrepareMessagesStrategy::newConnection(ImapStrategyContextBase *context
 
 void ImapPrepareMessagesStrategy::transition(ImapStrategyContextBase *context, ImapCommand command, OperationStatus)
 {
-    switch ( command ) {
-        case IMAP_Login:
-        {
-            handleLogin(context);
-            break;
-        }
-
-        case IMAP_GenUrlAuth:
-        {
-            handleGenUrlAuth(context);
-            break;
-        }
-
-        case IMAP_Logout:
-        {
-            break;
-        }
-
-        default:
-        {
-            _error = true;
-            qCWarning(lcIMAP) << "Unhandled IMAP response:" << command;
-            break;
-        }
+    switch (command) {
+    case IMAP_Login:
+        handleLogin(context);
+        break;
+    case IMAP_GenUrlAuth:
+        handleGenUrlAuth(context);
+        break;
+    case IMAP_Logout:
+        break;
+    default:
+        _error = true;
+        qCWarning(lcIMAP) << "Unhandled IMAP response:" << command;
+        break;
     }
 }
 
@@ -1258,62 +1240,37 @@ void ImapMessageListStrategy::checkUidValidity(ImapStrategyContextBase *context)
 
 void ImapMessageListStrategy::transition(ImapStrategyContextBase *context, ImapCommand command, OperationStatus)
 {
-    switch ( command ) {
-        case IMAP_Login:
-        {
-            handleLogin(context);
-            break;
-        }
+    switch (command) {
+    case IMAP_Login:
+        handleLogin(context);
+        break;
 
-        case IMAP_QResync: // fall through
-        case IMAP_Select:
-        {
-            checkUidValidity(context);
-            handleSelect(context);
-            break;
-        }
-
-        case IMAP_Create:
-        {
-            handleCreate(context);
-            break;
-        }
-
-        case IMAP_Delete:
-        {
-            handleDelete(context);
-            break;
-        }
-
-        case IMAP_Rename:
-        {
-            handleRename(context);
-            break;
-        }
-
-        case IMAP_Move:
-        {
-            handleMove(context);
-            break;
-        }
-
-        case IMAP_Close:
-        {
-            handleClose(context);
-            break;
-        }
-
-        case IMAP_Logout:
-        {
-            break;
-        }
-
-        default:
-        {
-            _error = true;
-            qCWarning(lcIMAP) << "Unhandled IMAP response:" << command;
-            break;
-        }
+    case IMAP_QResync: // fall through
+    case IMAP_Select:
+        checkUidValidity(context);
+        handleSelect(context);
+        break;
+    case IMAP_Create:
+        handleCreate(context);
+        break;
+    case IMAP_Delete:
+        handleDelete(context);
+        break;
+    case IMAP_Rename:
+        handleRename(context);
+        break;
+    case IMAP_Move:
+        handleMove(context);
+        break;
+    case IMAP_Close:
+        handleClose(context);
+        break;
+    case IMAP_Logout:
+        break;
+    default:
+        _error = true;
+        qCWarning(lcIMAP) << "Unhandled IMAP response:" << command;
+        break;
     }
 }
 
@@ -1690,15 +1647,14 @@ void ImapFetchSelectedMessagesStrategy::setOperation(
 {
     QMailAccountConfiguration accountCfg(context->accountId());
     ImapConfiguration imapCfg(accountCfg);
+
     switch (spec) {
     case QMailRetrievalAction::Auto:
-        {
-            if (imapCfg.isAutoDownload()) {
-                // Just download everything
-                _headerLimit = UINT_MAX;
-            } else {
-                _headerLimit = imapCfg.maxMailSize() * 1024;
-            }
+        if (imapCfg.isAutoDownload()) {
+            // Just download everything
+            _headerLimit = UINT_MAX;
+        } else {
+            _headerLimit = imapCfg.maxMailSize() * 1024;
         }
         break;
     case QMailRetrievalAction::Content:
@@ -1794,18 +1750,13 @@ void ImapFetchSelectedMessagesStrategy::newConnection(ImapStrategyContextBase *c
 
 void ImapFetchSelectedMessagesStrategy::transition(ImapStrategyContextBase *context, ImapCommand command, OperationStatus status)
 {
-    switch ( command ) {
-        case IMAP_UIDFetch:
-        {
-            handleUidFetch(context);
-            break;
-        }
-
-        default:
-        {
-            ImapMessageListStrategy::transition(context, command, status);
-            break;
-        }
+    switch (command) {
+    case IMAP_UIDFetch:
+        handleUidFetch(context);
+        break;
+    default:
+        ImapMessageListStrategy::transition(context, command, status);
+        break;
     }
 }
 
@@ -2032,7 +1983,7 @@ void ImapSearchMessageStrategy::handleSearchMessage(ImapStrategyContextBase *con
         return;
     }
 
-    foreach(const QString &uidString, properties.uidList) {
+    foreach (const QString &uidString, properties.uidList) {
         QMailMessageIdList ids(QMailStore::instance()->queryMessages(QMailMessageKey::serverUid(uidString) & QMailMessageKey::parentAccountId(context->accountId())));
         Q_ASSERT(ids.size() == 1 || ids.size() == 0);
         if (ids.size())
@@ -2095,24 +2046,16 @@ void ImapFolderListStrategy::newConnection(ImapStrategyContextBase *context)
 
 void ImapFolderListStrategy::transition(ImapStrategyContextBase *context, ImapCommand command, OperationStatus status)
 {
-    switch ( command ) {
-        case IMAP_List:
-        {
-            handleList(context);
-            break;
-        }
-
-        case IMAP_Search:
-        {
-            handleSearch(context);
-            break;
-        }
-
-        default:
-        {
-            ImapFetchSelectedMessagesStrategy::transition(context, command, status);
-            break;
-        }
+    switch (command) {
+    case IMAP_List:
+        handleList(context);
+        break;
+    case IMAP_Search:
+        handleSearch(context);
+        break;
+    default:
+        ImapFetchSelectedMessagesStrategy::transition(context, command, status);
+        break;
     }
 }
 
@@ -2434,7 +2377,7 @@ void ImapSynchronizeBaseStrategy::fetchNextMailPreview(ImapStrategyContextBase *
     if (!_newUids.isEmpty() || _outstandingPreviews) {
         while (!_newUids.isEmpty()) {
             QStringList uidList;
-            foreach(const QString &s, _newUids.mid(0, DefaultBatchSize)) {
+            foreach (const QString &s, _newUids.mid(0, DefaultBatchSize)) {
                 uidList << ImapProtocol::uid(s);
             }
 
@@ -2684,30 +2627,19 @@ void ImapSynchronizeAllStrategy::setOptions(Options options)
 
 void ImapSynchronizeAllStrategy::transition(ImapStrategyContextBase *context, ImapCommand command, OperationStatus status)
 {
-    switch ( command ) {
-        case IMAP_UIDSearch:
-        {
-            handleUidSearch(context);
-            break;
-        }
-
-        case IMAP_UIDStore:
-        {
-            handleUidStore(context);
-            break;
-        }
-
-        case IMAP_Expunge:
-        {
-            handleExpunge(context);
-            break;
-        }
-
-        default:
-        {
-            ImapRetrieveFolderListStrategy::transition(context, command, status);
-            break;
-        }
+    switch (command) {
+    case IMAP_UIDSearch:
+        handleUidSearch(context);
+        break;
+    case IMAP_UIDStore:
+        handleUidStore(context);
+        break;
+    case IMAP_Expunge:
+        handleExpunge(context);
+        break;
+    default:
+        ImapRetrieveFolderListStrategy::transition(context, command, status);
+        break;
     }
 }
 
@@ -2715,28 +2647,22 @@ void ImapSynchronizeAllStrategy::handleUidSearch(ImapStrategyContextBase *contex
 {
     const ImapMailboxProperties &properties(context->mailbox());
 
-    switch (_searchState)
-    {
+    switch (_searchState) {
     case Seen:
-    {
         _seenUids = properties.uidList;
 
         // The Unseen search command was pipelined
         _searchState = Unseen;
         context->protocol().sendUidSearch(MFlag_Unseen);
         break;
-    }
     case Unseen:
-    {
         _unseenUids = properties.uidList;
 
         // The Flagged search command was pipelined
         _searchState = Flagged;
         context->protocol().sendUidSearch(MFlag_Flagged);
         break;
-    }
     case Flagged:
-    {
         _flaggedUids = properties.uidList;
         if (static_cast<quint32>((_unseenUids.count() + _seenUids.count())) == properties.exists) {
             // We have a consistent set of search results
@@ -2752,9 +2678,7 @@ void ImapSynchronizeAllStrategy::handleUidSearch(ImapStrategyContextBase *contex
             context->protocol().sendUidSearch(MFlag_All);
         }
         break;
-    }
     case All:
-    {
         _unseenUids = properties.uidList;
         if (static_cast<quint32>(_unseenUids.count()) != properties.exists) {
             qCWarning(lcIMAP) << "Inconsistent UID SEARCH result";
@@ -2765,7 +2689,6 @@ void ImapSynchronizeAllStrategy::handleUidSearch(ImapStrategyContextBase *contex
 
         processUidSearchResults(context);
         break;
-    }
     default:
         qCWarning(lcIMAP) << "Unknown search status in transition";
     }
@@ -2990,7 +2913,7 @@ bool ImapSynchronizeAllStrategy::setNextSeen(ImapStrategyContextBase *context)
     if (!_readUids.isEmpty()) {
         QStringList msgUidl = _readUids.mid(0, batchSize);
         QString msg = QObject::tr("Marking message as read");
-        foreach(QString uid, msgUidl) {
+        foreach (QString uid, msgUidl) {
             _readUids.removeAll(uid);
             _storedReadUids.append(uid);
         }
@@ -3009,7 +2932,7 @@ bool ImapSynchronizeAllStrategy::setNextNotSeen(ImapStrategyContextBase *context
     if (!_unreadUids.isEmpty()) {
         QStringList msgUidl = _unreadUids.mid(0, batchSize);
         QString msg = QObject::tr("Marking message as unread");
-        foreach(QString uid, msgUidl) {
+        foreach (QString uid, msgUidl) {
             _unreadUids.removeAll(uid);
             _storedUnreadUids.append(uid);
         }
@@ -3028,7 +2951,7 @@ bool ImapSynchronizeAllStrategy::setNextImportant(ImapStrategyContextBase *conte
     if (!_importantUids.isEmpty()) {
         QStringList msgUidl = _importantUids.mid(0, batchSize);
         QString msg = QObject::tr("Marking message as important");
-        foreach(QString uid, msgUidl) {
+        foreach (QString uid, msgUidl) {
             _importantUids.removeAll(uid);
             _storedImportantUids.append(uid);
         }
@@ -3047,7 +2970,7 @@ bool ImapSynchronizeAllStrategy::setNextNotImportant(ImapStrategyContextBase *co
     if (!_unimportantUids.isEmpty()) {
         QStringList msgUidl = _unimportantUids.mid(0, batchSize);
         QString msg = QObject::tr("Marking message as unimportant");
-        foreach(QString uid, msgUidl) {
+        foreach (QString uid, msgUidl) {
             _unimportantUids.removeAll(uid);
             _storedUnimportantUids.append(uid);
         }
@@ -3069,7 +2992,7 @@ bool ImapSynchronizeAllStrategy::setNextDeleted(ImapStrategyContextBase *context
         if (!_removedUids.isEmpty()) {
             QStringList msgUidl = _removedUids.mid(0, batchSize);
             QString msg = QObject::tr("Deleting message");
-            foreach(QString uid, msgUidl) {
+            foreach (QString uid, msgUidl) {
                 _removedUids.removeAll(uid);
                 _storedRemovedUids.append(uid);
             }
@@ -3319,18 +3242,13 @@ QMailMessageIdList ImapUpdateMessagesFlagsStrategy::selectedMails()
 
 void ImapUpdateMessagesFlagsStrategy::transition(ImapStrategyContextBase *context, ImapCommand command, OperationStatus status)
 {
-    switch ( command ) {
-        case IMAP_UIDSearch:
-        {
-            handleUidSearch(context);
-            break;
-        }
-
-        default:
-        {
-            ImapFolderListStrategy::transition(context, command, status);
-            break;
-        }
+    switch (command) {
+    case IMAP_UIDSearch:
+        handleUidSearch(context);
+        break;
+    default:
+        ImapFolderListStrategy::transition(context, command, status);
+        break;
     }
 }
 
@@ -3359,30 +3277,23 @@ void ImapUpdateMessagesFlagsStrategy::handleUidSearch(ImapStrategyContextBase *c
 {
     const ImapMailboxProperties &properties(context->mailbox());
 
-    switch (_searchState)
-    {
+    switch (_searchState) {
     case Unseen:
-    {
         _unseenUids = properties.uidList;
 
         _searchState = Seen;
         context->protocol().sendUidSearch(MFlag_Seen, "UID " + _filter);
         break;
-    }
     case Seen:
-    {
         _seenUids = properties.uidList;
 
         _searchState = Flagged;
         context->protocol().sendUidSearch(MFlag_Flagged, "UID " + _filter);
         break;
-    }
     case Flagged:
-    {
         _flaggedUids = properties.uidList;
         processUidSearchResults(context);
         break;
-    }
     default:
         qCWarning(lcIMAP) << "Unknown search status in transition";
         Q_ASSERT(0);
@@ -3498,24 +3409,16 @@ void ImapRetrieveMessageListStrategy::setAccountCheck(bool check)
 
 void ImapRetrieveMessageListStrategy::transition(ImapStrategyContextBase *context, ImapCommand command, OperationStatus status)
 {
-    switch ( command ) {
-        case IMAP_FetchFlags:
-        {
-            handleFetchFlags(context);
-            break;
-        }
-
-        case IMAP_UIDSearch:
-        {
-            handleUidSearch(context);
-            break;
-        }
-
-        default:
-        {
-            ImapSynchronizeBaseStrategy::transition(context, command, status);
-            break;
-        }
+    switch (command) {
+    case IMAP_FetchFlags:
+        handleFetchFlags(context);
+        break;
+    case IMAP_UIDSearch:
+        handleUidSearch(context);
+        break;
+    default:
+        ImapSynchronizeBaseStrategy::transition(context, command, status);
+        break;
     }
 }
 
@@ -3594,7 +3497,7 @@ static void markMessages(IntegerRegion region, quint64 flag, bool set, const QMa
         return;
 
     QStringList uidList;
-    foreach(QString uid, region.toStringList()) {
+    foreach (QString uid, region.toStringList()) {
         uidList.append(QString::number(folderId.toULongLong()) + UID_SEPARATOR + uid);
     }
     QMailMessageKey uidKey(QMailMessageKey::serverUid(uidList) & QMailMessageKey::status(flag, set ? QMailDataComparator::Excludes : QMailDataComparator::Includes));
@@ -3614,7 +3517,7 @@ static void processFlagChanges(const QList<FlagChange> &changes, const QMailFold
     IntegerRegion undeleted;
     IntegerRegion replied;
     IntegerRegion forwarded;
-    foreach(FlagChange change, changes) {
+    foreach (FlagChange change, changes) {
         bool ok;
         QString uidStr(stripFolderPrefix(change.first));
         MessageFlags flags(change.second);
@@ -3676,7 +3579,7 @@ void ImapRetrieveMessageListStrategy::handleFetchFlags(ImapStrategyContextBase *
     // The set of messages to fetch needs to be adjusted based on the number of such messages
     IntegerRegion rawServerRegion;
     processFlagChanges(properties.flagChanges, properties.id, &_error);
-    foreach(const QString &uid, properties.uidList) {
+    foreach (const QString &uid, properties.uidList) {
         bool ok;
         uint number = stripFolderPrefix(uid).toUInt(&ok);
         if (ok)
@@ -3732,7 +3635,7 @@ void ImapRetrieveMessageListStrategy::handleFetchFlags(ImapStrategyContextBase *
             }
 
             QStringList removedList;
-            foreach(QString uid, beginningClientRegion.toStringList()) {
+            foreach (QString uid, beginningClientRegion.toStringList()) {
                 removedList.append(QString::number(folder.id().toULongLong()) + UID_SEPARATOR + uid);
             }
 
@@ -3747,7 +3650,7 @@ void ImapRetrieveMessageListStrategy::handleFetchFlags(ImapStrategyContextBase *
     IntegerRegion clientRegionWithinServerRange(serverRange.intersect(trueClientRegion));
     IntegerRegion clientRemovedRegion(clientRegionWithinServerRange.subtract(rawServerRegion).toStringList());
     QStringList removed;
-    foreach(QString uid, clientRemovedRegion.toStringList()) {
+    foreach (QString uid, clientRemovedRegion.toStringList()) {
         removed.append(QString::number(folder.id().toULongLong()) + UID_SEPARATOR + uid);
     }
 
@@ -3884,7 +3787,7 @@ void ImapRetrieveMessageListStrategy::qresyncHandleUidSearch(ImapStrategyContext
 {
     // Add the listed uids to the retrieve list
     const ImapMailboxProperties &properties(context->mailbox());
-    foreach(const QString &uid, properties.uidList) {
+    foreach (const QString &uid, properties.uidList) {
         bool ok;
         uint number = stripFolderPrefix(uid).toUInt(&ok);
         if (ok) {
@@ -3963,7 +3866,7 @@ void ImapRetrieveMessageListStrategy::qresyncFolderListFolderAction(ImapStrategy
         IntegerRegion vanishedOnClient(vanished.intersect(IntegerRegion(clientMin, INT_MAX)));
         _qresyncVanished = vanishedOnClient.cardinality();
         QStringList removedList;
-        foreach(QString uid, vanishedOnClient.toStringList()) {
+        foreach (QString uid, vanishedOnClient.toStringList()) {
             removedList.append(QString::number(folder.id().toULongLong()) + UID_SEPARATOR + uid);
         }
         if (!removedList.isEmpty()) {
@@ -4063,36 +3966,22 @@ void ImapCopyMessagesStrategy::newConnection(ImapStrategyContextBase *context)
 
 void ImapCopyMessagesStrategy::transition(ImapStrategyContextBase *context, ImapCommand command, OperationStatus status)
 {
-    switch ( command ) {
-        case IMAP_UIDCopy:
-        {
-            handleUidCopy(context);
-            break;
-        }
-
-        case IMAP_Append:
-        {
-            handleAppend(context);
-            break;
-        }
-
-        case IMAP_UIDSearch:
-        {
-            handleUidSearch(context);
-            break;
-        }
-
-        case IMAP_UIDStore:
-        {
-            handleUidStore(context);
-            break;
-        }
-
-        default:
-        {
-            ImapFetchSelectedMessagesStrategy::transition(context, command, status);
-            break;
-        }
+    switch (command) {
+    case IMAP_UIDCopy:
+        handleUidCopy(context);
+        break;
+    case IMAP_Append:
+        handleAppend(context);
+        break;
+    case IMAP_UIDSearch:
+        handleUidSearch(context);
+        break;
+    case IMAP_UIDStore:
+        handleUidStore(context);
+        break;
+    default:
+        ImapFetchSelectedMessagesStrategy::transition(context, command, status);
+        break;
     }
 }
 
@@ -4372,18 +4261,13 @@ void ImapCopyMessagesStrategy::selectMessageSet(ImapStrategyContextBase *context
 
 void ImapMoveMessagesStrategy::transition(ImapStrategyContextBase *context, ImapCommand command, OperationStatus status)
 {
-    switch ( command ) {
-        case IMAP_Examine:
-        {
-            handleExamine(context);
-            break;
-        }
-
-        default:
-        {
-            ImapCopyMessagesStrategy::transition(context, command, status);
-            break;
-        }
+    switch (command) {
+    case IMAP_Examine:
+        handleExamine(context);
+        break;
+    default:
+        ImapCopyMessagesStrategy::transition(context, command, status);
+        break;
     }
 }
 
@@ -4513,18 +4397,13 @@ void ImapExternalizeMessagesStrategy::newConnection(ImapStrategyContextBase *con
 
 void ImapExternalizeMessagesStrategy::transition(ImapStrategyContextBase *context, ImapCommand command, OperationStatus status)
 {
-    switch ( command ) {
-        case IMAP_GenUrlAuth:
-        {
-            handleGenUrlAuth(context);
-            break;
-        }
-
-        default:
-        {
-            ImapCopyMessagesStrategy::transition(context, command, status);
-            break;
-        }
+    switch (command) {
+    case IMAP_GenUrlAuth:
+        handleGenUrlAuth(context);
+        break;
+    default:
+        ImapCopyMessagesStrategy::transition(context, command, status);
+        break;
     }
 }
 
@@ -4639,18 +4518,13 @@ void ImapFlagMessagesStrategy::setMessageFlags(MessageFlags flags, bool set)
 
 void ImapFlagMessagesStrategy::transition(ImapStrategyContextBase *context, ImapCommand command, OperationStatus status)
 {
-    switch ( command ) {
-        case IMAP_UIDStore:
-        {
-            handleUidStore(context);
-            break;
-        }
-
-        default:
-        {
-            ImapFetchSelectedMessagesStrategy::transition(context, command, status);
-            break;
-        }
+    switch (command) {
+    case IMAP_UIDStore:
+        handleUidStore(context);
+        break;
+    default:
+        ImapFetchSelectedMessagesStrategy::transition(context, command, status);
+        break;
     }
 }
 
@@ -4699,24 +4573,16 @@ void ImapDeleteMessagesStrategy::clearSelection()
 
 void ImapDeleteMessagesStrategy::transition(ImapStrategyContextBase *context, ImapCommand command, OperationStatus status)
 {
-    switch ( command ) {
-        case IMAP_Close:
-        {
-            handleClose(context);
-            break;
-        }
-
-        case IMAP_Examine:
-        {
-            handleExamine(context);
-            break;
-        }
-
-        default:
-        {
-            ImapFlagMessagesStrategy::transition(context, command, status);
-            break;
-        }
+    switch (command) {
+    case IMAP_Close:
+        handleClose(context);
+        break;
+    case IMAP_Examine:
+        handleExamine(context);
+        break;
+    default:
+        ImapFlagMessagesStrategy::transition(context, command, status);
+        break;
     }
 }
 
@@ -4783,4 +4649,3 @@ ImapStrategyContext::ImapStrategyContext(ImapClient *client)
     _strategy(0)
 {
 }
-

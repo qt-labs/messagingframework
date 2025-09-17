@@ -203,8 +203,6 @@ int main(int argc, char *argv[])
     return 0;
 }
 
-#include "tst_qmailmessageheader.moc"
-
 Q_DECLARE_METATYPE(QMailMessageHeaderField::ParameterType)
 Q_DECLARE_METATYPE(QList<QMailMessageHeaderField::ParameterType>)
 Q_DECLARE_METATYPE(QMailMessageHeaderField::FieldType)
@@ -1666,3 +1664,4 @@ void tst_QMailMessageContentDisposition::setSize()
     QCOMPARE( disposition2.toString(), QByteArray("Content-Disposition: attachment; filename=sample.txt; size=54321") );
 }
 
+#include "tst_qmailmessageheader.moc"

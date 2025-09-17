@@ -47,7 +47,6 @@
 
 #include <QDataStream>
 
-
 template<typename PropertyType>
 class QMailSortKeyArgument
 {
@@ -95,4 +94,3 @@ public:
 };
 
 #endif
-

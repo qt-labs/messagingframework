@@ -460,4 +460,3 @@ void QMailAccountConfiguration::setModified(bool set)
 {
     d->_modified = set;
 }
-

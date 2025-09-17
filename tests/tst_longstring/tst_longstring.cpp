@@ -69,13 +69,9 @@ private slots:
     void mid();
 };
 
-QTEST_MAIN(tst_LongString)
-#include "tst_longstring.moc"
-
 static void verifyIndexOf( const LongString& container, const QByteArray& content )
 {
-    if (content.length() > 1)
-    {
+    if (content.length() > 1) {
         QByteArray target = content.mid(1, -1);
 
         // Invert the case of the first character
@@ -302,12 +298,9 @@ void tst_LongString::left()
     LongString ls( source );
     LongString comparator;
 
-    if ( nested_size == -1 )
-    {
+    if (nested_size == -1) {
         comparator = ls.left( size );
-    }
-    else
-    {
+    } else {
         LongString nested = ls.left( nested_size );
         comparator = nested.left( size );
     }
@@ -400,12 +393,9 @@ void tst_LongString::right()
     LongString ls( source );
     LongString comparator;
 
-    if ( nested_size == -1 )
-    {
+    if (nested_size == -1) {
         comparator = ls.right( size );
-    }
-    else
-    {
+    } else {
         LongString nested = ls.right( nested_size );
         comparator = nested.right( size );
     }
@@ -876,12 +866,9 @@ void tst_LongString::mid()
     LongString ls( source );
     LongString comparator;
 
-    if ( nested_size == -1 )
-    {
+    if (nested_size == -1) {
         comparator = ls.mid( from, size );
-    }
-    else
-    {
+    } else {
         LongString nested = ls.mid( nested_from, nested_size );
         comparator = nested.mid( from, size );
     }
@@ -901,3 +888,6 @@ void tst_LongString::mid()
     // Ensure that indexOf works correctly on result of mid
     verifyIndexOf( comparator, streamOutput );
 }
+
+QTEST_MAIN(tst_LongString)
+#include "tst_longstring.moc"

@@ -499,8 +499,7 @@ void QMailFolderMessageSet::foldersUpdated(const QMailFolderIdList &ids)
         synchronizeChildren();
 
 
-    if (ids.contains(i->_id))
-    {
+    if (ids.contains(i->_id)) {
         //update our folder name
         i->_name.clear();
 
@@ -741,8 +740,7 @@ void QMailAccountMessageSet::accountsUpdated(const QMailAccountIdList &ids)
 {
     const ImplementationType *i = impl(this);
 
-    if (ids.contains(i->_id))
-    {
+    if (ids.contains(i->_id)) {
         //update our account name
         i->_name.clear();
         update(this);
@@ -1158,7 +1156,7 @@ QMailMessageSetModel::QMailMessageSetModel(QObject *parent)
     : QAbstractItemModel(parent),
       QMailMessageSetContainer(new QMailMessageSetModelPrivate)
 {
-    QTimer::singleShot(0,this,SLOT(delayedInit()));
+    QTimer::singleShot(0, this, SLOT(delayedInit()));
 }
 
 /*! \internal */
@@ -1743,4 +1741,3 @@ QModelIndex QMailMessageSetModel::parentIndex(QMailMessageSet *item, int column)
 
     \sa messagesAdded(), messagesRemoved()
 */
-

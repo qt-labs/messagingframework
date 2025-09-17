@@ -73,9 +73,6 @@ private slots:
     void fromQList();
 };
 
-QTEST_MAIN(tst_QmfList)
-#include "tst_qmflist.moc"
-
 tst_QmfList::tst_QmfList()
 {
 }
@@ -295,3 +292,5 @@ void tst_QmfList::fromQList()
     QCOMPARE(QmfList<int>::fromQList(qlist), qmflist);
 }
 
+QTEST_MAIN(tst_QmfList)
+#include "tst_qmflist.moc"

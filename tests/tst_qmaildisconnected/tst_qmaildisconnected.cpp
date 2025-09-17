@@ -62,11 +62,6 @@ private:
 
 };
 
-QTEST_MAIN(tst_QMailDisconnected)
-
-#include "tst_qmaildisconnected.moc"
-
-
 void tst_QMailDisconnected::initTestCase()
 {
     // Instantiate the store to initialise the values of the status flags and create the standard folders
@@ -424,4 +419,6 @@ void tst_QMailDisconnected::test_qmaildisconnected()
     //QMailDisconnected::clearPreviousFolder(dstKey);
 }
 
+QTEST_MAIN(tst_QMailDisconnected)
 
+#include "tst_qmaildisconnected.moc"

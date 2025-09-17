@@ -818,7 +818,7 @@ void PopClient::nextAction()
         if (msgNum != -1) {
             if (!selected) {
                 if (messageCount == 1) {
-                    emit updateStatus(tr("Previewing","Previewing <no of messages>") +QChar(' ') + QString::number(newUids.count()));
+                    emit updateStatus(tr("Previewing", "Previewing <no of messages>") + QChar(' ') + QString::number(newUids.count()));
                 }
                 if (lastStatusTimer.elapsed() > 1000) {
                     lastStatusTimer.start();

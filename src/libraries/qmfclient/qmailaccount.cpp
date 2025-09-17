@@ -731,4 +731,3 @@ void QMailAccount::addMessageSink(const QString &sink)
 {
     d->_sinks.append(sink);
 }
-

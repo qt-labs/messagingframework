@@ -515,7 +515,7 @@ void ImapService::Source::queueDisconnectedOperations(const QMailAccountId &acco
     bool pendingDisconnectedOperations = false;
     _service->_client->strategyContext()->moveMessagesStrategy.clearSelection();
 
-    foreach(const QMailFolderId& folderId, folderList) {
+    foreach (const QMailFolderId& folderId, folderList) {
         if (!folderId.isValid())
             continue;
 
@@ -1374,7 +1374,7 @@ void ImapService::Source::pushIntervalCheck()
     _actionQueue.append(new ExportUpdatesCommand(_service->accountId())); // Convenient for user to export pending changes also
     QMailFolderIdList ids(_service->_client->configurationIdleFolderIds());
     if (ids.count()) {
-        foreach(QMailFolderId id, ids) {
+        foreach (QMailFolderId id, ids) {
             // Check for flag changes and new mail
             _service->_source->queueFlagsChangedCheck(id);
         }
@@ -1636,7 +1636,7 @@ void ImapService::initiatePushEmail()
         _establishingPushEmail = true;
         setPersistentConnectionStatus(true);
 
-        foreach(QMailFolderId id, ids) {
+        foreach (QMailFolderId id, ids) {
             // Check for flag changes and new mail
             _source->queueFlagsChangedCheck(id);
         }
@@ -1691,8 +1691,8 @@ void ImapService::createIdleSession()
     // Fail after 10 sec if no network reply is received
     _networkSessionTimer->setSingleShot(true);
     _networkSessionTimer->setInterval(10000);
-    connect(_networkSessionTimer,SIGNAL(timeout()),
-            this,SLOT(onSessionConnectionTimeout()));
+    connect(_networkSessionTimer, SIGNAL(timeout()),
+            this, SLOT(onSessionConnectionTimeout()));
     openIdleSession();
 }
 

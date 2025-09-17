@@ -59,7 +59,8 @@ class MESSAGESERVER_EXPORT LongStream
 {
 public:
     LongStream();
-    virtual ~LongStream() ;
+    virtual ~LongStream();
+
     void reset();
     QString detach();
     void append(QString str);
@@ -72,7 +73,8 @@ public:
     void resetStatus();
     void setStatus( Status );
     void updateStatus();
-    static bool freeSpace( const QString &path = QString(), int min = -1);
+
+    static bool freeSpace(const QString &path = QString(), int min = -1);
 
     static QString outOfSpaceMessage();
     static void cleanupTempFiles();

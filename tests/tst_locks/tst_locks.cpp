@@ -54,12 +54,7 @@ private slots:
     virtual void cleanup();
 
     void testQMailAccountKey();
-
 };
-
-QTEST_MAIN(tst_locks)
-#include "tst_locks.moc"
-
 
 tst_locks::tst_locks()
 {
@@ -79,7 +74,6 @@ void tst_locks::cleanupTestCase()
 
 void tst_locks::init()
 {
-
 }
 
 void tst_locks::cleanup()
@@ -97,6 +91,7 @@ void tst_locks::testQMailAccountKey()
     QCOMPARE(firstKey, testKey);
     testKey |= secondKey;
     QVERIFY((testKey | firstKey) == secondKey);
-
-
 }
+
+QTEST_MAIN(tst_locks)
+#include "tst_locks.moc"

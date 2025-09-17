@@ -70,11 +70,6 @@ private:
     QMailMessage msg2;
 };
 
-QTEST_MAIN(tst_QMail_ListModels)
-
-#include "tst_qmail_listmodels.moc"
-
-
 QMailAccountConfiguration tst_QMail_ListModels::makeConfig(const QString &accountName)
 {
     QMailAccountConfiguration config;
@@ -267,7 +262,6 @@ void tst_QMail_ListModels::test_qmailmessagelistmodel()
     idx = model.indexFromId(msg1.id());
     QString data = model.data(idx).toString();
     QString stop;
-
 }
 
 void tst_QMail_ListModels::test_messagethreadedmodel()
@@ -275,3 +269,7 @@ void tst_QMail_ListModels::test_messagethreadedmodel()
     QMailMessageThreadedModel model;
     model.generateIndex(0, 0, 0);
 }
+
+QTEST_MAIN(tst_QMail_ListModels)
+
+#include "tst_qmail_listmodels.moc"

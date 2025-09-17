@@ -539,4 +539,3 @@ void QMailStoreAccountFilter::disconnectNotify(const QMetaMethod &signal)
 */
 
 #include <qmailstoreaccountfilter.moc>
-

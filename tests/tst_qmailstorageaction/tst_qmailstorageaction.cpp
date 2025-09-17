@@ -73,10 +73,6 @@ private:
     QSet<QMailMessageId> noMessages, allMessages, allEmailMessages;
 };
 
-QTEST_MAIN(tst_QMailStorageAction)
-
-#include "tst_qmailstorageaction.moc"
-
 void tst_QMailStorageAction::initTestCase()
 {
     QVERIFY2(QMail::isMessageServerRunning(), "tst_QMailStorageAction requires messageserver to be running");
@@ -873,3 +869,7 @@ void tst_QMailStorageAction::test_storageaction_discardMessages()
 
     QVERIFY(QMailStore::instance()->countMessages(savedMessage4Key) == 0);
 }
+
+QTEST_MAIN(tst_QMailStorageAction)
+
+#include "tst_qmailstorageaction.moc"

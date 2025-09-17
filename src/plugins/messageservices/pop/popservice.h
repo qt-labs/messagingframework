@@ -73,7 +73,6 @@ private:
     Source *_source;
 };
 
-
 class PopServicePlugin : public QMailMessageServicePlugin
 {
     Q_OBJECT
@@ -89,6 +88,5 @@ public:
     QMailMessageService *createService(const QMailAccountId &id) override;
     QMailMessageServiceConfigurator *createServiceConfigurator() override;
 };
-
 
 #endif

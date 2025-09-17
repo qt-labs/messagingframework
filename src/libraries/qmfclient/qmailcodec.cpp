@@ -118,8 +118,7 @@ static void enumerateCodecs()
 {
     static bool enumerated = false;
 
-    if (!enumerated)
-    {
+    if (!enumerated) {
         qCDebug(lcMessaging) << "Available codecs:";
         foreach (const QByteArray& codec, QTextCodec::availableCodecs())
             qCDebug(lcMessaging) << "  " << codec;
@@ -137,11 +136,9 @@ static void enumerateCodecs()
 */
 void QMailCodec::encode(QDataStream& out, QTextStream& in, const QByteArray& charset)
 {
-    if (QTextCodec* codec = codecForName(charset))
-    {
+    if (QTextCodec* codec = codecForName(charset)) {
         QTextEncoder *encoder = codec->makeEncoder(QTextCodec::IgnoreHeader);
-        while (!in.atEnd())
-        {
+        while (!in.atEnd()) {
             QString chunk = in.read(MaxCharacters);
             QByteArray charsetEncoded = encoder->fromUnicode(chunk);
 
@@ -168,8 +165,7 @@ void QMailCodec::decode(QTextStream& out, QDataStream& in, const QByteArray& ich
         QDataStream decodedStream(&decoded, QIODevice::WriteOnly);
 
         char* buffer = new char[MaxCharacters];
-        while (!in.atEnd())
-        {
+        while (!in.atEnd()) {
             int length = in.readRawData(buffer, MaxCharacters);
 
             // Allow for decoded data to be twice the size without reallocation
@@ -198,8 +194,7 @@ void QMailCodec::decode(QTextStream& out, QDataStream& in, const QByteArray& ich
 void QMailCodec::encode(QDataStream& out, QDataStream& in)
 {
     char* buffer = new char[MaxCharacters];
-    while (!in.atEnd())
-    {
+    while (!in.atEnd()) {
         int length = in.readRawData(buffer, MaxCharacters);
 
         encodeChunk(out, reinterpret_cast<unsigned char*>(buffer), length, in.atEnd());
@@ -214,8 +209,7 @@ void QMailCodec::encode(QDataStream& out, QDataStream& in)
 void QMailCodec::decode(QDataStream& out, QDataStream& in)
 {
     char* buffer = new char[MaxCharacters];
-    while (!in.atEnd())
-    {
+    while (!in.atEnd()) {
         int length = in.readRawData(buffer, MaxCharacters);
         if (length > 0 && in.status() == QDataStream::ReadPastEnd) {
             // work around QTBUG-69474
@@ -272,8 +266,7 @@ QTextCodec* QMailCodec::codecForName(const QByteArray& charset, bool translateAs
 
     if (!encoding.isEmpty()) {
         QTextCodec* codec = QTextCodec::codecForName(encoding);
-        if (!codec)
-        {
+        if (!codec) {
             qCWarning(lcMessaging) << "QMailCodec::codecForName - Unable to find codec for charset" << encoding;
             enumerateCodecs();
         }
@@ -290,8 +283,7 @@ QTextCodec* QMailCodec::codecForName(const QByteArray& charset, bool translateAs
 void QMailCodec::copy(QDataStream& out, QDataStream& in)
 {
     char* buffer = new char[MaxCharacters];
-    while (!in.atEnd())
-    {
+    while (!in.atEnd()) {
         int length = in.readRawData(buffer, MaxCharacters);
         out.writeRawData(buffer, length);
     }
@@ -310,8 +302,7 @@ void QMailCodec::copy(QTextStream& out, QDataStream& in, const QByteArray& chars
     QTextDecoder *decoder = codec->makeDecoder();
 
     char* buffer = new char[MaxCharacters];
-    while (!in.atEnd())
-    {
+    while (!in.atEnd()) {
         int length = in.readRawData(buffer, MaxCharacters);
         out << decoder->toUnicode(buffer, length);
     }
@@ -539,30 +530,22 @@ void QMailBase64Codec::encodeChunk(QDataStream& out, const unsigned char* it, in
     const unsigned char* lineEnd = it + _encodeLineCharsRemaining;
     const unsigned char* const end = it + length;
 
-    while (it != end)
-    {
+    while (it != end) {
         bool trailingLF = false;
 
         const unsigned char input = *it++;
-        if ((input == CarriageReturn || input == LineFeed) && (_content == Text))
-        {
-            if (_lastChar == CarriageReturn && input == LineFeed)
-            {
+        if ((input == CarriageReturn || input == LineFeed) && (_content == Text)) {
+            if (_lastChar == CarriageReturn && input == LineFeed) {
                 // We have already encoded this character-sequence
 
                 // We can accept one more input character than accounted for
                 lineEnd += 1;
-            }
-            else
-            {
+            } else {
                 // We must replace this character with ASCII CRLF
                 *_encodeBufferOut++ = CarriageReturn;
-                if (_encodeBufferOut != bufferEnd)
-                {
+                if (_encodeBufferOut != bufferEnd) {
                     *_encodeBufferOut++ = LineFeed;
-                }
-                else
-                {
+                } else {
                     trailingLF = true;
                 }
 
@@ -571,12 +554,11 @@ void QMailBase64Codec::encodeChunk(QDataStream& out, const unsigned char* it, in
             }
 
             _lastChar = input;
-        }
-        else
+        } else {
             *_encodeBufferOut++ = input;
+        }
 
-        if (_encodeBufferOut == bufferEnd)
-        {
+        if (_encodeBufferOut == bufferEnd) {
             // We have buffered 3 input bytes - write them out as four output bytes
             out << Base64Values[(_encodeBuffer[0] >> 2) & 0x3f];
             out << Base64Values[(((_encodeBuffer[0] & 0x03) << 4) | (_encodeBuffer[1] >> 4)) & 0x3f];
@@ -584,25 +566,21 @@ void QMailBase64Codec::encodeChunk(QDataStream& out, const unsigned char* it, in
             out << Base64Values[_encodeBuffer[2] & 0x3f];
 
             _encodeBufferOut = _encodeBuffer;
-            if ((it >= lineEnd) && ((it != end) || !finalChunk))
-            {
+            if ((it >= lineEnd) && ((it != end) || !finalChunk)) {
                 // Insert an ASCII CRLF sequence
                 out << static_cast<unsigned char>(CarriageReturn) << static_cast<unsigned char>(LineFeed);
                 lineEnd += (_maximumLineLength / 4 * 3);
             }
         }
 
-        if (trailingLF)
-        {
+        if (trailingLF) {
             *_encodeBufferOut++ = LineFeed;
         }
     }
 
-    if (finalChunk)
-    {
+    if (finalChunk) {
         int bufferedBytesRemaining = _encodeBufferOut - _encodeBuffer;
-        if (bufferedBytesRemaining > 0)
-        {
+        if (bufferedBytesRemaining > 0) {
             // We have some data still buffered - pad buffer with zero bits
             *_encodeBufferOut = 0;
 
@@ -610,20 +588,15 @@ void QMailBase64Codec::encodeChunk(QDataStream& out, const unsigned char* it, in
             out << Base64Values[(((_encodeBuffer[0] & 0x03) << 4) | (_encodeBuffer[1] >> 4)) & 0x3f];
 
             // Indicate unused bytes with the padding character
-            if (bufferedBytesRemaining == 1)
-            {
+            if (bufferedBytesRemaining == 1) {
                 out << Base64PaddingByte;
                 out << Base64PaddingByte;
-            }
-            else // must be two
-            {
+            } else { // must be two
                 out << Base64Values[(((_encodeBuffer[1] & 0x0f) << 2) | (_encodeBuffer[2] >> 6)) & 0x3f];
                 out << Base64PaddingByte;
             }
         }
-    }
-    else
-    {
+    } else {
         // Leave the buffer intact, and adjust the line char count
         _encodeLineCharsRemaining = (lineEnd - it);
     }
@@ -635,8 +608,7 @@ void QMailBase64Codec::decodeChunk(QDataStream& out, const char* it, int length,
     unsigned char* bufferEnd = _decodeBuffer + 4;
 
     const char* const end = it + length;
-    while (it != end)
-    {
+    while (it != end) {
         // Convert each character to the index value
         *_decodeBufferOut = base64Index(*it++);
         if (*_decodeBufferOut == 64)
@@ -644,8 +616,7 @@ void QMailBase64Codec::decodeChunk(QDataStream& out, const char* it, int length,
         if (*_decodeBufferOut <= 64)
             ++_decodeBufferOut;
 
-        if (_decodeBufferOut == bufferEnd)
-        {
+        if (_decodeBufferOut == bufferEnd) {
             // We have buffered 4 input characters - write them out as three output bytes
             // unless some of them are padding
 
@@ -655,16 +626,11 @@ void QMailBase64Codec::decodeChunk(QDataStream& out, const char* it, int length,
             decoded[2] = static_cast<unsigned char>(((_decodeBuffer[2] & 0x03) << 6) | (_decodeBuffer[3] & 0x3f));
 
             int remainingChars = (3 - _decodePaddingCount);
-            for (int i = 0; i < remainingChars; ++i)
-            {
-                if ((decoded[i] == CarriageReturn || decoded[i] == LineFeed) && (_content == Text))
-                {
-                    if (_lastChar == CarriageReturn && decoded[i] == LineFeed)
-                    {
+            for (int i = 0; i < remainingChars; ++i) {
+                if ((decoded[i] == CarriageReturn || decoded[i] == LineFeed) && (_content == Text)) {
+                    if (_lastChar == CarriageReturn && decoded[i] == LineFeed) {
                         // We have already processed this sequence
-                    }
-                    else
-                    {
+                    } else {
                         // We should output the local newline sequence, but we can't
                         // because we don't know what it is, and C++ translation-from-\n will
                         // only work if the stream is a file...
@@ -672,21 +638,19 @@ void QMailBase64Codec::decodeChunk(QDataStream& out, const char* it, int length,
                     }
 
                     _lastChar = decoded[i];
-                }
-                else
+                } else {
                     out << decoded[i];
+                }
             }
 
             _decodeBufferOut = _decodeBuffer;
         }
     }
 
-    if (finalChunk)
-    {
+    if (finalChunk) {
         // There should always be an even multiple of 4 input bytes
         int bufferedBytesRemaining = _decodeBufferOut - _decodeBuffer;
-        if (bufferedBytesRemaining > 0)
-        {
+        if (bufferedBytesRemaining > 0) {
             qCWarning(lcMessaging) << "Huh? bytes remaining:" << bufferedBytesRemaining;
         }
     }
@@ -708,18 +672,15 @@ static bool requiresEscape(unsigned char input, QMailQuotedPrintableCodec::Confo
     // For RFC 2047, we need to escape '?', '_', ' ' & '\t'
     // In fact, since the output may be used in a header field 'word', then the only characters
     // that can be used un-escaped are: alphanumerics, '!', '*', '+' '-', '/' and '_'
-    if (!escape && (conformance == QMailQuotedPrintableCodec::Rfc2047))
-    {
+    if (!escape && (conformance == QMailQuotedPrintableCodec::Rfc2047)) {
         // We can also ignore space, since it will become an underscore
-        if ((input != ExclamationMark) && (input != Asterisk) && (input != Plus) &&
-            (input != Minus) && (input != Slash) && (input != Underscore) && (input != Space))
-        {
+        if ((input != ExclamationMark) && (input != Asterisk) && (input != Plus)
+            && (input != Minus) && (input != Slash) && (input != Underscore) && (input != Space)) {
             escape = !isalnum(input);
         }
     }
 
-    if (!escape && (input == HorizontalTab || input == Space))
-    {
+    if (!escape && (input == HorizontalTab || input == Space)) {
         // The (potentially) last whitespace character on a line must be escaped
         if (charsRemaining <= 3)
             escape = true;
@@ -860,18 +821,13 @@ void QMailQuotedPrintableCodec::encodeChunk(QDataStream& out, const unsigned cha
     // Set the input pointers relative to this input
     const unsigned char* const end = it + length;
 
-    while (it != end)
-    {
+    while (it != end) {
         unsigned char input = *it++;
 
-        if ((input == CarriageReturn || input == LineFeed) && (_content == Text))
-        {
-            if (_encodeLastChar == CarriageReturn && input == LineFeed)
-            {
+        if ((input == CarriageReturn || input == LineFeed) && (_content == Text)) {
+            if (_encodeLastChar == CarriageReturn && input == LineFeed) {
                 // We have already encoded this character-sequence
-            }
-            else
-            {
+            } else {
                 // We must replace this character with ascii CRLF
                 out << CarriageReturn << LineFeed;
             }
@@ -889,8 +845,7 @@ void QMailQuotedPrintableCodec::encodeChunk(QDataStream& out, const unsigned cha
         int charsRequired = (escape ? 3 : 1);
 
         // If we can't fit this character on the line, insert a line break
-        if (charsRequired > _encodeLineCharsRemaining)
-        {
+        if (charsRequired > _encodeLineCharsRemaining) {
             lineBreak(out, &_encodeLineCharsRemaining, _maximumLineLength);
 
             // We may no longer need the encoding after the line break
@@ -898,15 +853,14 @@ void QMailQuotedPrintableCodec::encodeChunk(QDataStream& out, const unsigned cha
                 charsRequired = 1;
         }
 
-        if (charsRequired == 1)
-        {
+        if (charsRequired == 1) {
             if (input == Space && _conformance == Rfc2047) // output space as '_'
                 out << static_cast<unsigned char>(Underscore);
             else
                 out << input;
-        }
-        else
+        } else {
             encodeCharacter(out, input);
+        }
 
         _encodeLineCharsRemaining -= charsRequired;
 
@@ -926,98 +880,72 @@ void QMailQuotedPrintableCodec::decodeChunk(QDataStream& out, const char* it, in
 
     // The variable _decodePrecedingInput holds any unprocessed input from a previous call:
     // If '=', we've parsed only that char, otherwise, it is the hex value of the first parsed character
-    if ((_decodePrecedingInput != NilPreceding) && (it != end))
-    {
+    if ((_decodePrecedingInput != NilPreceding) && (it != end)) {
         unsigned char value = 0;
-        if (_decodePrecedingInput == Equals)
-        {
+        if (_decodePrecedingInput == Equals) {
             // Get the first escaped char
             unsigned char input = *it++;
-            if (input == LineFeed || input == CarriageReturn)
-            {
+            if (input == LineFeed || input == CarriageReturn) {
                 // This is only a soft-line break
                 _decodePrecedingInput = NilPreceding;
-            }
-            else
-            {
+            } else {
                 value = decodeCharacter(input);
                 _decodePrecedingInput = value;
             }
             _decodeLastChar = input;
-        }
-        else
-        {
+        } else {
             // We already have partial escaped input
             value = _decodePrecedingInput;
         }
 
-        if (it != end && _decodePrecedingInput != NilPreceding)
-        {
+        if (it != end && _decodePrecedingInput != NilPreceding) {
             out << static_cast<unsigned char>((value << 4) | decodeCharacter(*it++));
             _decodePrecedingInput = NilPreceding;
         }
     }
 
-    while (it != end)
-    {
+    while (it != end) {
         unsigned char input = *it++;
-        if (input == Equals)
-        {
+        if (input == Equals) {
             // We are in an escape sequence
-            if (it == end)
-            {
+            if (it == end) {
                 _decodePrecedingInput = Equals;
-            }
-            else
-            {
+            } else {
                 input = *it++;
-                if (input == LineFeed || input == CarriageReturn)
-                {
+                if (input == LineFeed || input == CarriageReturn) {
                     // This is a soft-line break - move on
-                }
-                else
-                {
+                } else {
                     // This is an encoded character
                     unsigned char value = decodeCharacter(input);
 
-                    if (it == end)
-                    {
+                    if (it == end) {
                         _decodePrecedingInput = value;
-                    }
-                    else
-                    {
+                    } else {
                         out << static_cast<unsigned char>((value << 4) | decodeCharacter(*it++));
                     }
                 }
             }
-        }
-        else
-        {
-            if ((input == CarriageReturn || input == LineFeed) && (_content == Text))
-            {
-                if (_decodeLastChar == CarriageReturn && input == LineFeed)
-                {
+        } else {
+            if ((input == CarriageReturn || input == LineFeed) && (_content == Text)) {
+                if (_decodeLastChar == CarriageReturn && input == LineFeed) {
                     // We have already processed this sequence
-                }
-                else
-                {
+                } else {
                     // We should output the local newline sequence, but we can't
                     // because we don't know what it is, and C++ translation-from-\n will
                     // only work if the stream is a file...
                     out << static_cast<unsigned char>('\n');
                 }
-            }
-            else if (input == Underscore && _conformance == Rfc2047)
+            } else if (input == Underscore && _conformance == Rfc2047) {
                 out << static_cast<unsigned char>(Space);
-            else
+            } else {
                 out << input;
+            }
         }
 
         _decodeLastChar = input;
     }
 
-    if (finalChunk && _decodePrecedingInput != NilPreceding)
-    {
+    if (finalChunk && _decodePrecedingInput != NilPreceding) {
         qCWarning(lcMessaging) << "Huh? unfinished escape sequence...";
     }
 }
@@ -1025,8 +953,7 @@ void QMailQuotedPrintableCodec::decodeChunk(QDataStream& out, const char* it, in
 static void writeStream(QDataStream& out, const char* it, int length)
 {
     int totalWritten = 0;
-    while (totalWritten < length)
-    {
+    while (totalWritten < length) {
         int bytesWritten = out.writeRawData(it + totalWritten, length - totalWritten);
         if (bytesWritten == -1)
             return;
@@ -1130,18 +1057,13 @@ void QMailLineEndingCodec::encodeChunk(QDataStream& out, const unsigned char* it
     const unsigned char* const end = it + length;
 
     const unsigned char* begin = it;
-    while (it != end)
-    {
+    while (it != end) {
         const unsigned char input = *it;
-        if (input == CarriageReturn || input == LineFeed)
-        {
-            if (_lastChar == CarriageReturn && input == LineFeed)
-            {
+        if (input == CarriageReturn || input == LineFeed) {
+            if (_lastChar == CarriageReturn && input == LineFeed) {
                 // We have already encoded this character-sequence; skip the input
                 begin = (it + 1);
-            }
-            else
-            {
+            } else {
                 // Write the preceding characters
                 if (it > begin)
                     writeStream(out, reinterpret_cast<const char*>(begin), (it - begin));
@@ -1156,8 +1078,7 @@ void QMailLineEndingCodec::encodeChunk(QDataStream& out, const unsigned char* it
         ++it;
     }
 
-    if (it > begin)
-    {
+    if (it > begin) {
         // Write the remaining characters
         writeStream(out, reinterpret_cast<const char*>(begin), (it - begin));
     }
@@ -1171,18 +1092,13 @@ void QMailLineEndingCodec::decodeChunk(QDataStream& out, const char* it, int len
     const char* const end = it + length;
 
     const char* begin = it;
-    while (it != end)
-    {
+    while (it != end) {
         const char input = *it;
-        if (input == CarriageReturn || input == LineFeed)
-        {
-            if (_lastChar == CarriageReturn && input == LineFeed)
-            {
+        if (input == CarriageReturn || input == LineFeed) {
+            if (_lastChar == CarriageReturn && input == LineFeed) {
                 // We have already processed this sequence
                 begin = (it + 1);
-            }
-            else
-            {
+            } else {
                 // Write the preceding characters
                 if (it > begin)
                     writeStream(out, begin, (it - begin));
@@ -1199,8 +1115,7 @@ void QMailLineEndingCodec::decodeChunk(QDataStream& out, const char* it, int len
         ++it;
     }
 
-    if (it > begin)
-    {
+    if (it > begin) {
         // Write the remaining characters
         writeStream(out, begin, (it - begin));
     }
@@ -1271,28 +1186,28 @@ static QString encodeModifiedBase64(const QString &in)
 static QString decodeModifiedBase64(QString in)
 {
     //remove  & -
-    in.remove(0,1);
-    in.remove(in.length()-1,1);
+    in.remove(0, 1);
+    in.remove(in.length()-1, 1);
 
     if (in.isEmpty())
         return QLatin1String("&");
 
-    QByteArray buf(in.length(),static_cast<char>(0));
-    QByteArray out(in.length() * 3 / 4 + 2,static_cast<char>(0));
+    QByteArray buf(in.length(), static_cast<char>(0));
+    QByteArray out(in.length() * 3 / 4 + 2, static_cast<char>(0));
 
     //chars to numeric
     QByteArray latinChars = in.toLatin1();
     for (int x = 0; x < in.length(); x++) {
         int c = latinChars[x];
-        if ( c >= 'A' && c <= 'Z')
+        if (c >= 'A' && c <= 'Z')
             buf[x] = c - 'A';
-        if ( c >= 'a' && c <= 'z')
+        if (c >= 'a' && c <= 'z')
             buf[x] = c - 'a' + 26;
-        if ( c >= '0' && c <= '9')
+        if (c >= '0' && c <= '9')
             buf[x] = c - '0' + 52;
-        if ( c == '+')
+        if (c == '+')
             buf[x] = 62;
-        if ( c == ',')
+        if (c == ',')
             buf[x] = 63;
     }
 
@@ -1379,11 +1294,11 @@ QString QMailCodec::encodeModifiedUtf7(const QString &text)
                 endIndex++;
 
             // encode non-US-ASCII part
-            QString unicodeString = in.mid(startIndex,(endIndex - startIndex));
+            QString unicodeString = in.mid(startIndex, (endIndex - startIndex));
             QString mbase64 = encodeModifiedBase64(unicodeString);
 
             // insert the encoded string
-            in.remove(startIndex,(endIndex-startIndex));
+            in.remove(startIndex, (endIndex - startIndex));
             in.insert(startIndex, mbase64);
 
             // set start index to the end of the encoded part
@@ -1422,4 +1337,3 @@ QString QMailCodec::decodeModifiedUtf7(const QString &text)
 
     return out;
 }
-

@@ -272,7 +272,7 @@ private:
         void clear();
 
     private:
-        QCache<KeyType,T> mCache;
+        QCache<KeyType, T> mCache;
     };
 
     template <typename ID, typename T>
@@ -324,7 +324,7 @@ T QMailStorePrivate::Cache<KeyType, T>::lookup(const KeyType& key) const
 template <typename KeyType, typename T>
 void QMailStorePrivate::Cache<KeyType, T>::insert(const KeyType& key, const T& item)
 {
-    mCache.insert(key,new T(item));
+    mCache.insert(key, new T(item));
 }
 
 template <typename KeyType, typename T>

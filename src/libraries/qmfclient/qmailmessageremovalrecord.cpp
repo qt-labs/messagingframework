@@ -161,4 +161,3 @@ void QMailMessageRemovalRecord::setParentFolderId(const QMailFolderId& parentFol
 {
     d->parentFolderId = parentFolderId;
 }
-

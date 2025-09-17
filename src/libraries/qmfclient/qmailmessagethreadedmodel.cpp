@@ -1021,4 +1021,3 @@ const QMailMessageModelImplementation *QMailMessageThreadedModel::impl() const
 {
     return d;
 }
-

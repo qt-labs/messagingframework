@@ -2346,5 +2346,3 @@ void QMailMessageService::releasePushConnections(int connections)
         reservedPushConnections -= connections;
     }
 }
-
-
