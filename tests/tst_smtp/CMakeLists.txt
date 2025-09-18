@@ -19,6 +19,8 @@ target_link_libraries(tst_smtp
 add_test(NAME tst_smtp COMMAND tst_smtp)
 set_tests_properties(tst_smtp PROPERTIES
   ENVIRONMENT QT_PLUGIN_PATH=${CMAKE_BINARY_DIR}/src/plugins:$ENV{QT_PLUGIN_PATH})
+
+# until we figure out how to run a test SMTP server
 set_tests_properties(tst_smtp PROPERTIES WILL_FAIL TRUE)
 
 install(TARGETS tst_smtp

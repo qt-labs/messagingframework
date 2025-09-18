@@ -369,18 +369,15 @@ void tst_QMailMessagePart::testToRfc2822()
 
     const QByteArray expected(
 "Content-Type: multipart/alternative; boundary=\"[}<}]\"" CRLF
-"Content-Disposition:" CRLF
 CRLF
 CRLF
 "--[}<}]" CRLF
 "Content-Type: text/plain" CRLF
 "Content-Transfer-Encoding: quoted-printable" CRLF
-"Content-Disposition:" CRLF
 CRLF
 "Some body text" CRLF
 "--[}<}]" CRLF
 "Content-Type: message/disposition-notification" CRLF
-"Content-Disposition:" CRLF
 "Original-Recipient: foo@example.org" CRLF
 "Original-Message-ID: 123456789" CRLF
 CRLF

@@ -31,6 +31,8 @@ target_link_libraries(tst_imap
 add_test(NAME tst_imap COMMAND tst_imap)
 set_tests_properties(tst_imap PROPERTIES
   ENVIRONMENT QT_PLUGIN_PATH=${CMAKE_BINARY_DIR}/src/plugins:$ENV{QT_PLUGIN_PATH})
+
+# until we figure out how to run a test IMAP server
 set_tests_properties(tst_imap PROPERTIES WILL_FAIL TRUE)
 
 install(TARGETS tst_imap

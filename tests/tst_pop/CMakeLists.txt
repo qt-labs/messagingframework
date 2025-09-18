@@ -21,6 +21,8 @@ target_link_libraries(tst_pop
 add_test(NAME tst_pop COMMAND tst_pop)
 set_tests_properties(tst_pop PROPERTIES
   ENVIRONMENT QT_PLUGIN_PATH=${CMAKE_BINARY_DIR}/src/plugins:$ENV{QT_PLUGIN_PATH})
+
+# until we figure out how to run a test POP server
 set_tests_properties(tst_pop PROPERTIES WILL_FAIL TRUE)
 
 install(TARGETS tst_pop
