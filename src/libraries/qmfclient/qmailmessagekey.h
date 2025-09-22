@@ -124,9 +124,6 @@ public:
     template <typename Stream> void serialize(Stream &stream) const;
     template <typename Stream> void deserialize(Stream &stream);
 
-    void serialize(QDataStream& stream) const;
-    void deserialize(QDataStream& stream);
-
     static QMailMessageKey nonMatchingKey();
 
     static QMailMessageKey id(const QMailMessageId &id, QMailDataComparator::EqualityComparator cmp = QMailDataComparator::Equal);
