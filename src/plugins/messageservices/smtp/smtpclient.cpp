@@ -105,7 +105,6 @@ static QByteArray localName(const QHostAddress &hostAddress)
 SmtpClient::SmtpClient(const QMailAccountId &id, QObject* parent)
     : QObject(parent)
     , config(QMailAccountConfiguration(id))
-    , mailItr(mailList.end())
     , messageLength(0)
     , fetchingCapabilities(false)
     , transport(0)
@@ -241,7 +240,7 @@ void SmtpClient::newConnection()
 QMailServiceAction::Status::ErrorCode SmtpClient::addMail(const QMailMessage& mail)
 {
     // We shouldn't have anything left in our send list...
-    if (mailList.isEmpty() && !sendSize.isEmpty()) {
+    if (sendList.isEmpty() && !sendSize.isEmpty()) {
         foreach (const QMailMessageId& id, sendSize.keys())
             qCWarning(lcSMTP) << "Message" << id << "still in send map...";
 
@@ -274,8 +273,7 @@ QMailServiceAction::Status::ErrorCode SmtpClient::addMail(const QMailMessage& ma
     rawmail.to = sendTo;
     rawmail.mail = mail;
 
-    mailList.append(rawmail);
-    mailItr = mailList.end();
+    sendList.append(rawmail);
     sendSize.insert(mail.id(), mail.indicativeSize());
 
     return QMailServiceAction::Status::ErrNoError;
@@ -286,9 +284,10 @@ void SmtpClient::connected(QMailTransport::EncryptType encryptType)
     delete authTimeout;
     authTimeout = new QTimer;
     authTimeout->setSingleShot(true);
-    const int twentySeconds = 40 * 1000;
+
     connect(authTimeout, SIGNAL(timeout()), this, SLOT(authExpired()));
-    authTimeout->setInterval(twentySeconds);
+    const int timeout = 40 * 1000;
+    authTimeout->setInterval(timeout);
     authTimeout->start();
 
     SmtpConfiguration smtpCfg(config);
@@ -435,9 +434,8 @@ void SmtpClient::nextAction(const QString &response)
 
     switch (status) {
     case Init:
-    {
         if (responseCode == 220) {
-            mailItr = mailList.begin();
+            sentCount = 0;
             capabilities.clear();
 
             // We need to know if extensions are supported
@@ -448,13 +446,12 @@ void SmtpClient::nextAction(const QString &response)
             operationFailed(QMailServiceAction::Status::ErrUnknownResponse, response);
         }
         break;
-    }
+
     case Helo:
-    {
         if (responseCode == 500) {
             // EHLO is not implemented by this server - fallback to HELO
-            QByteArray ehlo("HELO " + localName(transport->socket().localAddress()));
-            sendCommand(ehlo);
+            QByteArray helo("HELO " + localName(transport->socket().localAddress()));
+            sendCommand(helo);
         } else if (responseCode == 250) {
             if (domainName.isEmpty()) {
                 // Extract the domain name from the greeting
@@ -478,9 +475,8 @@ void SmtpClient::nextAction(const QString &response)
             operationFailed(QMailServiceAction::Status::ErrUnknownResponse, response);
         }
         break;
-    }
+
     case Extension:
-    {
         if (responseCode == 250) {
             capabilities.append(response.mid(4).trimmed());
 
@@ -491,6 +487,7 @@ void SmtpClient::nextAction(const QString &response)
                 // Now that we know the capabilities, check for Reference support
                 bool supportsBURL(false);
                 bool supportsChunking(false);
+
                 foreach (const QString &capability, capabilities) {
                     // Although technically only BURL is needed for Reference support, CHUNKING
                     // is also necessary to allow any additional data to accompany the reference
@@ -504,11 +501,12 @@ void SmtpClient::nextAction(const QString &response)
                 const bool supportsReferences(supportsBURL && supportsChunking);
 
                 QMailAccount account(config.id());
-                if (((account.status() & QMailAccount::CanTransmitViaReference) && !supportsReferences) ||
-                    (!(account.status() & QMailAccount::CanTransmitViaReference) && supportsReferences) ||
-                    (account.customField("qmf-smtp-capabilities-listed") != "true")) {
+                if (((account.status() & QMailAccount::CanTransmitViaReference) && !supportsReferences)
+                    || (!(account.status() & QMailAccount::CanTransmitViaReference) && supportsReferences)
+                    || (account.customField("qmf-smtp-capabilities-listed") != "true")) {
                     account.setCustomField("qmf-smtp-capabilities-listed", "true");
                     account.setStatus(QMailAccount::CanTransmitViaReference, supportsReferences);
+
                     if (!QMailStore::instance()->updateAccount(&account)) {
                         qCWarning(lcSMTP) << "Unable to update account" << account.id() << "to set CanTransmitViaReference";
                     }
@@ -529,7 +527,7 @@ void SmtpClient::nextAction(const QString &response)
                         smtpCfg.setSmtpAuthentication(authType);
                         if (!QMailStore::instance()->updateAccountConfiguration(&config)) {
                             qCWarning(lcSMTP) << "Unable to update account" << config.id()
-                                       << "with auth type" << authType;
+                                              << "with auth type" << authType;
                         }
                     }
                 }
@@ -549,7 +547,7 @@ void SmtpClient::nextAction(const QString &response)
             operationFailed(QMailServiceAction::Status::ErrUnknownResponse, response);
         }
         break;
-    }
+
     case StartTLS:
     {
         SmtpConfiguration smtpCfg(config);
@@ -565,7 +563,6 @@ void SmtpClient::nextAction(const QString &response)
         break;
     }
     case TLS:
-    {
         if (responseCode == 220) {
             // Switch into encrypted mode
             transport->switchToEncrypted();
@@ -573,7 +570,6 @@ void SmtpClient::nextAction(const QString &response)
             operationFailed(QMailServiceAction::Status::ErrUnknownResponse, response);
         }
         break;
-    }
 
     case Connected:
     {
@@ -595,7 +591,6 @@ void SmtpClient::nextAction(const QString &response)
         break;
     }
     case Authenticate:
-    {
         // Find the authentication mode to use
         authCommands = SmtpAuthenticator::getAuthentication(SmtpConfiguration(config), *credentials);
         if (authCommands.isEmpty()) {
@@ -620,9 +615,8 @@ void SmtpClient::nextAction(const QString &response)
             status = Authenticating;
         }
         break;
-    }
+
     case Authenticating:
-    {
         if (responseCode == 334 && !authCommands.isEmpty()) {
             // Continue to send auth commands one by one.
             sendCommand(authCommands.takeFirst(), true);
@@ -655,9 +649,9 @@ void SmtpClient::nextAction(const QString &response)
                 QMailAccountConfiguration accountConfig(smtpCfg.id());
                 SmtpConfigurationEditor smtpCfgEditor(&accountConfig);
                 smtpCfgEditor.setSmtpAuthentication(QMail::NoMechanism);
+
                 if (!QMailStore::instance()->updateAccount(nullptr, &accountConfig)) {
-                    qCWarning(lcSMTP) << "Unable to update account" << smtpCfg.id()
-                               << "auth type.";
+                    qCWarning(lcSMTP) << "Unable to update account" << smtpCfg.id() << "auth type.";
                     operationFailed(QMailServiceAction::Status::ErrConfiguration, response);
                 }
                 // Restart the authentication process
@@ -677,8 +671,7 @@ void SmtpClient::nextAction(const QString &response)
                     status = Connected;
                     nextAction(QString());
                 } else {
-                    operationFailed(QMailServiceAction::Status::ErrConfiguration,
-                                    credentials->lastError());
+                    operationFailed(QMailServiceAction::Status::ErrConfiguration, credentials->lastError());
                 }
             } else {
                 operationFailed(QMailServiceAction::Status::ErrLoginFailed, response);
@@ -689,11 +682,10 @@ void SmtpClient::nextAction(const QString &response)
 
         // Otherwise, we're authenticated
         break;
-    }
+
     case Authenticated:
-    {
         authReset = false;
-        if (mailItr == mailList.end()) {
+        if (sendList.isEmpty()) {
             // Nothing to send
             status = Quit;
         } else {
@@ -701,15 +693,15 @@ void SmtpClient::nextAction(const QString &response)
         }
         nextAction(QString());
         break;
-    }
 
     case MetaData:
-    {
         if (capabilities.contains("PIPELINING")) {
             // We can send all our non-message commands together
+            const RawEmail &email = sendList.constFirst();
+
             QStringList commands;
-            commands.append("MAIL FROM:" + mailItr->from);
-            for (it = mailItr->to.begin(); it != mailItr->to.end(); ++it) {
+            commands.append("MAIL FROM:" + email.from);
+            for (auto it = email.to.begin(); it != email.to.end(); ++it) {
                 commands.append("RCPT TO:<" + *it + ">");
             }
             sendCommands(commands);
@@ -723,54 +715,57 @@ void SmtpClient::nextAction(const QString &response)
             nextAction(QString());
         }
         break;
-    }
+
     case From:
     {
-        sendCommand("MAIL FROM:" + mailItr->from);
+        const RawEmail &email = sendList.constFirst();
+
+        sendCommand("MAIL FROM:" + email.from);
         status = Recv;
 
-        emit updateStatus(tr( "Sending: %1").arg(mailItr->mail.subject().simplified()) );
+        emit updateStatus(tr("Sending: %1").arg(email.mail.subject().simplified()));
         break;
     }
     case Recv:
-    {
         if (responseCode == 250) {
-            it = mailItr->to.begin();
-            if (it == mailItr->to.end()) {
+            QStringList rcpt = sendList.constFirst().to;
+
+            if (rcpt.isEmpty()) {
                 operationFailed(QMailServiceAction::Status::ErrInvalidAddress, "no recipients");
             } else {
-                sendCommand("RCPT TO:<" + *it + ">");
+                sendCommand("RCPT TO:<" + rcpt.takeFirst() + ">");
+                pendingRcpt = rcpt;
                 status = MRcv;
             }
         } else {
             operationFailed(QMailServiceAction::Status::ErrUnknownResponse, response);
         }
         break;
-    }
+
     case MRcv:
-    {
         if ((responseCode == 250) || (responseCode == 251)) {
-            it++;
-            if ( it != mailItr->to.end() ) {
-                sendCommand("RCPT TO:<" + *it + ">");
+            if (!pendingRcpt.isEmpty()) {
+                sendCommand("RCPT TO:<" + pendingRcpt.takeFirst() + ">");
             } else {
                 status = PrepareData;
                 nextAction(QString());
             }
         } else {
+            pendingRcpt.clear();
             operationFailed(QMailServiceAction::Status::ErrUnknownResponse, response);
         }
         break;
-    }
 
     case PrepareData:
     {
-        if (mailItr->mail.status() & QMailMessage::TransmitFromExternal) {
+        const RawEmail &email = sendList.constFirst();
+
+        if (email.mail.status() & QMailMessage::TransmitFromExternal) {
             // We can replace this entire message by a reference to its external location
-            mailChunks.append(qMakePair(QMailMessage::Reference, mailItr->mail.externalLocationReference().toLatin1()));
+            mailChunks.append(qMakePair(QMailMessage::Reference, email.mail.externalLocationReference().toLatin1()));
             status = Chunk;
-        } else if (mailItr->mail.status() & QMailMessage::HasReferences) {
-            mailChunks = mailItr->mail.toRfc2822Chunks(QMailMessage::TransmissionFormat);
+        } else if (email.mail.status() & QMailMessage::HasReferences) {
+            mailChunks = email.mail.toRfc2822Chunks(QMailMessage::TransmissionFormat);
             if (mailChunks.isEmpty()) {
                 // Nothing to send?
                 status = Sent;
@@ -783,28 +778,25 @@ void SmtpClient::nextAction(const QString &response)
         nextAction(QString());
         break;
     }
-
     case Data:
-    {
         sendCommand("DATA");
         status = Body;
         break;
-    }
-    case Body:
-    {
-        if (responseCode == 354) {
 
+    case Body:
+        if (responseCode == 354) {
             if (temporaryFile) {
                 operationFailed(QMailServiceAction::Status::ErrInvalidData, tr("Received response 354 while sending."));
                 break;
             }
 
+            RawEmail &email = sendList.first();
             linestart = true;
-            sendingId = mailItr->mail.id();
+            sendingId = email.mail.id();
             sentLength = 0;
 
             // Set the message's message ID
-            mailItr->mail.setHeaderField("Message-ID", messageId(domainName, addressComponent));
+            email.mail.setHeaderField("Message-ID", messageId(domainName, addressComponent));
 
             // Buffer the message to a temporary file.
             QString tempPath = QMail::tempPath();
@@ -819,7 +811,7 @@ void SmtpClient::nextAction(const QString &response)
                 // This isn't optimal but it's how the original code worked and fixing it requires
                 // putting this call onto a separate thread because it blocks until done.
                 QDataStream dataStream(temporaryFile);
-                mailItr->mail.toRfc2822(dataStream, QMailMessage::TransmissionFormat);
+                email.mail.toRfc2822(dataStream, QMailMessage::TransmissionFormat);
             }
             messageLength = temporaryFile->size();
             //qCDebug(lcSMTP) << "Body: queued" << messageLength << "bytes to" << temporaryFile->fileName();
@@ -839,7 +831,6 @@ void SmtpClient::nextAction(const QString &response)
             operationFailed(QMailServiceAction::Status::ErrUnknownResponse, response);
         }
         break;
-    }
 
     case Chunk:
     {
@@ -865,29 +856,27 @@ void SmtpClient::nextAction(const QString &response)
         break;
     }
     case ChunkSent:
-    {
         if (responseCode == 250) {
             // Move on to the next chunk
             status = Chunk;
             nextAction(QString());
         } else {
-            QMailMessageId msgId(mailItr->mail.id());
+            QMailMessageId msgId(sendList.constFirst().mail.id());
 
             operationFailed(QMailServiceAction::Status::ErrUnknownResponse, response);
             messageProcessed(msgId);
         }
         break;
-    }
 
     case Sent:
     {
-        QMailMessageId msgId(mailItr->mail.id());
+        QMailMessageId msgId(sendList.constFirst().mail.id());
 
         // The last send operation is complete
         if (responseCode == 250) {
             if (msgId.isValid()) {
                 // Update the message to store the message-ID
-                if (!QMailStore::instance()->updateMessage(&mailItr->mail)) {
+                if (!QMailStore::instance()->updateMessage(&(sendList.first().mail))) {
                     qCWarning(lcSMTP) << "Unable to update message with Message-ID:" << msgId;
                 }
 
@@ -897,8 +886,10 @@ void SmtpClient::nextAction(const QString &response)
                 sendingId = QMailMessageId();
             }
 
-            mailItr++;
-            if (mailItr == mailList.end()) {
+            sendList.removeFirst();
+            sentCount++;
+
+            if (sendList.isEmpty()) {
                 status = Quit;
             } else {
                 // More messages to send
@@ -921,24 +912,19 @@ void SmtpClient::nextAction(const QString &response)
         transport->close();
         qCDebug(lcSMTP) << "Closed connection";
 
-        int count = mailList.count();
-        if (count) {
-            mailList.clear();
-            mailItr = mailList.end();
-            emit updateStatus(tr("Sent %n messages", "", count));
+        if (sentCount) {
+            sendList.clear();
+            emit updateStatus(tr("Sent %n messages", "", sentCount));
         }
         emit sendCompleted();
         break;
     }
-
     case Done:
-    {
         // Supposed to be unused here
         qCWarning(lcSMTP) << "nextAction - Unexpected status value: " << status;
         break;
     }
 
-    }
     bufferedResponse.clear();
 }
 
@@ -976,8 +962,7 @@ void SmtpClient::operationFailed(int code, const QString &text)
         emit fetchCapabilitiesFinished();
     } else {
         sendingId = QMailMessageId();
-        mailList.clear();
-        mailItr = mailList.end();
+        sendList.clear();
         sendSize.clear();
         emit errorOccurred(code, bufferedResponse + text);
     }
@@ -1002,14 +987,14 @@ void SmtpClient::operationFailed(QMailServiceAction::Status::ErrorCode code, con
         QMailServiceAction::Status actionStatus;
         if (sendingId != QMailMessageId()) {
             actionStatus.messageId = sendingId;
-        } else if (mailItr != mailList.end()) {
-            actionStatus.messageId = mailItr->mail.id();
+        } else if (!sendList.isEmpty()) {
+            actionStatus.messageId = sendList.constFirst().mail.id();
         }
+
         actionStatus.errorCode = code;
 
         sendingId = QMailMessageId();
-        mailList.clear();
-        mailItr = mailList.end();
+        sendList.clear();
         sendSize.clear();
 
         QString msg;
@@ -1073,7 +1058,8 @@ void SmtpClient::sendMoreData(qint64 bytesWritten)
 void SmtpClient::authExpired()
 {
     status = Done;
-    operationFailed(QMailServiceAction::Status::ErrConfiguration, tr("Have not received any greeting from SMTP server, probably configuration error"));
+    operationFailed(QMailServiceAction::Status::ErrConfiguration,
+                    tr("Have not received any greeting from SMTP server, probably configuration error"));
     return;
 }
 

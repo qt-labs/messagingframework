@@ -40,7 +40,6 @@
 #include <QList>
 #include <QLoggingCategory>
 
-#include <qmflist.h>
 #include <qmailaccountconfiguration.h>
 #include <qmailmessage.h>
 #include <qmailmessageserver.h>
@@ -117,23 +116,21 @@ private:
     void stopTransferring();
 
 private:
-    enum TransferStatus
-    {
+    enum TransferStatus {
         Init, Helo, Extension, StartTLS, TLS, Connected, Authenticate, Authenticating, Authenticated,
         MetaData, From, Recv, MRcv, PrepareData, Data, Body, Chunk, ChunkSent, Sent, Quit, Done
     };
 
     QMailAccountConfiguration config;
     TransferStatus status;
-    QmfList<RawEmail> mailList;
-    QmfList<RawEmail>::iterator mailItr;
-    QmfList<QMailMessage::MessageChunk> mailChunks;
+    QList<RawEmail> sendList;
+    QList<QMailMessage::MessageChunk> mailChunks;
     QMailMessageId sendingId;
     uint messageLength;
     uint sentLength;
     bool fetchingCapabilities;
     int outstandingResponses;
-    QStringList::Iterator it;
+    QStringList pendingRcpt;
     QMailTransport *transport;
     QByteArray lineBuffer;
 
@@ -142,6 +139,7 @@ private:
     SendMap sendSize;
     uint progressSendSize;
     uint totalSendSize;
+    uint sentCount;
 
     QStringList capabilities;
     quint32 addressComponent;
