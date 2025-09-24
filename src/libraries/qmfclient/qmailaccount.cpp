@@ -519,7 +519,7 @@ void QMailAccount::setId(const QMailAccountId& id)
 /*!
     Returns the types of messages this account deals with.
 */
-QMailMessageMetaDataFwd::MessageType QMailAccount::messageType() const
+QMailMessageMetaData::MessageType QMailAccount::messageType() const
 {
     return d->_messageType;
 }
@@ -527,7 +527,7 @@ QMailMessageMetaDataFwd::MessageType QMailAccount::messageType() const
 /*!
     Sets the types of messages this account deals with to \a type.
 */
-void QMailAccount::setMessageType(QMailMessageMetaDataFwd::MessageType type)
+void QMailAccount::setMessageType(QMailMessageMetaData::MessageType type)
 {
     d->_messageType = type;
 }

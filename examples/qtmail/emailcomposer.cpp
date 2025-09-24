@@ -813,8 +813,8 @@ QMailMessage EmailComposerInterface::message() const
                 disposition.setFilename(partName.toLatin1());
                 disposition.setSize(fi.size());
 
-                QMailMessageBodyFwd::TransferEncoding encoding(QMailMessageBody::Base64);
-                QMailMessageBodyFwd::EncodingStatus encodingStatus(QMailMessageBody::RequiresEncoding);
+                QMailMessageBody::TransferEncoding encoding(QMailMessageBody::Base64);
+                QMailMessageBody::EncodingStatus encodingStatus(QMailMessageBody::RequiresEncoding);
                 if (mimeType == "message/rfc822") {
                     encoding = QMailMessageBody::NoEncoding;
                     encodingStatus = QMailMessageBody::AlreadyEncoded;

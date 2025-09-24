@@ -92,7 +92,7 @@ void tst_qmailthread::initTestCase()
 
     // Create the data set we will test our keys upon
 
-    standardFolders << QMailFolderId(QMailFolder::LocalStorageFolderId);
+    standardFolders << QMailFolderId(QMailFolderId::LocalStorageFolderId);
 
     {
         QMailAccount account;
@@ -280,7 +280,7 @@ void tst_qmailthread::initTestCase()
         QMailMessage message;
         message.setMessageType(QMailMessage::Sms);
         message.setParentAccountId(accountId4);
-        message.setParentFolderId(QMailFolder::LocalStorageFolderId);
+        message.setParentFolderId(QMailFolderId::LocalStorageFolderId);
         message.setFrom(QMailAddress("0404404040"));
         message.setTo(QMailAddress("0404040404"));
         message.setSubject("Where are you?");

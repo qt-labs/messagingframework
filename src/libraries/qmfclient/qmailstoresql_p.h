@@ -48,6 +48,11 @@
 #include "qmailstore.h"
 #include "qmflist.h"
 #include "qmaillog.h"
+
+#include <QString>
+#include <QList>
+#include <QPair>
+#include <QFile>
 #include <QSqlDatabase>
 
 //#define QMAILSTORE_LOG_SQL //define to enable SQL query logging

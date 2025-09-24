@@ -43,8 +43,7 @@ QMailCryptoGPG::QMailCryptoGPG() : QMailCryptoGPGME(GPGME_PROTOCOL_OpenPGP)
 
 bool QMailCryptoGPG::partHasSignature(const QMailMessagePartContainer &part) const
 {
-    if (part.multipartType() != QMailMessagePartContainerFwd::MultipartSigned ||
-        part.partCount() != 2)
+    if (part.multipartType() != QMailMessagePartContainer::MultipartSigned || part.partCount() != 2)
         return false;
 
     const QMailMessagePart signature = part.partAt(1);
@@ -55,44 +54,44 @@ bool QMailCryptoGPG::partHasSignature(const QMailMessagePartContainer &part) con
     return true;
 }
 
-QMailCryptoFwd::VerificationResult QMailCryptoGPG::verifySignature(const QMailMessagePartContainer &part) const
+QMailCrypto::VerificationResult QMailCryptoGPG::verifySignature(const QMailMessagePartContainer &part) const
 {
     if (!partHasSignature(part))
-        return QMailCryptoFwd::VerificationResult(QMailCryptoFwd::MissingSignature);
+        return QMailCrypto::VerificationResult(QMailCrypto::MissingSignature);
 
     QMailMessagePart body = part.partAt(0);
     QMailMessagePart signature = part.partAt(1);
 
     if (!body.contentAvailable() ||
         !signature.contentAvailable())
-        return QMailCryptoFwd::VerificationResult();
+        return QMailCrypto::VerificationResult();
 
-    QMailCryptoFwd::VerificationResult result;
+    QMailCrypto::VerificationResult result;
     result.engine = QStringLiteral("libgpgme.so");
-    result.summary = verify(signature.body().data(QMailMessageBodyFwd::Decoded),
+    result.summary = verify(signature.body().data(QMailMessageBody::Decoded),
                       body.undecodedData(), result.keyResults);
     return result;
 }
 
-QMailCryptoFwd::SignatureResult QMailCryptoGPG::sign(QMailMessagePartContainer *part,
+QMailCrypto::SignatureResult QMailCryptoGPG::sign(QMailMessagePartContainer *part,
                                                      const QStringList &keys) const
 {
     if (!part) {
         qCWarning(lcMessaging) << "unable to sign a NULL part.";
-        return QMailCryptoFwd::UnknownError;
+        return QMailCrypto::UnknownError;
     }
 
     QByteArray signedData, micalg;
-    QMailCryptoFwd::SignatureResult result;
+    QMailCrypto::SignatureResult result;
     result = computeSignature(*part, keys, signedData, micalg);
-    if (result != QMailCryptoFwd::SignatureValid)
+    if (result != QMailCrypto::SignatureValid)
         return result;
 
     // Set it to multipart/signed content-type.
     QList<QMailMessageHeaderField::ParameterType> parameters;
     parameters << QMailMessageHeaderField::ParameterType("micalg", micalg);
     parameters << QMailMessageHeaderField::ParameterType("protocol", "application/pgp-signature");
-    part->setMultipartType(QMailMessagePartContainerFwd::MultipartSigned, parameters);
+    part->setMultipartType(QMailMessagePartContainer::MultipartSigned, parameters);
 
     // Write the signature data in the second part.
     QMailMessagePart &signature = part->partAt(1);
@@ -102,7 +101,7 @@ QMailCryptoFwd::SignatureResult QMailCryptoGPG::sign(QMailMessagePartContainer *
                                                  QMailMessageBody::SevenBit));
     signature.setContentDescription("OpenPGP digital signature");
 
-    return QMailCryptoFwd::SignatureValid;
+    return QMailCrypto::SignatureValid;
 }
 
 bool QMailCryptoGPG::canDecrypt(const QMailMessagePartContainer &part) const
@@ -117,26 +116,26 @@ bool QMailCryptoGPG::canDecrypt(const QMailMessagePartContainer &part) const
     return false;
 }
 
-QMailCryptoFwd::DecryptionResult QMailCryptoGPG::decrypt(QMailMessagePartContainer *part) const
+QMailCrypto::DecryptionResult QMailCryptoGPG::decrypt(QMailMessagePartContainer *part) const
 {
     if (!part) {
         qCWarning(lcMessaging) << "unable to decrypt a NULL part.";
-        return QMailCryptoFwd::DecryptionResult();
+        return QMailCrypto::DecryptionResult();
     }
 
     if (!canDecrypt(*part))
-        return QMailCryptoFwd::DecryptionResult(QMailCryptoFwd::UnsupportedProtocol);
+        return QMailCrypto::DecryptionResult(QMailCrypto::UnsupportedProtocol);
 
     const QMailMessagePart &body = part->partAt(1);
 
     if (!body.contentAvailable())
-        return QMailCryptoFwd::DecryptionResult();
+        return QMailCrypto::DecryptionResult();
 
     QByteArray decData;
-    QMailCryptoFwd::DecryptionResult result;
+    QMailCrypto::DecryptionResult result;
     result.engine = QStringLiteral("libgpgme.so");
-    result.status = QMailCryptoGPGME::decrypt(body.body().data(QMailMessageBodyFwd::Decoded), decData);
-    if (result.status == QMailCryptoFwd::Decrypted) {
+    result.status = QMailCryptoGPGME::decrypt(body.body().data(QMailMessageBody::Decoded), decData);
+    if (result.status == QMailCrypto::Decrypted) {
         const QMailMessage mail = QMailMessage::fromRfc2822(decData);
 
         part->clearParts();

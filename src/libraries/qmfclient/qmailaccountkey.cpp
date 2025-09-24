@@ -393,7 +393,8 @@ QMailAccountKey QMailAccountKey::name(const QStringList &values, QMailDataCompar
 
     \sa QMailAccount::messageType()
 */
-QMailAccountKey QMailAccountKey::messageType(QMailMessageMetaDataFwd::MessageType value, QMailDataComparator::EqualityComparator cmp)
+QMailAccountKey QMailAccountKey::messageType(QMailMessageMetaData::MessageType value,
+                                             QMailDataComparator::EqualityComparator cmp)
 {
     return QMailAccountKey(MessageType, static_cast<int>(value), QMailKey::comparator(cmp));
 }

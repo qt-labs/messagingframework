@@ -46,8 +46,7 @@
 
 #include <QObject>
 
-class QMailCryptoGPGME: public QObject,
-    public QMailCryptographicServiceInterface
+class QMailCryptoGPGME: public QObject, public QMailCryptographicServiceInterface
 {
     Q_OBJECT
     Q_INTERFACES(QMailCryptographicServiceInterface)
@@ -55,31 +54,30 @@ class QMailCryptoGPGME: public QObject,
  public:
     ~QMailCryptoGPGME() {}
 
-    void setPassphraseCallback(QMailCryptoFwd::PassphraseCallback cb) Q_DECL_OVERRIDE;
+    void setPassphraseCallback(QMailCrypto::PassphraseCallback cb) Q_DECL_OVERRIDE;
     QString passphraseCallback(const QString &info) const Q_DECL_OVERRIDE;
 
- protected:
+protected:
     QMailCryptoGPGME(gpgme_protocol_t protocol);
 
-    QMailCryptoFwd::SignatureResult computeSignature(QMailMessagePartContainer &part,
-                                                     const QStringList &keys,
-                                                     QByteArray &signedData,
-                                                     QByteArray &micalg) const;
-    QMailCryptoFwd::SignatureResult verify(const QByteArray &sigData,
-                                           const QByteArray &messageData,
-                                           QList<QMailCryptoFwd::KeyResult> &keyResults) const;
+    QMailCrypto::SignatureResult computeSignature(QMailMessagePartContainer &part,
+                                                  const QStringList &keys,
+                                                  QByteArray &signedData,
+                                                  QByteArray &micalg) const;
+    QMailCrypto::SignatureResult verify(const QByteArray &sigData,
+                                        const QByteArray &messageData,
+                                        QList<QMailCrypto::KeyResult> &keyResults) const;
 
-    QMailCryptoFwd::CryptResult decrypt(const QByteArray &encData,
-                                        QByteArray &decData) const;
+    QMailCrypto::CryptResult decrypt(const QByteArray &encData, QByteArray &decData) const;
 
- private:
-    QMailCryptoFwd::SignatureResult getSignature(const QByteArray &message,
-                                                 const QStringList &keys,
-                                                 QByteArray &result,
-                                                 QByteArray &micalg) const;
+private:
+    QMailCrypto::SignatureResult getSignature(const QByteArray &message,
+                                              const QStringList &keys,
+                                              QByteArray &result,
+                                              QByteArray &micalg) const;
 
     gpgme_protocol_t m_protocol;
-    QMailCryptoFwd::PassphraseCallback m_cb;
+    QMailCrypto::PassphraseCallback m_cb;
 };
 
 #endif

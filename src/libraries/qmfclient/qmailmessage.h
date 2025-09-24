@@ -34,7 +34,6 @@
 #ifndef QMAILMESSAGE_H
 #define QMAILMESSAGE_H
 
-#include "qmailmessagefwd.h"
 #include "qmailaddress.h"
 #include "qmailid.h"
 #include "qmailtimestamp.h"
@@ -56,15 +55,19 @@ QT_BEGIN_NAMESPACE
 
 class QDataStream;
 class QTextStream;
-class QFile;
 
 QT_END_NAMESPACE
 
 class QMailMessageHeaderFieldPrivate;
 
-class QMF_EXPORT QMailMessageHeaderField : public QPrivatelyImplemented<QMailMessageHeaderFieldPrivate>, public QMailMessageHeaderFieldFwd
+class QMF_EXPORT QMailMessageHeaderField : public QPrivatelyImplemented<QMailMessageHeaderFieldPrivate>
 {
 public:
+    enum FieldType {
+        StructuredField = 1,
+        UnstructuredField = 2
+    };
+
     typedef QMailMessageHeaderFieldPrivate ImplementationType;
 
     typedef QPair<QByteArray, QByteArray> ParameterType;
@@ -157,9 +160,15 @@ private:
 };
 
 
-class QMF_EXPORT QMailMessageContentDisposition : public QMailMessageHeaderField, public QMailMessageContentDispositionFwd
+class QMF_EXPORT QMailMessageContentDisposition : public QMailMessageHeaderField
 {
 public:
+    enum DispositionType {
+        None = 0,
+        Inline = 1,
+        Attachment = 2
+    };
+
     QMailMessageContentDisposition();
     QMailMessageContentDisposition(const QByteArray& type);
     QMailMessageContentDisposition(DispositionType disposition);
@@ -231,9 +240,29 @@ Stream& operator>>(Stream &stream, QMailMessageHeader& header) { header.deserial
 class QMailMessageBodyPrivate;
 class LongString;
 
-class QMF_EXPORT QMailMessageBody : public QPrivatelyImplemented<QMailMessageBodyPrivate>, public QMailMessageBodyFwd
+class QMF_EXPORT QMailMessageBody : public QPrivatelyImplemented<QMailMessageBodyPrivate>
 {
 public:
+    enum TransferEncoding {
+        NoEncoding = 0,
+        SevenBit = 1,
+        EightBit = 2,
+        Base64 = 3,
+        QuotedPrintable = 4,
+        Binary = 5
+    };
+
+    enum EncodingStatus {
+        AlreadyEncoded = 1,
+        RequiresEncoding = 2
+    };
+
+    enum EncodingFormat {
+        None = 0,
+        Encoded = 1,
+        Decoded = 2
+    };
+
     typedef QMailMessageBodyPrivate ImplementationType;
 
     // Construction functions
@@ -284,9 +313,22 @@ Stream& operator<<(Stream &stream, const QMailMessageBody& body) { body.serializ
 template <typename Stream>
 Stream& operator>>(Stream &stream, QMailMessageBody& body) { body.deserialize(stream); return stream; }
 
-class QMF_EXPORT QMailMessagePartContainer : public QPrivatelyImplemented<QMailMessagePartContainerPrivate>, public QMailMessagePartContainerFwd
+class QMF_EXPORT QMailMessagePartContainer : public QPrivatelyImplemented<QMailMessagePartContainerPrivate>
 {
 public:
+    enum MultipartType {
+        MultipartNone = 0,
+        MultipartSigned = 1,
+        MultipartEncrypted = 2,
+        MultipartMixed = 3,
+        MultipartAlternative = 4,
+        MultipartDigest = 5,
+        MultipartParallel = 6,
+        MultipartRelated = 7,
+        MultipartFormData = 8,
+        MultipartReport = 9
+    };
+
     typedef QMailMessagePartContainerPrivate ImplementationType;
     class LocationPrivate;
 
@@ -420,9 +462,15 @@ private:
 
 class QMailMessagePartPrivate;
 
-class QMF_EXPORT QMailMessagePart : public QMailMessagePartContainer, public QMailMessagePartFwd
+class QMF_EXPORT QMailMessagePart : public QMailMessagePartContainer
 {
 public:
+    enum ReferenceType {
+        None = 0,
+        MessageReference,
+        PartReference
+    };
+
     typedef QMailMessagePartPrivate ImplementationType;
 
     QMailMessagePart();
@@ -549,9 +597,50 @@ bool QMailMessagePartContainer::foreachPart(F func) const
 
 class QMailMessageMetaDataPrivate;
 
-class QMF_EXPORT QMailMessageMetaData : public QPrivatelyImplemented<QMailMessageMetaDataPrivate>, public QMailMessageMetaDataFwd
+class QMF_EXPORT QMailMessageMetaData : public QPrivatelyImplemented<QMailMessageMetaDataPrivate>
 {
 public:
+    enum MessageType {
+        Mms     = 0x1,
+        // was: Ems = 0x2
+        Sms     = 0x4,
+        Email   = 0x8,
+        System  = 0x10,
+        Instant = 0x20,
+        None    = 0,
+        AnyType = Mms | Sms | Email | System | Instant
+    };
+
+    enum ContentType {
+        UnknownContent        = 0,
+        NoContent             = 1,
+        PlainTextContent      = 2,
+        RichTextContent       = 3,
+        HtmlContent           = 4,
+        ImageContent          = 5,
+        AudioContent          = 6,
+        VideoContent          = 7,
+        MultipartContent      = 8,
+        SmilContent           = 9,
+        VoicemailContent      = 10,
+        VideomailContent      = 11,
+        VCardContent          = 12,
+        VCalendarContent      = 13,
+        ICalendarContent      = 14,
+        DeliveryReportContent = 15,
+        UserContent           = 64
+    };
+
+    enum ResponseType {
+        NoResponse          = 0,
+        Reply               = 1,
+        ReplyToAll          = 2,
+        Forward             = 3,
+        ForwardPart         = 4,
+        Redirect            = 5,
+        UnspecifiedResponse = 6
+    };
+
     typedef QMailMessageMetaDataPrivate ImplementationType;
 
     static const quint64 &Incoming;
@@ -705,9 +794,41 @@ public:
 
 class QMailMessagePrivate;
 
-class QMF_EXPORT QMailMessage : public QMailMessageMetaData, public QMailMessagePartContainer, public QMailMessageFwd
+class QMF_EXPORT QMailMessage : public QMailMessageMetaData, public QMailMessagePartContainer
 {
 public:
+    enum AttachmentsAction {
+        LinkToAttachments = 0,
+        CopyAttachments,
+        CopyAndDeleteAttachments
+    };
+
+    enum EncodingFormat {
+        HeaderOnlyFormat = 1,
+        StorageFormat = 2,
+        TransmissionFormat = 3,
+        IdentityFormat = 4
+    };
+
+    enum ChunkType {
+        Text = 0,
+        Reference
+    };
+
+    enum DispositionNotificationMode {
+        Manual = 0,
+        Automatic
+    };
+
+    enum DispositionNotificationType {
+        Displayed = 0,
+        Deleted,
+        Dispatched,
+        Processed
+    };
+
+    typedef QPair<ChunkType, QByteArray> MessageChunk;
+
     using QMailMessageMetaData::MessageType;
     using QMailMessageMetaData::ContentType;
     using QMailMessageMetaData::ResponseType;

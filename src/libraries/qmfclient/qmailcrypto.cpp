@@ -175,7 +175,7 @@ const QMailMessagePartContainer* QMailCryptographicService::findSignedContainer(
     return 0;
 }
 
-QMailCryptoFwd::VerificationResult QMailCryptographicService::verifySignature(const QMailMessagePartContainer &part)
+QMailCrypto::VerificationResult QMailCryptographicService::verifySignature(const QMailMessagePartContainer &part)
 {
     QMailCryptographicService *plugins =
         QMailCryptographicService::instance();
@@ -187,13 +187,13 @@ QMailCryptoFwd::VerificationResult QMailCryptographicService::verifySignature(co
             return engine->verifySignature(part);
     }
 
-    return QMailCryptoFwd::VerificationResult(QMailCryptoFwd::MissingSignature);
+    return QMailCrypto::VerificationResult(QMailCrypto::MissingSignature);
 }
 
-QMailCryptoFwd::SignatureResult QMailCryptographicService::sign(QMailMessagePartContainer *part,
-                                                                const QString &crypto,
-                                                                const QStringList &keys,
-                                                                QMailCryptoFwd::PassphraseCallback cb)
+QMailCrypto::SignatureResult QMailCryptographicService::sign(QMailMessagePartContainer *part,
+                                                             const QString &crypto,
+                                                             const QStringList &keys,
+                                                             QMailCrypto::PassphraseCallback cb)
 {
     QMailCryptographicService *plugins = QMailCryptographicService::instance();
 
@@ -203,7 +203,7 @@ QMailCryptoFwd::SignatureResult QMailCryptographicService::sign(QMailMessagePart
         return engine->sign(part, keys);
     }
 
-    return QMailCryptoFwd::BadSignature;
+    return QMailCrypto::BadSignature;
 }
 
 bool QMailCryptographicService::canDecrypt(const QMailMessagePartContainer &part)
@@ -211,18 +211,18 @@ bool QMailCryptographicService::canDecrypt(const QMailMessagePartContainer &part
     return instance()->decryptionEngine(part) != Q_NULLPTR;
 }
 
-QMailCryptoFwd::DecryptionResult QMailCryptographicService::decrypt(QMailMessagePartContainer *part,
-                                                                    QMailCryptoFwd::PassphraseCallback cb)
+QMailCrypto::DecryptionResult QMailCryptographicService::decrypt(QMailMessagePartContainer *part,
+                                                                 QMailCrypto::PassphraseCallback cb)
 {
     if (!part || !part->isEncrypted()) {
-        return QMailCryptoFwd::DecryptionResult(QMailCryptoFwd::NoDigitalEncryption);
+        return QMailCrypto::DecryptionResult(QMailCrypto::NoDigitalEncryption);
     }
 
     QMailCryptographicServiceInterface *engine = instance()->decryptionEngine(*part);
     if (engine) {
         engine->setPassphraseCallback(cb);
-        QMailCryptoFwd::DecryptionResult result = engine->decrypt(part);
-        if (result.status == QMailCryptoFwd::Decrypted) {
+        QMailCrypto::DecryptionResult result = engine->decrypt(part);
+        if (result.status == QMailCrypto::Decrypted) {
             QMailMessage* message = dynamic_cast<QMailMessage*>(part);
             if (message && message->hasAttachments()) {
                 message->setStatus(QMailMessage::HasAttachments, true);
@@ -233,7 +233,7 @@ QMailCryptoFwd::DecryptionResult QMailCryptographicService::decrypt(QMailMessage
         }
         return result;
     } else {
-        return QMailCryptoFwd::DecryptionResult(QMailCryptoFwd::UnsupportedProtocol);
+        return QMailCrypto::DecryptionResult(QMailCrypto::UnsupportedProtocol);
     }
 }
 

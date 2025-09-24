@@ -90,33 +90,33 @@ static QByteArray canonicalizeStr(const char *str)
     return out;
 }
 
-static QMailCryptoFwd::SignatureResult toSignatureResult(gpgme_error_t err)
+static QMailCrypto::SignatureResult toSignatureResult(gpgme_error_t err)
 {
     switch (gpgme_err_code(err)) {
     case GPG_ERR_NO_ERROR:
-        return QMailCryptoFwd::SignatureValid;
+        return QMailCrypto::SignatureValid;
     case GPG_ERR_SIG_EXPIRED:
-        return QMailCryptoFwd::SignatureExpired;
+        return QMailCrypto::SignatureExpired;
     case GPG_ERR_KEY_EXPIRED:
-        return QMailCryptoFwd::KeyExpired;
+        return QMailCrypto::KeyExpired;
     case GPG_ERR_CERT_REVOKED:
-        return QMailCryptoFwd::CertificateRevoked;
+        return QMailCrypto::CertificateRevoked;
     case GPG_ERR_UNUSABLE_SECKEY:
-        return QMailCryptoFwd::UnusableKey;
+        return QMailCrypto::UnusableKey;
     case GPG_ERR_BAD_PASSPHRASE:
-        return QMailCryptoFwd::BadPassphrase;
+        return QMailCrypto::BadPassphrase;
     case GPG_ERR_BAD_SIGNATURE:
-        return QMailCryptoFwd::BadSignature;
+        return QMailCrypto::BadSignature;
     case GPG_ERR_NO_DATA:
     case GPG_ERR_INV_VALUE:
     case GPG_ERR_NO_PUBKEY:
-        return QMailCryptoFwd::MissingKey;
+        return QMailCrypto::MissingKey;
     default:
-        return QMailCryptoFwd::UnknownError;
+        return QMailCrypto::UnknownError;
     }
 }
 
-void QMailCryptoGPGME::setPassphraseCallback(QMailCryptoFwd::PassphraseCallback cb)
+void QMailCryptoGPGME::setPassphraseCallback(QMailCrypto::PassphraseCallback cb)
 {
     m_cb = cb;
 }
@@ -236,7 +236,7 @@ struct GPGmeData {
     }
 };
 
-QMailCryptoFwd::SignatureResult QMailCryptoGPGME::getSignature(const QByteArray &message,
+QMailCrypto::SignatureResult QMailCryptoGPGME::getSignature(const QByteArray &message,
                                                                const QStringList &keys,
                                                                QByteArray &result,
                                                                QByteArray &micalg) const
@@ -304,7 +304,7 @@ QMailCryptoFwd::SignatureResult QMailCryptoGPGME::getSignature(const QByteArray 
 
         micalg = "pgp-md5";
 
-        return QMailCryptoFwd::SignatureValid;
+        return QMailCrypto::SignatureValid;
     }
 
     err = gpgme_op_sign(ctx, data, sig, GPGME_SIG_MODE_DETACH);
@@ -317,11 +317,11 @@ QMailCryptoFwd::SignatureResult QMailCryptoGPGME::getSignature(const QByteArray 
     res = gpgme_op_sign_result(ctx);
     if (res->invalid_signers) {
         qCWarning(lcMessaging) << "found invalid signer" << res->invalid_signers->fpr;
-        return QMailCryptoFwd::MissingKey;
+        return QMailCrypto::MissingKey;
     }
     if (!res->signatures || res->signatures->next) {
         qCWarning(lcMessaging) << "found zero or more than one signature";
-        return QMailCryptoFwd::MissingKey;
+        return QMailCrypto::MissingKey;
     }
 
     micalg = "pgp-";
@@ -329,10 +329,10 @@ QMailCryptoFwd::SignatureResult QMailCryptoGPGME::getSignature(const QByteArray 
 
     result = sig.releaseData();
 
-    return QMailCryptoFwd::SignatureValid;
+    return QMailCrypto::SignatureValid;
 }
 
-QMailCryptoFwd::SignatureResult QMailCryptoGPGME::computeSignature(QMailMessagePartContainer &part,
+QMailCrypto::SignatureResult QMailCryptoGPGME::computeSignature(QMailMessagePartContainer &part,
                                                                    const QStringList &keys,
                                                                    QByteArray &signedData,
                                                                    QByteArray &micalg) const
@@ -341,7 +341,7 @@ QMailCryptoFwd::SignatureResult QMailCryptoGPGME::computeSignature(QMailMessageP
     QMailMessagePart data;
     if (!partHasSignature(part)) {
         data.setMultipartType(part.multipartType());
-        if (part.multipartType() == QMailMessagePartContainerFwd::MultipartNone) {
+        if (part.multipartType() == QMailMessagePartContainer::MultipartNone) {
             data.setBody(part.body());
         } else {
             for (uint i = 0; i < part.partCount(); i++)
@@ -352,9 +352,9 @@ QMailCryptoFwd::SignatureResult QMailCryptoGPGME::computeSignature(QMailMessageP
     }
     QByteArray result = data.toRfc2822();
 
-    QMailCryptoFwd::SignatureResult out;
+    QMailCrypto::SignatureResult out;
     out = getSignature(result, keys, signedData, micalg);
-    if (out != QMailCryptoFwd::SignatureValid)
+    if (out != QMailCrypto::SignatureValid)
         return out;
 
     /* Signature data has been successfully generated. */
@@ -362,7 +362,7 @@ QMailCryptoFwd::SignatureResult QMailCryptoGPGME::computeSignature(QMailMessageP
 
     // Change the part object to have two parts, if not already.
     if (!partHasSignature(part)) {
-        if (part.multipartType() != QMailMessagePartContainerFwd::MultipartNone) {
+        if (part.multipartType() != QMailMessagePartContainer::MultipartNone) {
             // Erase content.
             part.clearParts();
         }
@@ -372,12 +372,12 @@ QMailCryptoFwd::SignatureResult QMailCryptoGPGME::computeSignature(QMailMessageP
         part.appendPart(signature);
     }
 
-    return QMailCryptoFwd::SignatureValid;
+    return QMailCrypto::SignatureValid;
 }
 
-QMailCryptoFwd::SignatureResult QMailCryptoGPGME::verify(const QByteArray &sigData,
+QMailCrypto::SignatureResult QMailCryptoGPGME::verify(const QByteArray &sigData,
                                                          const QByteArray &messageData,
-                                                         QList<QMailCryptoFwd::KeyResult> &keyResults) const
+                                                         QList<QMailCrypto::KeyResult> &keyResults) const
 {
     keyResults.clear();
 
@@ -409,7 +409,7 @@ QMailCryptoFwd::SignatureResult QMailCryptoGPGME::verify(const QByteArray &sigDa
 
     gpgme_verify_result_t verif = gpgme_op_verify_result(ctx);
     if (!verif) {
-        return QMailCryptoFwd::UnknownError;
+        return QMailCrypto::UnknownError;
     }
 
     err = GPG_ERR_NO_ERROR;
@@ -420,7 +420,7 @@ QMailCryptoFwd::SignatureResult QMailCryptoGPGME::verify(const QByteArray &sigDa
         details.insert("creation date", QVariant(QDateTime::fromMSecsSinceEpoch(qint64(signature->timestamp) * 1000)));
         if (signature->exp_timestamp)
             details.insert("expiration date", QVariant(QDateTime::fromMSecsSinceEpoch(qint64(signature->exp_timestamp) * 1000)));
-        keyResults.append(QMailCryptoFwd::KeyResult(signature->fpr,
+        keyResults.append(QMailCrypto::KeyResult(signature->fpr,
                                                     toSignatureResult(sigErr),
                                                     details));
         if (gpgme_err_code(sigErr) != GPG_ERR_NO_ERROR)
@@ -431,24 +431,24 @@ QMailCryptoFwd::SignatureResult QMailCryptoGPGME::verify(const QByteArray &sigDa
     return toSignatureResult(err);
 }
 
-static QMailCryptoFwd::CryptResult toCryptResult(gpgme_error_t err)
+static QMailCrypto::CryptResult toCryptResult(gpgme_error_t err)
 {
     switch (gpgme_err_code(err)) {
     case GPG_ERR_NO_ERROR:
-        return QMailCryptoFwd::Decrypted;
+        return QMailCrypto::Decrypted;
     case GPG_ERR_BAD_PASSPHRASE:
-        return QMailCryptoFwd::WrongPassphrase;
+        return QMailCrypto::WrongPassphrase;
     case GPG_ERR_DECRYPT_FAILED:
     case GPG_ERR_NO_DATA:
     case GPG_ERR_INV_VALUE:
     case GPG_ERR_NO_PUBKEY:
-        return QMailCryptoFwd::NoDigitalEncryption;
+        return QMailCrypto::NoDigitalEncryption;
     default:
-        return QMailCryptoFwd::UnknownCryptError;
+        return QMailCrypto::UnknownCryptError;
     }
 }
 
-QMailCryptoFwd::CryptResult QMailCryptoGPGME::decrypt(const QByteArray &encData,
+QMailCrypto::CryptResult QMailCryptoGPGME::decrypt(const QByteArray &encData,
                                                       QByteArray &decData) const
 {
     GPGmeContext ctx(m_protocol);
@@ -477,5 +477,5 @@ QMailCryptoFwd::CryptResult QMailCryptoGPGME::decrypt(const QByteArray &encData,
     }
     decData = dec.releaseData();
 
-    return QMailCryptoFwd::Decrypted;
+    return QMailCrypto::Decrypted;
 }

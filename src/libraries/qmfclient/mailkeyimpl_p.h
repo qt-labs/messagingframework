@@ -47,6 +47,9 @@
 
 #include <QList>
 #include <QStringList>
+#include <QSharedData>
+#include <QVariant>
+
 #include "qmflist.h"
 
 template<typename Key>

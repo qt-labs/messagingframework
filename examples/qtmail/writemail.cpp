@@ -242,7 +242,7 @@ bool WriteMail::buildMail(bool includeSignature)
     }
 
     if (!newMail.parentFolderId().isValid()) {
-        newMail.setParentFolderId(QMailFolder::LocalStorageFolderId);
+        newMail.setParentFolderId(QMailFolderId::LocalStorageFolderId);
     }
 
     if (m_precursorId.isValid()) {

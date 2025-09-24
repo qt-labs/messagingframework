@@ -1450,7 +1450,7 @@ void ImapMessageListStrategy::messageListFolderAction(ImapStrategyContextBase *c
         if (_currentMailbox.id() == context->mailbox().id) {
             // We already have the appropriate mailbox selected
             handleSelect(context);
-        } else if (_currentMailbox.id() == QMailFolder::LocalStorageFolderId) {
+        } else if (_currentMailbox.id() == QMailFolderId::LocalStorageFolderId) {
             // No folder should be selected
             context->protocol().sendClose();
         } else {

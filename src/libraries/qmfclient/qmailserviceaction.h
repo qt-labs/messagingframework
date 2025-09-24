@@ -34,7 +34,6 @@
 #ifndef QMAILSERVICEACTION_H
 #define QMAILSERVICEACTION_H
 
-#include "qprivateimplementation.h"
 #include "qmailglobal.h"
 #include "qmailid.h"
 #include "qmailmessagekey.h"

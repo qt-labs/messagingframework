@@ -45,11 +45,11 @@
     type of content contained by a message.
 
     QMailMessageClassifier inspects a message to determine what type of content it contains,
-    according to the classification of \l{QMailMessageMetaDataFwd::ContentType}{QMailMessage::ContentType}.
+    according to the classification of \l{QMailMessageMetaData::ContentType}{QMailMessage::ContentType}.
 
-    Messages of type \l{QMailMessageMetaDataFwd::Email}{QMailMessage::Email} may be classified as having
-    \l{QMailMessageMetaDataFwd::VoicemailContent}{QMailMessage::VoicemailContent} or
-    \l{QMailMessageMetaDataFwd::VideomailContent}{QMailMessage::VideomailContent} content if their
+    Messages of type \l{QMailMessageMetaData::Email}{QMailMessage::Email} may be classified as having
+    \l{QMailMessageMetaData::VoicemailContent}{QMailMessage::VoicemailContent} or
+    \l{QMailMessageMetaData::VideomailContent}{QMailMessage::VideomailContent} content if their
     \l{QMailMessage::from()} address matches any of those configured in the
     \c{QtProject/messageserver.conf} file.
 */
@@ -110,7 +110,7 @@ static QMailMessage::ContentType fromContentType(const QMailMessageContentType& 
 
 /*!
     Attempts to determine the type of content held within the message described by \a metaData,
-    if it is currently set to \l{QMailMessageMetaDataFwd::UnknownContent}{QMailMessageMetaData::UnknownContent}.
+    if it is currently set to \l{QMailMessageMetaData::UnknownContent}{QMailMessageMetaData::UnknownContent}.
     If the content type is determined, the message metadata record is updated and true is returned.
 
     \sa QMailMessageMetaData::setContent()
@@ -145,7 +145,7 @@ bool QMailMessageClassifier::classifyMessage(QMailMessageMetaData& metaData)
 
 /*!
     Attempts to determine the type of content held within the message \a message, if it
-    is currently set to \l{QMailMessageMetaDataFwd::UnknownContent}{QMailMessageMetaData::UnknownContent}.
+    is currently set to \l{QMailMessageMetaData::UnknownContent}{QMailMessageMetaData::UnknownContent}.
     If the content type is determined, the message record is updated and true is returned.
 
     \sa QMailMessageMetaData::setContent()

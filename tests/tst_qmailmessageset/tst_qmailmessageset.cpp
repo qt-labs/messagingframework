@@ -76,7 +76,7 @@ void tst_QMailMessageSet::initTestCase()
 
     // Create the data set we will test our keys upon
 
-    standardFolders << QMailFolderId(QMailFolder::LocalStorageFolderId);
+    standardFolders << QMailFolderId(QMailFolderId::LocalStorageFolderId);
 
     {
         QMailAccount account;
@@ -263,7 +263,7 @@ void tst_QMailMessageSet::initTestCase()
         QMailMessage message;
         message.setMessageType(QMailMessage::Sms);
         message.setParentAccountId(accountId4);
-        message.setParentFolderId(QMailFolder::LocalStorageFolderId);
+        message.setParentFolderId(QMailFolderId::LocalStorageFolderId);
         message.setFrom(QMailAddress("0404404040"));
         message.setTo(QMailAddress("0404040404"));
         message.setSubject("Where are you?");
@@ -449,8 +449,8 @@ void tst_QMailMessageSet::test_accountmessageset()
 void tst_QMailMessageSet::test_filtermessageset()
 {
     QMailMessageSetModel model;
-    QMailMessageKey keyemail = QMailMessageKey::messageType(QMailMessageMetaDataFwd::Email);
-    QMailMessageKey keysms = QMailMessageKey::messageType(QMailMessageMetaDataFwd::Sms);
+    QMailMessageKey keyemail = QMailMessageKey::messageType(QMailMessageMetaData::Email);
+    QMailMessageKey keysms = QMailMessageKey::messageType(QMailMessageMetaData::Sms);
     QString name("Filter 1");
     QMailFilterMessageSet *set1 = new QMailFilterMessageSet(&model, keyemail, name);
 

@@ -135,7 +135,7 @@ void tst_QMail_ListModels::initTestCase()
 
     msg1.setMessageType(QMailMessage::Sms);
     msg1.setParentAccountId(account1.id());
-    msg1.setParentFolderId(QMailFolder::LocalStorageFolderId);
+    msg1.setParentFolderId(QMailFolderId::LocalStorageFolderId);
     msg1.setFrom(QMailAddress("0404404040"));
     msg1.setTo(QMailAddress("0404040404"));
     msg1.setSubject("Where are you?");
@@ -153,7 +153,7 @@ void tst_QMail_ListModels::initTestCase()
 
     msg2.setMessageType(QMailMessage::Email);
     msg2.setParentAccountId(account2.id());
-    msg2.setParentFolderId(QMailFolder::LocalStorageFolderId);
+    msg2.setParentFolderId(QMailFolderId::LocalStorageFolderId);
     msg2.setFrom(QMailAddress("newguy@example.org"));
     msg2.setTo(QMailAddress("old@example.org"));
     msg2.setCc(QMailAddressList() << QMailAddress("anotherguy@example.org"));
@@ -202,7 +202,7 @@ void tst_QMail_ListModels::test_qmailaccountlistmodel()
     QCOMPARE(model.sortKey(), sortasc);
 
     // with email key
-    QMailAccountKey key2(QMailAccountKey::messageType(QMailMessageMetaDataFwd::Email));
+    QMailAccountKey key2(QMailAccountKey::messageType(QMailMessageMetaData::Email));
     model.setKey(key2);
     QCOMPARE(model.key(), key2);
     QCOMPARE(model.rowCount(), 2);
@@ -252,7 +252,7 @@ void tst_QMail_ListModels::test_qmailmessagelistmodel()
     //QCOMPARE(model.data(idx).toString(), msg1.subject());
     QMailMessageId id = msg2.id();
 
-    QMailMessageKey key = QMailMessageKey::messageType(QMailMessageMetaDataFwd::Email);
+    QMailMessageKey key = QMailMessageKey::messageType(QMailMessageMetaData::Email);
     QMailMessageSortKey sortkey = QMailMessageSortKey::id();
     p->setKey(key);
     QCOMPARE(p->key(), key);

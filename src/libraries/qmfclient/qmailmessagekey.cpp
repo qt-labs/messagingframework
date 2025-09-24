@@ -402,7 +402,7 @@ QMailMessageKey QMailMessageKey::id(const QMailMessageKey &key, QMailDataCompara
 
     \sa QMailMessage::messageType()
 */
-QMailMessageKey QMailMessageKey::messageType(QMailMessageMetaDataFwd::MessageType type, QMailDataComparator::EqualityComparator cmp)
+QMailMessageKey QMailMessageKey::messageType(QMailMessageMetaData::MessageType type, QMailDataComparator::EqualityComparator cmp)
 {
     return QMailMessageKey(Type, static_cast<int>(type), QMailKey::comparator(cmp));
 }
@@ -753,7 +753,7 @@ QMailMessageKey QMailMessageKey::ancestorFolderIds(const QMailFolderKey &key, QM
 
     \sa QMailMessage::content()
 */
-QMailMessageKey QMailMessageKey::contentType(QMailMessageMetaDataFwd::ContentType type, QMailDataComparator::EqualityComparator cmp)
+QMailMessageKey QMailMessageKey::contentType(QMailMessageMetaData::ContentType type, QMailDataComparator::EqualityComparator cmp)
 {
     return QMailMessageKey(ContentType, static_cast<int>(type), QMailKey::comparator(cmp));
 }
@@ -763,10 +763,10 @@ QMailMessageKey QMailMessageKey::contentType(QMailMessageMetaDataFwd::ContentTyp
 
     \sa QMailMessage::content()
 */
-QMailMessageKey QMailMessageKey::contentType(const QList<QMailMessageMetaDataFwd::ContentType> &types, QMailDataComparator::InclusionComparator cmp)
+QMailMessageKey QMailMessageKey::contentType(const QList<QMailMessageMetaData::ContentType> &types, QMailDataComparator::InclusionComparator cmp)
 {
     QList<int> x;
-    foreach (QMailMessageMetaDataFwd::ContentType type, types)
+    foreach (QMailMessageMetaData::ContentType type, types)
         x.append(static_cast<int>(type));
 
     return QMailMessageKey(x, ContentType, QMailKey::comparator(cmp));
@@ -877,7 +877,7 @@ QMailMessageKey QMailMessageKey::inResponseTo(const QMailMessageKey &key, QMailD
 
     \sa QMailMessage::responseType()
 */
-QMailMessageKey QMailMessageKey::responseType(QMailMessageMetaDataFwd::ResponseType type, QMailDataComparator::EqualityComparator cmp)
+QMailMessageKey QMailMessageKey::responseType(QMailMessageMetaData::ResponseType type, QMailDataComparator::EqualityComparator cmp)
 {
     return QMailMessageKey(ResponseType, static_cast<int>(type), QMailKey::comparator(cmp));
 }
@@ -887,10 +887,10 @@ QMailMessageKey QMailMessageKey::responseType(QMailMessageMetaDataFwd::ResponseT
 
     \sa QMailMessage::responseType()
 */
-QMailMessageKey QMailMessageKey::responseType(const QList<QMailMessageMetaDataFwd::ResponseType> &types, QMailDataComparator::InclusionComparator cmp)
+QMailMessageKey QMailMessageKey::responseType(const QList<QMailMessageMetaData::ResponseType> &types, QMailDataComparator::InclusionComparator cmp)
 {
     QList<int> x;
-    foreach (QMailMessageMetaDataFwd::ResponseType type, types)
+    foreach (QMailMessageMetaData::ResponseType type, types)
         x.append(static_cast<int>(type));
 
     return QMailMessageKey(x, ResponseType, QMailKey::comparator(cmp));

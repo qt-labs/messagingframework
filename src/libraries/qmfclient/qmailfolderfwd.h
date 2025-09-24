@@ -34,12 +34,11 @@
 #ifndef QMAILFOLDERFWD_H
 #define QMAILFOLDERFWD_H
 
-#include "qmailglobal.h"
+#include "qmailid.h"
 
-class QMF_EXPORT QMailFolderFwd
-{
-public:
-    enum PredefinedFolderId { LocalStorageFolderId = 1 };
-};
+#warning "qmailfolderfwd.h deprecated. Use qmailid.h / QMailFolderId::LocalStorageFolderId or qmailfolder.h / QMailFolder"
+
+// local storage id moved the instead of QMailFolder
+typedef QMailFolderFwd QMailFolderId;
 
 #endif

@@ -14,14 +14,12 @@ set(SRC
   qmaildatacomparator.cpp
   qmaildisconnected.cpp
   qmailfolder.cpp
-  qmailfolderfwd.cpp
   qmailfolderkey.cpp
   qmailfoldersortkey.cpp
   qmailid.cpp
   qmailinstantiations.cpp
   qmailkeyargument.cpp
   qmailmessage.cpp
-  qmailmessagefwd.cpp
   qmailmessagekey.cpp
   qmailmessagelistmodel.cpp
   qmailmessagemodelbase.cpp

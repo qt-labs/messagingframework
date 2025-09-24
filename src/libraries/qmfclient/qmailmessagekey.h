@@ -37,7 +37,7 @@
 #include "qmaildatacomparator.h"
 #include "qmailkeyargument.h"
 #include "qmailid.h"
-#include "qmailmessagefwd.h"
+#include "qmailmessage.h"
 #include "qmailglobal.h"
 #include "qmailipc.h"
 #include "qmflist.h"
@@ -130,7 +130,7 @@ public:
     static QMailMessageKey id(const QMailMessageIdList &ids, QMailDataComparator::InclusionComparator cmp = QMailDataComparator::Includes);
     static QMailMessageKey id(const QMailMessageKey &key, QMailDataComparator::InclusionComparator cmp = QMailDataComparator::Includes);
 
-    static QMailMessageKey messageType(QMailMessageMetaDataFwd::MessageType type, QMailDataComparator::EqualityComparator cmp = QMailDataComparator::Equal);
+    static QMailMessageKey messageType(QMailMessageMetaData::MessageType type, QMailDataComparator::EqualityComparator cmp = QMailDataComparator::Equal);
     static QMailMessageKey messageType(int type, QMailDataComparator::InclusionComparator cmp);
 
     static QMailMessageKey parentFolderId(const QMailFolderId &id, QMailDataComparator::EqualityComparator cmp = QMailDataComparator::Equal);
@@ -177,8 +177,8 @@ public:
     static QMailMessageKey ancestorFolderIds(const QMailFolderIdList &ids, QMailDataComparator::InclusionComparator cmp = QMailDataComparator::Includes);
     static QMailMessageKey ancestorFolderIds(const QMailFolderKey &key, QMailDataComparator::InclusionComparator cmp = QMailDataComparator::Includes);
 
-    static QMailMessageKey contentType(QMailMessageMetaDataFwd::ContentType type, QMailDataComparator::EqualityComparator cmp = QMailDataComparator::Equal);
-    static QMailMessageKey contentType(const QList<QMailMessageMetaDataFwd::ContentType> &types, QMailDataComparator::InclusionComparator cmp = QMailDataComparator::Includes);
+    static QMailMessageKey contentType(QMailMessageMetaData::ContentType type, QMailDataComparator::EqualityComparator cmp = QMailDataComparator::Equal);
+    static QMailMessageKey contentType(const QList<QMailMessageMetaData::ContentType> &types, QMailDataComparator::InclusionComparator cmp = QMailDataComparator::Includes);
 
     static QMailMessageKey previousParentFolderId(const QMailFolderId &id, QMailDataComparator::EqualityComparator cmp = QMailDataComparator::Equal);
     static QMailMessageKey previousParentFolderId(const QMailFolderIdList &ids, QMailDataComparator::InclusionComparator cmp = QMailDataComparator::Includes);
@@ -194,8 +194,8 @@ public:
     static QMailMessageKey inResponseTo(const QMailMessageIdList &ids, QMailDataComparator::InclusionComparator cmp = QMailDataComparator::Includes);
     static QMailMessageKey inResponseTo(const QMailMessageKey &key, QMailDataComparator::InclusionComparator cmp = QMailDataComparator::Includes);
 
-    static QMailMessageKey responseType(QMailMessageMetaDataFwd::ResponseType type, QMailDataComparator::EqualityComparator cmp = QMailDataComparator::Equal);
-    static QMailMessageKey responseType(const QList<QMailMessageMetaDataFwd::ResponseType> &types, QMailDataComparator::InclusionComparator cmp = QMailDataComparator::Includes);
+    static QMailMessageKey responseType(QMailMessageMetaData::ResponseType type, QMailDataComparator::EqualityComparator cmp = QMailDataComparator::Equal);
+    static QMailMessageKey responseType(const QList<QMailMessageMetaData::ResponseType> &types, QMailDataComparator::InclusionComparator cmp = QMailDataComparator::Includes);
 
     static QMailMessageKey customField(const QString &name, QMailDataComparator::PresenceComparator cmp = QMailDataComparator::Present);
     static QMailMessageKey customField(const QString &name, const QString &value, QMailDataComparator::EqualityComparator cmp = QMailDataComparator::Equal);

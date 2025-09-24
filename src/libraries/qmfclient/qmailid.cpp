@@ -425,6 +425,14 @@ Q_IMPLEMENT_USER_METATYPE_TYPEDEF(QMailThreadIdList, QMailThreadIdList)
     \relates QMailFolderId
 */
 
+/*!
+    \enum QMailFolderId::PredefinedFolderId
+
+    This enum type is used to declare predefined folders.
+
+    \value LocalStorageFolderId   Identifier for the folder of messages not related to an external account, e.g. messages in the outbox.
+*/
+
 Q_IMPLEMENT_USER_METATYPE(QMailFolderId)
 
 /*!
@@ -438,7 +446,7 @@ QMailFolderId::QMailFolderId()
 /*!
     Construct a QMailFolderId corresponding to the predefined folder identifier \a id.
 */
-QMailFolderId::QMailFolderId(QMailFolderFwd::PredefinedFolderId id)
+QMailFolderId::QMailFolderId(QMailFolderId::PredefinedFolderId id)
     : d(new QMailIdPrivate(static_cast<quint64>(id)))
 {
 }

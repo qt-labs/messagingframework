@@ -150,7 +150,7 @@ void tst_StorageManager::initTestCase()
 
     msg1.setMessageType(QMailMessage::Sms);
     msg1.setParentAccountId(account1.id());
-    msg1.setParentFolderId(QMailFolder::LocalStorageFolderId);
+    msg1.setParentFolderId(QMailFolderId::LocalStorageFolderId);
     msg1.setFrom(QMailAddress("0404404040"));
     msg1.setTo(QMailAddress("0404040404"));
     msg1.setSubject("Where are you?");
@@ -168,7 +168,7 @@ void tst_StorageManager::initTestCase()
 
     msg2.setMessageType(QMailMessage::Email);
     msg2.setParentAccountId(account1.id());
-    msg2.setParentFolderId(QMailFolder::LocalStorageFolderId);
+    msg2.setParentFolderId(QMailFolderId::LocalStorageFolderId);
     msg2.setFrom(QMailAddress("newguy@example.org"));
     msg2.setTo(QMailAddress("old@example.org"));
     msg2.setCc(QMailAddressList() << QMailAddress("anotherguy@example.org"));
@@ -208,7 +208,7 @@ void tst_StorageManager::test_add()
     QMailMessage msg3;
     msg3.setMessageType(QMailMessage::Email);
     msg3.setParentAccountId(account1.id());
-    msg3.setParentFolderId(QMailFolder::LocalStorageFolderId);
+    msg3.setParentFolderId(QMailFolderId::LocalStorageFolderId);
     msg3.setFrom(QMailAddress("newguy@example.org"));
     msg3.setTo(QMailAddress("old@example.org"));
     msg3.setCc(QMailAddressList() << QMailAddress("anotherguy@example.org"));
@@ -232,7 +232,7 @@ void tst_StorageManager::test_remove()
     QMailMessage msg4;
     msg4.setMessageType(QMailMessage::Email);
     msg4.setParentAccountId(account1.id());
-    msg4.setParentFolderId(QMailFolder::LocalStorageFolderId);
+    msg4.setParentFolderId(QMailFolderId::LocalStorageFolderId);
     msg4.setFrom(QMailAddress("newguy@example.org"));
     msg4.setTo(QMailAddress("old@example.org"));
     msg4.setCc(QMailAddressList() << QMailAddress("anotherguy@example.org"));

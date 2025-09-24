@@ -49,7 +49,7 @@
 #include <qmailcontentmanager.h>
 #include <qmailcrypto.h>
 
-Q_DECLARE_METATYPE(QMailCryptoFwd::SignatureResult)
+Q_DECLARE_METATYPE(QMailCrypto::SignatureResult)
 
 class tst_Crypto : public QObject
 {
@@ -294,35 +294,35 @@ void tst_Crypto::extractUndecodedData()
 void tst_Crypto::verify_data()
 {
     QTest::addColumn<QString>("rfc2822Filename");
-    QTest::addColumn<QMailCryptoFwd::SignatureResult>("expectedStatus");
+    QTest::addColumn<QMailCrypto::SignatureResult>("expectedStatus");
     QTest::addColumn<QString>("expectedKeyId");
 
     QTest::newRow("no multipart/signed mail")
         << QStringLiteral("testdata/nosig")
-        << QMailCryptoFwd::MissingSignature
+        << QMailCrypto::MissingSignature
         << QString();
     QTest::newRow("missing key")
         << QStringLiteral("testdata/nokey")
-        << QMailCryptoFwd::MissingKey
+        << QMailCrypto::MissingKey
         << QStringLiteral("FF914AF0C2B35520");
     QTest::newRow("wrong signature data")
         << QStringLiteral("testdata/badsigdata")
-        << QMailCryptoFwd::BadSignature
+        << QMailCrypto::BadSignature
         << QStringLiteral("B2D77D1683AF79EC");
     QTest::newRow("valid signature mail")
         << QStringLiteral("testdata/validsig")
-        << QMailCryptoFwd::SignatureValid
+        << QMailCrypto::SignatureValid
         << QStringLiteral("A1B8EF3A16C0B81ECF216C33B2D77D1683AF79EC");
     QTest::newRow("valid S/MIME mail")
         << QStringLiteral("testdata/smimesig")
-        << QMailCryptoFwd::SignatureValid
+        << QMailCrypto::SignatureValid
         << QStringLiteral("8ECF3CB1EBE13E05407F11231FC6DFAC3A126948");
 }
 
 void tst_Crypto::verify()
 {
     QFETCH(QString, rfc2822Filename);
-    QFETCH(QMailCryptoFwd::SignatureResult, expectedStatus);
+    QFETCH(QMailCrypto::SignatureResult, expectedStatus);
     QFETCH(QString, expectedKeyId);
 
     QFile f(QStringLiteral("%1/%2").arg(QCoreApplication::applicationDirPath(),
@@ -334,10 +334,10 @@ void tst_Crypto::verify()
     QMailMessage msg = QMailMessage::fromRfc2822File(QStringLiteral("%1/%2").arg(QCoreApplication::applicationDirPath(),
                                         rfc2822Filename));
 
-    QMailCryptoFwd::VerificationResult result = QMailCryptographicService::verifySignature(msg);
+    QMailCrypto::VerificationResult result = QMailCryptographicService::verifySignature(msg);
     QCOMPARE(result.summary, expectedStatus);
-    if (expectedStatus == QMailCryptoFwd::MissingSignature
-        || expectedStatus == QMailCryptoFwd::UnknownError)
+    if (expectedStatus == QMailCrypto::MissingSignature
+        || expectedStatus == QMailCrypto::UnknownError)
         return;
     QCOMPARE(result.keyResults.length(), 1);
     QCOMPARE(result.keyResults.at(0).key, expectedKeyId);
@@ -349,21 +349,21 @@ void tst_Crypto::sign_data()
     QTest::addColumn<QString>("rfc2822Filename");
     QTest::addColumn<QString>("plugin");
     QTest::addColumn<QString>("fingerprint");
-    QTest::addColumn<QMailCryptoFwd::SignatureResult>("expectedStatus");
+    QTest::addColumn<QMailCrypto::SignatureResult>("expectedStatus");
     QTest::addColumn<QString>("signedFilename");
 
     QTest::newRow("sign multipart/none mail with OpenPGP")
         << QStringLiteral("testdata/nosig")
         << QStringLiteral("libgpgme.so")
         << m_pgpKey
-        << QMailCryptoFwd::SignatureValid
+        << QMailCrypto::SignatureValid
         << QStringLiteral("testdata/aftersig");
 
     QTest::newRow("sign multipart/none mail with S/MIME")
         << QStringLiteral("testdata/nosig")
         << QStringLiteral("libsmime.so")
         << m_smimeKey
-        << QMailCryptoFwd::SignatureValid
+        << QMailCrypto::SignatureValid
         << QStringLiteral("testdata/aftersmime");
 }
 
@@ -372,7 +372,7 @@ void tst_Crypto::sign()
     QFETCH(QString, rfc2822Filename);
     QFETCH(QString, plugin);
     QFETCH(QString, fingerprint);
-    QFETCH(QMailCryptoFwd::SignatureResult, expectedStatus);
+    QFETCH(QMailCrypto::SignatureResult, expectedStatus);
     QFETCH(QString, signedFilename);
 
     QFile f(QStringLiteral("%1/%2").arg(QCoreApplication::applicationDirPath(),
@@ -413,19 +413,19 @@ void tst_Crypto::signVerify()
     message.setBody(QMailMessageBody::fromData("test", type, QMailMessageBody::Base64));
 
     // Sign it with the PGP key (no password).
-    QMailCryptoFwd::SignatureResult r = QMailCryptographicService::sign(&message, "libgpgme.so", QStringList() << m_pgpKey);
-    QCOMPARE(r, QMailCryptoFwd::SignatureValid);
+    QMailCrypto::SignatureResult r = QMailCryptographicService::sign(&message, "libgpgme.so", QStringList() << m_pgpKey);
+    QCOMPARE(r, QMailCrypto::SignatureValid);
     QCOMPARE(message.partCount(), uint(2));
     QCOMPARE(message.contentType().type(), QByteArray("multipart"));
     QCOMPARE(message.contentType().subType(), QByteArray("signed"));
 
     // And verify it.
-    QMailCryptoFwd::VerificationResult v = QMailCryptographicService::verifySignature(message);
-    QCOMPARE(v.summary, QMailCryptoFwd::SignatureValid);
+    QMailCrypto::VerificationResult v = QMailCryptographicService::verifySignature(message);
+    QCOMPARE(v.summary, QMailCrypto::SignatureValid);
     QCOMPARE(v.engine, QStringLiteral("libgpgme.so"));
     QCOMPARE(v.keyResults.length(), 1);
     QCOMPARE(v.keyResults[0].key, m_pgpKey);
-    QCOMPARE(v.keyResults[0].status, QMailCryptoFwd::SignatureValid);
+    QCOMPARE(v.keyResults[0].status, QMailCrypto::SignatureValid);
 }
 
 void tst_Crypto::storage_data()

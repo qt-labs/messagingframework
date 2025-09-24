@@ -36,7 +36,7 @@
 
 #include "qmailglobal.h"
 #include "qmailipc.h"
-#include "qmailfolderfwd.h"
+
 #include <QDebug>
 #include <QScopedPointer>
 #include <QString>
@@ -73,8 +73,10 @@ class QMF_EXPORT QMailFolderId
 {
     QScopedPointer<QMailIdPrivate> d;
 public:
+    enum PredefinedFolderId { LocalStorageFolderId = 1 };
+
     QMailFolderId();
-    QMailFolderId(QMailFolderFwd::PredefinedFolderId id);
+    QMailFolderId(QMailFolderId::PredefinedFolderId id);
     explicit QMailFolderId(quint64 value);
     QMailFolderId(const QMailFolderId& other);
     virtual ~QMailFolderId();

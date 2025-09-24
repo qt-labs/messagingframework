@@ -1031,7 +1031,7 @@ namespace findBody
     {
         for (uint i = 0; i < container.partCount(); i++) {
             const QMailMessagePart &part = container.partAt(i);
-            if (part.referenceType() == QMailMessagePartFwd::MessageReference)
+            if (part.referenceType() == QMailMessagePart::MessageReference)
                 continue;
             switch (part.multipartType()) {
             case QMailMessagePart::MultipartNone:
@@ -2176,6 +2176,15 @@ void QMailMessageHeaderFieldPrivate::deserialize(Stream &stream)
 */
 
 /*!
+    \enum QMailMessageHeaderField::FieldType
+
+    This enum type is used to describe the formatting of field content.
+
+    \value StructuredField      The field content should be parsed assuming it is structured according to the specification for RFC 2045 'Content-Type' fields.
+    \value UnstructuredField    The field content has no internal structure.
+*/
+
+/*!
     \typedef QMailMessageHeaderField::ImplementationType
     \internal
 */
@@ -2672,6 +2681,16 @@ bool QMailMessageContentType::matches(const QByteArray& primary, const QByteArra
     'Content-Disposition' header field.
     Components of the header field not exposed by member functions can be accessed using
     the functions inherited from QMailMessageHeaderField.
+*/
+
+/*!
+    \enum QMailMessageContentDisposition::DispositionType
+
+    This enum type is used to describe the disposition of a message part.
+
+    \value Attachment   The part data should be presented as an attachment.
+    \value Inline       The part data should be presented inline.
+    \value None         The disposition of the part is unknown.
 */
 
 /*! \internal */
@@ -3545,6 +3564,41 @@ void QMailMessageBodyPrivate::deserialize(Stream &stream)
 /*!
     \typedef QMailMessageBody::ImplementationType
     \internal
+*/
+
+/*!
+    \enum QMailMessageBody::TransferEncoding
+
+    This enum type is used to describe a type of binary to text encoding.
+    Encoding types used here are documented in
+    \l {http://www.ietf.org/rfc/rfc2045.txt}{RFC 2045} "Format of Internet Message Bodies"
+
+    \value NoEncoding          The encoding is not specified.
+    \value SevenBit            The data is not encoded, but contains only 7-bit ASCII data.
+    \value EightBit            The data is not encoded, but contains data using only 8-bit characters which form a superset of ASCII.
+    \value Base64              A 65-character subset of US-ASCII is used, enabling 6 bits to be represented per printable character.
+    \value QuotedPrintable     A method of encoding that tends to leave text similar to US-ASCII unmodified for readability.
+    \value Binary              The data is not encoded to any limited subset of octet values.
+
+    \sa QMailCodec
+*/
+
+/*!
+    \enum QMailMessageBody::EncodingStatus
+
+    This enum type is used to describe the encoding status of body data.
+
+    \value AlreadyEncoded       The body data is already encoded to the necessary encoding.
+    \value RequiresEncoding     The body data is unencoded, and thus requires encoding for transmission.
+*/
+
+/*!
+    \enum QMailMessageBody::EncodingFormat
+
+    This enum type is used to describe the format in which body data should be presented.
+
+    \value Encoded      The body data should be presented in encoded form.
+    \value Decoded      The body data should be presented in unencoded form.
 */
 
 /*!
@@ -4628,6 +4682,23 @@ void QMailMessagePartContainerPrivate::deserialize(Stream &stream)
 */
 
 /*!
+    \enum QMailMessagePartContainer::MultipartType
+
+    This enumerated type is used to describe the multipart encoding of a message or message part.
+
+    \value MultipartNone        The container does not hold parts.
+    \value MultipartSigned      The container holds parts encoded according to \l {http://www.ietf.org/rfc/rfc1847.txt}{RFC 1847} "multipart/signed"
+    \value MultipartEncrypted   The container holds parts encoded according to \l {http://www.ietf.org/rfc/rfc1847.txt}{RFC 1847} "multipart/encrypted"
+    \value MultipartMixed       The container holds parts encoded according to \l {http://www.ietf.org/rfc/rfc2046.txt}{RFC 2046} "multipart/mixed"
+    \value MultipartAlternative The container holds parts encoded according to \l {http://www.ietf.org/rfc/rfc2046.txt}{RFC 2046} "multipart/alternative"
+    \value MultipartDigest      The container holds parts encoded according to \l {http://www.ietf.org/rfc/rfc2046.txt}{RFC 2046} "multipart/digest"
+    \value MultipartParallel    The container holds parts encoded according to \l {http://www.ietf.org/rfc/rfc2046.txt}{RFC 2046} "multipart/parallel"
+    \value MultipartRelated     The container holds parts encoded according to \l {http://www.ietf.org/rfc/rfc2387.txt}{RFC 2387} "multipart/related"
+    \value MultipartFormData    The container holds parts encoded according to \l {http://www.ietf.org/rfc/rfc2388.txt}{RFC 2388} "multipart/form-data"
+    \value MultipartReport      The container holds parts encoded according to \l {http://www.ietf.org/rfc/rfc3462.txt}{RFC 3462} "multipart/report"
+*/
+
+/*!
     \typedef QMailMessagePartContainer::ImplementationType
     \internal
 */
@@ -4716,7 +4787,7 @@ void QMailMessagePartContainer::clearParts()
 
 /*!
     Returns the type of multipart relationship shared by the parts contained within this container, or
-    \l {QMailMessagePartContainerFwd::MultipartNone}{MultipartNone} if the content is not a multipart message.
+    \l {QMailMessagePartContainer::MultipartNone}{MultipartNone} if the content is not a multipart message.
 */
 QMailMessagePartContainer::MultipartType QMailMessagePartContainer::multipartType() const
 {
@@ -5646,6 +5717,16 @@ QMailMessagePartContainerPrivate* QMailMessagePartContainerPrivate::privatePoint
 */
 
 /*!
+    \enum QMailMessagePart::ReferenceType
+
+    This enumerated type is used to describe the type of reference that a part constitutes.
+
+    \value None                 The part is not a reference.
+    \value MessageReference     The part is a reference to a message.
+    \value PartReference        The part is a reference to another part.
+*/
+
+/*!
     \typedef QMailMessagePart::ImplementationType
     \internal
 */
@@ -6174,7 +6255,7 @@ QMailMessagePart::ReferenceType QMailMessagePart::referenceType() const
     Returns the identifier of the message that this part references.
 
     The result will be meaningful only when referenceType() yields
-    \l{QMailMessagePartFwd::MessageReference}{QMailMessagePart::MessageReference}.
+    \l{QMailMessagePart::MessageReference}{QMailMessagePart::MessageReference}.
 
     \sa referenceType(), partReference(), referenceResolution()
 */
@@ -6187,7 +6268,7 @@ QMailMessageId QMailMessagePart::messageReference() const
     Returns the location of the message part that this part references.
 
     The result will be meaningful only when referenceType() yields
-    \l{QMailMessagePartFwd::PartReference}{QMailMessagePart::PartReference}.
+    \l{QMailMessagePart::PartReference}{QMailMessagePart::PartReference}.
 
     \sa referenceType(), messageReference(), referenceResolution()
 */
@@ -6200,7 +6281,7 @@ QMailMessagePart::Location QMailMessagePart::partReference() const
     Returns the URI that resolves the reference encoded into this message part.
 
     The result will be meaningful only when referenceType() yields other than
-    \l{QMailMessagePartFwd::None}{QMailMessagePart::None}.
+    \l{QMailMessagePart::None}{QMailMessagePart::None}.
 
     \sa setReferenceResolution(), referenceType()
 */
@@ -6213,7 +6294,7 @@ QString QMailMessagePart::referenceResolution() const
     Sets the URI that resolves the reference encoded into this message part to \a uri.
 
     The reference URI is meaningful only when referenceType() yields other than
-    \l{QMailMessagePartFwd::None}{QMailMessagePart::None}.
+    \l{QMailMessagePart::None}{QMailMessagePart::None}.
 
     \sa referenceResolution(), referenceType()
 */
@@ -7961,6 +8042,48 @@ void QMailMessagePrivate::deserialize(Stream &stream)
     \sa QMailMessageMetaData, QMailMessagePart, QMailMessageBody, QMailStore, QMailMessageId
 */
 
+/*!
+    \enum QMailMessage::AttachmentsAction
+
+    This enum type is used to describe the action that should be performed on
+    each message attachment.
+
+    \value LinkToAttachments        Add a part to the message containing a link to the
+                                    supplied attachment. If the document is removed, the
+                                    message will no longer have access to the data.
+    \value CopyAttachments          Add a part to the message containing a copy of the
+                                    data in the supplied attachment. If the document is
+                                    removed, the message will still contain the data.
+    \value CopyAndDeleteAttachments Add a part to the message containing a copy of the
+                                    data in the supplied attachment, then delete the
+                                    document from which the data was copied.
+*/
+
+/*!
+    \enum QMailMessage::EncodingFormat
+
+    This enum type is used to describe the format in which a message should be serialized.
+
+    \value HeaderOnlyFormat     Only the header portion of the message is serialized, to RFC 2822 form.
+    \value StorageFormat        The message is serialized to RFC 2822 form, without attachments.
+    \value TransmissionFormat   The entire message is serialized to RFC 2822 form, with additional header fields added if necessary, and 'bcc' header field omitted.
+    \value IdentityFormat       The entire message is serialized to RFC 2822 form, with only Content-Type and Content-Transfer-Encoding headers added where required.
+*/
+
+/*!
+    \enum QMailMessage::ChunkType
+
+    This enum type is used to denote the content of a single chunk in a partitioned output sequence.
+
+    \value Text         The chunk contains verbatim output text.
+    \value Reference    The chunk contains a reference to an external datum.
+*/
+
+/*!
+    \typedef QMailMessage::MessageChunk
+
+    This type defines a single chunk in a sequence of partitioned output data.
+*/
 
 const char QMailMessage::CarriageReturn = '\015';
 const char QMailMessage::LineFeed = '\012';
@@ -8052,7 +8175,7 @@ QMailMessage QMailMessage::asReadReceipt(const QMailMessage &message, const QStr
     QMailMessage readReceipt;
     readReceipt.setMessageType(QMailMessage::Email);
     readReceipt.setDate(QMailTimeStamp::currentDateTime());
-    readReceipt.setResponseType(QMailMessageMetaDataFwd::Reply);
+    readReceipt.setResponseType(QMailMessageMetaData::Reply);
     readReceipt.setParentAccountId(message.parentAccountId());
 
     const QMailAddress from = message.parentAccountId().isValid()
@@ -8085,7 +8208,7 @@ QMailMessage QMailMessage::asReadReceipt(const QMailMessage &message, const QStr
         readReceipt.setSubject(message.subject().prepend(subjectPrefix));
     }
 
-    readReceipt.setMultipartType(QMailMessagePartContainerFwd::MultipartReport,
+    readReceipt.setMultipartType(QMailMessagePartContainer::MultipartReport,
                                  QList<QMailMessageHeaderField::ParameterType>()
                                  << QMailMessageHeaderField::ParameterType("report-type",
                                                                            "disposition-notification"));

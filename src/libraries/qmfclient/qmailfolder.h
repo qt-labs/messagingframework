@@ -36,14 +36,14 @@
 
 #include "qmailglobal.h"
 #include "qmailid.h"
-#include "qmailfolderfwd.h"
+
 #include <QString>
 #include <QList>
 #include <QSharedData>
 
 class QMailFolderPrivate;
 
-class QMF_EXPORT QMailFolder : public QMailFolderFwd
+class QMF_EXPORT QMailFolder
 {
 public:
     enum StandardFolder {

@@ -354,11 +354,10 @@ void tst_QMailMessagePart::testToRfc2822()
     disposition.setHeaderField("Original-Recipient", "foo@example.org");
     disposition.setHeaderField("Original-Message-ID", "123456789");
 
-    QMailMessagePart alt = QMailMessagePart::fromData
-        (QByteArray(),
-         QMailMessageContentDisposition(),
-         QMailMessageContentType(),
-         QMailMessageBodyFwd::NoEncoding);
+    QMailMessagePart alt = QMailMessagePart::fromData(QByteArray(),
+                                                      QMailMessageContentDisposition(),
+                                                      QMailMessageContentType(),
+                                                      QMailMessageBody::NoEncoding);
     alt.setMultipartType(QMailMessagePartContainer::MultipartAlternative);
     alt.appendPart(body);
     alt.appendPart(disposition);

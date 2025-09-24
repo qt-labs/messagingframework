@@ -43,7 +43,7 @@
 #include "qmailglobal.h"
 #include "qmailaddress.h"
 #include "qmailfolder.h"
-#include "qmailmessagefwd.h"
+#include "qmailmessage.h"
 #include "qmailmessagekey.h"
 #include "qmailtimestamp.h"
 
@@ -102,8 +102,8 @@ public:
     QMailTimeStamp lastSynchronized() const;
     void setLastSynchronized(const QMailTimeStamp &synced);
 
-    QMailMessageMetaDataFwd::MessageType messageType() const;
-    void setMessageType(QMailMessageMetaDataFwd::MessageType type);
+    QMailMessageMetaData::MessageType messageType() const;
+    void setMessageType(QMailMessageMetaData::MessageType type);
 
     QStringList messageSources() const;
     QStringList messageSinks() const;

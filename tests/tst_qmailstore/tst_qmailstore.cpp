@@ -1771,7 +1771,7 @@ void tst_QMailStore::message()
     QMailMessage msg2 = QMailMessage::fromRfc2822(mime1);
     msg2.setMessageType(QMailMessage::Email);
     msg2.setParentAccountId(account2.id());
-    msg2.setParentFolderId(QMailFolder::LocalStorageFolderId);
+    msg2.setParentFolderId(QMailFolderId::LocalStorageFolderId);
     msg2.setSubject("email message test");
     msg2.setDate(QMailTimeStamp(QDate::currentDate().startOfDay()));
     msg2.setReceivedDate(QMailTimeStamp(QDate::currentDate().startOfDay()));

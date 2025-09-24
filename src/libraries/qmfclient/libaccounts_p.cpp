@@ -494,7 +494,7 @@ QMailAccount LibAccountManager::account(const QMailAccountId &id) const
     if (name.isEmpty())
         name = account->displayName();
     result.setName(name);
-    result.setMessageType(static_cast<QMailMessageMetaDataFwd::MessageType>(account->valueAsInt(QLatin1String("type"))));
+    result.setMessageType(static_cast<QMailMessageMetaData::MessageType>(account->valueAsInt(QLatin1String("type"))));
     result.setStatus(account->valueAsUInt64(QLatin1String("status")));
     const bool isDefault = account->valueAsBool(QLatin1String("email/default"));
     const bool canTransmit = account->valueAsBool(QLatin1String("canTransmit"), true);

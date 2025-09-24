@@ -2797,7 +2797,7 @@ bool QMailStoreSql::initStore(const QString &localFolderName)
                 qCWarning(lcMailStore) << Q_FUNC_INFO << "Full thread's table update is not completed.";
         }
 
-        if (!setupFolders(QList<FolderInfo>() << FolderInfo(QMailFolder::LocalStorageFolderId, localFolderName, QMailFolder::MessagesPermitted))) {
+        if (!setupFolders(QList<FolderInfo>() << FolderInfo(QMailFolderId::LocalStorageFolderId, localFolderName, QMailFolder::MessagesPermitted))) {
             qCWarning(lcMailStore) << "Error setting up folders";
             return false;
         }
@@ -5914,10 +5914,12 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptAddMessage(QMailMessageMetaDa
         QMailAccount acc(metaData->parentAccountId());
         QMailFolderId trashFolderId = acc.standardFolder(QMailFolder::TrashFolder);
         QMailFolderId draftFolderId = acc.standardFolder(QMailFolder::DraftsFolder);
-        const bool& TrashOrDraft = ((metaData->status() & (QMailMessage::Trash | QMailMessage::Draft)) != 0) ||
-                (trashFolderId != QMailFolder::LocalStorageFolderId && metaData->parentFolderId() == trashFolderId) ||
-                (draftFolderId != QMailFolder::LocalStorageFolderId && metaData->parentFolderId() == draftFolderId);
-        if (!TrashOrDraft) {
+
+        const bool trashOrDraft = ((metaData->status() & (QMailMessage::Trash | QMailMessage::Draft)) != 0)
+                || (trashFolderId != QMailFolderId::LocalStorageFolderId && metaData->parentFolderId() == trashFolderId)
+                || (draftFolderId != QMailFolderId::LocalStorageFolderId && metaData->parentFolderId() == draftFolderId);
+
+        if (!trashOrDraft) {
             APPEND_UNIQUE(out->modifiedThreadIds, metaData->parentThreadId());
             APPEND_UNIQUE(out->updatedThreadIds, metaData->parentThreadId());
             QMailThread thread(metaData->parentThreadId());
@@ -6854,13 +6856,14 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptUpdateMessage(QMailMessageMet
                 QMailAccount account(metaData->parentAccountId());
                 QMailFolderId trashFolderId = account.standardFolder(QMailFolder::TrashFolder);
                 QMailFolderId draftFolderId = account.standardFolder(QMailFolder::DraftsFolder);
-                const bool& movedToTrashOrDraft = (((metaData->status() & (QMailMessage::Trash | QMailMessage::Draft)) != 0)
-                        || (trashFolderId != QMailFolder::LocalStorageFolderId && metaData->parentFolderId() == trashFolderId)
-                        || (draftFolderId != QMailFolder::LocalStorageFolderId && metaData->parentFolderId() == draftFolderId) )
-                        && metaData->parentFolderId() != parentFolderId;
-                const bool& movedFromTrashOrDraft = ((parentFolderId == trashFolderId || parentFolderId == draftFolderId
-                      || ((status & (QMailMessage::Trash | QMailMessage::Draft)) != (metaData->status() & (QMailMessage::Trash | QMailMessage::Draft)))) &&
-                                                    (metaData->parentFolderId() != parentFolderId));
+                const bool movedToTrashOrDraft = (((metaData->status() & (QMailMessage::Trash | QMailMessage::Draft)) != 0)
+                                                  || (trashFolderId != QMailFolderId::LocalStorageFolderId && metaData->parentFolderId() == trashFolderId)
+                                                  || (draftFolderId != QMailFolderId::LocalStorageFolderId && metaData->parentFolderId() == draftFolderId))
+                                                 && metaData->parentFolderId() != parentFolderId;
+                const bool movedFromTrashOrDraft = ((parentFolderId == trashFolderId || parentFolderId == draftFolderId
+                                                     || ((status & (QMailMessage::Trash | QMailMessage::Draft))
+                                                         != (metaData->status() & (QMailMessage::Trash | QMailMessage::Draft))))
+                                                    && (metaData->parentFolderId() != parentFolderId));
                 // if message was moved to/from Trash or Draft folder we should update all threads values in an appropriate way
                 if (movedToTrashOrDraft || movedFromTrashOrDraft) {
                     // It is easier to recalculate all thread values, because we must check all threads messages to understand should we
@@ -8647,8 +8650,8 @@ bool QMailStoreSql::recalculateThreadsColumns(const QMailThreadIdList& modifiedT
             QMailAccount account(data.parentAccountId());
             QMailFolderId trashFolderId = account.standardFolder(QMailFolder::TrashFolder);
             QMailFolderId draftFolderId = account.standardFolder(QMailFolder::DraftsFolder);
-            const bool& trashOrDraftMessage = (((data.status() & (QMailMessage::Trash | QMailMessage::Draft)) != 0) ||
-                                               (data.parentFolderId() == trashFolderId) || (data.parentFolderId() == draftFolderId));
+            const bool trashOrDraftMessage = (((data.status() & (QMailMessage::Trash | QMailMessage::Draft)) != 0)
+                                              || (data.parentFolderId() == trashFolderId) || (data.parentFolderId() == draftFolderId));
             if (!trashOrDraftMessage) {
                 status |= data.status();
                 if (!senders.contains(data.from().toString()))

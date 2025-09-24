@@ -38,10 +38,68 @@
 #define QMAILCRYPTO_H
 
 #include "qmailmessage.h"
-#include "qmailcryptofwd.h"
 #include <qmailpluginmanager.h>
 
 class QMailAccountConfiguration;
+
+class QMF_EXPORT QMailCrypto
+{
+public:
+    enum SignatureResult {
+        SignatureValid,
+        SignatureExpired,
+        KeyExpired,
+        CertificateRevoked,
+        BadPassphrase,
+        BadSignature,
+        MissingKey,
+        MissingSignature,
+        UnusableKey,
+        UnknownError
+    };
+    enum CryptResult {
+        NoDigitalEncryption,
+        Decrypted,
+        WrongPassphrase,
+        UnsupportedProtocol,
+        UnknownCryptError
+    };
+    typedef QString (*PassphraseCallback)(const QString &info);
+
+    struct QMF_EXPORT KeyResult {
+        QString key;
+        SignatureResult status;
+        QVariantMap details;
+
+        KeyResult(const QString &fingerprint, SignatureResult result,
+                  const QVariantMap &parameters = QVariantMap())
+            : key(fingerprint), status(result), details(parameters)
+        {
+        }
+    };
+
+    struct QMF_EXPORT VerificationResult {
+        QString engine;
+        SignatureResult summary;
+        QList<KeyResult> keyResults;
+
+        VerificationResult(SignatureResult status = UnknownError,
+                           const QList<KeyResult> &results = QList<KeyResult>())
+            : summary(status), keyResults(results)
+        {
+        }
+    };
+
+    struct QMF_EXPORT DecryptionResult {
+        QString engine;
+        CryptResult status;
+
+        DecryptionResult(CryptResult result = UnknownCryptError)
+            : status(result)
+        {
+        }
+    };
+};
 
 class QMF_EXPORT QMailCryptographicServiceConfiguration
 {
@@ -69,14 +127,14 @@ public:
     virtual ~QMailCryptographicServiceInterface() {}
 
     virtual bool partHasSignature(const QMailMessagePartContainer &part) const = 0;
-    virtual QMailCryptoFwd::VerificationResult verifySignature(const QMailMessagePartContainer &part) const = 0;
-    virtual QMailCryptoFwd::SignatureResult sign(QMailMessagePartContainer *part,
-                                                 const QStringList &keys) const = 0;
+    virtual QMailCrypto::VerificationResult verifySignature(const QMailMessagePartContainer &part) const = 0;
+    virtual QMailCrypto::SignatureResult sign(QMailMessagePartContainer *part,
+                                              const QStringList &keys) const = 0;
 
     virtual bool canDecrypt(const QMailMessagePartContainer &part) const = 0;
-    virtual QMailCryptoFwd::DecryptionResult decrypt(QMailMessagePartContainer *part) const = 0;
+    virtual QMailCrypto::DecryptionResult decrypt(QMailMessagePartContainer *part) const = 0;
 
-    virtual void setPassphraseCallback(QMailCryptoFwd::PassphraseCallback cb) = 0;
+    virtual void setPassphraseCallback(QMailCrypto::PassphraseCallback cb) = 0;
     virtual QString passphraseCallback(const QString &info) const = 0;
 
     QMailMessagePartContainer* findSignedContainer(QMailMessagePartContainer *part);
@@ -98,15 +156,15 @@ public:
     QMailCryptographicServiceInterface* instance(const QString &engine);
     QMailCryptographicServiceInterface* decryptionEngine(const QMailMessagePartContainer &part);
 
-    static QMailCryptoFwd::VerificationResult verifySignature(const QMailMessagePartContainer &part);
-    static QMailCryptoFwd::SignatureResult sign(QMailMessagePartContainer *part,
-                                                const QString &crypto,
-                                                const QStringList &keys,
-                                                QMailCryptoFwd::PassphraseCallback cb = Q_NULLPTR);
+    static QMailCrypto::VerificationResult verifySignature(const QMailMessagePartContainer &part);
+    static QMailCrypto::SignatureResult sign(QMailMessagePartContainer *part,
+                                             const QString &crypto,
+                                             const QStringList &keys,
+                                             QMailCrypto::PassphraseCallback cb = Q_NULLPTR);
 
     static bool canDecrypt(const QMailMessagePartContainer &part);
-    static QMailCryptoFwd::DecryptionResult decrypt(QMailMessagePartContainer *part,
-                                                    QMailCryptoFwd::PassphraseCallback cb = Q_NULLPTR);
+    static QMailCrypto::DecryptionResult decrypt(QMailMessagePartContainer *part,
+                                                 QMailCrypto::PassphraseCallback cb = Q_NULLPTR);
 
 private:
     QMailCryptographicService(QObject *parent = Q_NULLPTR);

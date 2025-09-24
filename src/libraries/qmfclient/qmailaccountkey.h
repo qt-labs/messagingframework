@@ -37,7 +37,7 @@
 #include "qmaildatacomparator.h"
 #include "qmailkeyargument.h"
 #include "qmailid.h"
-#include "qmailmessagefwd.h"
+#include "qmailmessage.h"
 #include "qmflist.h"
 #include "qmailipc.h"
 #include "qmailglobal.h"
@@ -110,7 +110,8 @@ public:
     static QMailAccountKey name(const QString &value, QMailDataComparator::InclusionComparator cmp);
     static QMailAccountKey name(const QStringList &values, QMailDataComparator::InclusionComparator cmp = QMailDataComparator::Includes);
 
-    static QMailAccountKey messageType(QMailMessageMetaDataFwd::MessageType value, QMailDataComparator::EqualityComparator cmp = QMailDataComparator::Equal);
+    static QMailAccountKey messageType(QMailMessageMetaData::MessageType value,
+                                       QMailDataComparator::EqualityComparator cmp = QMailDataComparator::Equal);
     static QMailAccountKey messageType(int value, QMailDataComparator::InclusionComparator cmp);
 
     static QMailAccountKey fromAddress(const QString &value, QMailDataComparator::EqualityComparator cmp = QMailDataComparator::Equal);

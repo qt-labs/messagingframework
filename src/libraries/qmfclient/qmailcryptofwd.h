@@ -37,67 +37,10 @@
 #ifndef QMAILCRYPTOFWD_H
 #define QMAILCRYPTOFWD_H
 
-#include "qmailglobal.h"
-#include <QMap>
-#include <QVariant>
+#include "qmailcrypto.h"
 
-class QMF_EXPORT QMailCryptoFwd
-{
-public:
-    enum SignatureResult {
-        SignatureValid,
-        SignatureExpired,
-        KeyExpired,
-        CertificateRevoked,
-        BadPassphrase,
-        BadSignature,
-        MissingKey,
-        MissingSignature,
-        UnusableKey,
-        UnknownError
-    };
-    enum CryptResult {
-        NoDigitalEncryption,
-        Decrypted,
-        WrongPassphrase,
-        UnsupportedProtocol,
-        UnknownCryptError
-    };
-    typedef QString (*PassphraseCallback)(const QString &info);
+#warning "qmailcryptofwd.h and QMailCryptoFwd namespace is deprecated. Use qmailcrypto.h and QMailCrypto:: instead"
 
-    struct QMF_EXPORT KeyResult {
-        QString key;
-        SignatureResult status;
-        QVariantMap details;
-
-        KeyResult(const QString &fingerprint, SignatureResult result,
-                  const QVariantMap &parameters = QVariantMap())
-            : key(fingerprint), status(result), details(parameters)
-        {
-        }
-    };
-
-    struct QMF_EXPORT VerificationResult {
-        QString engine;
-        SignatureResult summary;
-        QList<KeyResult> keyResults;
-
-        VerificationResult(SignatureResult status = UnknownError,
-                           const QList<KeyResult> &results = QList<KeyResult>())
-            : summary(status), keyResults(results)
-        {
-        }
-    };
-
-    struct QMF_EXPORT DecryptionResult {
-        QString engine;
-        CryptResult status;
-
-        DecryptionResult(CryptResult result = UnknownCryptError)
-            : status(result)
-        {
-        }
-    };
-};
+typedef QMailCrypto QMailCryptoFwd;
 
 #endif

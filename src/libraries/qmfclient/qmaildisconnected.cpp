@@ -231,28 +231,28 @@ bool QMailDisconnected::updatesOutstanding(const QMailAccountId &mailAccountId)
     QMailMessageKey readStatusKey(QMailMessageKey::status(QMailMessage::Read, QMailDataComparator::Includes));
     readStatusKey &= QMailMessageKey::status(QMailMessage::ReadElsewhere, QMailDataComparator::Excludes);
     readStatusKey &= QMailMessageKey::status(QMailMessage::Removed, QMailDataComparator::Excludes);
-    readStatusKey &= QMailMessageKey::parentFolderId(QMailFolderId(QMailFolderFwd::LocalStorageFolderId), QMailDataComparator::NotEqual);
+    readStatusKey &= QMailMessageKey::parentFolderId(QMailFolderId(QMailFolderId::LocalStorageFolderId), QMailDataComparator::NotEqual);
     if (QMailStore::instance()->countMessages(accountKey & readStatusKey))
         return true;
 
     QMailMessageKey unreadStatusKey(QMailMessageKey::status(QMailMessage::Read, QMailDataComparator::Excludes));
     unreadStatusKey &= QMailMessageKey::status(QMailMessage::ReadElsewhere, QMailDataComparator::Includes);
     unreadStatusKey &= QMailMessageKey::status(QMailMessage::Removed, QMailDataComparator::Excludes);
-    unreadStatusKey &= QMailMessageKey::parentFolderId(QMailFolderId(QMailFolderFwd::LocalStorageFolderId), QMailDataComparator::NotEqual);
+    unreadStatusKey &= QMailMessageKey::parentFolderId(QMailFolderId(QMailFolderId::LocalStorageFolderId), QMailDataComparator::NotEqual);
     if (QMailStore::instance()->countMessages(accountKey & unreadStatusKey))
         return true;
 
     QMailMessageKey importantStatusKey(QMailMessageKey::status(QMailMessage::Important, QMailDataComparator::Includes));
     importantStatusKey &= QMailMessageKey::status(QMailMessage::ImportantElsewhere, QMailDataComparator::Excludes);
     importantStatusKey &= QMailMessageKey::status(QMailMessage::Removed, QMailDataComparator::Excludes);
-    importantStatusKey &= QMailMessageKey::parentFolderId(QMailFolderId(QMailFolderFwd::LocalStorageFolderId), QMailDataComparator::NotEqual);
+    importantStatusKey &= QMailMessageKey::parentFolderId(QMailFolderId(QMailFolderId::LocalStorageFolderId), QMailDataComparator::NotEqual);
     if (QMailStore::instance()->countMessages(accountKey & importantStatusKey))
         return true;
 
     QMailMessageKey unimportantStatusKey(QMailMessageKey::status(QMailMessage::Important, QMailDataComparator::Excludes));
     unimportantStatusKey &= QMailMessageKey::status(QMailMessage::ImportantElsewhere, QMailDataComparator::Includes);
     unimportantStatusKey &= QMailMessageKey::status(QMailMessage::Removed, QMailDataComparator::Excludes);
-    unimportantStatusKey &= QMailMessageKey::parentFolderId(QMailFolderId(QMailFolderFwd::LocalStorageFolderId), QMailDataComparator::NotEqual);
+    unimportantStatusKey &= QMailMessageKey::parentFolderId(QMailFolderId(QMailFolderId::LocalStorageFolderId), QMailDataComparator::NotEqual);
     if (QMailStore::instance()->countMessages(accountKey & unimportantStatusKey))
         return true;
 
@@ -418,8 +418,8 @@ void QMailDisconnected::moveToFolder(QMailMessageMetaData *message, const QMailF
     Q_ASSERT(message);
     Q_ASSERT(folderId.isValid());
     Q_ASSERT(message->parentAccountId().isValid());
-    Q_ASSERT(folderId == QMailFolder::LocalStorageFolderId ||
-             message->parentAccountId() == QMailFolder(folderId).parentAccountId());
+    Q_ASSERT(folderId == QMailFolderId::LocalStorageFolderId
+             || message->parentAccountId() == QMailFolder(folderId).parentAccountId());
 
     if (message->parentFolderId() == folderId)
         return;
