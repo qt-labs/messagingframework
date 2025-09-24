@@ -174,8 +174,7 @@ static void testHeader(const QString& name, void (QMailMessage::*setter)(const Q
         QCOMPARE(m.dataModified(), true);
     }
 
-    if (expandEncodedWords && !name.isNull())
-    {
+    if (expandEncodedWords && !name.isNull()) {
         QString value3("This =?ISO-8859-1?Q?value?= contains =?ISO-8859-1?B?ZW5jb2RlZC13b3Jkcw==?=");
         QString value4("This value contains encoded-words");
 
@@ -352,8 +351,7 @@ void tst_QMailMessage::toRfc2822()
     QFETCH(QByteArray, rfc_body_text);
 
     QMailMessageBody::TransferEncoding te[3] = { QMailMessageBody::NoEncoding, QMailMessageBody::Base64, QMailMessageBody::QuotedPrintable };
-    for (int i = 0; i < 2; ++i)
-    {
+    for (int i = 0; i < 2; ++i) {
         QMailMessage message;
         message.setFrom(QMailAddress(from));
         message.setTo(QMailAddress::fromStringList(to));

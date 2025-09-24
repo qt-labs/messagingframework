@@ -148,15 +148,12 @@ QMailPluginManagerPrivate::QMailPluginManagerPrivate(const QString& path)
 
 QMailPluginManagerPrivate::~QMailPluginManagerPrivate()
 {
-    foreach (QPluginLoader *lib, pluginMap.values()) {
-        delete lib;
-    }
+    qDeleteAll(pluginMap.values());
 }
 
 QMailPluginManager::QMailPluginManager(const QString& dir, QObject* parent)
-:
-    QObject(parent),
-    d(new QMailPluginManagerPrivate(dir))
+    : QObject(parent)
+    , d(new QMailPluginManagerPrivate(dir))
 {
 }
 

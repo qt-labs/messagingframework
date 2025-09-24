@@ -406,8 +406,7 @@ void tst_QMailCodec::line_lengths()
             QCOMPARE(reversed, plaintext);
         }
 
-        if (!qp2047_encoded.isEmpty())
-        {
+        if (!qp2047_encoded.isEmpty()) {
             {
                 QMailQuotedPrintableCodec codec(QMailQuotedPrintableCodec::Text, QMailQuotedPrintableCodec::Rfc2047, qp_line_length);
                 encoded = codec.encode(plaintext, charset);

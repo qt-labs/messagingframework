@@ -378,9 +378,7 @@ void QMailDisconnected::moveToStandardFolder(const QMailMessageIdList& ids, QMai
 
     if (!messages.isEmpty()) {
         QMailStore::instance()->updateMessages(messages);
-        foreach (QMailMessageMetaData *messagePointer, messages) {
-            delete messagePointer;
-        }
+        qDeleteAll(messages);
     }
 }
 
@@ -405,9 +403,7 @@ void QMailDisconnected::moveToFolder(const QMailMessageIdList& ids, const QMailF
 
     if (!messages.empty()) {
         QMailStore::instance()->updateMessages(messages);
-        foreach (QMailMessageMetaData *messagePointer, messages) {
-            delete messagePointer;
-        }
+        qDeleteAll(messages);
     }
 }
 

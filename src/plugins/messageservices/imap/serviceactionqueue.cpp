@@ -68,8 +68,8 @@ void ServiceActionQueue::executeNextCommand()
 
 void ServiceActionQueue::activityChanged(QMailServiceAction::Activity activity)
 {
-    if ((activity == QMailServiceAction::Successful) ||
-        (activity == QMailServiceAction::Failed)) {
+    if ((activity == QMailServiceAction::Successful)
+        || (activity == QMailServiceAction::Failed)) {
         delete _commands.takeFirst();
         _running = false;
         _timer.start(0);
@@ -78,10 +78,7 @@ void ServiceActionQueue::activityChanged(QMailServiceAction::Activity activity)
 
 void ServiceActionQueue::clear()
 {
-    for (int i = 0; i < _commands.size(); ++i) {
-        delete _commands.takeFirst();
-        ++i;
-    }
+    qDeleteAll(_commands);
     _commands.clear();
     _timer.stop();
     _running = false;
