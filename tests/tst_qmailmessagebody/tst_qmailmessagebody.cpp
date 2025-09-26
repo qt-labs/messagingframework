@@ -59,9 +59,6 @@ QByteArray qgetenv(const char *varName)
 }
 #endif
 
-//TESTED_CLASS=QMailMessageBody
-//TESTED_FILES=src/libraries/qtopiamail/qmailmessage.cpp
-
 /*
     This class primarily tests that QMailMessageBody correctly handles I/O.
 */

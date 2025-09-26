@@ -128,7 +128,7 @@ bool messageSelectorLessThan(const MessageSelector &lhs, const MessageSelector &
         return (lhs._properties._location.toString(false) < rhs._properties._location.toString(false));
     else
         return lhs._properties._minimum == SectionProperties::HeadersOnly
-            && rhs._properties._minimum != SectionProperties::HeadersOnly ? true : false;
+               && rhs._properties._minimum != SectionProperties::HeadersOnly;
 }
 
 bool purge(ImapStrategyContextBase *context, const QMailMessageKey &removedKey)
@@ -392,7 +392,7 @@ QSet<QMailFolderId> foldersApplicableTo(QMailMessageKey const& messagekey, QSet<
                     excluded.unite(v.second);
                 }
             } else if (key.combiner() == QMailKey::And) {
-                bool filled(included.size() == 0 && excluded.size() == 0 ? false : true);
+                bool filled(included.size() != 0 || excluded.size() != 0);
 
                 for (QmfList<QMailMessageKey>::const_iterator it(key.subKeys().begin()) ; it != key.subKeys().end() ; ++it) {
                     IncludedExcludedPair next(extractFolders(*it));

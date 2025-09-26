@@ -1920,8 +1920,6 @@ QStringList SearchMessageState::convertKey(const QMailMessageKey &key)
     if (argSearches.size())
         result = combine(argSearches, combiner);
 
-
-
     QList<QStringList> subSearchKeys;
     const QmfList<QMailMessageKey> subkeys = key.subKeys();
 

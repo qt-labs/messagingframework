@@ -75,7 +75,9 @@ private:
 
 void tst_QMailStorageAction::initTestCase()
 {
-    QVERIFY2(QMail::isMessageServerRunning(), "tst_QMailStorageAction requires messageserver to be running");
+    if (!QMail::isMessageServerRunning()) {
+        QSKIP("tst_QMailStorageAction requires messageserver to be running");
+    }
 
     // Instantiate the store to initialise the values of the status flags and create the standard folders
     QMailStore::instance();

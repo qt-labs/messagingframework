@@ -34,14 +34,11 @@
 #include "qmailmessagebuffer.h"
 #include "qmailstore.h"
 
-#include <qmflist.h>
 #include <qmaillog.h>
 
 #include <QTimer>
 #include <QElapsedTimer>
 #include <QSettings>
-#include <QFile>
-
 
 class QMailMessageBufferPrivate
 {
@@ -59,10 +56,7 @@ class QMailMessageBufferPrivate
     QTimer messageTimer;
     QElapsedTimer secondaryTimer;
     int lastFlushTimePerMessage;
-
 };
-
-
 
 Q_GLOBAL_STATIC(QMailMessageBuffer, messageBuffer)
 
@@ -109,7 +103,7 @@ QMailMessageBuffer::BufferItem *QMailMessageBuffer::get_item(QMailMessage *messa
         }
     }
 
-    return 0;
+    return nullptr;
 }
 
 // We "own" the callback instance (makes the error case simpler for the client to handle)

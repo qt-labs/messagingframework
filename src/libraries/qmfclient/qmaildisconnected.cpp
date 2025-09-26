@@ -165,10 +165,10 @@ static quint64 messageStatusSetMaskForFolder(QMailFolder::StandardFolder standar
         return QMailMessage::Junk;
     case QMailFolder::OutboxFolder:
         return QMailMessage::Outbox;
-    case QMailFolder::InboxFolder:
-         ; // Don't do anything
+    case QMailFolder::InboxFolder: // Don't do anything
+    default:
+        return 0;
     }
-    return 0;
 }
 
 static quint64 messageStatusUnsetMaskForFolder(QMailFolder::StandardFolder standardFolder)

@@ -37,10 +37,6 @@
 #include <longstring_p.h>
 #include <ctype.h>
 
-
-//TESTED_CLASS=LongString
-//TESTED_FILES=src/libraries/qtopiamail/qmailmessage.cpp
-
 /*
     This class primarily tests that LongString class correctly replaces a QByteArray.
     LongString is not for external use; it is an implementation detail of QMailMessage.
@@ -69,7 +65,7 @@ private slots:
     void mid();
 };
 
-static void verifyIndexOf( const LongString& container, const QByteArray& content )
+static void verifyIndexOf(const LongString &container, const QByteArray &content)
 {
     if (content.length() > 1) {
         QByteArray target = content.mid(1, -1);
@@ -79,7 +75,6 @@ static void verifyIndexOf( const LongString& container, const QByteArray& conten
         QCOMPARE( container.indexOf( target ), 1 );
     }
 }
-
 
 tst_LongString::tst_LongString()
 {

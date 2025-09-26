@@ -36,9 +36,6 @@
 #include <QObject>
 #include <QTest>
 
-//TESTED_CLASS=QmfList
-//TESTED_FILES=src/libraries/qmfclient/qmflist.h
-
 class tst_QmfList : public QObject
 {
     Q_OBJECT

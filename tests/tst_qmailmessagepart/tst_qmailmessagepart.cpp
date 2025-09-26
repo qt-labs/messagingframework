@@ -50,9 +50,6 @@ as defined by RFC 2606.  Therefore, they should use one of the following domains
 #define BOUNDARY "[}<}]"
 void setQMailMessageBoundaryString(const QByteArray &boundary);
 
-//TESTED_CLASS=QMailMessagePart
-//TESTED_FILES=src/libraries/qtopiamail/qmailmessage.cpp
-
 /*
     Unit test for QMailMessagePart class.
     This class primarily tests that QMailMessagePart correctly sets/gets properties.

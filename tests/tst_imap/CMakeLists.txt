@@ -32,8 +32,9 @@ add_test(NAME tst_imap COMMAND tst_imap)
 set_tests_properties(tst_imap PROPERTIES
   ENVIRONMENT QT_PLUGIN_PATH=${CMAKE_BINARY_DIR}/src/plugins:$ENV{QT_PLUGIN_PATH})
 
-# until we figure out how to run a test IMAP server
-set_tests_properties(tst_imap PROPERTIES WILL_FAIL TRUE)
+# TODO: figure out how to run an IMAP server. until that this might fail or not.
+# at the moment passes so following commented out.
+#set_tests_properties(tst_imap PROPERTIES WILL_FAIL TRUE)
 
 install(TARGETS tst_imap
   RUNTIME DESTINATION /opt/tests/qmf)

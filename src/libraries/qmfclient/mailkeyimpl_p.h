@@ -51,6 +51,7 @@
 #include <QVariant>
 
 #include "qmflist.h"
+#include "qmailkeyargument.h"
 
 template<typename Key>
 class MailKeyImpl : public QSharedData

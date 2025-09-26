@@ -43,9 +43,6 @@ as defined by RFC 2606.  Therefore, they should use one of the following domains
     *.example
 */
 
-//TESTED_CLASS=QMailAddress
-//TESTED_FILES=src/libraries/qtopiamail/qmailmessage.cpp
-
 /*
     This class primarily tests that QMailAddress correctly handles e-mail addresses.
 */

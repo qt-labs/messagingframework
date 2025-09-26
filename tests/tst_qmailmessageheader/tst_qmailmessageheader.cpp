@@ -79,10 +79,6 @@ static QByteArray asRfc2822(const QMailMessageHeaderField& field)
     return asRfc2822(field.id(), field.toString(false, false));
 }
 
-
-//TESTED_CLASS=QMailMessageHeaderField
-//TESTED_FILES=src/libraries/qtopiamail/qmailmessage.cpp
-
 /*
     Dummy test matching test filename.
 */

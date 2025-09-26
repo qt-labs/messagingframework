@@ -60,6 +60,6 @@ public:
 
     static void restoreToPreviousFolder(const QMailMessageId& id);
     static void restoreToPreviousFolder(const QMailMessageKey& key);
-
 };
+
 #endif

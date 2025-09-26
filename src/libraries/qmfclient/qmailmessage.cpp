@@ -5778,7 +5778,7 @@ QMailMessagePartContainer::Location::Location(const QString& description)
         }
     }
 
-    Q_ASSERT(description == toString(separator == -1 ? false : true));
+    Q_ASSERT(description == toString(separator != -1));
 }
 
 /*!

@@ -33,15 +33,11 @@
 
 #include <QObject>
 #include <QTest>
-#include <QSqlQuery>
 #include <QSignalSpy>
+
 #include <qmailstore.h>
-#include <QSettings>
 #include <qmailnamespace.h>
 #include <qmailstoreimplementation_p.h>
-
-//TESTED_CLASS=QMailStore
-//TESTED_FILES=src/libraries/qtopiamail/qmailstore.cpp
 
 /*
     Unit test for QMailStore class.
@@ -1229,7 +1225,6 @@ void tst_QMailStore::updateMessages()
     QSignalSpy spyMessagesDataUpdated(QMailStore::instance(), &QMailStore::messageDataUpdated);
     QSignalSpy spyMessagePropertyUpdated(QMailStore::instance(), &QMailStore::messagePropertyUpdated);
     QSignalSpy spyMessageStatusUpdated(QMailStore::instance(), &QMailStore::messageStatusUpdated);
-
 
     QMailAccount account;
     account.setName("Account");
