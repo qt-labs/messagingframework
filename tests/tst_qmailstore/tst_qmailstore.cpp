@@ -456,9 +456,8 @@ void tst_QMailStore::addMessages()
     QCOMPARE(QMailStore::instance()->countFolders(), 1);
     QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
 
-    QmfList<QMailMessage> messages;
-    QList<QMailMessage*> messageAddresses;
-    for (int i = 1; i <= 10; ++i) {
+    QList<QMailMessage> messages;
+    for (int i = 0; i < 10; ++i) {
         QMailMessage message;
         message.setParentAccountId(account.id());
         message.setParentFolderId(folder.id());
@@ -466,7 +465,11 @@ void tst_QMailStore::addMessages()
         message.setSubject(QString("Message %1").arg(i));
         message.setBody(QMailMessageBody::fromData(QString("Hi #%1").arg(i), QMailMessageContentType("text/plain"), QMailMessageBody::SevenBit));
         messages.append(message);
-        messageAddresses.append(&messages[i-1]);
+    }
+
+    QList<QMailMessage*> messageAddresses;
+    for (int i = 0; i < messages.size(); ++i) {
+        messageAddresses.append(&messages[i]);
     }
 
     // Verify that addition is successful
@@ -482,8 +485,8 @@ void tst_QMailStore::addMessages()
     QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
 
     // Verify that retrieval yields matching result
-    for (int i = 1; i <= 10; ++i) {
-        QMailMessage message(messages.at(i - 1).id());
+    for (int i = 0; i < 10; ++i) {
+        QMailMessage message(messages.at(i).id());
         QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
         QCOMPARE(message.subject(), QString("Message %1").arg(i));
         QCOMPARE(message.body().data(), QString("Hi #%1").arg(i));
@@ -532,9 +535,8 @@ void tst_QMailStore::addMessages2()
     QCOMPARE(QMailStore::instance()->countFolders(), 1);
     QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
 
-    QmfList<QMailMessage> messages;
-    QList<QMailMessage*> messageAddresses;
-    for (int i = 1; i <= 10; ++i) {
+    QList<QMailMessage> messages;
+    for (int i = 0; i < 10; ++i) {
         QMailMessage message;
         message.setParentAccountId(account.id());
         message.setParentFolderId(folder.id());
@@ -542,7 +544,11 @@ void tst_QMailStore::addMessages2()
         message.setSubject(QString("Message %1").arg(i));
         message.setBody(QMailMessageBody::fromData(QString("Hi #%1").arg(i), QMailMessageContentType("text/plain"), QMailMessageBody::SevenBit));
         messages.append(message);
-        messageAddresses.append(&messages[i-1]);
+    }
+
+    QList<QMailMessage*> messageAddresses;
+    for (int i = 0; i < messages.size(); ++i) {
+        messageAddresses.append(&messages[i]);
     }
 
     // Verify that addition is successful
@@ -558,8 +564,8 @@ void tst_QMailStore::addMessages2()
     QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
 
     // Verify that retrieval yields matching result
-    for (int i = 1; i <= 10; ++i) {
-        QMailMessage message(messages.at(i - 1).id());
+    for (int i = 0; i < 10; ++i) {
+        QMailMessage message(messages[i].id());
         QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
         QCOMPARE(message.subject(), QString("Message %1").arg(i));
         QCOMPARE(message.body().data(), QString("Hi #%1").arg(i));
@@ -1251,17 +1257,21 @@ void tst_QMailStore::updateMessages()
     QCOMPARE(QMailStore::instance()->countFolders(), 1);
     QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
 
-    QmfList<QMailMessage> messages;
-    QList<QMailMessage*> messageAddresses;
-    for (int i = 1; i <= 10; ++i) {
+    QList<QMailMessage> messages;
+    for (int i = 0; i < 10; ++i) {
         QMailMessage message;
         message.setParentAccountId(account.id());
         message.setParentFolderId(folder.id());
         message.setMessageType(QMailMessage::Sms);
         message.setSubject(QString("Message %1").arg(i));
-        message.setBody(QMailMessageBody::fromData(QString("Hi #%1").arg(i), QMailMessageContentType("text/plain"), QMailMessageBody::SevenBit));
+        message.setBody(QMailMessageBody::fromData(QString("Hi #%1").arg(i), QMailMessageContentType("text/plain"),
+                                                   QMailMessageBody::SevenBit));
         messages.append(message);
-        messageAddresses.append(&messages[i-1]);
+    }
+
+    QList<QMailMessage*> messageAddresses;
+    for (int i = 0; i < messages.size(); ++i) {
+        messageAddresses.append(&messages[i]);
     }
 
     // Verify that addition is successful
@@ -1277,8 +1287,8 @@ void tst_QMailStore::updateMessages()
     QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
 
     // Change the properties of each message
-    for (int i = 1; i <= 10; ++i) {
-        QMailMessage *message(messageAddresses.at(i - 1));
+    for (int i = 0; i < 10; ++i) {
+        QMailMessage *message(messageAddresses.at(i));
         message->setSubject(QString("Message %1").arg(i + 100));
         message->setBody(QMailMessageBody::fromData(QString("Hi #%1").arg(i + 100), QMailMessageContentType("text/plain"), QMailMessageBody::SevenBit));
     }
@@ -1292,8 +1302,8 @@ void tst_QMailStore::updateMessages()
     QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
 
     // Verify that retrieval yields matching result
-    for (int i = 1; i <= 10; ++i) {
-        QMailMessage message(messages.at(i - 1).id());
+    for (int i = 0; i < 10; ++i) {
+        QMailMessage message(messages.at(i).id());
         QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
         QCOMPARE(message.subject(), QString("Message %1").arg(i + 100));
         QCOMPARE(message.body().data(), QString("Hi #%1").arg(i + 100));
@@ -1580,7 +1590,6 @@ void tst_QMailStore::remove1000Messages()
     QCOMPARE(QMailStore::instance()->lastError(), QMailStore::NoError);
     QCOMPARE(QMailStore::instance()->countMessages(),0);
 
-
     //with message removal record
 
     for (int i = 0; i < largeMessageCount; ++i) {
@@ -1807,8 +1816,6 @@ void tst_QMailStore::implementationbase()
         svcCfg->setValue("username", "account10");
     }
     QVERIFY(QMailStore::instance()->addAccount(&account1, &config1));
-
-
 
     QMailStoreNullImplementation impl(QMailStore::instance());
     QVERIFY(!impl.asynchronousEmission());

@@ -229,8 +229,8 @@ QSet<QMailAccountId> accountsApplicableTo(QMailMessageKey messagekey, QSet<QMail
             } else if (key.combiner() == QMailKey::And) {
                 bool filled(included.size() != 0 || excluded.size() != 0);
 
-                for (QmfList<QMailMessageKey>::const_iterator it(key.subKeys().begin()) ; it != key.subKeys().end() ; ++it) {
-                    IncludedExcludedPair next(extractAccounts(*it));
+                for (const QMailMessageKey &key : key.subKeys()) {
+                    IncludedExcludedPair next(extractAccounts(key));
                     if (next.first.size() != 0 || next.second.size() != 0) {
                         if (filled) {
                             included.intersect(next.first);

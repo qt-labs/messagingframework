@@ -394,8 +394,8 @@ QSet<QMailFolderId> foldersApplicableTo(QMailMessageKey const& messagekey, QSet<
             } else if (key.combiner() == QMailKey::And) {
                 bool filled(included.size() != 0 || excluded.size() != 0);
 
-                for (QmfList<QMailMessageKey>::const_iterator it(key.subKeys().begin()) ; it != key.subKeys().end() ; ++it) {
-                    IncludedExcludedPair next(extractFolders(*it));
+                for (const QMailMessageKey &key : key.subKeys()) {
+                    IncludedExcludedPair next(extractFolders(key));
                     if (next.first.size() != 0 || next.second.size() != 0) {
                         if (filled) {
                             included.intersect(next.first);
