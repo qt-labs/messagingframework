@@ -54,7 +54,7 @@ public:
     QMailAccountSortKeyPrivate() : MailSortKeyImpl<QMailAccountSortKey>() {}
     QMailAccountSortKeyPrivate(QMailAccountSortKey::Property p, Qt::SortOrder o, quint64 m)
         : MailSortKeyImpl<QMailAccountSortKey>(p, o, m) {}
-    QMailAccountSortKeyPrivate(const QmfList<QMailAccountSortKey::ArgumentType> args)
+    QMailAccountSortKeyPrivate(const QList<QMailAccountSortKey::ArgumentType> args)
         : MailSortKeyImpl<QMailAccountSortKey>(args) {}
 };
 

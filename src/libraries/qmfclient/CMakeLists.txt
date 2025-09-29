@@ -84,7 +84,6 @@ set(PUBLIC_HEADERS
   qmailthreadkey.h
   qmailthreadlistmodel.h
   qmailthreadsortkey.h
-  qmflist.h
   qprivateimplementation.h
   support/qmailglobal.h
   support/qmaillog.h

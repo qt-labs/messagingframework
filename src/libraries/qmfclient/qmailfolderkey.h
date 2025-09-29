@@ -37,7 +37,6 @@
 #include "qmaildatacomparator.h"
 #include "qmailkeyargument.h"
 #include "qmailid.h"
-#include "qmflist.h"
 #include "qmailipc.h"
 #include "qmailglobal.h"
 
@@ -94,8 +93,8 @@ public:
     //for subqueries
     operator QVariant() const;
 
-    const QmfList<ArgumentType> &arguments() const;
-    const QmfList<QMailFolderKey> &subKeys() const;
+    const QList<ArgumentType> &arguments() const;
+    const QList<QMailFolderKey> &subKeys() const;
 
     QMailKey::Combiner combiner() const;
 

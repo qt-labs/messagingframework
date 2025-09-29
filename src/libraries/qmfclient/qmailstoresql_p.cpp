@@ -1808,7 +1808,8 @@ QString combineOperatorString(QMailKey::Combiner op)
     return QString();
 }
 
-QString columnExpression(const QString &column, QMailKey::Comparator op, const QString &value, bool multipleArgs = false, bool patternMatch = false, bool bitwiseMultiples = false, bool noCase = false)
+QString columnExpression(const QString &column, QMailKey::Comparator op, const QString &value, bool multipleArgs = false,
+                         bool patternMatch = false, bool bitwiseMultiples = false, bool noCase = false)
 {
     QString result;
 
@@ -1835,13 +1836,15 @@ QString columnExpression(const QString &column, QMailKey::Comparator op, const Q
     return result;
 }
 
-QString columnExpression(const QString &column, QMailKey::Comparator op, const QmfList<QVariant> &valueList, bool patternMatch = false, bool bitwiseMultiples = false, bool noCase = false)
+QString columnExpression(const QString &column, QMailKey::Comparator op, const QList<QVariant> &valueList,
+                         bool patternMatch = false, bool bitwiseMultiples = false, bool noCase = false)
 {
     QString value(QMailStoreSql::expandValueList(valueList));
     return columnExpression(column, op, value, (valueList.count() > 1), patternMatch, bitwiseMultiples, noCase);
 }
 
-QString baseExpression(const QString &column, QMailKey::Comparator op, bool multipleArgs = false, bool patternMatch = false, bool bitwiseMultiples = false, bool noCase = false)
+QString baseExpression(const QString &column, QMailKey::Comparator op, bool multipleArgs = false,
+                       bool patternMatch = false, bool bitwiseMultiples = false, bool noCase = false)
 {
     return columnExpression(column, op, QString(), multipleArgs, patternMatch, bitwiseMultiples, noCase);
 }
@@ -4457,7 +4460,7 @@ QString QMailStoreSql::parseSql(QTextStream& ts)
     return qry;
 }
 
-QString QMailStoreSql::expandValueList(const QmfList<QVariant>& valueList)
+QString QMailStoreSql::expandValueList(const QList<QVariant>& valueList)
 {
     Q_ASSERT(!valueList.isEmpty());
     return expandValueList(valueList.count());

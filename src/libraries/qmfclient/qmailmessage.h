@@ -37,7 +37,6 @@
 #include "qmailaddress.h"
 #include "qmailid.h"
 #include "qmailtimestamp.h"
-#include "qmflist.h"
 #include "qprivateimplementation.h"
 
 #include <QByteArray>
@@ -957,8 +956,8 @@ public:
 QMF_EXPORT QDebug operator<<(QDebug dbg, const QMailMessagePart &part);
 QMF_EXPORT QDebug operator<<(QDebug dbg, const QMailMessageHeaderField &field);
 
-typedef QmfList<QMailMessage> QMailMessageList;
-typedef QmfList<QMailMessageMetaData> QMailMessageMetaDataList;
+typedef QList<QMailMessage> QMailMessageList;
+typedef QList<QMailMessageMetaData> QMailMessageMetaDataList;
 typedef QList<QMailMessage::MessageType> QMailMessageTypeList;
 
 Q_DECLARE_USER_METATYPE_ENUM(QMailMessageBody::TransferEncoding)

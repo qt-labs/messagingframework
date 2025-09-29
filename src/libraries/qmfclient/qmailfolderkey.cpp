@@ -285,7 +285,7 @@ QMailFolderKey::operator QVariant() const
 /*!
     Returns the list of arguments to this QMailFolderKey.
 */
-const QmfList<QMailFolderKey::ArgumentType> &QMailFolderKey::arguments() const
+const QList<QMailFolderKey::ArgumentType> &QMailFolderKey::arguments() const
 {
     return d->arguments;
 }
@@ -293,7 +293,7 @@ const QmfList<QMailFolderKey::ArgumentType> &QMailFolderKey::arguments() const
 /*!
     Returns the list of sub keys held by this QMailFolderKey.
 */
-const QmfList<QMailFolderKey> &QMailFolderKey::subKeys() const
+const QList<QMailFolderKey> &QMailFolderKey::subKeys() const
 {
     return d->subKeys;
 }

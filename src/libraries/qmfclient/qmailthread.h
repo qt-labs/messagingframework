@@ -38,8 +38,8 @@
 #include "qmailid.h"
 #include "qmailaddress.h"
 #include "qmailtimestamp.h"
-#include "qmflist.h"
 #include "qprivateimplementation.h"
+
 #include <QString>
 #include <QList>
 #include <QSharedData>
@@ -89,6 +89,6 @@ public:
     void setStatus(quint64 value);
 };
 
-typedef QmfList<QMailThread> QMailThreadList;
+typedef QList<QMailThread> QMailThreadList;
 
 #endif

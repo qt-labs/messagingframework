@@ -110,7 +110,7 @@ QMailMessageSortKey::QMailMessageSortKey(Property p, Qt::SortOrder o, quint64 ma
 }
 
 /*! \internal */
-QMailMessageSortKey::QMailMessageSortKey(const QmfList<QMailMessageSortKey::ArgumentType> &args)
+QMailMessageSortKey::QMailMessageSortKey(const QList<QMailMessageSortKey::ArgumentType> &args)
     : d(new QMailMessageSortKeyPrivate(args))
 {
 }
@@ -187,7 +187,7 @@ bool QMailMessageSortKey::isEmpty() const
 /*!
     Returns the list of arguments to this QMailMessageSortKey.
 */
-const QmfList<QMailMessageSortKey::ArgumentType> &QMailMessageSortKey::arguments() const
+const QList<QMailMessageSortKey::ArgumentType> &QMailMessageSortKey::arguments() const
 {
     return d->arguments();
 }

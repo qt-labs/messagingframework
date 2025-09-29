@@ -34,7 +34,6 @@
 
 #include "servicehandler.h"
 #include <longstream_p.h>
-#include <qmflist.h>
 #include <qmailmessageserver.h>
 #include <qmailserviceconfiguration.h>
 #include <qmailstore.h>

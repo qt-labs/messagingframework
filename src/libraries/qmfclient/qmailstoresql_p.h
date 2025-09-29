@@ -46,7 +46,6 @@
 //
 
 #include "qmailstore.h"
-#include "qmflist.h"
 #include "qmaillog.h"
 
 #include <QString>
@@ -275,7 +274,7 @@ public:
     QString buildWhereClause(const Key& key, bool nested = false, bool firstClause = true) const;
     QVariantList whereClauseValues(const Key& key) const;
 
-    static QString expandValueList(const QmfList<QVariant>& valueList);
+    static QString expandValueList(const QList<QVariant>& valueList);
     static QString expandValueList(int valueCount);
 
     static QString temporaryTableName(const QMailMessageKey::ArgumentType &arg);

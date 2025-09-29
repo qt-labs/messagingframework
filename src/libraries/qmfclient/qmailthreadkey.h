@@ -38,7 +38,6 @@
 #include "qmailkeyargument.h"
 #include "qmailid.h"
 #include "qmailipc.h"
-#include "qmflist.h"
 #include "qmailglobal.h"
 
 #include <QList>
@@ -98,8 +97,8 @@ public:
     // for subqueries
     operator QVariant() const;
 
-    const QmfList<ArgumentType> &arguments() const;
-    const QmfList<QMailThreadKey> &subKeys() const;
+    const QList<ArgumentType> &arguments() const;
+    const QList<QMailThreadKey> &subKeys() const;
 
     QMailKey::Combiner combiner() const;
 

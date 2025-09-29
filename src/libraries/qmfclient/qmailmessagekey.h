@@ -40,7 +40,6 @@
 #include "qmailmessage.h"
 #include "qmailglobal.h"
 #include "qmailipc.h"
-#include "qmflist.h"
 
 #include <QFlags>
 #include <QList>
@@ -115,8 +114,8 @@ public:
 
     operator QVariant() const;
 
-    const QmfList<ArgumentType> &arguments() const;
-    const QmfList<QMailMessageKey> &subKeys() const;
+    const QList<ArgumentType> &arguments() const;
+    const QList<QMailMessageKey> &subKeys() const;
 
     QMailKey::Combiner combiner() const;
 

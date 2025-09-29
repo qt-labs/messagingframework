@@ -34,18 +34,30 @@
 #include "qmailmessagethreadedmodel.h"
 #include "qmailstore.h"
 #include "qmailnamespace.h"
-#include "qmflist.h"
 #include "qmaillog.h"
+#include "qmailid.h"
 
+#include <QList>
 #include <QtAlgorithms>
 
 class QMailMessageThreadedModelItem
 {
 public:
-    explicit QMailMessageThreadedModelItem(const QMailMessageId& id, QMailMessageThreadedModelItem *parent = Q_NULLPTR) : _id(id), _parent(parent) {}
+    explicit QMailMessageThreadedModelItem(const QMailMessageId& id, QMailMessageThreadedModelItem *parent = Q_NULLPTR)
+        : _id(id), _parent(parent) {}
     ~QMailMessageThreadedModelItem() {}
 
-    int rowInParent() const { return _parent->_children.indexOf(*this); }
+    int rowInParent() const
+    {
+        int i = 0;
+        for (auto &v : _parent->_children) {
+            if (*this == v)
+                return i;
+            else
+                i++;
+        }
+        return -1;
+    }
 
     QMailMessageIdList childrenIds() const
     {
@@ -61,7 +73,8 @@ public:
 
     QMailMessageId _id;
     QMailMessageThreadedModelItem *_parent;
-    QmfList<QMailMessageThreadedModelItem> _children;
+    // TODO: replace the related functionality with something more readable, robust and better performing
+    std::list<QMailMessageThreadedModelItem> _children;
 };
 
 
@@ -215,7 +228,7 @@ int QMailMessageThreadedModelPrivate::totalCount() const
         return QMailStore::instance()->countMessages(_key);
     } else {
         init();
-        return _root._children.count();
+        return _root._children.size();
     }
 }
 
@@ -223,7 +236,7 @@ bool QMailMessageThreadedModelPrivate::isEmpty() const
 {
     init();
 
-    return _root._children.isEmpty();
+    return _root._children.size() == 0;
 }
 
 int QMailMessageThreadedModelPrivate::rowCount(const QModelIndex &idx) const
@@ -232,10 +245,10 @@ int QMailMessageThreadedModelPrivate::rowCount(const QModelIndex &idx) const
 
     if (idx.isValid()) {
         if (QMailMessageThreadedModelItem *item = itemFromIndex(idx)) {
-            return item->_children.count();
+            return item->_children.size();
         }
     } else {
-        return _root._children.count();
+        return _root._children.size();
     }
 
     return -1;
@@ -601,17 +614,17 @@ bool QMailMessageThreadedModelPrivate::updateMessages(const QMailMessageIdList &
             // We need to see if this item has changed in the sort order
             int row = item->rowInParent();
             int messagePos = newIds.indexOf(messageId);
+            std::list<QMailMessageThreadedModelItem> &container(item->_parent->_children);
 
-            QmfList<QMailMessageThreadedModelItem> &container(item->_parent->_children);
             if (row > 0) {
                 // Ensure that we still sort after our immediate predecessor
-                if (newIds.indexOf(container.at(row - 1)._id) > messagePos) {
+                if (newIds.indexOf(std::next(container.begin(), row - 1)->_id) > messagePos) {
                     reinsert = true;
                 }
             }
-            if (row < (container.count() - 1)) {
+            if (row < (container.size() - 1)) {
                 // Ensure that we still sort before our immediate successor
-                if (newIds.indexOf(container.at(row + 1)._id) < messagePos) {
+                if (newIds.indexOf(std::next(container.begin(), row + 1)->_id) < messagePos) {
                     reinsert = true;
                 }
             }
@@ -726,7 +739,7 @@ void QMailMessageThreadedModelPrivate::insertItemAt(int row, const QModelIndex &
         parent = &_root;
     }
 
-    QmfList<QMailMessageThreadedModelItem> &container(parent->_children);
+    std::list<QMailMessageThreadedModelItem> &container(parent->_children);
 
     container.insert(std::next(container.begin(), row), QMailMessageThreadedModelItem(id, parent));
     _messageItem[id] = &(*std::next(container.begin(), row));
@@ -742,10 +755,10 @@ void QMailMessageThreadedModelPrivate::removeItemAt(int row, const QModelIndex &
         parent = &_root;
     }
 
-    QmfList<QMailMessageThreadedModelItem> &container(parent->_children);
+    std::list<QMailMessageThreadedModelItem> &container(parent->_children);
 
-    if (container.count() > row) {
-        QMailMessageThreadedModelItem *item = &(container[row]);
+    if (container.size() > row) {
+        QMailMessageThreadedModelItem *item = &(*(std::next(container.begin(), row)));
 
         // Find all the descendants of this item that no longer exist
         QList<const QMailMessageThreadedModelItem*> items;
@@ -770,7 +783,7 @@ void QMailMessageThreadedModelPrivate::removeItemAt(int row, const QModelIndex &
         _checkedIds.remove(id);
         _currentIds.removeAll(id);
         _messageItem.remove(id);
-        container.removeAt(row);
+        container.erase(std::next(container.begin(), row));
     }
 }
 
@@ -788,8 +801,8 @@ QModelIndex QMailMessageThreadedModelPrivate::index(int row, int column, const Q
 
         // Allow excessive row values (although these indices won't be dereferencable)
         void *item = 0;
-        if (parent && (parent->_children.count() > row)) {
-            item = static_cast<void*>(const_cast<QMailMessageThreadedModelItem*>(&(parent->_children.at(row))));
+        if (parent && (parent->_children.size() > row)) {
+            item = static_cast<void*>(const_cast<QMailMessageThreadedModelItem*>(&(*(std::next(parent->_children.begin(), row)))));
         }
 
         return _model.generateIndex(row, column, item);
@@ -828,12 +841,12 @@ void QMailMessageThreadedModelPrivate::init() const
         const QMailMessageIdList ids = QMailStore::instance()->queryMessages(_key, _sortKey, _limit);
         QHash<QMailMessageId, int> idIndexMap;
         idIndexMap.reserve(ids.count());
-        int i;
-        for (i = 0; i < ids.count(); ++i)
+
+        for (int i = 0; i < ids.count(); ++i)
             idIndexMap[ids[i]] = i;
 
         // Process the messages to build a tree
-        for (i = 0; i < ids.count(); ++i) {
+        for (int i = 0; i < ids.count(); ++i) {
             // See if we have already added this message
             QMap<QMailMessageId, QMailMessageThreadedModelItem*>::iterator it = _messageItem.find(ids[i]);
             if (it != _messageItem.end())
@@ -851,7 +864,7 @@ void QMailMessageThreadedModelPrivate::init() const
 
             do {
                 int itemSortValue = idIndexMap[messageId];
-                QMailMessageThreadedModelItem *insertParent = 0;
+                QMailMessageThreadedModelItem *insertParent = nullptr;
 
                 if (!predecessorId.isValid()) {
                     // This message is a root node
@@ -869,24 +882,24 @@ void QMailMessageThreadedModelPrivate::init() const
                     qCWarning(lcMessaging) << "Conversation loop detected" << Q_FUNC_INFO << "messageId" << messageId << "descendants" << descendants;
                     insertParent = &_root;
                 }
-                if (insertParent != 0) {
+                if (insertParent != nullptr) {
                     // Append the message to the existing children of the parent
-                    QmfList<QMailMessageThreadedModelItem> &container(insertParent->_children);
+                    std::list<QMailMessageThreadedModelItem> &container(insertParent->_children);
 
                     // Determine where this message should sort amongst its siblings
-                    int index = container.count();
+                    int index = container.size();
                     for ( ; index > 0; --index) {
-                        if (!idIndexMap.contains(container.at(index - 1)._id)) {
+                        if (!idIndexMap.contains(std::next(container.begin(), index - 1)->_id)) {
                             qCWarning(lcMessaging) << "Warning: Threading hash failure" << __FUNCTION__;
-                            idIndexMap[container.at(index - 1)._id] = ids.indexOf(container.at(index - 1)._id);
+                            idIndexMap[std::next(container.begin(), index - 1)->_id] = ids.indexOf(std::next(container.begin(), index - 1)->_id);
                         }
-                        if (idIndexMap[container.at(index - 1)._id] < itemSortValue) {
+                        if (idIndexMap[std::next(container.begin(), index - 1)->_id] < itemSortValue) {
                             break;
                         }
                     }
 
                     container.insert(std::next(container.begin(), index), QMailMessageThreadedModelItem(messageId, insertParent));
-                    _messageItem[messageId] = &(container[index]);
+                    _messageItem[messageId] = &(*(std::next(container.begin(), index)));
                     _currentIds.append(messageId);
 
                     if (descendants.isEmpty()) {

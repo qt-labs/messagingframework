@@ -386,7 +386,7 @@ bool AccountSatisfyTheKey(Accounts::Account* account, const QMailAccountKey& key
     // In case of it is not compound key and has got a list of arguments
     // follow the list of arguments and compare
     if (!key.arguments().isEmpty()) {
-        typedef QmfList<QMailAccountKey::ArgumentType> ListOfArguments;
+        typedef QList<QMailAccountKey::ArgumentType> ListOfArguments;
         ListOfArguments::const_iterator it = key.arguments().begin();
 
         bool result = AccountSatisfyTheProperty(account, *it);
@@ -410,7 +410,7 @@ bool AccountSatisfyTheKey(Accounts::Account* account, const QMailAccountKey& key
 
     // In case of compound key, process each subkey separatelly
     if (!key.subKeys().isEmpty()) {
-        typedef QmfList<QMailAccountKey> ListOfKeys;
+        typedef QList<QMailAccountKey> ListOfKeys;
         ListOfKeys::const_iterator it = key.subKeys().begin();
 
         bool result = AccountSatisfyTheKey(account, *it);

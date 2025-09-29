@@ -97,7 +97,7 @@ QMailAccountSortKey::QMailAccountSortKey(Property p, Qt::SortOrder order, quint6
 }
 
 /*! \internal */
-QMailAccountSortKey::QMailAccountSortKey(const QmfList<QMailAccountSortKey::ArgumentType> &args)
+QMailAccountSortKey::QMailAccountSortKey(const QList<QMailAccountSortKey::ArgumentType> &args)
     : d(new QMailAccountSortKeyPrivate(args))
 {
 }
@@ -174,7 +174,7 @@ bool QMailAccountSortKey::isEmpty() const
 /*!
     Returns the list of arguments to this QMailAccountSortKey.
 */
-const QmfList<QMailAccountSortKey::ArgumentType> &QMailAccountSortKey::arguments() const
+const QList<QMailAccountSortKey::ArgumentType> &QMailAccountSortKey::arguments() const
 {
     return d->arguments();
 }

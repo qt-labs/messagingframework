@@ -34,7 +34,8 @@
 #include "qmaildisconnected.h"
 #include "qmailstore.h"
 #include "qmaillog.h"
-#include "qmflist.h"
+
+#include <QList>
 
 /*!
     \class QMailDisconnected

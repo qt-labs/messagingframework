@@ -23,7 +23,6 @@ SUBDIRS = \
       tst_qmailnamespace \
       tst_locks \
       tst_qmailthread \
-      tst_qmflist \
       tst_pop \
       tst_imap \
       tst_smtp

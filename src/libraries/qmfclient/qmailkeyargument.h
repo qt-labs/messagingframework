@@ -45,10 +45,11 @@
 // We mean it.
 //
 
-#include "qmflist.h"
 #include "qmaildatacomparator.h"
+
 #include <QDataStream>
 #include <QIODevice>
+#include <QList>
 #include <QVariantList>
 
 namespace QMailKey {
@@ -127,7 +128,7 @@ template<typename PropertyType, typename ComparatorType = QMailKey::Comparator>
 class QMailKeyArgument
 {
 public:
-    class ValueList : public QmfList<QVariant>
+    class ValueList : public QList<QVariant>
     {
     public:
         bool operator==(const ValueList& other) const

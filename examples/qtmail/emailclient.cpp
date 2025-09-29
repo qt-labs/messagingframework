@@ -39,7 +39,6 @@
 #include "searchview.h"
 #include "readmail.h"
 #include "writemail.h"
-#include <qmflist.h>
 #include <qmaillog.h>
 #include <qmailnamespace.h>
 #include <qmailaccount.h>
@@ -50,6 +49,7 @@
 #include <QApplication>
 #include <QGuiApplication>
 #include <QFile>
+#include <QList>
 #include <QGridLayout>
 #include <QHBoxLayout>
 #include <QHeaderView>

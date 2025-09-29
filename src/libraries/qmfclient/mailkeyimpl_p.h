@@ -50,7 +50,6 @@
 #include <QSharedData>
 #include <QVariant>
 
-#include "qmflist.h"
 #include "qmailkeyargument.h"
 
 template<typename Key>
@@ -91,8 +90,8 @@ public:
 
     QMailKey::Combiner combiner;
     bool negated;
-    QmfList<Argument> arguments;
-    QmfList<Key> subKeys;
+    QList<Argument> arguments;
+    QList<Key> subKeys;
 };
 
 

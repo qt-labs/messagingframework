@@ -37,7 +37,8 @@
 #include "qmailglobal.h"
 #include "qmailipc.h"
 #include "qmailsortkeyargument.h"
-#include "qmflist.h"
+
+#include <QList>
 #include <QSharedData>
 #include <QtGlobal>
 
@@ -77,7 +78,7 @@ public:
 
     bool isEmpty() const;
 
-    const QmfList<ArgumentType> &arguments() const;
+    const QList<ArgumentType> &arguments() const;
 
     template <typename Stream> void serialize(Stream &stream) const;
     template <typename Stream> void deserialize(Stream &stream);
@@ -96,7 +97,7 @@ public:
 
 private:
     QMailThreadSortKey(Property p, Qt::SortOrder order, quint64 mask = 0);
-    QMailThreadSortKey(const QmfList<ArgumentType> &args);
+    QMailThreadSortKey(const QList<ArgumentType> &args);
 
     friend class QMailStore;
     friend class QMailStorePrivate;

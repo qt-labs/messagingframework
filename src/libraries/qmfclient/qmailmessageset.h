@@ -35,7 +35,6 @@
 #define QMAILMESSAGESET_H
 
 #include "qprivateimplementation.h"
-#include "qmflist.h"
 
 #include <QAbstractItemModel>
 #include <QList>
