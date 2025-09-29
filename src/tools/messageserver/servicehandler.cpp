@@ -51,9 +51,6 @@
 #include <QDateTime>
 #include <QTimer>
 
-// Account preparation is handled by an external function
-extern void prepareAccounts();
-
 namespace {
 QSet<QMailAccountId> messageAccounts(const QMailMessageIdList &ids)
 {
@@ -428,8 +425,6 @@ ServiceHandler::ServiceHandler(QObject* parent)
     LongStream::cleanupTempFiles();
 
     QMailMessageServer::registerTypes();
-
-    ::prepareAccounts();
 
     if (QMailStore *store = QMailStore::instance()) {
         connect(store, &QMailStore::accountsAdded,

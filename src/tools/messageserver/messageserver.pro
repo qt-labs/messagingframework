@@ -19,7 +19,6 @@ HEADERS += messageserver.h \
            newcountnotifier.h
 
 SOURCES += messageserver.cpp \
-           prepareaccounts.cpp \
            newcountnotifier.cpp \
            servicehandler.cpp
 

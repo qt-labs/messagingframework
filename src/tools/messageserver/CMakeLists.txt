@@ -1,6 +1,5 @@
 set(SRC
   messageserver.cpp
-  prepareaccounts.cpp
   newcountnotifier.cpp
   servicehandler.cpp)
 
