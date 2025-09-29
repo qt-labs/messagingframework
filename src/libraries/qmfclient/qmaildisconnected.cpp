@@ -72,7 +72,7 @@ QMailMessageKey QMailDisconnected::destinationKey(const QMailFolderId &folderId)
 {
     QMailMessageKey result(QMailMessageKey::parentFolderId(folderId));
     result &= (~QMailMessageKey::previousParentFolderId(QMailFolderId())
-              | QMailMessageKey::status(QMailMessage::LocalOnly));
+               | QMailMessageKey::status(QMailMessage::LocalOnly));
     return result;
 }
 
@@ -189,15 +189,14 @@ static void syncStatusWithFolder(QMailMessageMetaData& message)
 
     QMailAccount messageAccount(message.parentAccountId());
 
-    for ( QMap<QMailFolder::StandardFolder, QMailFolderId>::const_iterator it(messageAccount.standardFolders().begin())
-        ; it != messageAccount.standardFolders().end() ; it++)
-    {
+    for (QMap<QMailFolder::StandardFolder, QMailFolderId>::const_iterator it(messageAccount.standardFolders().begin())
+         ; it != messageAccount.standardFolders().end() ; it++) {
         if (message.parentFolderId() == it.value()) {
             syncStatusWithFolder(message, it.key());
         }
     }
-
 }
+
 /*!
     Returns true if disconnected operations have been applied to the message store since
     the most recent synchronization with the account specified by \a mailAccountId.
@@ -299,25 +298,25 @@ void QMailDisconnected::rollBackUpdates(const QMailAccountId &mailAccountId)
     }
 
     // undo removals
-   QMailMessageRemovalRecordList removalRecords = QMailStore::instance()->messageRemovalRecords(mailAccountId);
-   QStringList serverUidList;
-   for (const QMailMessageRemovalRecord& r : removalRecords) {
-       if (!r.serverUid().isEmpty())
-           serverUidList.append(r.serverUid());
-   }
+    QMailMessageRemovalRecordList removalRecords = QMailStore::instance()->messageRemovalRecords(mailAccountId);
+    QStringList serverUidList;
+    for (const QMailMessageRemovalRecord& r : removalRecords) {
+        if (!r.serverUid().isEmpty())
+            serverUidList.append(r.serverUid());
+    }
 
-   if (!QMailStore::instance()->purgeMessageRemovalRecords(mailAccountId, serverUidList)) {
-       qCWarning(lcMailStore) << "Unable to rollback disconnected removal records for account:" << mailAccountId;
-       return;
-   }
+    if (!QMailStore::instance()->purgeMessageRemovalRecords(mailAccountId, serverUidList)) {
+        qCWarning(lcMailStore) << "Unable to rollback disconnected removal records for account:" << mailAccountId;
+        return;
+    }
 
-   // undo flag changes
-   QMailMessageKey accountKey(QMailMessageKey::parentAccountId(mailAccountId));
-   QMailMessageKey removedKey(accountKey & QMailMessageKey::serverUid(serverUidList));
-   if (!QMailStore::instance()->updateMessagesMetaData(removedKey, QMailMessage::Removed, false)) {
-       qCWarning(lcMailStore) << "Unable to rollback disconnected removed flagging for account:" << mailAccountId;
-       return;
-   }
+    // undo flag changes
+    QMailMessageKey accountKey(QMailMessageKey::parentAccountId(mailAccountId));
+    QMailMessageKey removedKey(accountKey & QMailMessageKey::serverUid(serverUidList));
+    if (!QMailStore::instance()->updateMessagesMetaData(removedKey, QMailMessage::Removed, false)) {
+        qCWarning(lcMailStore) << "Unable to rollback disconnected removed flagging for account:" << mailAccountId;
+        return;
+    }
 
     QMailMessageKey readStatusKey(QMailMessageKey::status(QMailMessage::Read, QMailDataComparator::Includes));
     readStatusKey &= QMailMessageKey::status(QMailMessage::ReadElsewhere, QMailDataComparator::Excludes);
@@ -456,7 +455,7 @@ void QMailDisconnected::copyToStandardFolder(const QMailMessageIdList& ids, QMai
         QMailFolderId standardFolderId = account.standardFolder(standardFolder);
         if (standardFolderId.isValid())
             copyToFolder(ids, standardFolderId);
-   }
+    }
 }
 
 /*!

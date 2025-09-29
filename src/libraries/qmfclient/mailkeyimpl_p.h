@@ -255,10 +255,10 @@ bool MailKeyImpl<Key>::isEmpty() const
 template<typename Key>
 bool MailKeyImpl<Key>::isNonMatching() const
 {
-    if ((arguments.count() == 1) &&
-    (arguments.first().property == Key::Id) &&
-    (arguments.first().op == QMailKey::Equal) &&
-    (arguments.first().valueList.count() == 1)) {
+    if ((arguments.count() == 1)
+        && (arguments.first().property == Key::Id)
+        && (arguments.first().op == QMailKey::Equal)
+        && (arguments.first().valueList.count() == 1)) {
         const QVariant &v = arguments.first().valueList.first();
         return (v.canConvert<IdType>() && !v.value<IdType>().isValid());
     }

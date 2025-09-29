@@ -107,14 +107,13 @@ QMailMessageListModelPrivate::QMailMessageListModelPrivate(QMailMessageListModel
                                                            const QMailMessageKey& key,
                                                            const QMailMessageSortKey& sortKey,
                                                            bool ignoreUpdates)
-:
-    _model(model),
-    _key(key),
-    _sortKey(sortKey),
-    _ignoreUpdates(ignoreUpdates),
-    _initialised(false),
-    _needSynchronize(true),
-    _limit(0)
+    : _model(model)
+    , _key(key)
+    , _sortKey(sortKey)
+    , _ignoreUpdates(ignoreUpdates)
+    , _initialised(false)
+    , _needSynchronize(true)
+    , _limit(0)
 {
 }
 
@@ -134,7 +133,7 @@ void QMailMessageListModelPrivate::setKey(const QMailMessageKey& key)
 
 QMailMessageSortKey QMailMessageListModelPrivate::sortKey() const
 {
-   return _sortKey;
+    return _sortKey;
 }
 
 void QMailMessageListModelPrivate::setSortKey(const QMailMessageSortKey& sortKey)
@@ -144,7 +143,7 @@ void QMailMessageListModelPrivate::setSortKey(const QMailMessageSortKey& sortKey
 
 uint QMailMessageListModelPrivate::limit() const
 {
-   return _limit;
+    return _limit;
 }
 
 void QMailMessageListModelPrivate::setLimit(uint limit)
@@ -179,7 +178,7 @@ void QMailMessageListModelPrivate::setLimit(uint limit)
 int QMailMessageListModelPrivate::totalCount() const
 {
     if (_limit) {
-       return QMailStore::instance()->countMessages(_key);
+        return QMailStore::instance()->countMessages(_key);
     } else {
         init();
         return _idList.count();

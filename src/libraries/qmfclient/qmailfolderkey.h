@@ -55,8 +55,7 @@ class MailKeyImpl;
 class QMF_EXPORT QMailFolderKey
 {
 public:
-    enum Property
-    {
+    enum Property {
         Id = (1 << 0),
         Path = (1 << 1),
         ParentFolderId = (1 << 2),

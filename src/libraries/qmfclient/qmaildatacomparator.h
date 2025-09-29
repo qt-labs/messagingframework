@@ -36,28 +36,24 @@
 
 namespace QMailDataComparator {
 
-enum EqualityComparator
-{
+enum EqualityComparator {
     Equal,
     NotEqual
 };
 
-enum InclusionComparator
-{
+enum InclusionComparator {
     Includes,
     Excludes
 };
 
-enum RelationComparator
-{
+enum RelationComparator {
     LessThan,
     LessThanEqual,
     GreaterThan,
     GreaterThanEqual
 };
 
-enum PresenceComparator
-{
+enum PresenceComparator {
     Present,
     Absent
 };

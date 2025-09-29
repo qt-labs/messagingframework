@@ -238,8 +238,7 @@ class QMF_EXPORT QMailMessageSetModel : public QAbstractItemModel, public QMailM
 public:
     typedef QMailMessageSetModelPrivate ImplementationType;
 
-    enum Roles
-    {
+    enum Roles {
         DisplayNameRole = Qt::UserRole,
         MessageKeyRole,
         SubclassUserRole

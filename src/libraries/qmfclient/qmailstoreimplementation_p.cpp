@@ -116,7 +116,8 @@ bool QMailStoreNullImplementation::removeMessages(const QMailMessageKey &, QMail
 }
 
 bool QMailStoreNullImplementation::removeThreads(const QMailThreadKey &, QMailStore::MessageRemovalOption ,
-                                                              QMailThreadIdList *, QMailMessageIdList *, QMailMessageIdList *, QMailFolderIdList *, QMailThreadIdList *, QMailAccountIdList *)
+                                                 QMailThreadIdList *, QMailMessageIdList *, QMailMessageIdList *,
+                                                 QMailFolderIdList *, QMailThreadIdList *, QMailAccountIdList *)
 {
     return false;
 }

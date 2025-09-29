@@ -210,13 +210,13 @@ void QMailServiceActionPrivate::disconnectSubAction(QMailServiceAction *subActio
 
 void QMailServiceActionPrivate::clearSubActions()
 {
-        if (_pendingActions.count())
-            disconnectSubAction(_pendingActions.first().action);
-        foreach (ActionCommand a, _pendingActions) {
-            // Don't delete QObject while it's emitting a signal
-            a.action->deleteLater();
-        }
-        _pendingActions.clear();
+    if (_pendingActions.count())
+        disconnectSubAction(_pendingActions.first().action);
+    foreach (ActionCommand a, _pendingActions) {
+        // Don't delete QObject while it's emitting a signal
+        a.action->deleteLater();
+    }
+    _pendingActions.clear();
 }
 
 void QMailServiceActionPrivate::init()
@@ -255,7 +255,7 @@ quint64 QMailServiceActionPrivate::newAction()
 
 bool QMailServiceActionPrivate::validAction(quint64 action)
 {
-   return (action && _action == action);
+    return (action && _action == action);
 }
 
 void QMailServiceActionPrivate::appendSubAction(QMailServiceAction *subAction,
@@ -2655,7 +2655,7 @@ void QMailActionObserverPrivate::actionsListed(const QMailActionDataList &action
     Q_ASSERT(_runningActions.isEmpty());
 
     foreach (QMailActionData const& action, actions) {
-       addAction(action);
+        addAction(action);
     }
 
     _isReady = true;

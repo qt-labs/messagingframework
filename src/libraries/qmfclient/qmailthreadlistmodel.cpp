@@ -34,7 +34,6 @@
 #include "qmailthreadlistmodel.h"
 #include "qmailstore.h"
 #include "qmailthread.h"
-#include <QCache>
 
 class LessThanFunctorT
 {

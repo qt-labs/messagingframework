@@ -56,8 +56,7 @@ class MailKeyImpl;
 class QMF_EXPORT QMailThreadKey
 {
 public:
-    enum Property
-    {
+    enum Property {
         Id = (1 << 0),
         ServerUid = (1 << 1),
         MessageCount = (1 << 2),

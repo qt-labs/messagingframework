@@ -55,8 +55,7 @@ class MailKeyImpl;
 class QMF_EXPORT QMailAccountKey
 {
 public:
-    enum Property
-    {
+    enum Property {
         Id = (1 << 0),
         Name = (1 << 1),
         MessageType = (1 << 2),
@@ -89,7 +88,7 @@ public:
     bool isNonMatching() const;
     bool isNegated() const;
 
-    //for subqueries
+    // for subqueries
     operator QVariant() const;
 
     const QmfList<ArgumentType> &arguments() const;

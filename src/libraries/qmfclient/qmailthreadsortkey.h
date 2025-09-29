@@ -46,8 +46,7 @@ class QMailThreadSortKeyPrivate;
 class QMF_EXPORT QMailThreadSortKey
 {
 public:
-    enum Property
-    {
+    enum Property {
         Id,
         ParentAccountId,
         ServerUid,

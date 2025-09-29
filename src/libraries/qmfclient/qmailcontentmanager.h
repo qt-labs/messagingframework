@@ -43,7 +43,6 @@
 class QMailMessage;
 class QMailContentManager;
 
-
 class QMF_EXPORT QMailContentManagerFactory
 {
 public:

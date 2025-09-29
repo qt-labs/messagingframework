@@ -87,8 +87,6 @@ public:
 
     quint64 status() const;
     void setStatus(quint64 value);
-
-private:
 };
 
 typedef QmfList<QMailThread> QMailThreadList;

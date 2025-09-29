@@ -164,7 +164,7 @@ bool QMailMessageSortKey::operator==(const QMailMessageSortKey& other) const
 */
 bool QMailMessageSortKey::operator!=(const QMailMessageSortKey& other) const
 {
-   return !(*this == other);
+    return !(*this == other);
 }
 
 /*!

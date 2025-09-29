@@ -301,7 +301,7 @@ void QMailMessageModelBase::setKey(const QMailMessageKey& key)
 */
 QMailMessageSortKey QMailMessageModelBase::sortKey() const
 {
-   return impl()->sortKey();
+    return impl()->sortKey();
 }
 
 /*!
@@ -323,7 +323,7 @@ void QMailMessageModelBase::setSortKey(const QMailMessageSortKey& sortKey)
 */
 uint QMailMessageModelBase::limit() const
 {
-   return impl()->limit();
+    return impl()->limit();
 }
 
 /*!

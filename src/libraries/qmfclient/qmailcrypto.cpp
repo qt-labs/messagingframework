@@ -94,7 +94,7 @@ const QMailMessagePartContainer* QMailCryptographicServiceInterface::findSignedC
 QMailCryptographicService* QMailCryptographicService::m_pInstance = 0;
 
 QMailCryptographicService::QMailCryptographicService(QObject* parent)
-        : QMailPluginManager(QString::fromLatin1("crypto"), parent)
+    : QMailPluginManager(QString::fromLatin1("crypto"), parent)
 {
 }
 

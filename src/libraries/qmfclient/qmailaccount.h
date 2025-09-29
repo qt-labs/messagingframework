@@ -51,13 +51,6 @@ class QMailFolderId;
 class QMailAccountPrivate;
 class QMailAccountId;
 
-QT_BEGIN_NAMESPACE
-
-class QSettings;
-class QTimer;
-
-QT_END_NAMESPACE
-
 class QMF_EXPORT QMailAccount
 {
 public:

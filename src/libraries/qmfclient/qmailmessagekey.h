@@ -60,8 +60,7 @@ class MailKeyImpl;
 class QMF_EXPORT QMailMessageKey
 {
 public:
-    enum Property
-    {
+    enum Property {
         Id = (1 << 0),
         Type = (1 << 1),
         ParentFolderId = (1 << 2),

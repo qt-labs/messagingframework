@@ -155,7 +155,7 @@ bool QMailFolderSortKey::operator==(const QMailFolderSortKey& other) const
 */
 bool QMailFolderSortKey::operator!=(const QMailFolderSortKey& other) const
 {
-   return !(*this == other);
+    return !(*this == other);
 }
 
 /*!

@@ -126,8 +126,7 @@ private:
     void operationFailed(QMailServiceAction::Status::ErrorCode code, const QString &text);
 
 private:
-    enum TransferStatus
-    {
+    enum TransferStatus {
         Init, CapabilityTest, Capabilities,
         StartTLS, TLS, Connected, Auth,
         RequestUids, Uidl, UidList,

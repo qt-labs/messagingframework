@@ -31,14 +31,15 @@
 **
 ****************************************************************************/
 
-#include <QObject>
-#include <QTest>
 #include <qmailserviceaction.h>
 #include <qmailserviceaction_p.h>
 #include <qmailaccount.h>
 #include <qmaildisconnected.h>
 #include <qmailnamespace.h>
-#include <qsignalspy.h>
+
+#include <QSignalSpy>
+#include <QObject>
+#include <QTest>
 
 class tst_QMailStorageAction : public QObject
 {

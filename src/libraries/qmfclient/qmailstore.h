@@ -58,35 +58,30 @@ class QMF_EXPORT QMailStore : public QObject
     Q_OBJECT
 
 public:
-    enum InitializationState
-    {
+    enum InitializationState {
         Uninitialized = 0,
         InitializationFailed,
         Initialized
     };
 
-    enum ReturnOption
-    {
+    enum ReturnOption {
         ReturnAll = 0,
         ReturnDistinct
     };
 
-    enum MessageRemovalOption
-    {
+    enum MessageRemovalOption {
         NoRemovalRecord = 1,
         CreateRemovalRecord
     };
 
-    enum ChangeType
-    {
+    enum ChangeType {
         Added = 1,
         Removed,
         Updated,
         ContentsModified
     };
 
-    enum ErrorCode
-    {
+    enum ErrorCode {
         NoError = 0,
         InvalidId,
         ConstraintFailure,

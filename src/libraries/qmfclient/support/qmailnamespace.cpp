@@ -101,8 +101,9 @@ QString QMail::dataPath()
     //default to ~/.qmf if not env set
     return QDir::homePath() + QLatin1String("/.qmf/");
 }
+
 /*!
-    Returns the the time when the Messaging framework store file was las updated.
+    Returns the the time when the Messaging framework store file was last updated.
 */
 QDateTime QMail::lastDbUpdated()
 {
@@ -176,7 +177,7 @@ QString QMail::messageSettingsPath()
 }
 
 /*!
-    Returns the database where the Messaging framework will store its message meta-data.
+    Returns the database where the Messaging framework will store its message metadata.
     If the database does not exist, it is created.
 */
 #ifdef Q_OS_UNIX

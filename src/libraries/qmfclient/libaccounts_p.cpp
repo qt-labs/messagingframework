@@ -625,7 +625,7 @@ QMailAccountIdList LibAccountManager::queryAccounts(const QMailAccountKey &key,
             account->selectService(service);
             if (AccountSatisfyTheKey(account, key))
                 accountList.append(QMailAccountId(account->id()));
-            } break;
+        } break;
         default:
             qCWarning(lcMessaging) << "Cannot handle several email services for account" << accountID;
             return QMailAccountIdList();
@@ -827,7 +827,7 @@ bool LibAccountManager::updateSharedAccount(QMailAccount *account,
 
     QSharedPointer<Accounts::Account> sharedAccount = getAccount(id);
     if (!sharedAccount)
-      return false;
+        return false;
 
     Accounts::ServiceList services = sharedAccount->enabledServices();
     if (services.count() != 1) {

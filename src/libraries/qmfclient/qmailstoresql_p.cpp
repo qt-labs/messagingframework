@@ -551,7 +551,7 @@ static QString threadPropertyName(QMailThreadKey::Property property)
     if (it != map.end())
         return it.value();
 
-   qCWarning(lcMailStore) << "Unknown thread property:" << property;
+    qCWarning(lcMailStore) << "Unknown thread property:" << property;
 
     return QString();
 }
@@ -3186,7 +3186,7 @@ QMap<QString, QString> QMailStoreSql::messageCustomFields(const QMailMessageId &
         qCWarning(lcMailStore) << "Could not query custom fields for message id: " << id.toULongLong();
 
     return fields;
- }
+}
 
 bool QMailStoreSql::idValueExists(quint64 id, const QString& table)
 {
@@ -4361,7 +4361,7 @@ bool QMailStoreSql::purgeObsoleteFiles()
 
 
 
-         QString sql(QLatin1String("DELETE FROM obsoletefiles"));
+        QString sql(QLatin1String("DELETE FROM obsoletefiles"));
 
         QSqlQuery query(*database());
         if (!query.exec(sql)) {
@@ -5260,7 +5260,7 @@ void QMailStoreSql::removeExpiredData(const QStringList& contentUris)
                             qCWarning(lcMailStore) << "Unable to create content manager for scheme:" << scheme;
                         else {
                             if (manager->remove(*it) != QMailStore::NoError) {
-                                 qCWarning(lcMailStore) << "Unable to remove expired message contents:" << *it;
+                                qCWarning(lcMailStore) << "Unable to remove expired message contents:" << *it;
                             }
                         }
                     }
@@ -5286,7 +5286,7 @@ bool QMailStoreSql::repeatedly(FunctionType func, const QString &description, Tr
     unsigned int attemptCount = 0;
     unsigned int delay = MinRetryDelay;
 
-     while (true) {
+    while (true) {
         AttemptResult result;
         if (t) {
             result = evaluate(AccessType(), func, *t);
@@ -5816,8 +5816,8 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptAddMessage(QMailMessage *mess
             if (!manager) {
                 qCWarning(lcMailStore) << "Unable to create content manager for scheme:" << message->contentScheme();
                 return Failure;
-             } else {
-                 contentManagers.append(manager);
+            } else {
+                contentManagers.append(manager);
             }
         }
 
@@ -5851,7 +5851,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptAddMessage(QMailMessage *mess
                 }
             }
         }
-     }
+    }
 
     return result;
 }
@@ -5873,7 +5873,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptAddMessage(QMailMessageMetaDa
         && messageExists(metaData->serverUid(), metaData->parentAccountId()))
     {
         qCWarning(lcMailStore) << "Message with serveruid: " << metaData->serverUid() << "and accountid:" << metaData->parentAccountId()
-                << "already exist. Use update instead.";
+                               << "already exist. Use update instead.";
         return Failure;
     }
 
@@ -5971,10 +5971,11 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptAddMessage(QMailMessageMetaDa
         // Add a new thread for this message
 
         QMap<QString, QVariant> values;
-        values.insert(QLatin1String("messagecount"), (metaData->status() & QMailMessage::Trash ||
-                                       metaData->status() & QMailMessage::Draft) ? 0 : 1);
-        values.insert(QLatin1String("unreadcount"), (metaData->status() & QMailMessage::Read ||
-                                      metaData->status() & QMailMessage::Trash || metaData->status() & QMailMessage::Draft) ? 0 : 1);
+        values.insert(QLatin1String("messagecount"), (metaData->status() & QMailMessage::Trash
+                                                      || metaData->status() & QMailMessage::Draft) ? 0 : 1);
+        values.insert(QLatin1String("unreadcount"), (metaData->status() & QMailMessage::Read
+                                                     || metaData->status() & QMailMessage::Trash
+                                                     || metaData->status() & QMailMessage::Draft) ? 0 : 1);
         values.insert(QLatin1String("serveruid"), QLatin1String(""));
         values.insert(QLatin1String("parentaccountid"), metaData->parentAccountId().toULongLong());
         values.insert(QLatin1String("subject"), metaData->subject());
@@ -6695,7 +6696,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptUpdateMessage(QMailMessageMet
                         return Failure;
                     }
                 }
-             }
+            }
             metaData->setContentIdentifier(message->contentIdentifier());
         }
 
@@ -7145,15 +7146,15 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptUpdateMessagesMetaData(const 
                     modifiedThreadIds->append(QMailThreadId(extractValue<quint64>(query.value(0))));
             }
             {
-            extractedValues = messageValues(properties, data);
-            QString sql(QLatin1String("UPDATE mailmessages SET %1"));
-            QSqlQuery query(simpleQuery(sql.arg(expandProperties(properties, true)),
-                                        extractedValues,
-                                        Key(modifiedMessageKey),
-                                        QLatin1String("updateMessagesMetaData mailmessages query")));
-            if (query.lastError().type() != QSqlError::NoError)
-                return DatabaseFailure;
-        }
+                extractedValues = messageValues(properties, data);
+                QString sql(QLatin1String("UPDATE mailmessages SET %1"));
+                QSqlQuery query(simpleQuery(sql.arg(expandProperties(properties, true)),
+                                            extractedValues,
+                                            Key(modifiedMessageKey),
+                                            QLatin1String("updateMessagesMetaData mailmessages query")));
+                if (query.lastError().type() != QSqlError::NoError)
+                    return DatabaseFailure;
+            }
             // now let's check any changes in threads.
             // it's easier to update all thread's data, because otherwise we should check
             // are there any changes in status, unreadcount etc. or not.
@@ -7249,7 +7250,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptUpdateMessagesStatus(const QM
             sql = QString(QLatin1String("UPDATE mailmessages SET status=(~((status|%1)& %1))&(status|%1)")).arg(status);
         }
         QSqlQuery query(simpleQuery(sql, Key(QMailMessageKey::id(*updatedMessageIds)),
-                                        QLatin1String("updateMessagesMetaData status query")));
+                                    QLatin1String("updateMessagesMetaData status query")));
         if (query.lastError().type() != QSqlError::NoError) {
             return DatabaseFailure;
         }
@@ -8172,7 +8173,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::messagePredecessor(QMailMessageMetaD
     }
 
     if (!potentialPredecessors.isEmpty()) {
-         // Don't potentially overflow sqlite max arg limit of 1000, 100 potential predecessors is more than enough
+        // Don't potentially overflow sqlite max arg limit of 1000, 100 potential predecessors is more than enough
         potentialPredecessors = potentialPredecessors.mid(0, 100);
         quint64 predecessorId(0);
         quint64 messageId(metaData->id().toULongLong());
@@ -8271,7 +8272,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::identifyAncestors(const QMailMessage
             messageId = predecessor[messageId];
             if (ancestorIds->contains(QMailMessageId(messageId))) {
                 break;
-           }
+            }
         }
     }
 
@@ -8389,13 +8390,13 @@ QMailStoreSql::AttemptResult QMailStoreSql::resolveMissingMessages(const QString
             }
 
             {
-            // Delete the obsolete threads
-            QString sql(QLatin1String("DELETE FROM mailthreads WHERE id IN %1"));
-            QSqlQuery query(simpleQuery(sql.arg(expandValueList(obsoleteThreadIds)),
-                                        obsoleteThreadIds,
-                                        QLatin1String("resolveMissingMessages mailthreads delete query")));
-            if (query.lastError().type() != QSqlError::NoError)
-                return DatabaseFailure;
+                // Delete the obsolete threads
+                QString sql(QLatin1String("DELETE FROM mailthreads WHERE id IN %1"));
+                QSqlQuery query(simpleQuery(sql.arg(expandValueList(obsoleteThreadIds)),
+                                            obsoleteThreadIds,
+                                            QLatin1String("resolveMissingMessages mailthreads delete query")));
+                if (query.lastError().type() != QSqlError::NoError)
+                    return DatabaseFailure;
             }
         }
     }
@@ -8608,7 +8609,7 @@ bool QMailStoreSql::recalculateThreadsColumns(const QMailThreadIdList& modifiedT
                 bindValues.clear();
             }
             QString sql;
-                sql = QString::fromLatin1("SELECT id, parentfolderid, sender, subject, status, preview, parentthreadid  FROM mailmessages WHERE parentthreadid IN %1 ORDER BY stamp").arg(expandValueList(bindValuesBatch));
+            sql = QString::fromLatin1("SELECT id, parentfolderid, sender, subject, status, preview, parentthreadid  FROM mailmessages WHERE parentthreadid IN %1 ORDER BY stamp").arg(expandValueList(bindValuesBatch));
             QSqlQuery query(simpleQuery(sql, bindValuesBatch,
                                         QLatin1String("recalculateThreadsColumns select messages info query")));
             if (query.lastError().type() != QSqlError::NoError)
@@ -8926,8 +8927,8 @@ bool QMailStoreSql::deleteMessages(const QMailMessageKey& key,
         }
     }
 
-        // Update modified threads. Remove empty threads.
-        return recalculateThreadsColumns(modifiedThreadIds, deletedThreadIds);
+    // Update modified threads. Remove empty threads.
+    return recalculateThreadsColumns(modifiedThreadIds, deletedThreadIds);
 }
 
 bool QMailStoreSql::deleteThreads(const QMailThreadKey& key,
@@ -9159,12 +9160,12 @@ bool QMailStoreSql::deleteAccounts(const QMailAccountKey& key,
         if (query.lastError().type() != QSqlError::NoError)
             return false;
     }
-        // Create a key to select threads for the accounts to be deleted
-        QMailThreadKey threadKey(QMailThreadKey::parentAccountId(ids));
+    // Create a key to select threads for the accounts to be deleted
+    QMailThreadKey threadKey(QMailThreadKey::parentAccountId(ids));
 
-        // Delete all threads contained by the account we're deleting
-        if (!deleteThreads(threadKey, option, deletedThreadIds, deletedMessageIds, expiredContent, updatedMessageIds, modifiedFolderIds, modifiedThreadIds, modifiedAccountIds))
-            return false;
+    // Delete all threads contained by the account we're deleting
+    if (!deleteThreads(threadKey, option, deletedThreadIds, deletedMessageIds, expiredContent, updatedMessageIds, modifiedFolderIds, modifiedThreadIds, modifiedAccountIds))
+        return false;
     if (withAccountTables) {
         // Remove any custom fields associated with these accounts
         QSqlQuery query(simpleQuery(QLatin1String("DELETE FROM mailaccountcustom"),

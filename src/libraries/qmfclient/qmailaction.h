@@ -40,8 +40,7 @@
 #include <QList>
 #include <QSharedDataPointer>
 
-enum QMailServerRequestType
-{
+enum QMailServerRequestType {
     AcknowledgeNewMessagesRequestType,
     TransmitMessagesRequestType,
     RetrieveFolderListRequestType,

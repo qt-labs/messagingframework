@@ -35,6 +35,7 @@
 #include <QTest>
 #include <QSignalSpy>
 
+#include <qmailaccount.h>
 #include <qmailstore.h>
 #include <qmailnamespace.h>
 #include <qmailstoreimplementation_p.h>

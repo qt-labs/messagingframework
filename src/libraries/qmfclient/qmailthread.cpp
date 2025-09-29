@@ -66,7 +66,7 @@ QMailThread::QMailThread()
 */
 
 QMailThread::QMailThread(const QMailThreadId& id)
-  : QPrivatelyImplemented<QMailThreadPrivate>(NULL)
+    : QPrivatelyImplemented<QMailThreadPrivate>(NULL)
 {
     *this = QMailStore::instance()->thread(id);
 }

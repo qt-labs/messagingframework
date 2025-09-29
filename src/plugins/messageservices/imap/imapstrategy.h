@@ -401,8 +401,7 @@ protected:
 
     void updateUndiscoveredCount(ImapStrategyContextBase *context);
 
-    enum FolderStatus
-    {
+    enum FolderStatus {
         NoInferiors = (1 << 0),
         NoSelect = (1 << 1),
         Marked = (1 << 2),
@@ -569,8 +568,7 @@ protected:
 class ImapSynchronizeAllStrategy : public ImapRetrieveFolderListStrategy
 {
 public:
-    enum Options
-    {
+    enum Options {
         RetrieveMail = (1 << 0),
         ImportChanges = (1 << 1),
         ExportChanges = (1 << 2)

@@ -231,18 +231,18 @@ bool QMailStore::addFolder(QMailFolder* folder)
     completed successfully, \c false otherwise.
 */
 bool QMailStore::addThread(QMailThread *t)
- {
-     QMailThreadIdList addedThreadIds;
+{
+    QMailThreadIdList addedThreadIds;
 
-     d->setLastError(NoError);
+    d->setLastError(NoError);
 
-     if (!d->addThread(t, &addedThreadIds))
-         return false;
+    if (!d->addThread(t, &addedThreadIds))
+        return false;
 
-     emitThreadNotification(Added, addedThreadIds);
+    emitThreadNotification(Added, addedThreadIds);
 
-     return true;
- }
+    return true;
+}
 
 /*!
     Adds a new QMailMessage object \a msg into the message store, performing
@@ -581,29 +581,29 @@ bool QMailStore::updateFolder(QMailFolder* folder)
     Updates existing QMailThread \a t in the message store.
     Returns \c true if the operation completed successfully, \c false otherwise.
 */
- bool QMailStore::updateThread(QMailThread* t)
- {
-     QMailThreadIdList updatedThreads;
-     d->setLastError(NoError);
-     if (!d->updateThread(t, &updatedThreads))
-         return false;
+bool QMailStore::updateThread(QMailThread* t)
+{
+    QMailThreadIdList updatedThreads;
+    d->setLastError(NoError);
+    if (!d->updateThread(t, &updatedThreads))
+        return false;
 
-     emitThreadNotification(Updated, updatedThreads);
-     return true;
- }
+    emitThreadNotification(Updated, updatedThreads);
+    return true;
+}
 
 /*!
     Ensure mail store is durably written to the file system.
 
     Returns \c true if the operation completed successfully, \c false otherwise.
 */
- bool QMailStore::ensureDurability()
+bool QMailStore::ensureDurability()
 {
-     d->setLastError(NoError);
-     if (!d->ensureDurability())
-         return false;
+    d->setLastError(NoError);
+    if (!d->ensureDurability())
+        return false;
 
-     return true;
+    return true;
 }
 
 /*!
@@ -1508,13 +1508,13 @@ class QMailStoreInstanceData
 public:
     QMailStoreInstanceData()
     {
-    mailStore = 0;
-    init = false;
+        mailStore = nullptr;
+        init = false;
     }
 
     ~QMailStoreInstanceData()
     {
-    delete mailStore;
+        delete mailStore;
     }
 
     QMailStore *mailStore;

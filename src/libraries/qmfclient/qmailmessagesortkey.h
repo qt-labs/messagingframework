@@ -46,8 +46,7 @@ class QMailMessageSortKeyPrivate;
 class QMF_EXPORT QMailMessageSortKey
 {
 public:
-    enum Property
-    {
+    enum Property {
         Id,
         Type,
         ParentFolderId,

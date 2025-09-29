@@ -35,17 +35,17 @@
 #define QMAILMESSAGESERVER_H
 
 #include "qmailglobal.h"
-#include <QList>
 #include "qmailmessage.h"
 #include "qmailmessagekey.h"
 #include "qmailmessagesortkey.h"
 #include "qmailserviceaction.h"
 #include "qmailstore.h"
+#include "qmailipc.h"
+
 #include <QMap>
 #include <QSharedDataPointer>
 #include <QString>
 #include <QStringList>
-#include "qmailipc.h"
 
 class QMailMessageServerPrivate;
 

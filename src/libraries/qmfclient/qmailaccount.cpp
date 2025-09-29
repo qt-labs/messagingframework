@@ -65,11 +65,13 @@ static quint64 hasPersistentConnectionFlag = 0;
 class QMailAccountPrivate : public QSharedData
 {
 public:
-    QMailAccountPrivate() : QSharedData(),
-                            _messageType(QMailMessage::None),
-                            _status(0),
-                            _customFieldsModified(false)
-    {}
+    QMailAccountPrivate()
+        : QSharedData()
+        , _messageType(QMailMessage::None)
+        , _status(0)
+        , _customFieldsModified(false)
+    {
+    }
 
     ~QMailAccountPrivate()
     {

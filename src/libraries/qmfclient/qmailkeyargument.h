@@ -54,8 +54,7 @@
 
 namespace QMailKey {
 
-enum Comparator
-{
+enum Comparator{
     LessThan,
     LessThanEqual,
     GreaterThan,
@@ -68,8 +67,7 @@ enum Comparator
     Absent
 };
 
-enum Combiner
-{
+enum Combiner {
     None,
     And,
     Or

@@ -152,7 +152,7 @@ bool QMailAccountSortKey::operator==(const QMailAccountSortKey& other) const
 */
 bool QMailAccountSortKey::operator!=(const QMailAccountSortKey& other) const
 {
-   return !(*this == other);
+    return !(*this == other);
 }
 
 /*!

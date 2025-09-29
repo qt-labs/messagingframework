@@ -77,8 +77,7 @@ public:
 
 /*! \internal */
 QMailMessageRemovalRecord::QMailMessageRemovalRecord()
-:
-    d(new QMailMessageRemovalRecordPrivate())
+    : d(new QMailMessageRemovalRecordPrivate())
 {
 }
 

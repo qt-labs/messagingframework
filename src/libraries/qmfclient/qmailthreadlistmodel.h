@@ -45,10 +45,7 @@ class QMF_EXPORT QMailThreadListModel : public QAbstractListModel
     Q_OBJECT
 
 public:
-
-    enum Roles
-    {
-
+    enum Roles {
         ThreadSubjectTextRole = Qt::UserRole,
         ThreadPreviewTextRole,
         ThreadUnreadCountRole,

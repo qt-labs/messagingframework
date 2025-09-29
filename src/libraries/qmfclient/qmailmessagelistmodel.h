@@ -36,7 +36,6 @@
 
 #include "qmailmessagemodelbase.h"
 
-
 class QMailMessageListModelPrivate;
 
 class QMF_EXPORT QMailMessageListModel : public QMailMessageModelBase

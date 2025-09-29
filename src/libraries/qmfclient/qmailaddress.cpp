@@ -201,10 +201,10 @@ void AddressSeparator::process(QChar character, bool quoted, bool escaped, int c
     }
 
     // RFC 2822 requires comma as the separator, but we'll allow the semi-colon as well.
-    if ( ( character == QChar::fromLatin1(',')
-           || character == QChar::fromLatin1(';')
-           || character.isSpace()) &&
-         !_inGroup && !quoted && !escaped && commentDepth == 0 ) {
+    if ((character == QChar::fromLatin1(',')
+         || character == QChar::fromLatin1(';')
+         || character.isSpace())
+        && !_inGroup && !quoted && !escaped && commentDepth == 0) {
         if (character.isSpace()) {
             // We'll also attempt to separate on whitespace, but we need to append it to
             // the token to preserve the input data
@@ -528,7 +528,7 @@ void QuoteDisplayName::process(QChar character, bool quoted, bool escaped, int c
         if (!_commentProcessing) {
             _commentProcessing = true;
         }
-         _processedWord.append(character);
+        _processedWord.append(character);
     } else if (commentDepth == 0) {
         // Flush the comment it does not need quoting
         if (_commentProcessing) {
@@ -546,7 +546,7 @@ void QuoteDisplayName::process(QChar character, bool quoted, bool escaped, int c
             // Finish processing a quote
             _quotedProcessing = false;
             processPending();
-             _processedWord.append(character);
+            _processedWord.append(character);
         } else {
             _processedWord.append(character);
         }

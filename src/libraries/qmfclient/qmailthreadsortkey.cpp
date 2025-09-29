@@ -145,7 +145,7 @@ bool QMailThreadSortKey::operator==(const QMailThreadSortKey& other) const
 */
 bool QMailThreadSortKey::operator!=(const QMailThreadSortKey& other) const
 {
-   return !(*this == other);
+    return !(*this == other);
 }
 
 /*!

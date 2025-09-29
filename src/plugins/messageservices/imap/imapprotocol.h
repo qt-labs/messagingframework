@@ -45,6 +45,7 @@
 #include <qmailserviceaction.h>
 #include <qmailtransport.h>
 #include <qmailcredentials.h>
+#include <qmailmessage.h>
 
 #ifdef Q_OS_WIN
 // Pipe is not a legal filename char in Windows
@@ -53,10 +54,7 @@
 #define UID_SEPARATOR '|'
 #endif
 
-class QMailMessage;
-
-enum ImapCommand
-{
+enum ImapCommand {
     IMAP_Unconnected = 0,
     IMAP_Init,
     IMAP_Capability,
@@ -90,8 +88,7 @@ enum ImapCommand
     IMAP_Move
 };
 
-enum MessageFlag
-{
+enum MessageFlag {
     MFlag_All       = 0, // Not a true flag
     MFlag_Seen      = (1 << 0),
     MFlag_Answered  = (1 << 1),
@@ -103,8 +100,7 @@ enum MessageFlag
     MFlag_Forwarded = (1 << 7)
 };
 
-enum FetchDataItem
-{
+enum FetchDataItem {
     F_Rfc822_Size   = (1 << 0),
     F_Rfc822_Header = (1 << 1),
     F_Rfc822        = (1 << 2),
@@ -118,8 +114,7 @@ enum FetchDataItem
 
 typedef uint FetchItemFlags;
 
-enum OperationStatus
-{
+enum OperationStatus {
     OpPending = 0,
     OpFailed,
     OpOk,

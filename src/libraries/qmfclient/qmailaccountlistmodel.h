@@ -45,8 +45,7 @@ class QMF_EXPORT QMailAccountListModel : public QAbstractListModel
     Q_OBJECT
 
 public:
-    enum Roles
-    {
+    enum Roles {
         NameTextRole = Qt::UserRole,
         MessageTypeRole,
         MessageSourcesRole,

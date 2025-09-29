@@ -538,8 +538,7 @@ static QString decodeWordSequence(const QByteArray& str)
     return out;
 }
 
-enum EncodingTokenType
-{
+enum EncodingTokenType {
     Whitespace,
     Word,
     Quote
@@ -5114,7 +5113,7 @@ QByteArray QMailMessagePartContainer::nameForMultipartType(QMailMessagePartConta
 {
     switch (type) {
     case QMailMessagePartContainer::MultipartSigned:
-            return "multipart/signed";
+        return "multipart/signed";
     case QMailMessagePartContainer::MultipartEncrypted:
         return "multipart/encrypted";
     case QMailMessagePartContainer::MultipartMixed:
@@ -5825,7 +5824,7 @@ bool QMailMessagePartContainer::Location::operator==(const QMailMessagePartConta
 
 bool QMailMessagePartContainer::Location::operator!=(const QMailMessagePartContainer::Location &other) const
 {
-  return !(*this == other);
+    return !(*this == other);
 }
 
 /*!
@@ -8144,7 +8143,7 @@ QMailMessage QMailMessage::fromRfc2822File(const QString& fileName)
 /*!
     Constructs a mail message from the RFC 2822 data contained in the file \a fileName
     TODO, modify the load method not to populate the bodies, just load the structure
-    and the meta-data.
+    and the metadata.
 */
 QMailMessage QMailMessage::fromSkeletonRfc2822File(const QString& fileName)
 {
@@ -8755,8 +8754,8 @@ bool QMailMessage::hasCalendarMethod(QByteArray const &method) const
             }
         } else {
             const QMailMessageContentType &ct(part->contentType());
-            if (ct.matches("text", "calendar") &&
-                (ct.parameter("method").toLower() == method.toLower())) {
+            if (ct.matches("text", "calendar")
+                    && (ct.parameter("method").toLower() == method.toLower())) {
                 return true;
             }
         }
@@ -8795,9 +8794,9 @@ QByteArray QMailMessage::duplicatedData(const QString& id) const
     // These items are duplicated in both the message content and the meta data
     QByteArray plainId( to7BitAscii(id).trimmed().toLower() );
 
-    if ((plainId == "from") || (plainId == "to") || (plainId == "subject") ||
-        (plainId == "date") || (plainId == "list-id") || plainId == "message-id" ||
-        plainId == "cc" || plainId == "bcc")
+    if (plainId == "from" || plainId == "to" || plainId == "subject"
+            || plainId == "date" || plainId == "list-id" || plainId == "message-id"
+            || plainId == "cc" || plainId == "bcc")
         return plainId;
 
     return QByteArray();

@@ -34,7 +34,6 @@
 #include "qmailaccountlistmodel.h"
 #include "qmailstore.h"
 #include "qmailaccount.h"
-#include <QCache>
 
 static const int fullRefreshCutoff = 10;
 
@@ -291,7 +290,7 @@ void QMailAccountListModel::setKey(const QMailAccountKey& key)
 
 QMailAccountSortKey QMailAccountListModel::sortKey() const
 {
-   return d->sortKey;
+    return d->sortKey;
 }
 
 /*!

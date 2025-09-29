@@ -37,7 +37,6 @@
 #include "qmflist.h"
 #include "qmaillog.h"
 
-#include <QCache>
 #include <QtAlgorithms>
 
 class QMailMessageThreadedModelItem

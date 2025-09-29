@@ -437,7 +437,7 @@ QMailContentManager::~QMailContentManager()
 
 QMailStore::ErrorCode QMailContentManager::remove(const QList<QString> &identifiers)
 {
-     QMailStore::ErrorCode returnError(QMailStore::NoError);
+    QMailStore::ErrorCode returnError(QMailStore::NoError);
     foreach (QString const &identifier, identifiers) {
         QMailStore::ErrorCode err(remove(identifier));
         if (returnError == QMailStore::NoError) // report the first failure, but continue.
