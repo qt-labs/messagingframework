@@ -477,7 +477,7 @@ static QString accountPropertyName(QMailAccountKey::Property property)
 static bool caseInsensitiveProperty(QMailAccountKey::Property property)
 {
     return property == QMailAccountKey::Name
-            || property == QMailAccountKey::FromAddress;
+        || property == QMailAccountKey::FromAddress;
 }
 
 typedef QMap<QMailFolderKey::Property, QString> FolderPropertyMap;
@@ -1341,6 +1341,8 @@ public:
     QMailMessage::MessageType messageType() const { return static_cast<QMailMessage::MessageType>(value<int>(QMailAccountKey::MessageType, -1)); }
 
     QString fromAddress() const { return value<QString>(QMailAccountKey::FromAddress); }
+
+    QString fromAliases() const { return value<QString>(QLatin1String("emailaliases")); }
 
     quint64 status() const { return value<quint64>(QMailAccountKey::Status); }
 
@@ -2631,7 +2633,7 @@ bool QMailStoreSql::initStore(const QString &localFolderName)
 
         if (!ensureVersionInfo() ||
             !setupTables(QList<TableInfo>() << tableInfo(QLatin1String("maintenancerecord"), 100)
-                                            << tableInfo(QLatin1String("mailaccounts"), 108)
+                                            << tableInfo(QLatin1String("mailaccounts"), 109)
                                             << tableInfo(QLatin1String("mailaccountcustom"), 100)
                                             << tableInfo(QLatin1String("mailaccountconfig"), 100)
                                             << tableInfo(QLatin1String("mailaccountfolders"), 100)
@@ -3254,6 +3256,7 @@ QMailAccount QMailStoreSql::extractAccount(const QSqlRecord& r)
     result.setStatus(record.status());
     result.setSignature(record.signature());
     result.setFromAddress(QMailAddress(record.fromAddress()));
+    result.setFromAliases(QMailAddress(record.fromAliases()));
     result.setLastSynchronized(record.lastSynchronized());
     result.setIconPath(record.iconPath());
 
@@ -5475,8 +5478,8 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptAddAccount(QMailAccount *acco
     QMailAccountId insertId;
 
     {
-        QString properties(QLatin1String("type,name,emailaddress,status,signature,lastsynchronized,iconpath"));
-        QString values(QLatin1String("?,?,?,?,?,?,?"));
+        QString properties(QLatin1String("type,name,emailaddress,status,signature,lastsynchronized,iconpath,emailaliases"));
+        QString values(QLatin1String("?,?,?,?,?,?,?,?"));
         QVariantList propertyValues;
         propertyValues << static_cast<int>(account->messageType())
                        << account->name()
@@ -5484,7 +5487,8 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptAddAccount(QMailAccount *acco
                        << account->status()
                        << account->signature()
                        << QMailTimeStamp(account->lastSynchronized()).toLocalTime()
-                       << account->iconPath();
+                       << account->iconPath()
+                       << account->fromAliases().toString(true);
         {
             QSqlQuery query(simpleQuery(QString::fromLatin1("INSERT INTO mailaccounts (%1) VALUES (%2)").arg(properties).arg(values),
                                         propertyValues,
@@ -6211,7 +6215,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptUpdateAccount(QMailAccount *a
         return Failure;
 
     if (account) {
-        QString properties(QLatin1String("type=?, name=?, emailaddress=?, status=?, signature=?, lastsynchronized=?, iconpath=?"));
+        QString properties(QLatin1String("type=?, name=?, emailaddress=?, status=?, signature=?, lastsynchronized=?, iconpath=?, emailaliases=?"));
         QVariantList propertyValues;
         propertyValues << static_cast<int>(account->messageType())
                        << account->name()
@@ -6219,7 +6223,8 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptUpdateAccount(QMailAccount *a
                        << account->status()
                        << account->signature()
                        << QMailTimeStamp(account->lastSynchronized()).toLocalTime()
-                       << account->iconPath();
+                       << account->iconPath()
+                       << account->fromAliases().toString(true);
 
         {
             QSqlQuery query(simpleQuery(QString(QLatin1String("UPDATE mailaccounts SET %1 WHERE id=?")).arg(properties),

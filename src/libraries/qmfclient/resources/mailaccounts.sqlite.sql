@@ -6,4 +6,5 @@ CREATE TABLE mailaccounts(
     status INTEGER,
     signature VARCHAR,
     lastsynchronized TIMESTAMP,
-    iconpath VARCHAR);
+    iconpath VARCHAR,
+    emailaliases VARCHAR);

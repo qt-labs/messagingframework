@@ -63,6 +63,21 @@ void reportAccountError(const Accounts::Error& error)
     }
 }
 
+QStringList toStringList(const QMailAddress &address)
+{
+    if (address.isNull()) {
+        return QStringList();
+    } else if (address.isGroup()) {
+        QStringList values;
+        for (const QMailAddress &sub : address.groupMembers()) {
+            values.append(sub.toString(true));
+        }
+        return values;
+    } else {
+        return QStringList() << address.toString(true);
+    }
+}
+
 bool AccountSatisfyTheKey(Accounts::Account* account, const QMailAccountKey& key);
 
 template <typename Property>
@@ -511,6 +526,9 @@ QMailAccount LibAccountManager::account(const QMailAccountId &id) const
     result.setFromAddress(account->contains(QLatin1String("fullName"))
                           ? QMailAddress(account->valueAsString(QLatin1String("fullName")), account->valueAsString(QLatin1String("emailaddress")))
                           : QMailAddress(account->valueAsString(QLatin1String("emailaddress"))));
+    const QStringList aliases = account->value(QLatin1String("emailAliases")).toStringList();
+    if (!aliases.isEmpty())
+        result.setFromAliases(QMailAddress(aliases.join(';')));
 
     if ((static_cast<uint>(account->valueAsUInt64(QLatin1String("lastSynchronized")))) == 0) {
         result.setLastSynchronized(QMailTimeStamp());
@@ -682,6 +700,7 @@ bool LibAccountManager::addAccount(QMailAccount *account,
     sharedAccount->setValue(QLatin1String("signature"), account->signature());
     sharedAccount->setValue(QLatin1String("emailaddress"), account->fromAddress().address());
     sharedAccount->setValue(QLatin1String("fullName"), account->fromAddress().name());
+    sharedAccount->setValue(QLatin1String("emailAliases"), toStringList(account->fromAliases()));
     //Account was never synced
     sharedAccount->setValue(QLatin1String("lastSynchronized"), quint64(0));
     sharedAccount->setValue(QLatin1String("iconPath"), account->iconPath());
@@ -863,6 +882,7 @@ bool LibAccountManager::updateSharedAccount(QMailAccount *account,
         sharedAccount->setValue(QLatin1String("signature"), account->signature());
         sharedAccount->setValue(QLatin1String("emailaddress"), account->fromAddress().address());
         sharedAccount->setValue(QLatin1String("fullName"), account->fromAddress().name());
+        sharedAccount->setValue(QLatin1String("emailAliases"), toStringList(account->fromAliases()));
         if (account->lastSynchronized().isValid()) {
             sharedAccount->setValue(QLatin1String("lastSynchronized"), static_cast<quint64>(account->lastSynchronized().toLocalTime().toSecsSinceEpoch()));
         } else {

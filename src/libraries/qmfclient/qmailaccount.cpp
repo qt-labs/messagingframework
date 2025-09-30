@@ -84,6 +84,7 @@ public:
     QString _signature;
     QMailTimeStamp _lastSynchronized;
     QMailAddress _address;
+    QMailAddress _aliases;
     QStringList _sources;
     QStringList _sinks;
     QMap<QMailFolder::StandardFolder, QMailFolderId> _standardFolders;
@@ -444,7 +445,7 @@ void QMailAccount::setName(const QString &str)
 /*!
     Returns the address from which the account's outgoing messages should be reported as originating.
 
-    \sa setFromAddress()
+    \sa setFromAddress(), fromAliases()
 */
 QMailAddress QMailAccount::fromAddress() const
 {
@@ -453,12 +454,40 @@ QMailAddress QMailAccount::fromAddress() const
 
 /*!
     Sets the address from which the account's outgoing messages should be reported as originating to \a address.
+    \a address must be a single address.
 
-    \sa fromAddress()
+    \sa fromAddress(), setFromAliases()
 */
 void QMailAccount::setFromAddress(const QMailAddress &address)
 {
-    d->_address = address;
+    if (address.isGroup()) {
+        qCWarning(lcMessaging) << "cannot set a group of addresses as the primary account address.";
+        d->_address = address.groupMembers().first();
+    } else {
+        d->_address = address;
+    }
+}
+
+/*!
+    Returns the other addresses the account can use for outgoing messages.
+    If the account uses no aliases, besides the main address, it is
+    returning a null QMailAddress.
+
+    \sa setFromAliases(), fromAddress()
+*/
+QMailAddress QMailAccount::fromAliases() const
+{
+    return d->_aliases;
+}
+
+/*!
+    Sets the other addresses from which the account's outgoing messages can be reported as originating from.
+
+    \sa fromAliases(), setFromAddress()
+*/
+void QMailAccount::setFromAliases(const QMailAddress &aliases)
+{
+    d->_aliases = aliases;
 }
 
 /*!

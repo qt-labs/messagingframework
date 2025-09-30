@@ -20,5 +20,6 @@
         <file alias="maintenancerecord">resources/maintenancerecord.sqlite.sql</file>
         <file alias="obsoletefiles">resources/obsoletefiles.sqlite.sql</file>
         <file alias="mailaccounts-107-108">resources/mailaccounts-107-108.sqlite.sql</file>
+        <file alias="mailaccounts-108-109">resources/mailaccounts-108-109.sqlite.sql</file>
     </qresource>
 </RCC>

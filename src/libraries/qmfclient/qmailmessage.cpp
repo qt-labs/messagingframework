@@ -8171,28 +8171,33 @@ QMailMessage QMailMessage::asReadReceipt(const QMailMessage &message, const QStr
     readReceipt.setResponseType(QMailMessageMetaData::Reply);
     readReceipt.setParentAccountId(message.parentAccountId());
 
-    const QMailAddress from = message.parentAccountId().isValid()
-        ? QMailAccount(message.parentAccountId()).fromAddress()
-        : message.to().first();
-    if (from.isGroup()) {
-        // Try to match one of the group address with the
-        // to: field of the original message.
-        QSet<QString> addresses;
-        for (const QMailAddress &to : message.to()) {
-            addresses.insert(to.address());
-        }
-        for (const QMailAddress &sub : from.groupMembers()) {
-            if (addresses.contains(sub.address())) {
-                readReceipt.setFrom(sub);
-                break;
-            }
-        }
-        if (readReceipt.from().isNull()) {
-            qCWarning(lcMessaging) << "Cannot find matching address, sending read receipt from first address.";
-            readReceipt.setFrom(from.groupMembers().first());
-        }
+    QList<QMailAddress> fromAdresses;
+    if (message.parentAccountId().isValid()) {
+        const QMailAccount account(message.parentAccountId());
+        fromAdresses << account.fromAddress();
+        const QMailAddress aliases = account.fromAliases();
+        if (aliases.isGroup())
+            fromAdresses.append(aliases.groupMembers());
+        else if (!aliases.isNull())
+            fromAdresses.append(aliases);
     } else {
-        readReceipt.setFrom(from);
+        fromAdresses << message.to().first();
+    }
+    // Try to match one of the group address with the
+    // to: field of the original message.
+    QSet<QString> addresses;
+    for (const QMailAddress &to : message.to()) {
+        addresses.insert(to.address());
+    }
+    for (const QMailAddress &sub : fromAdresses) {
+        if (addresses.contains(sub.address())) {
+            readReceipt.setFrom(sub);
+            break;
+        }
+    }
+    if (readReceipt.from().isNull()) {
+        qCWarning(lcMessaging) << "Cannot find matching address, sending read receipt from main account address.";
+        readReceipt.setFrom(fromAdresses.first());
     }
     readReceipt.setTo(mdnAddress);
     if (subjectPrefix.isEmpty()) {

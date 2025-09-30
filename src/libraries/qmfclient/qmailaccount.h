@@ -89,6 +89,9 @@ public:
     QMailAddress fromAddress() const;
     void setFromAddress(const QMailAddress &address);
 
+    QMailAddress fromAliases() const;
+    void setFromAliases(const QMailAddress &aliases);
+
     QString signature() const;
     void setSignature(const QString &str);
 
