@@ -34,7 +34,7 @@
 #ifndef QMAILMESSAGEFWD_H
 #define QMAILMESSAGEFWD_H
 
-#warning "qmailmessagefwd.h is deprecated, use qmailmessage.h, and QMailMessage:: namespaces instead of Fwd::
+#warning "qmailmessagefwd.h is deprecated, use qmailmessage.h, and QMailMessage:: namespaces instead of Fwd::"
 
 #include "qmailmessage.h"
 

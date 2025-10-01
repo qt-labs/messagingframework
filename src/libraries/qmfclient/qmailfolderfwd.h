@@ -39,6 +39,6 @@
 #warning "qmailfolderfwd.h deprecated. Use qmailid.h / QMailFolderId::LocalStorageFolderId or qmailfolder.h / QMailFolder"
 
 // local storage id moved the instead of QMailFolder
-typedef QMailFolderFwd QMailFolderId;
+typedef QMailFolderId QMailFolderFwd;
 
 #endif
