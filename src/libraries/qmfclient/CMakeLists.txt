@@ -117,10 +117,10 @@ set(PRIVATE_HEADERS
 
 if (ICU_FOUND)
   set(SRC ${SRC}
-    support/qcharsetdetector.cpp)
+    support/qmailcharsetdetector.cpp)
   set(PRIVATE_HEADERS ${PRIVATE_HEADERS}
-    support/qcharsetdetector_p.h
-    support/qcharsetdetector.h)
+    support/qmailcharsetdetector_p.h
+    support/qmailcharsetdetector.h)
 endif()
 
 if (USE_ACCOUNTS_QT)

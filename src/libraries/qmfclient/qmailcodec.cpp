@@ -35,7 +35,7 @@
 #include "qmaillog.h"
 
 #ifdef HAVE_LIBICU
-#include "qcharsetdetector.h"
+#include "qmailcharsetdetector.h"
 #endif
 
 #include <QIODevice>
@@ -395,7 +395,7 @@ QString QMailCodec::autoDetectEncoding(const QByteArray& text)
 {
 #ifdef HAVE_LIBICU
     if (text.isEmpty()) return QString();
-    QCharsetDetector charsetDetector;
+    QMailCharsetDetector charsetDetector;
     charsetDetector.setText(text);
     QString result(charsetDetector.detect().name());
     return result;

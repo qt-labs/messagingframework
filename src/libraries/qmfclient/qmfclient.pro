@@ -159,9 +159,9 @@ TRANSLATIONS += libqtopiamail-ar.ts \
 
 packagesExist(icu-uc) {
     LIBS_PRIVATE += -licui18n -licuuc -licudata
-    PRIVATE_HEADERS += support/qcharsetdetector_p.h \
-                       support/qcharsetdetector.h
-    SOURCES += support/qcharsetdetector.cpp
+    PRIVATE_HEADERS += support/qmailcharsetdetector_p.h \
+                       support/qmailcharsetdetector.h
+    SOURCES += support/qmailcharsetdetector.cpp
     DEFINES += HAVE_LIBICU
 } else {
     warning("icu not available, not doing character set detection")

@@ -31,15 +31,13 @@
 **
 ****************************************************************************/
 
-#include "qcharsetdetector.h"
-#include "qcharsetdetector_p.h"
+#include "qmailcharsetdetector.h"
+#include "qmailcharsetdetector_p.h"
 #include "qmaillog.h"
 
 #include <unicode/utypes.h>
 #include <unicode/uversion.h>
-#if (U_ICU_VERSION_MAJOR_NUM > 4) || (U_ICU_VERSION_MAJOR_NUM == 4 && U_ICU_VERSION_MINOR_NUM >=4)
 #include <unicode/localpointer.h>
-#endif
 #include <unicode/uenum.h>
 #include <unicode/ucsdet.h>
 
@@ -47,13 +45,13 @@
 #include <QStringList>
 #include <QTextCodec>
 
-QCharsetMatchPrivate::QCharsetMatchPrivate()
+QMailCharsetMatchPrivate::QMailCharsetMatchPrivate()
     : _confidence(0),
       q_ptr(0)
 {
 }
 
-QCharsetMatchPrivate::QCharsetMatchPrivate(const QCharsetMatchPrivate &other)
+QMailCharsetMatchPrivate::QMailCharsetMatchPrivate(const QMailCharsetMatchPrivate &other)
     : _name(other._name),
       _language(other._language),
       _confidence(other._confidence),
@@ -61,11 +59,11 @@ QCharsetMatchPrivate::QCharsetMatchPrivate(const QCharsetMatchPrivate &other)
 {
 }
 
-QCharsetMatchPrivate::~QCharsetMatchPrivate()
+QMailCharsetMatchPrivate::~QMailCharsetMatchPrivate()
 {
 }
 
-QCharsetMatchPrivate &QCharsetMatchPrivate::operator=(const QCharsetMatchPrivate &other)
+QMailCharsetMatchPrivate &QMailCharsetMatchPrivate::operator=(const QMailCharsetMatchPrivate &other)
 {
     _name = other._name;
     _language = other._language;
@@ -73,36 +71,36 @@ QCharsetMatchPrivate &QCharsetMatchPrivate::operator=(const QCharsetMatchPrivate
     return *this;
 }
 
-QCharsetMatch::QCharsetMatch()
-    : d_ptr(new QCharsetMatchPrivate)
+QMailCharsetMatch::QMailCharsetMatch()
+    : d_ptr(new QMailCharsetMatchPrivate)
 {
-    Q_D(QCharsetMatch);
+    Q_D(QMailCharsetMatch);
     d->q_ptr = this;
 }
 
-QCharsetMatch::QCharsetMatch(const QString name, const QString language, const qint32 confidence)
-    : d_ptr(new QCharsetMatchPrivate)
+QMailCharsetMatch::QMailCharsetMatch(const QString &name, const QString &language, qint32 confidence)
+    : d_ptr(new QMailCharsetMatchPrivate)
 {
-    Q_D(QCharsetMatch);
+    Q_D(QMailCharsetMatch);
     d->q_ptr = this;
     setName(name);
     setLanguage(language);
     setConfidence(confidence);
 }
 
-QCharsetMatch::QCharsetMatch(const QCharsetMatch &other)
-    : d_ptr(new QCharsetMatchPrivate(*other.d_ptr))
+QMailCharsetMatch::QMailCharsetMatch(const QMailCharsetMatch &other)
+    : d_ptr(new QMailCharsetMatchPrivate(*other.d_ptr))
 {
-    Q_D(QCharsetMatch);
+    Q_D(QMailCharsetMatch);
     d->q_ptr = this;
 }
 
-QCharsetMatch::~QCharsetMatch()
+QMailCharsetMatch::~QMailCharsetMatch()
 {
     delete d_ptr;
 }
 
-QCharsetMatch &QCharsetMatch::operator=(const QCharsetMatch &other)
+QMailCharsetMatch &QMailCharsetMatch::operator=(const QMailCharsetMatch &other)
 {
     if (this == &other) {
         return *this;
@@ -111,7 +109,7 @@ QCharsetMatch &QCharsetMatch::operator=(const QCharsetMatch &other)
     return *this;
 }
 
-bool QCharsetMatch::operator<(const QCharsetMatch &other) const
+bool QMailCharsetMatch::operator<(const QMailCharsetMatch &other) const
 {
     if (this->confidence() < other.confidence())
         return true;
@@ -123,7 +121,7 @@ bool QCharsetMatch::operator<(const QCharsetMatch &other) const
         return false;
 }
 
-bool QCharsetMatch::operator>(const QCharsetMatch &other) const
+bool QMailCharsetMatch::operator>(const QMailCharsetMatch &other) const
 {
     if (this->confidence() > other.confidence())
         return true;
@@ -135,43 +133,43 @@ bool QCharsetMatch::operator>(const QCharsetMatch &other) const
         return false;
 }
 
-QString QCharsetMatch::name() const
+QString QMailCharsetMatch::name() const
 {
-    Q_D(const QCharsetMatch);
+    Q_D(const QMailCharsetMatch);
     return d->_name;
 }
 
-void QCharsetMatch::setName(QString name)
+void QMailCharsetMatch::setName(const QString &name)
 {
-    Q_D(QCharsetMatch);
+    Q_D(QMailCharsetMatch);
     d->_name = name;
 }
 
-QString QCharsetMatch::language() const
+QString QMailCharsetMatch::language() const
 {
-    Q_D(const QCharsetMatch);
+    Q_D(const QMailCharsetMatch);
     return d->_language;
 }
 
-void QCharsetMatch::setLanguage(QString language)
+void QMailCharsetMatch::setLanguage(const QString &language)
 {
-    Q_D(QCharsetMatch);
+    Q_D(QMailCharsetMatch);
     d->_language = language;
 }
 
-qint32 QCharsetMatch::confidence() const
+qint32 QMailCharsetMatch::confidence() const
 {
-    Q_D(const QCharsetMatch);
+    Q_D(const QMailCharsetMatch);
     return d->_confidence;
 }
 
-void QCharsetMatch::setConfidence(qint32 confidence)
+void QMailCharsetMatch::setConfidence(qint32 confidence)
 {
-    Q_D(QCharsetMatch);
+    Q_D(QMailCharsetMatch);
     d->_confidence = confidence;
 }
 
-QCharsetDetectorPrivate::QCharsetDetectorPrivate()
+QMailCharsetDetectorPrivate::QMailCharsetDetectorPrivate()
     : _status(U_ZERO_ERROR),
       _uCharsetDetector(0),
       q_ptr(0)
@@ -181,12 +179,12 @@ QCharsetDetectorPrivate::QCharsetDetectorPrivate()
         qCWarning(lcMessaging) << __PRETTY_FUNCTION__ << errorString();
 }
 
-QCharsetDetectorPrivate::~QCharsetDetectorPrivate()
+QMailCharsetDetectorPrivate::~QMailCharsetDetectorPrivate()
 {
     ucsdet_close(_uCharsetDetector);
 }
 
-bool QCharsetDetectorPrivate::hasError() const
+bool QMailCharsetDetectorPrivate::hasError() const
 {
     if (U_SUCCESS(_status))
         return false;
@@ -194,73 +192,73 @@ bool QCharsetDetectorPrivate::hasError() const
         return true;
 }
 
-void QCharsetDetectorPrivate::clearError()
+void QMailCharsetDetectorPrivate::clearError()
 {
     _status = U_ZERO_ERROR;
 }
 
-QString QCharsetDetectorPrivate::errorString() const
+QString QMailCharsetDetectorPrivate::errorString() const
 {
     return QString(QLatin1String(u_errorName(_status)));
 }
 
-QCharsetDetector::QCharsetDetector()
-    : d_ptr(new QCharsetDetectorPrivate)
+QMailCharsetDetector::QMailCharsetDetector()
+    : d_ptr(new QMailCharsetDetectorPrivate)
 {
-    Q_D(QCharsetDetector);
+    Q_D(QMailCharsetDetector);
     d->q_ptr = this;
 }
 
-QCharsetDetector::QCharsetDetector(const QByteArray &ba)
-    : d_ptr (new QCharsetDetectorPrivate)
+QMailCharsetDetector::QMailCharsetDetector(const QByteArray &ba)
+    : d_ptr (new QMailCharsetDetectorPrivate)
 {
-    Q_D(QCharsetDetector);
+    Q_D(QMailCharsetDetector);
     d->q_ptr = this;
     setText(ba);
 }
 
-QCharsetDetector::QCharsetDetector(const char *str)
-    : d_ptr(new QCharsetDetectorPrivate)
+QMailCharsetDetector::QMailCharsetDetector(const char *str)
+    : d_ptr(new QMailCharsetDetectorPrivate)
 {
-    Q_D(QCharsetDetector);
+    Q_D(QMailCharsetDetector);
     d->q_ptr = this;
     setText(QByteArray(str));
 }
 
-QCharsetDetector::QCharsetDetector(const char *data, int size)
-    : d_ptr(new QCharsetDetectorPrivate)
+QMailCharsetDetector::QMailCharsetDetector(const char *data, int size)
+    : d_ptr(new QMailCharsetDetectorPrivate)
 {
-    Q_D(QCharsetDetector);
+    Q_D(QMailCharsetDetector);
     d->q_ptr = this;
     setText(QByteArray(data, size));
 }
 
-QCharsetDetector::~QCharsetDetector()
+QMailCharsetDetector::~QMailCharsetDetector()
 {
     delete d_ptr;
 }
 
-bool QCharsetDetector::hasError() const
+bool QMailCharsetDetector::hasError() const
 {
-    Q_D(const QCharsetDetector);
+    Q_D(const QMailCharsetDetector);
     return d->hasError();
 }
 
-void QCharsetDetector::clearError()
+void QMailCharsetDetector::clearError()
 {
-    Q_D(QCharsetDetector);
+    Q_D(QMailCharsetDetector);
     d->clearError();
 }
 
-QString QCharsetDetector::errorString() const
+QString QMailCharsetDetector::errorString() const
 {
-    Q_D(const QCharsetDetector);
+    Q_D(const QMailCharsetDetector);
     return d->errorString();
 }
 
-void QCharsetDetector::setText(const QByteArray &ba)
+void QMailCharsetDetector::setText(const QByteArray &ba)
 {
-    Q_D(QCharsetDetector);
+    Q_D(QMailCharsetDetector);
     clearError();
     d->_ba = ba;
     d->_baExtended = ba;
@@ -280,36 +278,36 @@ void QCharsetDetector::setText(const QByteArray &ba)
         qCWarning(lcMessaging) << __PRETTY_FUNCTION__ << errorString();
 }
 
-QCharsetMatch QCharsetDetector::detect()
+QMailCharsetMatch QMailCharsetDetector::detect()
 {
-    // Just call QCharsetDetector::detectAll() and take the first
+    // Just call QMailCharsetDetector::detectAll() and take the first
     // match here instead of using ucsdet_detect() to get only a
     // single match. The list returned by ucsdet_detectAll() maybe
-    // tweaked a bit in QCharsetDetector::detectAll() to improve
+    // tweaked a bit in QMailCharsetDetector::detectAll() to improve
     // the quality of the detection. Therefore, the first element
-    // of the list returned by QCharsetDetector::detectAll() may
+    // of the list returned by QMailCharsetDetector::detectAll() may
     // differ from the single match returned by ucsdet_detect().
-    Q_D(QCharsetDetector);
-    QList<QCharsetMatch> qCharsetMatchList = detectAll();
+    Q_D(QMailCharsetDetector);
+    QList<QMailCharsetMatch> charsetMatchList = detectAll();
     if (hasError()) {
         qCWarning(lcMessaging) << __PRETTY_FUNCTION__ << errorString();
-        return QCharsetMatch();
+        return QMailCharsetMatch();
     }
-    if (qCharsetMatchList.isEmpty()) {
+    if (charsetMatchList.isEmpty()) {
         // should never happen, because detectAll() already sets an
         // error if no matches are found which the previous
         // if (hasError()) should detect.
         d->_status = U_CE_NOT_FOUND_ERROR;
         qCWarning(lcMessaging) << __PRETTY_FUNCTION__
                    << "no matches found at all" << errorString();
-        return QCharsetMatch();
+        return QMailCharsetMatch();
     }
-    return qCharsetMatchList.first();
+    return charsetMatchList.first();
 }
 
-QList<QCharsetMatch> QCharsetDetector::detectAll()
+QList<QMailCharsetMatch> QMailCharsetDetector::detectAll()
 {
-    Q_D(QCharsetDetector);
+    Q_D(QMailCharsetDetector);
     clearError();
     // get list of matches from ICU:
     qint32 matchesFound;
@@ -317,7 +315,7 @@ QList<QCharsetMatch> QCharsetDetector::detectAll()
         = ucsdet_detectAll(d->_uCharsetDetector, &matchesFound, &(d->_status));
     if (hasError()) {
         qCWarning(lcMessaging) << __PRETTY_FUNCTION__ << errorString();
-        return QList<QCharsetMatch>();
+        return QList<QMailCharsetMatch>();
     }
     // sometimes the number of matches found by ucsdet_detectAll()
     // maybe 0 (matchesFound == 0) but d->_status has no error. Do not
@@ -325,29 +323,30 @@ QList<QCharsetMatch> QCharsetDetector::detectAll()
     // tuning below may add more matches.  Better check whether no
     // matches were found at all *after* the fine tuning.
 
-    // fill list of matches into a QList<QCharsetMatch>:
-    QList<QCharsetMatch> qCharsetMatchList;
+    // fill list of matches into a QList<QMailCharsetMatch>:
+    QList<QMailCharsetMatch> charsetMatchList;
+
     for (qint32 i = 0; i < matchesFound; ++i) {
-        QCharsetMatch qCharsetMatch;
-        qCharsetMatch.setName(
+        QMailCharsetMatch charsetMatch;
+        charsetMatch.setName(
             QString::fromLatin1(ucsdet_getName(uCharsetMatch[i], &(d->_status))));
         if (hasError()) {
             qCWarning(lcMessaging) << __PRETTY_FUNCTION__ << errorString();
-            return QList<QCharsetMatch>();
+            return QList<QMailCharsetMatch>();
         }
-        qCharsetMatch.setConfidence(
+        charsetMatch.setConfidence(
             static_cast<qint32>(ucsdet_getConfidence (uCharsetMatch[i], &(d->_status))));
         if (hasError()) {
             qCWarning(lcMessaging) << __PRETTY_FUNCTION__ << errorString();
-            return QList<QCharsetMatch>();
+            return QList<QMailCharsetMatch>();
         }
-        qCharsetMatch.setLanguage(
+        charsetMatch.setLanguage(
             QString::fromLatin1(ucsdet_getLanguage(uCharsetMatch[i], &(d->_status))));
         if (hasError()) {
             qCWarning(lcMessaging) << __PRETTY_FUNCTION__ << errorString();
-            return QList<QCharsetMatch>();
+            return QList<QMailCharsetMatch>();
         }
-        qCharsetMatchList << qCharsetMatch;
+        charsetMatchList << charsetMatch;
     }
     if (d->_allDetectableCharsets.isEmpty())
         getAllDetectableCharsets();
@@ -372,7 +371,7 @@ QList<QCharsetMatch> QCharsetDetector::detectAll()
         && (d->_declaredEncoding.startsWith(QLatin1String("ISO-8859-"))
             || d->_declaredEncoding.startsWith(QLatin1String("windows-12"))
             || d->_declaredEncoding.startsWith(QLatin1String("KOI8"))))
-            qCharsetMatchList << QCharsetMatch(d->_declaredEncoding, QString(), 10);
+            charsetMatchList << QMailCharsetMatch(d->_declaredEncoding, QString(), 10);
     // Similar as for declaredEncoding, when declaredLocale is used
     // and it is a locale where the legacy encoding is a single byte
     // encoding, it should at least be tried, therefore add the legacy
@@ -385,15 +384,15 @@ QList<QCharsetMatch> QCharsetDetector::detectAll()
     // included.
     if (!d->_declaredLocale.isEmpty()) {
         QString language = d->_declaredLocale.left(2);
-        if (language ==  QLatin1String("ru")) {
-            qCharsetMatchList << QCharsetMatch(QLatin1String("KOI8-R"), language, 10);
-            qCharsetMatchList << QCharsetMatch(QLatin1String("windows-1251"), language, 10);
-            qCharsetMatchList << QCharsetMatch(QLatin1String("ISO-8859-5"), language, 10);
+        if (language == QLatin1String("ru")) {
+            charsetMatchList << QMailCharsetMatch(QLatin1String("KOI8-R"), language, 10);
+            charsetMatchList << QMailCharsetMatch(QLatin1String("windows-1251"), language, 10);
+            charsetMatchList << QMailCharsetMatch(QLatin1String("ISO-8859-5"), language, 10);
         }
         else if (language == QLatin1String("tr"))
-            qCharsetMatchList << QCharsetMatch(QLatin1String("ISO-8859-9"), language, 10);
+            charsetMatchList << QMailCharsetMatch(QLatin1String("ISO-8859-9"), language, 10);
         else if (language == QLatin1String("el"))
-            qCharsetMatchList << QCharsetMatch(QLatin1String("ISO-8859-7"), language, 10);
+            charsetMatchList << QMailCharsetMatch(QLatin1String("ISO-8859-7"), language, 10);
         else if (language == QLatin1String("en")
                 || language == QLatin1String("da")
                 || language == QLatin1String("de")
@@ -407,26 +406,27 @@ QList<QCharsetMatch> QCharsetDetector::detectAll()
                 || language == QLatin1String("nb")
                 || language == QLatin1String("pt")
                 || language == QLatin1String("sv"))
-            qCharsetMatchList << QCharsetMatch(QLatin1String("ISO-8859-1"), language, 10);
+            charsetMatchList << QMailCharsetMatch(QLatin1String("ISO-8859-1"), language, 10);
         else if (language == QLatin1String("cs")
                 || language == QLatin1String("hu")
                 || language == QLatin1String("pl")
                 || language == QLatin1String("ro"))
-            qCharsetMatchList << QCharsetMatch(QLatin1String("ISO-8859-1"), language, 10);
+            charsetMatchList << QMailCharsetMatch(QLatin1String("ISO-8859-1"), language, 10);
         else if (language == QLatin1String("ar")
                 || language == QLatin1String("fa")
                 || language == QLatin1String("ur"))
-            qCharsetMatchList << QCharsetMatch(QLatin1String("ISO-8859-6"), language, 10);
+            charsetMatchList << QMailCharsetMatch(QLatin1String("ISO-8859-6"), language, 10);
         else if (language == QLatin1String("he"))
-            qCharsetMatchList << QCharsetMatch(QLatin1String("ISO-8859-8"), language, 10);
+            charsetMatchList << QMailCharsetMatch(QLatin1String("ISO-8859-8"), language, 10);
     }
     // iterate over the detected matches and do some fine tuning:
     bool sortNeeded = false;
     qint32 koi8rConfidence = 0;
     qint32 iso88595Confidence = 0;
     qint32 windows1251Confidence = 0;
-    QList<QCharsetMatch>::iterator it = qCharsetMatchList.begin();
-    while (it != qCharsetMatchList.end()) {
+    QList<QMailCharsetMatch>::iterator it = charsetMatchList.begin();
+
+    while (it != charsetMatchList.end()) {
         if ((*it).name() == QLatin1String("KOI8-R"))
             koi8rConfidence += (*it).confidence();
         if ((*it).name() == QLatin1String("ISO-8859-5"))
@@ -568,7 +568,7 @@ QList<QCharsetMatch> QCharsetDetector::detectAll()
         if (!d->_allDetectableCharsets.contains((*it).name())) {
             // remove matches for charsets not supported by QTextCodec
             // then it is probably some weird charset we cannot use anyway
-            it = qCharsetMatchList.erase(it);
+            it = charsetMatchList.erase(it);
         }
         else {
             // test whether the complete input text can be encoded
@@ -580,7 +580,7 @@ QList<QCharsetMatch> QCharsetDetector::detectAll()
                 //          << "removing match" << (*it).name()
                 //          << "because it cannot encode the complete input"
                 //          << errorString();
-                it = qCharsetMatchList.erase(it);
+                it = charsetMatchList.erase(it);
                 clearError();
             }
             else
@@ -589,22 +589,24 @@ QList<QCharsetMatch> QCharsetDetector::detectAll()
     }
     // sort the list of matches again if confidences have been changed:
     if (sortNeeded)
-        std::sort(qCharsetMatchList.begin(), qCharsetMatchList.end(),
-              std::greater<QCharsetMatch>());
-    if (qCharsetMatchList.isEmpty()) {
+        std::sort(charsetMatchList.begin(), charsetMatchList.end(),
+              std::greater<QMailCharsetMatch>());
+
+    if (charsetMatchList.isEmpty()) {
         // is there any better status to describe this case?
         d->_status = U_CE_NOT_FOUND_ERROR;
         qCWarning(lcMessaging) << __PRETTY_FUNCTION__
                  << "number of matches found=0"
                  << errorString();
-        return QList<QCharsetMatch>();
+        return QList<QMailCharsetMatch>();
     }
-    return qCharsetMatchList;
+
+    return charsetMatchList;
 }
 
-QString QCharsetDetector::text(const QCharsetMatch &charsetMatch)
+QString QMailCharsetDetector::text(const QMailCharsetMatch &charsetMatch)
 {
-    Q_D(QCharsetDetector);
+    Q_D(QMailCharsetDetector);
     clearError();
     QTextCodec *codec
         = QTextCodec::codecForName(charsetMatch.name().toLatin1());
@@ -626,16 +628,16 @@ QString QCharsetDetector::text(const QCharsetMatch &charsetMatch)
     }
 }
 
-void QCharsetDetector::setDeclaredLocale(const QString &locale)
+void QMailCharsetDetector::setDeclaredLocale(const QString &locale)
 {
-    Q_D(QCharsetDetector);
+    Q_D(QMailCharsetDetector);
     clearError();
     d->_declaredLocale = locale;
 }
 
-void QCharsetDetector::setDeclaredEncoding(const QString &encoding)
+void QMailCharsetDetector::setDeclaredEncoding(const QString &encoding)
 {
-    Q_D(QCharsetDetector);
+    Q_D(QMailCharsetDetector);
     clearError();
     d->_declaredEncoding = encoding;
     if (d->_declaredEncoding == QLatin1String("GB2312"))
@@ -648,9 +650,9 @@ void QCharsetDetector::setDeclaredEncoding(const QString &encoding)
         qCWarning(lcMessaging) << __PRETTY_FUNCTION__ << errorString();
 }
 
-QStringList QCharsetDetector::getAllDetectableCharsets()
+QStringList QMailCharsetDetector::getAllDetectableCharsets()
 {
-    Q_D(QCharsetDetector);
+    Q_D(QMailCharsetDetector);
 
     if (!d->_allDetectableCharsets.isEmpty())
         return d->_allDetectableCharsets;
@@ -786,16 +788,16 @@ QStringList QCharsetDetector::getAllDetectableCharsets()
     return d->_allDetectableCharsets;
 }
 
-void QCharsetDetector::enableInputFilter(bool enable)
+void QMailCharsetDetector::enableInputFilter(bool enable)
 {
-    Q_D(QCharsetDetector);
+    Q_D(QMailCharsetDetector);
     clearError();
     ucsdet_enableInputFilter(d->_uCharsetDetector, UBool(enable));
 }
 
-bool QCharsetDetector::isInputFilterEnabled()
+bool QMailCharsetDetector::isInputFilterEnabled()
 {
-    Q_D(QCharsetDetector);
+    Q_D(QMailCharsetDetector);
     clearError();
     return bool(ucsdet_isInputFilterEnabled(d->_uCharsetDetector));
 }

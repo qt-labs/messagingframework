@@ -31,62 +31,62 @@
 **
 ****************************************************************************/
 
-#ifndef QCHARSETDETECTOR_H
-#define QCHARSETDETECTOR_H
+#ifndef QMAILCHARSETDETECTOR_P_H
+#define QMAILCHARSETDETECTOR_P_H
 
-#include <QList>
-#include <QStringList>
+#include <unicode/utypes.h>
 
-class QCharsetDetectorPrivate;
-class QCharsetMatchPrivate;
+#include <QByteArray>
+#include <QString>
 
-class QCharsetMatch
+class UCharsetDetector;
+class QMailCharsetMatchPrivate;
+
+class QMailCharsetMatchPrivate
 {
-public:
-    QCharsetMatch();
-    explicit QCharsetMatch(const QString name, const QString language = QString(), const qint32 confidence = 0);
-    QCharsetMatch(const QCharsetMatch &other);
-    virtual ~QCharsetMatch();
-    QCharsetMatch &operator=(const QCharsetMatch &other);
-    bool operator<(const QCharsetMatch &other) const;
-    bool operator>(const QCharsetMatch &other) const;
-    QString name() const;
-    void setName(QString name);
-    QString language() const;
-    void setLanguage(QString language);
-    qint32 confidence() const;
-    void setConfidence(qint32 confidence);
+    Q_DECLARE_PUBLIC(QMailCharsetMatch)
 
-private:
-    QCharsetMatchPrivate *const d_ptr;
-    Q_DECLARE_PRIVATE(QCharsetMatch)
+public:
+    QMailCharsetMatchPrivate();
+    QMailCharsetMatchPrivate(const QMailCharsetMatchPrivate &other);
+    virtual ~QMailCharsetMatchPrivate();
+
+    QMailCharsetMatchPrivate &operator=(const QMailCharsetMatchPrivate &other);
+
+    QString _name;
+    QString _language;
+    qint32 _confidence;
+
+    QMailCharsetMatch *q_ptr;
 };
 
-class QCharsetDetector
+class QMailCharsetDetectorPrivate
 {
+    Q_DECLARE_PUBLIC(QMailCharsetDetector)
+
 public:
-    QCharsetDetector();
-    QCharsetDetector(const QByteArray &ba);
-    explicit QCharsetDetector(const char *str);
-    QCharsetDetector(const char *data, int size);
-    virtual ~QCharsetDetector();
+    QMailCharsetDetectorPrivate();
+    virtual ~QMailCharsetDetectorPrivate();
+
     bool hasError() const;
     void clearError();
     QString errorString() const;
-    void setText(const QByteArray &ba);
-    QCharsetMatch detect();
-    QList<QCharsetMatch> detectAll();
-    QString text(const QCharsetMatch &charsetMatch);
-    void setDeclaredLocale(const QString &locale);
-    void setDeclaredEncoding(const QString &encoding);
-    QStringList getAllDetectableCharsets();
-    void enableInputFilter(const bool enable);
-    bool isInputFilterEnabled();
+
+    QByteArray _ba;
+    QByteArray _baExtended;
+
+    UErrorCode _status;
+    UCharsetDetector *_uCharsetDetector;
+
+    QString _declaredLocale;
+    QString _declaredEncoding;
+
+    QStringList _allDetectableCharsets;
+
+    QMailCharsetDetector *q_ptr;
 
 private:
-    Q_DISABLE_COPY(QCharsetDetector)
-    QCharsetDetectorPrivate *const d_ptr;
-    Q_DECLARE_PRIVATE(QCharsetDetector)
+    Q_DISABLE_COPY(QMailCharsetDetectorPrivate)
 };
 
 #endif
