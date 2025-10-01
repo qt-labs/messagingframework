@@ -866,7 +866,8 @@ QString RenameState::transmit(ImapContext *c)
     }
 
     QString from = _mailboxNames.last().first.path();
-    QString to =  buildNewPath(c, _mailboxNames.last().first, _mailboxNames.last().second);
+    QString to = buildNewPath(c, _mailboxNames.last().first, _mailboxNames.last().second);
+
     if (_mailboxNames.last().second.contains(c->protocol()->delimiter())) {
         qCWarning(lcIMAP) << "Unsupported: new name contains IMAP delimiter" << _mailboxNames.last().second
                    << c->protocol()->delimiter();
@@ -953,7 +954,7 @@ QString MoveState::transmit(ImapContext *c)
     }
 
     QString from = _mailboxParents.last().first.path();
-    QString to =  buildNewPath(c, _mailboxParents.last().first, _mailboxParents.last().second);
+    QString to = buildNewPath(c, _mailboxParents.last().first, _mailboxParents.last().second);
     QString cmd(QString("RENAME %1 %2").arg(ImapProtocol::quoteString(from)).arg( ImapProtocol::quoteString(to)));
     return c->sendCommand(cmd);
 }
@@ -1834,8 +1835,9 @@ QStringList SearchMessageState::convertValue(const QVariant &value, const QMailM
         break;
     }
     case QMailMessageKey::Subject: {
-        _utf8 |=  !(isPrintable(value.toString()));
+        _utf8 |= !(isPrintable(value.toString()));
         QString subject = value.toString().toUtf8(); //utf8 is backwards compatible with 7 bit ascii
+
         if (comparer == QMailKey::Equal || comparer == QMailKey::Includes) {
             QStringList result = QStringList(QString("SUBJECT {%1}").arg(subject.size()));
             result.append(QString("%1").arg(QString(subject)));

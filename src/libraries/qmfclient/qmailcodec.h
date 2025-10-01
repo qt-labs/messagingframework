@@ -35,12 +35,14 @@
 #define QMAILCODEC_H
 
 #include "qmailglobal.h"
+
 #include <QByteArray>
 #include <QDataStream>
 #include <QString>
 #include <QTextStream>
 
 class QTextCodec;
+
 class QMF_EXPORT QMailCodec
 {
 public:

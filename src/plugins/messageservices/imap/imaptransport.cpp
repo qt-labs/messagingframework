@@ -199,7 +199,7 @@ QByteArray Rfc1951Decompressor::readLine()
 
 QByteArray Rfc1951Decompressor::readAll()
 {
-    QByteArray result =  _output;
+    QByteArray result = _output;
     _output.clear();
     return result;
 }

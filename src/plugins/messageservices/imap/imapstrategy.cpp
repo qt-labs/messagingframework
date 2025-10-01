@@ -873,7 +873,7 @@ void ImapRenameFolderStrategy::handleRename(ImapStrategyContextBase *context)
 void ImapRenameFolderStrategy::process(ImapStrategyContextBase *context)
 {
     while (_folderNewNames.count() > 0) {
-        const QPair<QMailFolderId, QString> &folderId_name =  _folderNewNames.takeFirst();
+        const QPair<QMailFolderId, QString> &folderId_name = _folderNewNames.takeFirst();
         _inProgress++;
         context->protocol().sendRename(QMailFolder(folderId_name.first), folderId_name.second);
     }
@@ -3059,7 +3059,7 @@ static void updateFolderExportsMap(QMap<QMailFolderId, QStringList > *folderExpo
     QMailMessageKey::Properties props(QMailMessageKey::Id | QMailDisconnected::parentFolderProperties() | QMailMessageKey::ServerUid);
     for (const QMailMessageMetaData &metaData : QMailStore::instance()->messagesMetaData(filter, props)) {
         if (!metaData.serverUid().isEmpty() && metaData.parentFolderId().isValid()) {
-            (*folderExportMap)[metaData.parentFolderId()] +=  metaData.serverUid();
+            (*folderExportMap)[metaData.parentFolderId()] += metaData.serverUid();
         } else {
             qCWarning(lcIMAP) << "Unable to export status change to message" << metaData.id();
             QMailMessageMetaData m(metaData.id());

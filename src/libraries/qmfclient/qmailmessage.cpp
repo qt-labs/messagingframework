@@ -1127,6 +1127,7 @@ namespace findAttachments
             // In any case, the default strategy wins, even if there are no attachments
             return true;
         }
+
     private:
         void inMultipartNone(const QMailMessagePart &part,
                              Locations* found,

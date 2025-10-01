@@ -1349,6 +1349,7 @@ public:
     QMailTimeStamp lastSynchronized() const { return QMailTimeStamp(value<QDateTime>(QMailAccountKey::LastSynchronized)); }
 
     QString iconPath() const { return value<QString>(QMailAccountKey::IconPath); }
+
 private:
     int fieldIndex(const QString &field, int props) const override
     {

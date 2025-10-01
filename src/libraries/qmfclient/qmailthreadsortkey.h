@@ -92,8 +92,8 @@ public:
     static QMailThreadSortKey preview(Qt::SortOrder order = Qt::AscendingOrder);
     static QMailThreadSortKey startedDate(Qt::SortOrder order = Qt::AscendingOrder);
     static QMailThreadSortKey lastDate(Qt::SortOrder order = Qt::AscendingOrder);
-
     static QMailThreadSortKey status(quint64 mask, Qt::SortOrder order = Qt::DescendingOrder);
+
 private:
     QMailThreadSortKey(Property p, Qt::SortOrder order, quint64 mask = 0);
     QMailThreadSortKey(const QmfList<ArgumentType> &args);

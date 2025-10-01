@@ -57,7 +57,6 @@ public:
     static void clearContent();
 };
 
-
 struct QMF_EXPORT QMailContentManagerPluginInterface : public QFactoryInterface
 {
     virtual QString key() const = 0;

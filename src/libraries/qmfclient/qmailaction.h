@@ -31,11 +31,13 @@
 **
 ****************************************************************************/
 
-#ifndef QMAILACTIONFWD_H
-#define QMAILACTIONFWD_H
+#ifndef QMAILACTION_H
+#define QMAILACTION_H
+
 #include "qmailglobal.h"
 #include "qmailipc.h"
 #include "qmailid.h"
+
 #include <QString>
 #include <QList>
 #include <QSharedDataPointer>

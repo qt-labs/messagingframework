@@ -428,6 +428,7 @@ private slots:
     void onActivityChanged(quint64 id, QMailServiceAction::Activity activity);
     void actionsListed(const QMailActionDataList &actions);
     void actionStarted(const QMailActionData &action);
+
 private:
     QSharedPointer<QMailActionInfo> addAction(const QMailActionData &action);
     QMap< QMailActionId, QSharedPointer<QMailActionInfo> > _runningActions;

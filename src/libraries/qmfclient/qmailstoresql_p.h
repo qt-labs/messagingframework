@@ -339,6 +339,7 @@ private:
         quint64 id() const { return _id; }
         QString name() const { return _name; }
         quint64 status() const { return _status; }
+
     private:
         quint64 _id;
         QString _name;
