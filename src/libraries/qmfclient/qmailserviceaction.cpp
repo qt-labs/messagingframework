@@ -39,6 +39,7 @@
 #include "qmaildisconnected.h"
 #include "qmailnamespace.h"
 #include <qmailcontentmanager.h>
+
 #include <QCoreApplication>
 #include <QPair>
 #include <QTimer>

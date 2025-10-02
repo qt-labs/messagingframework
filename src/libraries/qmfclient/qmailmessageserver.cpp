@@ -1081,8 +1081,6 @@ void QMailMessageServer::protocolRequest(quint64 action, const QMailAccountId &a
     d->protocolRequest(action, accountId, request, data);
 }
 
-Q_IMPLEMENT_USER_METATYPE_TYPEDEF(QMailMessageCountMap, QMailMessageCountMap)
-
 /*!
     \fn bool QMailMessageServer::connectionDown()
 

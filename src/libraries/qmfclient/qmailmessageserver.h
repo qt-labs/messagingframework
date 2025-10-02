@@ -40,7 +40,6 @@
 #include "qmailmessagesortkey.h"
 #include "qmailserviceaction.h"
 #include "qmailstore.h"
-#include "qmailipc.h"
 
 #include <QMap>
 #include <QSharedDataPointer>
@@ -48,8 +47,6 @@
 #include <QStringList>
 
 class QMailMessageServerPrivate;
-
-typedef QMap<QMailMessage::MessageType, int> QMailMessageCountMap;
 
 class QMF_EXPORT QMailMessageServer : public QObject
 {
@@ -160,8 +157,5 @@ public Q_SLOTS:
 private:
     QMailMessageServerPrivate* d;
 };
-
-Q_DECLARE_METATYPE(QMailMessageCountMap)
-Q_DECLARE_USER_METATYPE_TYPEDEF(QMailMessageCountMap, QMailMessageCountMap)
 
 #endif

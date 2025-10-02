@@ -255,7 +255,7 @@ void MessageServer::reportNewCounts()
 {
     static QMap<QMailMessage::MessageType, QString> typeSignature(typeSignatureInit());
 
-    QMailMessageCountMap newCounts;
+    MessageCountMap newCounts;
     foreach (const QMailMessage::MessageType &type, typeSignature.keys()) {
         newCounts[type] = newMessageCount(type);
     }
@@ -270,7 +270,8 @@ void MessageServer::reportNewCounts()
         }
 
         // Request handling of the new message events
-        QMailMessageCountMap::const_iterator it = newCounts.begin(), end = newCounts.end();
+        MessageCountMap::const_iterator it = newCounts.begin(), end = newCounts.end();
+
         for ( ; it != end; ++it) {
             QMailMessage::MessageType type(it.key());
             if (it.value() != messageCounts[type]) {

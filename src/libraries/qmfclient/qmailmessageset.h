@@ -247,7 +247,6 @@ public:
     QMailMessageSetModel(QObject *parent = Q_NULLPTR);
     virtual ~QMailMessageSetModel();
 
-
     int rowCount(const QModelIndex &parentIndex) const override;
     int columnCount(const QModelIndex &) const override;
 
@@ -315,7 +314,6 @@ protected:
     virtual void appended(QMailMessageSet *child);
     virtual void removed(QMailMessageSet *child);
     virtual void updated(QMailMessageSet *child);
-
 
 private:
     friend class QMailMessageSetContainer;

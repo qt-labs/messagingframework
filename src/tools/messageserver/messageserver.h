@@ -45,6 +45,8 @@ class StoreHandler;
 class NewCountNotifier;
 class QMailMessageServerService;
 
+typedef QMap<QMailMessage::MessageType, int> MessageCountMap;
+
 class MessageServer : public QObject
 {
     Q_OBJECT
@@ -94,7 +96,7 @@ private:
 
     ServiceHandler *handler;
     StoreHandler *storeHandler;
-    QMailMessageCountMap messageCounts;
+    MessageCountMap messageCounts;
 
     QMap<NewCountNotifier*, QMailMessage::MessageType> actionType;
     int newMessageTotal;
@@ -114,7 +116,6 @@ private:
     static int sigintFd[2];
     QSocketNotifier *snInt;
 #endif
-
 };
 
 #endif
