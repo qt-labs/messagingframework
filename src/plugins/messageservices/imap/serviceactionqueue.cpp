@@ -36,7 +36,7 @@
 // Auto executing queue of service actions
 
 ServiceActionQueue::ServiceActionQueue()
-    :_running(false)
+    : _running(false)
 {
     QObject::connect(&_timer, SIGNAL(timeout()), this, SLOT(executeNextCommand()));
 }

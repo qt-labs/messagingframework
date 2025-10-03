@@ -103,11 +103,11 @@ QMailTimeStampPrivate::QMailTimeStampPrivate(const QString& timeText)
             continue;
         }
 
-        if ( *it == QChar::fromLatin1('(') && !escaped )
+        if (*it == QChar::fromLatin1('(') && !escaped) {
             commentDepth += 1;
-        else if ( *it == QChar::fromLatin1(')') && !escaped && ( commentDepth > 0 ) )
+        } else if (*it == QChar::fromLatin1(')') && !escaped && (commentDepth > 0)) {
             commentDepth -= 1;
-        else if ( commentDepth == 0 ) {
+        } else if (commentDepth == 0) {
             // Remove characters we don't want
             if ( *it != QChar::fromLatin1(',')
                  && *it != QChar::LineFeed
@@ -146,10 +146,9 @@ QMailTimeStampPrivate::QMailTimeStampPrivate(const QString& timeText)
         if ( ok ) {
             // Interpret year according to RFC2822
             year = value;
-            if ( year < 100 ) {
-                year += ( year <= 49 ? 2000 : 1900 );
-            }
-            else if ( year < 1000 ) {
+            if (year < 100) {
+                year += (year <= 49 ? 2000 : 1900);
+            } else if (year < 1000) {
                 year += 1900;
             }
         }
@@ -167,10 +166,9 @@ QMailTimeStampPrivate::QMailTimeStampPrivate(const QString& timeText)
         QTime timeComponent;
 
         QTime parsedTime;
-        if ( timeStr.length() == 8 ) {
+        if (timeStr.length() == 8) {
             parsedTime = QTime::fromString(timeStr, QLatin1String("hh:mm:ss"));
-        }
-        else if ( timeStr.length() == 5 ) {
+        } else if (timeStr.length() == 5) {
             // Is this legal?  Either way, it seems desirable for robustness...
             parsedTime = QTime::fromString(timeStr, QLatin1String("hh:mm"));
         }
@@ -204,8 +202,7 @@ QMailTimeStampPrivate::QMailTimeStampPrivate(const QDateTime& dateTime)
 
         // Find the difference
         utcOffset = time.secsTo( original );
-    }
-    else {
+    } else {
         // Time is already in UTC
         time = dateTime;
 

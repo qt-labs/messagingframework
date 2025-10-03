@@ -113,24 +113,20 @@ bool QMailCharsetMatch::operator<(const QMailCharsetMatch &other) const
 {
     if (this->confidence() < other.confidence())
         return true;
-    else if (this->confidence() == other.confidence()
+
+    return (this->confidence() == other.confidence()
             && this->language().isEmpty()
-            && !other.language().isEmpty())
-        return true;
-    else
-        return false;
+            && !other.language().isEmpty());
 }
 
 bool QMailCharsetMatch::operator>(const QMailCharsetMatch &other) const
 {
     if (this->confidence() > other.confidence())
         return true;
-    else if (this->confidence() == other.confidence()
-             && !this->language().isEmpty()
-             && other.language().isEmpty())
-            return true;
-    else
-        return false;
+
+    return this->confidence() == other.confidence()
+           && !this->language().isEmpty()
+           && other.language().isEmpty();
 }
 
 QString QMailCharsetMatch::name() const
@@ -186,10 +182,7 @@ QMailCharsetDetectorPrivate::~QMailCharsetDetectorPrivate()
 
 bool QMailCharsetDetectorPrivate::hasError() const
 {
-    if (U_SUCCESS(_status))
-        return false;
-    else
-        return true;
+    return !U_SUCCESS(_status);
 }
 
 void QMailCharsetDetectorPrivate::clearError()
@@ -384,40 +377,41 @@ QList<QMailCharsetMatch> QMailCharsetDetector::detectAll()
     // included.
     if (!d->_declaredLocale.isEmpty()) {
         QString language = d->_declaredLocale.left(2);
+
         if (language == QLatin1String("ru")) {
             charsetMatchList << QMailCharsetMatch(QLatin1String("KOI8-R"), language, 10);
             charsetMatchList << QMailCharsetMatch(QLatin1String("windows-1251"), language, 10);
             charsetMatchList << QMailCharsetMatch(QLatin1String("ISO-8859-5"), language, 10);
-        }
-        else if (language == QLatin1String("tr"))
+        } else if (language == QLatin1String("tr")) {
             charsetMatchList << QMailCharsetMatch(QLatin1String("ISO-8859-9"), language, 10);
-        else if (language == QLatin1String("el"))
+        } else if (language == QLatin1String("el")) {
             charsetMatchList << QMailCharsetMatch(QLatin1String("ISO-8859-7"), language, 10);
-        else if (language == QLatin1String("en")
-                || language == QLatin1String("da")
-                || language == QLatin1String("de")
-                || language == QLatin1String("es")
-                || language == QLatin1String("fi")
-                || language == QLatin1String("fr")
-                || language == QLatin1String("it")
-                || language == QLatin1String("nl")
-                || language == QLatin1String("no")
-                || language == QLatin1String("nn")
-                || language == QLatin1String("nb")
-                || language == QLatin1String("pt")
-                || language == QLatin1String("sv"))
+        } else if (language == QLatin1String("en")
+                   || language == QLatin1String("da")
+                   || language == QLatin1String("de")
+                   || language == QLatin1String("es")
+                   || language == QLatin1String("fi")
+                   || language == QLatin1String("fr")
+                   || language == QLatin1String("it")
+                   || language == QLatin1String("nl")
+                   || language == QLatin1String("no")
+                   || language == QLatin1String("nn")
+                   || language == QLatin1String("nb")
+                   || language == QLatin1String("pt")
+                   || language == QLatin1String("sv")) {
             charsetMatchList << QMailCharsetMatch(QLatin1String("ISO-8859-1"), language, 10);
-        else if (language == QLatin1String("cs")
-                || language == QLatin1String("hu")
-                || language == QLatin1String("pl")
-                || language == QLatin1String("ro"))
+        } else if (language == QLatin1String("cs")
+                   || language == QLatin1String("hu")
+                   || language == QLatin1String("pl")
+                   || language == QLatin1String("ro")) {
             charsetMatchList << QMailCharsetMatch(QLatin1String("ISO-8859-1"), language, 10);
-        else if (language == QLatin1String("ar")
-                || language == QLatin1String("fa")
-                || language == QLatin1String("ur"))
+        } else if (language == QLatin1String("ar")
+                   || language == QLatin1String("fa")
+                   || language == QLatin1String("ur")) {
             charsetMatchList << QMailCharsetMatch(QLatin1String("ISO-8859-6"), language, 10);
-        else if (language == QLatin1String("he"))
+        } else if (language == QLatin1String("he")) {
             charsetMatchList << QMailCharsetMatch(QLatin1String("ISO-8859-8"), language, 10);
+        }
     }
     // iterate over the detected matches and do some fine tuning:
     bool sortNeeded = false;
@@ -439,7 +433,7 @@ QList<QMailCharsetMatch> QMailCharsetDetector::detectAll()
             (*it).setLanguage(QLatin1String("ja"));
         }
         if ((*it).name() == QLatin1String("UTF-8")
-           && (*it).confidence() >= 80 && (*it).confidence() < 99) {
+            && (*it).confidence() >= 80 && (*it).confidence() < 99) {
             // Actually libicu currently only returns confidence
             // values of 100, 80, 25, and 10 for UTF-8.  A value of 80
             // can mean two things:
@@ -463,8 +457,8 @@ QList<QMailCharsetMatch> QMailCharsetDetector::detectAll()
             sortNeeded = true;
         }
         if (!d->_declaredEncoding.isEmpty()
-           && (*it).name() == d->_declaredEncoding
-           && (*it).confidence() == 10) {
+            && (*it).name() == d->_declaredEncoding
+            && (*it).confidence() == 10) {
             // A confidence value of 10 means the charset can
             // represent the input data, but there is no other
             // indication that suggests that the charset is the
@@ -479,8 +473,8 @@ QList<QMailCharsetMatch> QMailCharsetDetector::detectAll()
             sortNeeded = true;
         }
         if (!d->_declaredLocale.isEmpty()
-           && d->_declaredLocale.startsWith((*it).language())
-           && (*it).confidence() == 10) {
+            && d->_declaredLocale.startsWith((*it).language())
+            && (*it).confidence() == 10) {
             // A confidence value of 10 means the charset can
             // represent the input data, but there is no other
             // indication that suggests that the charset is the
@@ -528,26 +522,24 @@ QList<QMailCharsetMatch> QMailCharsetDetector::detectAll()
                 // windows-1251 to prefer windows-1251 a little bit
                 // over ISO-8859-5.
                 if ((*it).name() == QLatin1String("KOI8-R")
-                   && koi8rConfidence > 10 && koi8rConfidence < 30)
+                    && koi8rConfidence > 10 && koi8rConfidence < 30)
                     (*it).setConfidence(20 + koi8rConfidence);
                 else if ((*it).name() == QLatin1String("ISO-8859-5")
-                   && iso88595Confidence > 10 && iso88595Confidence < 30)
+                         && iso88595Confidence > 10 && iso88595Confidence < 30)
                     (*it).setConfidence(20 + iso88595Confidence);
                 else if ((*it).name() == QLatin1String("windows-1251")
-                   && windows1251Confidence > 10 && windows1251Confidence < 30)
+                         && windows1251Confidence > 10 && windows1251Confidence < 30)
                     (*it).setConfidence(21 + windows1251Confidence);
-            }
-            else if ((d->_declaredLocale.contains(QLatin1String("TW"))
-                || d->_declaredLocale.contains(QLatin1String("HK"))
-                || d->_declaredLocale.contains(QLatin1String("MO")))
-               && (*it).name() == QLatin1String("Big5")) {
-                 // Traditional Chinese, Big5 more likely
+            } else if ((d->_declaredLocale.contains(QLatin1String("TW"))
+                        || d->_declaredLocale.contains(QLatin1String("HK"))
+                        || d->_declaredLocale.contains(QLatin1String("MO")))
+                       && (*it).name() == QLatin1String("Big5")) {
+                // Traditional Chinese, Big5 more likely
                 (*it).setConfidence(39);
-            }
-            else if ((d->_declaredLocale.contains(QLatin1String("CN"))
-                     || d->_declaredLocale.contains(QLatin1String("SG"))
-                     || d->_declaredLocale == QLatin1String("zh"))
-                    && (*it).name() == QLatin1String("GB18030")) {
+            } else if ((d->_declaredLocale.contains(QLatin1String("CN"))
+                        || d->_declaredLocale.contains(QLatin1String("SG"))
+                        || d->_declaredLocale == QLatin1String("zh"))
+                       && (*it).name() == QLatin1String("GB18030")) {
                 // Simplified Chinese, GB18030/GB2312 more likely.
                 // Simplified Chinese is also assumed if only “zh”
                 // is set. If the variant is unknown, simplified
@@ -559,8 +551,7 @@ QList<QMailCharsetMatch> QMailCharsetDetector::detectAll()
                 // likely when only “zh” is set on the device (see
                 // also NB#242154).
                 (*it).setConfidence(39);
-            }
-            else {
+            } else {
                 (*it).setConfidence(38);
             }
             sortNeeded = true;
@@ -569,8 +560,7 @@ QList<QMailCharsetMatch> QMailCharsetDetector::detectAll()
             // remove matches for charsets not supported by QTextCodec
             // then it is probably some weird charset we cannot use anyway
             it = charsetMatchList.erase(it);
-        }
-        else {
+        } else {
             // test whether the complete input text can be encoded
             // using this match, if not remove the match
             clearError();
@@ -582,11 +572,12 @@ QList<QMailCharsetMatch> QMailCharsetDetector::detectAll()
                 //          << errorString();
                 it = charsetMatchList.erase(it);
                 clearError();
-            }
-            else
+            } else {
                 ++it;
+            }
         }
     }
+
     // sort the list of matches again if confidences have been changed:
     if (sortNeeded)
         std::sort(charsetMatchList.begin(), charsetMatchList.end(),
@@ -617,8 +608,7 @@ QString QMailCharsetDetector::text(const QMailCharsetMatch &charsetMatch)
                  << errorString();
         // return empty string to indicate that no conversion is possible:
         return QString();
-    }
-    else {
+    } else {
         QTextCodec::ConverterState state;
         QString text =
             codec->toUnicode(d->_ba.constData(), d->_ba.size(), &state);

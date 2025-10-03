@@ -676,16 +676,15 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
             QMailAccount account(_accountId);
             QMailAccountConfiguration config(_accountId);
             ImapConfiguration imapCfg(config);
-            bool supportsReferences(_protocol.capabilities().contains("URLAUTH", Qt::CaseInsensitive) &&
-                                    _protocol.capabilities().contains("CATENATE", Qt::CaseInsensitive)
+            bool supportsReferences(_protocol.capabilities().contains("URLAUTH", Qt::CaseInsensitive)
+                                    && _protocol.capabilities().contains("CATENATE", Qt::CaseInsensitive)
                                     // No FWOD support for IMAPS
-                                    && (static_cast<QMailTransport::EncryptType>(imapCfg.mailEncryption()) != QMailTransport::Encrypt_SSL)
-                                   );
+                                    && (static_cast<QMailTransport::EncryptType>(imapCfg.mailEncryption()) != QMailTransport::Encrypt_SSL));
 
-            if (((account.status() & QMailAccount::CanReferenceExternalData) && !supportsReferences) ||
-                (!(account.status() & QMailAccount::CanReferenceExternalData) && supportsReferences) ||
-                (imapCfg.pushCapable() != _protocol.supportsCapability("IDLE")) ||
-                (imapCfg.capabilities() != _protocol.capabilities())) {
+            if (((account.status() & QMailAccount::CanReferenceExternalData) && !supportsReferences)
+                || (!(account.status() & QMailAccount::CanReferenceExternalData) && supportsReferences)
+                || (imapCfg.pushCapable() != _protocol.supportsCapability("IDLE"))
+                || (imapCfg.capabilities() != _protocol.capabilities())) {
                 account.setStatus(QMailAccount::CanReferenceExternalData, supportsReferences);
                 imapCfg.setPushCapable(_protocol.supportsCapability("IDLE"));
                 imapCfg.setCapabilities(_protocol.capabilities());
@@ -693,10 +692,10 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
                     qCWarning(lcMailStore) << "Unable to update account" << account.id() << "to set imap4 configuration";
                 }
             }
+
             // After logging in server capabilities reported may change so we need to
             // check if IDLE is already established, when enabled
-            if (_protocol.supportsCapability("IDLE")
-                && _pushConnectionsReserved) {
+            if (_protocol.supportsCapability("IDLE") && _pushConnectionsReserved) {
                 // This is a noop when IDLE is already established
                 // for the given folders
                 monitor(configurationIdleFolderIds());
@@ -869,13 +868,12 @@ void ImapClient::mailboxListed(const QString &flags, const QString &path)
             QString path(folder.path());
             QString baseFolder(_strategyContext->baseFolder());
 
-            if (baseFolder.isEmpty() ||
-                (path.startsWith(baseFolder, Qt::CaseInsensitive) && (path.length() == baseFolder.length())) ||
-                (path.startsWith(baseFolder + _protocol.delimiter(), Qt::CaseInsensitive))) {
+            if (baseFolder.isEmpty()
+                || (path.startsWith(baseFolder, Qt::CaseInsensitive) && (path.length() == baseFolder.length()))
+                || (path.startsWith(baseFolder + _protocol.delimiter(), Qt::CaseInsensitive))) {
                 if (!QMailStore::instance()->addFolder(&folder)) {
                     qCWarning(lcMailStore) << "Unable to add folder for account:" << folder.parentAccountId() << "path:" << folder.path();
-                }
-                else {
+                } else {
                     //set inbox as standardFolder
                     if (QString::compare(path, "INBOX", Qt::CaseInsensitive) == 0) {
                         account.setStandardFolder(QMailFolder::InboxFolder, folder.id());

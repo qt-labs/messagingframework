@@ -1218,6 +1218,7 @@ void ImapMessageListStrategy::checkUidValidity(ImapStrategyContextBase *context)
         folder.removeCustomField("qmf-min-serveruid");
         folder.removeCustomField("qmf-max-serveruid");
         folder.removeCustomField("qmf-highestmodseq");
+
         if (!QMailStore::instance()->updateFolder(&folder)) {
             _error = true;
             qCWarning(lcMailStore) << "Unable to update folder for account:" << context->accountId();
@@ -1228,9 +1229,11 @@ void ImapMessageListStrategy::checkUidValidity(ImapStrategyContextBase *context)
             _error = true;
         }
     }
-    if (!properties.uidValidity.isEmpty() &&
-        (properties.uidValidity != oldUidValidity)) {
+
+    if (!properties.uidValidity.isEmpty()
+        && (properties.uidValidity != oldUidValidity)) {
         folder.setCustomField("qmf-uidvalidity", properties.uidValidity);
+
         if (!QMailStore::instance()->updateFolder(&folder)) {
             _error = true;
             qCWarning(lcMailStore) << "Unable to update folder for account:" << context->accountId();
@@ -1372,9 +1375,9 @@ bool ImapMessageListStrategy::selectNextMessageSequence(ImapStrategyContextBase 
     QString mailboxIdStr = QString::number(mailboxId.toULongLong()) + UID_SEPARATOR;
 
     // Get consecutive full messages
-    while ((_messageUids.count() < maximum) &&
-           (_selectionItr != selectionEnd) &&
-           (_selectionItr->_properties.isEmpty())) {
+    while ((_messageUids.count() < maximum)
+           && (_selectionItr != selectionEnd)
+           && (_selectionItr->_properties.isEmpty())) {
         _messageUids.append((*_selectionItr).uidString(mailboxIdStr));
         ++_selectionItr;
     }
@@ -2558,9 +2561,9 @@ void ImapRetrieveFolderListStrategy::mailboxListed(ImapStrategyContextBase *cont
 
         if (folder.id().isValid()) {
             if (folder.id() != _currentMailbox.id()) {
-                if (_baseFolder.isEmpty() ||
-                    (path.startsWith(_baseFolder, Qt::CaseInsensitive) && (path.length() == _baseFolder.length())) ||
-                    (path.startsWith(_baseFolder + context->protocol().delimiter(), Qt::CaseInsensitive))) {
+                if (_baseFolder.isEmpty()
+                    || (path.startsWith(_baseFolder, Qt::CaseInsensitive) && (path.length() == _baseFolder.length()))
+                    || (path.startsWith(_baseFolder + context->protocol().delimiter(), Qt::CaseInsensitive))) {
                     // We need to list this folder's contents, too
                     if (!_quickList) {
                         selectedFoldersAppend(QMailFolderIdList() << folder.id());
@@ -2804,8 +2807,8 @@ void ImapSynchronizeAllStrategy::processUidSearchResults(ImapStrategyContextBase
     QMailMessageKey partialContentKey(QMailMessageKey::status(QMailMessage::PartialContentAvailable));
     QMailFolder folder(boxId);
 
-    if ((_currentMailbox.status() & QMailFolder::SynchronizationEnabled) &&
-        !(_currentMailbox.status() & QMailFolder::Synchronized)) {
+    if ((_currentMailbox.status() & QMailFolder::SynchronizationEnabled)
+        && !(_currentMailbox.status() & QMailFolder::Synchronized)) {
         // We have just synchronized this folder
         folder.setStatus(QMailFolder::Synchronized, true);
     }
@@ -3262,9 +3265,9 @@ void ImapUpdateMessagesFlagsStrategy::handleLogin(ImapStrategyContextBase *conte
     _folderMessageUids.clear();
     if (!_selectedMessageIds.isEmpty()) {
         for (const QMailMessageMetaData &metaData : QMailStore::instance()->messagesMetaData(QMailMessageKey::id(_selectedMessageIds),
-                                                                                                QMailMessageKey::ServerUid
-                                                                                                | QMailDisconnected::parentFolderProperties(),
-                                                                                                QMailStore::ReturnAll)) {
+                                                                                             QMailMessageKey::ServerUid
+                                                                                             | QMailDisconnected::parentFolderProperties(),
+                                                                                             QMailStore::ReturnAll)) {
             if (!metaData.serverUid().isEmpty() && QMailDisconnected::sourceFolderId(metaData).isValid())
                 _folderMessageUids[QMailDisconnected::sourceFolderId(metaData)].append(metaData.serverUid());
         }
@@ -3711,16 +3714,11 @@ void ImapRetrieveMessageListStrategy::handleFetchFlags(ImapStrategyContextBase *
 
     if (difference.cardinality()) {
         _retrieveUids.append(qMakePair(properties.id, difference.toStringList()));
-        int newClientMin;
-        int newClientMax;
-        if (clientMin > 0)
-            newClientMin = qMin(serverRegion.minimum(), clientMin);
-        else
-            newClientMin = serverRegion.minimum();
-        if (clientMax > 0)
-            newClientMax = qMax(serverRegion.maximum(), clientMax);
-        else
-            newClientMax = serverRegion.maximum();
+        int newClientMin = (clientMin > 0) ? qMin(serverRegion.minimum(), clientMin)
+                                           : serverRegion.minimum();
+        int newClientMax = (clientMax > 0) ? qMax(serverRegion.maximum(), clientMax)
+                                           : serverRegion.maximum();
+
         if ((newClientMin > 0) && (newClientMax > 0))
             _newMinMaxMap.insert(properties.id, IntegerRegion(newClientMin, newClientMax));
     }

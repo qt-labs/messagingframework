@@ -50,7 +50,6 @@
 #include <QDataStream>
 #include <QIODevice>
 #include <QVariantList>
-#include <QDBusArgument>
 
 namespace QMailKey {
 
@@ -203,9 +202,9 @@ public:
 
     bool operator==(const QMailKeyArgument<PropertyType, ComparatorType>& other) const
     {
-        return property == other.property &&
-               op == other.op &&
-               valueList == other.valueList;
+        return property == other.property
+               && op == other.op
+               && valueList == other.valueList;
     }
 
     template <typename Stream> void serialize(Stream &stream) const

@@ -103,9 +103,9 @@ bool Rfc1951Compressor::write(QDataStream *out, QByteArray *in)
         _zStream.next_out = reinterpret_cast<Bytef*>(_buffer);
         _zStream.avail_out = _chunkSize;
         int result = deflate(&_zStream, Z_SYNC_FLUSH);
-        if (result != Z_OK &&
-            result != Z_STREAM_END &&
-            result != Z_BUF_ERROR) {
+        if (result != Z_OK
+            && result != Z_STREAM_END
+            && result != Z_BUF_ERROR) {
             return false;
         }
         out->writeRawData(_buffer, _chunkSize - _zStream.avail_out);
@@ -164,9 +164,9 @@ bool Rfc1951Decompressor::consume(QIODevice *in)
             _zStream.next_out = reinterpret_cast<Bytef *>(_stagingBuffer);
             _zStream.avail_out = _chunkSize;
             int result = inflate(&_zStream, Z_SYNC_FLUSH);
-            if (result != Z_OK &&
-                result != Z_STREAM_END &&
-                result != Z_BUF_ERROR) {
+            if (result != Z_OK
+                && result != Z_STREAM_END
+                && result != Z_BUF_ERROR) {
                 return false;
             }
             _output.append(_stagingBuffer, _chunkSize - _zStream.avail_out);
@@ -229,10 +229,10 @@ public:
 
 
 ImapTransport::ImapTransport(const char* name)
-    :QMailTransport(name),
-     _compress(false),
-     _decompressor(0),
-     _compressor(0)
+    : QMailTransport(name)
+    , _compress(false)
+    , _decompressor(0)
+    , _compressor(0)
 {
     test();
 }

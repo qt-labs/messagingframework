@@ -804,11 +804,9 @@ static QByteArray removeComments(const QByteArray& input, int (*classifier)(int)
 
         if ( *it == '(' && !escaped && !quoted ) {
             commentDepth += 1;
-        }
-        else if ( *it == ')' && !escaped && !quoted && ( commentDepth > 0 ) ) {
+        } else if ( *it == ')' && !escaped && !quoted && ( commentDepth > 0 ) ) {
             commentDepth -= 1;
-        }
-        else {
+        } else {
             bool quoteProcessed = false;
             if ( !quoted && *it == '"' && !escaped ) {
                 quoted = true;
@@ -878,7 +876,8 @@ namespace findBody
 {
     struct Context
     {
-        Context() : found (0), alternateParent (0), contentType (textContentType) {}
+        Context() : found(nullptr), alternateParent(nullptr), contentType(textContentType) {}
+
         QMailMessagePartContainer *found;
         QMailMessagePartContainer *alternateParent;
         QList<QMailMessagePart::Location> htmlImageLoc;
@@ -911,7 +910,6 @@ namespace findBody
         ctx.found = const_cast<QMailMessagePart*> (&part);
         return true;
     }
-
 
     bool inMultipartAlternative(const QMailMessagePartContainer &container, Context &ctx)
     {
@@ -1078,7 +1076,6 @@ namespace findBody
         // default to handling like MultipartMixed
         return inMultipartMixed(container, ctx);
     }
-
 }
 
 namespace findAttachments
@@ -1140,14 +1137,14 @@ namespace findAttachments
                                  || contentType.matches("text", "html")
                                  || contentType.matches("text", "calendar"));
 
-            bool isInLine = (!part.contentDisposition().isNull()) &&
-                (part.contentDisposition().type() == QMailMessageContentDisposition::Inline);
+            bool isInLine = (!part.contentDisposition().isNull())
+                    && (part.contentDisposition().type() == QMailMessageContentDisposition::Inline);
 
-            bool isAttachment = (!part.contentDisposition().isNull()) &&
-                (part.contentDisposition().type() == QMailMessageContentDisposition::Attachment);
+            bool isAttachment = (!part.contentDisposition().isNull())
+                    && (part.contentDisposition().type() == QMailMessageContentDisposition::Attachment);
 
-            bool isNone = (part.contentDisposition().isNull()) ||
-                (part.contentDisposition().type() == QMailMessageContentDisposition::None);
+            bool isNone = (part.contentDisposition().isNull())
+                    || (part.contentDisposition().type() == QMailMessageContentDisposition::None);
 
             bool isRFC822 = contentType.matches("message", "rfc822");
 
@@ -1293,8 +1290,8 @@ namespace attachments
     {
         // TODO: Check this cleanup code to see if it is applicable
         // to all the multipart types.
-        if (message.multipartType() == QMailMessagePart::MultipartSigned ||
-            message.multipartType() == QMailMessagePart::MultipartEncrypted) {
+        if (message.multipartType() == QMailMessagePart::MultipartSigned
+            || message.multipartType() == QMailMessagePart::MultipartEncrypted) {
             // Do not mess with signed/encrypted containers.
             return -2;
         }
@@ -1340,8 +1337,8 @@ namespace attachments
 
     void removeInlineImages(QMailMessagePartContainer &container, int depth)
     {
-        if (container.multipartType() == QMailMessagePart::MultipartSigned ||
-            container.multipartType() == QMailMessagePart::MultipartEncrypted) {
+        if (container.multipartType() == QMailMessagePart::MultipartSigned
+            || container.multipartType() == QMailMessagePart::MultipartEncrypted) {
             // Do not mess with signed/encrypted containers.
             return;
         }
@@ -1384,8 +1381,8 @@ namespace attachments
 
     void removeAttachments(QMailMessagePartContainer &message, int depth)
     {
-        if (message.multipartType() == QMailMessagePart::MultipartSigned ||
-            message.multipartType() == QMailMessagePart::MultipartEncrypted) {
+        if (message.multipartType() == QMailMessagePart::MultipartSigned
+            || message.multipartType() == QMailMessagePart::MultipartEncrypted) {
             // Do not mess with signed/encrypted containers.
             return;
         }
@@ -1621,8 +1618,8 @@ static bool validExtension(const QByteArray& trailer, int* number = Q_NULLPTR, b
 
         return true;
     }
-    else
-        return false;
+
+    return false;
 }
 
 static bool matchingParameter(const QByteArray& name, const QByteArray& other, bool* encoded = Q_NULLPTR)
@@ -1673,11 +1670,11 @@ void QMailMessageHeaderFieldPrivate::parse(const QByteArray& text, bool structur
     const char* token = begin;
     const char* it = begin;
     const char* separator = 0;
+
     for (bool quoted = false; it != end; ++it) {
         if (*it == '"') {
             quoted = !quoted;
-        }
-        else if (*it == ':' && !quoted && token == begin) {
+        } else if (*it == ':' && !quoted && token == begin) {
             // This is the end of the field id
             if (_id.isEmpty()) {
                 _id = QByteArray(token, (it - token)).trimmed();
@@ -1687,8 +1684,7 @@ void QMailMessageHeaderFieldPrivate::parse(const QByteArray& text, bool structur
                 // If this is a structured header, there can be only one colon
                 token = (it + 1);
             }
-        }
-        else if (*it == '=' && !quoted && structured) {
+        } else if (*it == '=' && !quoted && structured) {
             if (separator == 0) {
                 // This is a parameter separator
                 separator = it;
@@ -1849,8 +1845,7 @@ void QMailMessageHeaderFieldPrivate::setParameter(const QByteArray& name, const 
                 _parameters.append(qMakePair(id, pieces.takeFirst()));
                 ++n;
             }
-        }
-        else {
+        } else {
             // Overwrite the remaining instance of the parameter, and place any
             // following pieces immediately after
             int n = pieces.count() - 1;
@@ -1866,8 +1861,7 @@ void QMailMessageHeaderFieldPrivate::setParameter(const QByteArray& name, const 
                 if (n == initial) {
                     // Put the last piece into the existing position
                     (*it) = parameter;
-                }
-                else {
+                } else {
                     // Insert before the previous piece, and record the new iterator
                     it = _parameters.insert(it, parameter);
                 }
@@ -1875,8 +1869,7 @@ void QMailMessageHeaderFieldPrivate::setParameter(const QByteArray& name, const 
                 --n;
             }
         }
-    }
-    else {
+    } else {
         // Just one part to insert
         QByteArray id(param);
         if (encoded)
@@ -1885,8 +1878,7 @@ void QMailMessageHeaderFieldPrivate::setParameter(const QByteArray& name, const 
 
         if (it == end) {
             _parameters.append(parameter);
-        }
-        else {
+        } else {
             (*it) = parameter;
         }
     }
@@ -1924,8 +1916,8 @@ static QByteArray protectedParameter(const QByteArray& value)
     // See list in RFC2045: https://tools.ietf.org/html/rfc2045#page-12
     QRegularExpression tspecials(QLatin1String("[<>\\[\\]\\(\\)\\?:;@\\\\,=/]"));
 
-    if ((whitespace.match(QLatin1String(value)).hasMatch()) ||
-        (tspecials.match(QLatin1String(value)).hasMatch()))
+    if ((whitespace.match(QLatin1String(value)).hasMatch())
+         || (tspecials.match(QLatin1String(value)).hasMatch()))
         return QMail::quoteString(value);
     else
         return value;
@@ -1956,8 +1948,7 @@ QList<QMailMessageHeaderField::ParameterType> QMailMessageHeaderFieldPrivate::pa
             if (number == 0) {
                 result.append(qMakePair(id, parameter(id)));
             }
-        }
-        else {
+        } else {
             result.append(param);
         }
     }
@@ -2880,8 +2871,7 @@ static QList<QByteArray> parseHeaders(const QByteArray& input)
                     progress.append(QByteArray(begin, (it - begin - 2)));
                 }
                 begin = it;
-            }
-            else {
+            } else {
                 // That was an unescaped CRLF
                 if ((it - begin) > 2) {
                     progress.append(QByteArray(begin, (it - begin) - 2));
@@ -2894,13 +2884,11 @@ static QList<QByteArray> parseHeaders(const QByteArray& input)
                 begin = it;
             }
             status = None;
-        }
-        else if (status == Cr) {
+        } else if (status == Cr) {
             if (*it == QMailMessage::LineFeed) {
                 // CRLF sequence completed
                 status = CrLf;
-            }
-            else {
+            } else {
                 status = None;
             }
         } else if (status == Lf) {
@@ -2910,8 +2898,7 @@ static QList<QByteArray> parseHeaders(const QByteArray& input)
                     progress.append(QByteArray(begin, (it - begin - 1)));
                 }
                 begin = it;
-            }
-            else {
+            } else {
                 // That was an unescaped CRLF
                 if ((it - begin) > 1) {
                     progress.append(QByteArray(begin, (it - begin) - 1));
@@ -6230,10 +6217,14 @@ QString QMailMessagePart::identifier() const
     QString id(contentID());
 
     if (id.isEmpty())
-        id = contentDisposition().isParameterEncoded("filename")?decodeParameter(contentDisposition().filename()):decodeWordSequence(contentDisposition().filename());
+        id = contentDisposition().isParameterEncoded("filename")
+             ? decodeParameter(contentDisposition().filename())
+             : decodeWordSequence(contentDisposition().filename());
 
     if (id.isEmpty())
-        id = contentType().isParameterEncoded("name")?decodeParameter(contentType().name()):decodeWordSequence(contentType().name());
+        id = contentType().isParameterEncoded("name")
+             ? decodeParameter(contentType().name())
+             : decodeWordSequence(contentType().name());
 
     if (id.isEmpty())
         id = QString::number(impl(this)->partNumber());
@@ -7935,8 +7926,8 @@ void QMailMessagePrivate::toRfc2822(QDataStream **out, QMailMessage::EncodingFor
     bool isOutgoing = (messageStatus & (QMailMessage::Outgoing | QMailMessage::Sent));
 
     bool addTimeStamp = (format != QMailMessage::IdentityFormat);
-    bool addContentHeaders = ((format != QMailMessage::IdentityFormat) &&
-                              ((format != QMailMessage::StorageFormat) || isOutgoing || !hasBody()));
+    bool addContentHeaders = ((format != QMailMessage::IdentityFormat)
+                              && ((format != QMailMessage::StorageFormat) || isOutgoing || !hasBody()));
     bool includeBcc = (format != QMailMessage::TransmissionFormat);
     bool excludeInternalFields = (format == QMailMessage::TransmissionFormat);
 

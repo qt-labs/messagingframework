@@ -665,9 +665,9 @@ static const unsigned char* QuotedPrintableValues = reinterpret_cast<const unsig
 static bool requiresEscape(unsigned char input, QMailQuotedPrintableCodec::ConformanceType conformance, int charsRemaining)
 {
     // For both, we need to escape '=' and anything unprintable
-    bool escape = ((input > MaxPrintableRange) ||
-                   ((input < MinPrintableRange) && (input != HorizontalTab) && (input != FormFeed)) ||
-                   (input == Equals));
+    bool escape = ((input > MaxPrintableRange)
+                   || ((input < MinPrintableRange) && (input != HorizontalTab) && (input != FormFeed))
+                   || (input == Equals));
 
     // For RFC 2047, we need to escape '?', '_', ' ' & '\t'
     // In fact, since the output may be used in a header field 'word', then the only characters

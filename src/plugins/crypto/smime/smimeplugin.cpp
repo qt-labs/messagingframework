@@ -48,11 +48,8 @@ bool QMailCryptoSMIME::partHasSignature(const QMailMessagePartContainer &part) c
 
     const QMailMessagePart signature = part.partAt(1);
 
-    if (!signature.contentType().matches("application", "pkcs7-signature") &&
-        !signature.contentType().matches("application", "x-pkcs7-signature"))
-        return false;
-
-    return true;
+    return signature.contentType().matches("application", "pkcs7-signature")
+           || signature.contentType().matches("application", "x-pkcs7-signature");
 }
 
 QMailCrypto::VerificationResult QMailCryptoSMIME::verifySignature(const QMailMessagePartContainer &part) const
@@ -63,8 +60,7 @@ QMailCrypto::VerificationResult QMailCryptoSMIME::verifySignature(const QMailMes
     QMailMessagePart body = part.partAt(0);
     QMailMessagePart signature = part.partAt(1);
 
-    if (!body.contentAvailable() ||
-        !signature.contentAvailable())
+    if (!body.contentAvailable() || !signature.contentAvailable())
         return QMailCrypto::VerificationResult();
 
     QMailCrypto::VerificationResult result;

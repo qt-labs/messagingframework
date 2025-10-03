@@ -175,8 +175,8 @@ void QMailTransport::createSocket(EncryptType encryptType)
 {
     if (mSocket) {
         // Note: socket recycling doesn't seem to work in SSL mode...
-        if (mSocket->mode() == QSslSocket::UnencryptedMode &&
-            (encryptType == Encrypt_NONE || encryptType == Encrypt_TLS)) {
+        if (mSocket->mode() == QSslSocket::UnencryptedMode
+            && (encryptType == Encrypt_NONE || encryptType == Encrypt_TLS)) {
             // The socket already exists in the correct mode
             return;
         } else {

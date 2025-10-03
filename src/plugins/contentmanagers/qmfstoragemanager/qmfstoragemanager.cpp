@@ -220,10 +220,10 @@ QMailStore::ErrorCode QmfStorageManager::addOrRename(QMailMessage *message, cons
     // Write the message to file (not including sub-part contents)
     QDataStream out(file.data());
     message->toRfc2822(out, QMailMessage::StorageFormat);
-    if ((out.status() != QDataStream::Ok) ||
+    if ((out.status() != QDataStream::Ok)
         // Write each part to file
-        ((message->multipartType() != QMailMessagePartContainer::MultipartNone) &&
-         !addOrRenameParts(message, message->contentIdentifier(), existingIdentifier, durability))) {
+        || ((message->multipartType() != QMailMessagePartContainer::MultipartNone)
+            && !addOrRenameParts(message, message->contentIdentifier(), existingIdentifier, durability))) {
         // Remove the file
         file->close();
         qCWarning(lcMailStore) << "Unable to save message content, removing temporary file:" << filePath;
@@ -399,8 +399,8 @@ struct PartLoader
 
     bool operator()(QMailMessagePart &part)
     {
-        if ((part.referenceType() == QMailMessagePart::None) &&
-            (part.multipartType() == QMailMessagePartContainer::MultipartNone)) {
+        if ((part.referenceType() == QMailMessagePart::None)
+            && (part.multipartType() == QMailMessagePartContainer::MultipartNone)) {
             QString partFilePath;
             QString localContentFile = QUrl(part.contentLocation()).toLocalFile();
             bool localAttachment = QFile::exists(localContentFile) && !localContentFile.isEmpty() && !part.hasBody();
@@ -609,9 +609,9 @@ struct PartStorer
 
     bool operator()(const QMailMessagePart &part)
     {
-        if ((part.referenceType() == QMailMessagePart::None) &&
-            (part.multipartType() == QMailMessagePartContainer::MultipartNone) &&
-            part.hasBody()) {
+        if ((part.referenceType() == QMailMessagePart::None)
+            && (part.multipartType() == QMailMessagePartContainer::MultipartNone)
+            && part.hasBody()) {
             // We need to store this part
             QString partFilePath(QmfStorageManager::messagePartFilePath(part, fileName));
 
@@ -629,10 +629,10 @@ struct PartStorer
             QString detachedFile = message->customField("qmf-detached-part-filename");
             if (!detachedFile.isEmpty()) {
                 // We can take ownership of the file if that helps
-                if ((outputFormat == QMailMessageBody::Encoded) ||
-                    // If the output should be decoded, then only unchanged 'encodings 'can be used directly
-                    ((part.transferEncoding() != QMailMessageBody::Base64) &&
-                     (part.transferEncoding() != QMailMessageBody::QuotedPrintable))) {
+                if ((outputFormat == QMailMessageBody::Encoded)
+                     // If the output should be decoded, then only unchanged 'encodings 'can be used directly
+                     || ((part.transferEncoding() != QMailMessageBody::Base64)
+                        && (part.transferEncoding() != QMailMessageBody::QuotedPrintable))) {
                     // Try to take ownership of the file
                     if (QFile::rename(detachedFile, partFilePath)) {
                         message->removeCustomField("qmf-detached-part-filename");

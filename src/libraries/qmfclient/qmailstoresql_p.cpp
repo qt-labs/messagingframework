@@ -4348,9 +4348,9 @@ bool QMailStoreSql::purgeObsoleteFiles()
             foreach (QString const& scheme, schemes) {
                 if (!scheme.isEmpty()) {
                     QMailContentManager *manager(QMailContentManagerFactory::create(scheme));
-                    if (!manager)
+                    if (!manager) {
                         qCWarning(lcMailStore) << "Unable to create content manager for scheme:" << scheme;
-                    else {
+                    } else {
                         if (manager->remove(*it) != QMailStore::NoError) {
                             qCWarning(lcMailStore) << "Unable to remove obsolete message contents:" << *it;
                         }
@@ -5257,9 +5257,9 @@ void QMailStoreSql::removeExpiredData(const QStringList& contentUris)
                 foreach (QString const& scheme, schemes) {
                     if (!scheme.isEmpty()) {
                         QMailContentManager *manager(QMailContentManagerFactory::create(scheme));
-                        if (!manager)
+                        if (!manager) {
                             qCWarning(lcMailStore) << "Unable to create content manager for scheme:" << scheme;
-                        else {
+                        } else {
                             if (manager->remove(*it) != QMailStore::NoError) {
                                 qCWarning(lcMailStore) << "Unable to remove expired message contents:" << *it;
                             }
@@ -5932,8 +5932,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptAddMessage(QMailMessageMetaDa
             if (!thread.senders().contains(newSender)) {
                 senders = QMailAddress::toStringList(QMailAddressList() << newSender
                                                      << thread.senders()).join(QLatin1String(","));
-            }
-            else {
+            } else {
                 if (newLastMessage) {
                     QMailAddressList oldSendersList = thread.senders();
                     oldSendersList.removeAll(newSender);

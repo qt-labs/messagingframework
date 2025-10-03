@@ -62,8 +62,7 @@ bool needsQuotes(const QString& src)
     for (; it != end; ++it)
         if (*it == QChar::fromLatin1('(')) {
             ++commentDepth;
-        }
-        else if (*it == QChar::fromLatin1(')')) {
+        } else if (*it == QChar::fromLatin1(')')) {
             if (--commentDepth < 0)
                 return true;
         }
@@ -102,8 +101,7 @@ void CharacterProcessor::processCharacters(const QString& input)
         bool quoteProcessed = false;
         if ( *it == QChar::fromLatin1('(') && !escaped && !quoted ) {
             commentDepth += 1;
-        }
-        else if ( !quoted && *it == QChar::fromLatin1('"') && !escaped ) {
+        } else if ( !quoted && *it == QChar::fromLatin1('"') && !escaped ) {
             quoted = true;
             quoteProcessed = true;
         }
@@ -112,8 +110,7 @@ void CharacterProcessor::processCharacters(const QString& input)
 
         if ( *it == QChar::fromLatin1(')') && !escaped && !quoted && ( commentDepth > 0 ) ) {
             commentDepth -= 1;
-        }
-        else if ( quoted && *it == QChar::fromLatin1('"') && !quoteProcessed && !escaped ) {
+        } else if ( quoted && *it == QChar::fromLatin1('"') && !quoteProcessed && !escaped ) {
             quoted = false;
         }
 
@@ -213,13 +210,11 @@ void AddressSeparator::process(QChar character, bool quoted, bool escaped, int c
         } else {
             separator(true);
         }
-    }
-    else {
+    } else {
         if (commentDepth && _type == Unknown && _tokenStarted == false) {
             // This could be a purely comment element
             _type = Comment;
-        }
-        else if (quoted && (_type == Unknown || _type == Comment)) {
+        } else if (quoted && (_type == Unknown || _type == Comment)) {
             // This must be a name element
             _type = Name;
         }
@@ -234,8 +229,7 @@ void AddressSeparator::process(QChar character, bool quoted, bool escaped, int c
                 _type = Address;
         } else if ( character == QChar::fromLatin1('>') && _inAddress && !quoted && !escaped && commentDepth == 0 ) {
             _inAddress = false;
-        }
-        else if ( character == QChar::fromLatin1(':') && !_inGroup && !_inAddress && !quoted && !escaped && commentDepth == 0 ) {
+        } else if ( character == QChar::fromLatin1(':') && !_inGroup && !_inAddress && !quoted && !escaped && commentDepth == 0 ) {
             static const QString collectiveTag;
 
             // Don't parse as a group if we match the IM format
@@ -244,8 +238,7 @@ void AddressSeparator::process(QChar character, bool quoted, bool escaped, int c
                 _inGroup = true;
                 _type = Group;
             }
-        }
-        else if ( character == QChar::fromLatin1(';') && _inGroup && !_inAddress && !quoted && !escaped && commentDepth == 0 ) {
+        } else if ( character == QChar::fromLatin1(';') && _inGroup && !_inAddress && !quoted && !escaped && commentDepth == 0 ) {
             _inGroup = false;
 
             // This is a soft separator, because the group construct could have a trailing comment
@@ -308,8 +301,7 @@ void AddressListGenerator::complete(TokenType type, bool hardSeparator)
             QRegularExpression suffixPattern(QLatin1String("^\\s*/TYPE=.*$"));
             if (suffixPattern.match(_partial).hasMatch()) {
                 type = Suffix;
-            }
-            else {
+            } else {
                 // See if the token is a bare email address; otherwise it must be a name element
                 QRegularExpression emailPattern(QLatin1String("^") + QMailAddress::emailAddressPattern() + QLatin1String("$"));
                 type = (emailPattern.match(_partial.trimmed()).hasMatch() ? Address : Name);
@@ -377,8 +369,7 @@ void AddressListGenerator::processPending()
             if ((_pending.value(i - 1).first == Name) && ((type == Name) || (type == Group))) {
                 _pending.replace(i - 1, qMakePair(type, _pending.value(i - 1).second + _pending.value(i).second));
                 _pending.removeAt(i);
-            }
-            else {
+            } else {
                 ++i;
             }
         }
@@ -591,16 +582,14 @@ QPair<int, int> findDelimiters(const QString& text)
 
         if ( !quoted && *it == QChar::fromLatin1('"') && !escaped ) {
             quoted = true;
-        }
-        else if ( quoted && *it == QChar::fromLatin1('"') && !escaped ) {
+        } else if ( quoted && *it == QChar::fromLatin1('"') && !escaped ) {
             quoted = false;
         }
 
         if ( !quoted ) {
             if ( first == -1 && *it == QChar::fromLatin1('<') ) {
                 first = (it - begin);
-            }
-            else if ( second == -1 && *it == QChar::fromLatin1('>') ) {
+            } else if ( second == -1 && *it == QChar::fromLatin1('>') ) {
                 second = (it - begin);
                 break;
             }

@@ -1354,8 +1354,8 @@ void QMailMessageSetModel::setIgnoreMailStoreUpdates(bool ignore)
         if (i->_updateState == QMailMessageSetModelPrivate::Propagate)
             i->_updateState = QMailMessageSetModelPrivate::Detect;
     } else {
-        bool resyncRequired((i->_updateState == QMailMessageSetModelPrivate::Detected) ||
-                            (i->_updateState == QMailMessageSetModelPrivate::Suppressed));
+        bool resyncRequired((i->_updateState == QMailMessageSetModelPrivate::Detected)
+                            || (i->_updateState == QMailMessageSetModelPrivate::Suppressed));
 
         i->_updateState = QMailMessageSetModelPrivate::Propagate;
         if (resyncRequired) {

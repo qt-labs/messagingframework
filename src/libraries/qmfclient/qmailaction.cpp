@@ -58,20 +58,21 @@ public:
 };
 
 QMailActionDataPrivate::QMailActionDataPrivate()
-    :_id(0),
-     _requestType(AcknowledgeNewMessagesRequestType),
-     _current(0),
-     _total(0),
-     _status(QMailServiceAction::Status(QMailServiceAction::Status::ErrNoError, QString(), QMailAccountId(), QMailFolderId(), QMailMessageId()))
+    : _id(0)
+    , _requestType(AcknowledgeNewMessagesRequestType)
+    , _current(0)
+    , _total(0)
+    , _status(QMailServiceAction::Status(QMailServiceAction::Status::ErrNoError,
+                                         QString(), QMailAccountId(), QMailFolderId(), QMailMessageId()))
 {
 }
 
 QMailActionDataPrivate::QMailActionDataPrivate(QMailActionId id, QMailServerRequestType rt, uint c, uint t, const QMailServiceAction::Status &s)
-    :_id(id),
-     _requestType(rt),
-     _current(c),
-     _total(t),
-     _status(s)
+    : _id(id)
+    , _requestType(rt)
+    , _current(c)
+    , _total(t)
+    , _status(s)
 {
 }
 
@@ -91,15 +92,15 @@ QMailActionDataPrivate::~QMailActionDataPrivate()
 
 bool QMailActionDataPrivate::operator==(const QMailActionDataPrivate& other) const
 {
-    return (_id == other._id &&
-            _requestType == other._requestType &&
-            _current == other._current &&
-            _total == other._total &&
-            _status.errorCode == other._status.errorCode &&
-            _status.text == other._status.text &&
-            _status.accountId == other._status.accountId &&
-            _status.folderId == other._status.folderId &&
-            _status.messageId == other._status.messageId);
+    return (_id == other._id
+            && _requestType == other._requestType
+            && _current == other._current
+            && _total == other._total
+            && _status.errorCode == other._status.errorCode
+            && _status.text == other._status.text
+            && _status.accountId == other._status.accountId
+            && _status.folderId == other._status.folderId
+            && _status.messageId == other._status.messageId);
 }
 
 template <typename Stream>

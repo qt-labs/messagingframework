@@ -213,9 +213,9 @@ class QMailRetrieveMessageListCommand : public QMailServiceActionCommand
 {
 public:
     QMailRetrieveMessageListCommand(QMailRetrievalActionPrivate *action, const QMailAccountId &accountId, uint minimum)
-        :_action(action),
-          _accountId(accountId),
-          _minimum(minimum) {}
+        : _action(action)
+        , _accountId(accountId)
+        , _minimum(minimum) {}
     void execute() override { _action->retrieveMessageListHelper(_accountId, QMailFolderId(), _minimum, QMailMessageSortKey()); }
 
 private:

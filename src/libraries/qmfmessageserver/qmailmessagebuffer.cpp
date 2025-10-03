@@ -188,7 +188,7 @@ void QMailMessageBuffer::messageFlush()
     if (timePerMessage > d->lastFlushTimePerMessage && d->messageTimer.interval() < d->maxTimeout) {
         // increase the timeout
         int interval = d->messageTimer.interval() * d->timeoutScale;
-        int actual = (interval > d->maxTimeout)? d->maxTimeout:interval;
+        int actual = (interval > d->maxTimeout) ? d->maxTimeout : interval;
         d->messageTimer.setInterval(actual);
     }
     d->lastFlushTimePerMessage = timePerMessage;

@@ -62,8 +62,7 @@ QMailCrypto::VerificationResult QMailCryptoGPG::verifySignature(const QMailMessa
     QMailMessagePart body = part.partAt(0);
     QMailMessagePart signature = part.partAt(1);
 
-    if (!body.contentAvailable() ||
-        !signature.contentAvailable())
+    if (!body.contentAvailable() || !signature.contentAvailable())
         return QMailCrypto::VerificationResult();
 
     QMailCrypto::VerificationResult result;

@@ -500,8 +500,8 @@ void ServiceHandler::registerAccountServices(const QMailAccountIdList &ids)
             } else {
                 foreach (const QString& service, config.services()) {
                     QMailServiceConfiguration svcCfg(&config, service);
-                    if ((svcCfg.type() != QMailServiceConfiguration::Storage) &&
-                        (svcCfg.type() != QMailServiceConfiguration::Unknown)) {
+                    if ((svcCfg.type() != QMailServiceConfiguration::Storage)
+                        && (svcCfg.type() != QMailServiceConfiguration::Unknown)) {
                         // We need to instantiate this service for this account
                         registerAccountService(id, svcCfg);
                     }
@@ -517,9 +517,9 @@ void ServiceHandler::removeServiceFromActions(QMailMessageService *removeService
         return;
 
     for (QMap<quint64, ActionData>::iterator it(mActiveActions.begin()) ; it != mActiveActions.end(); ++it) {
-       if (it->services.remove(removeService)) {
-           qCDebug(lcMessaging) << "Removed service from action";
-       }
+        if (it->services.remove(removeService)) {
+            qCDebug(lcMessaging) << "Removed service from action";
+        }
     }
 
     for (auto it(mRequests.begin()); it != mRequests.end();) {

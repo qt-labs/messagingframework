@@ -864,7 +864,8 @@ bool ImapService::Source::flagMessages(const QMailMessageIdList &messageIds, qui
             }
             if (!_unavailable)
                 return initiateStrategy();
-            else return true;
+
+            return true;
         }
     }
 
@@ -881,6 +882,7 @@ bool ImapService::Source::flagMessages(const QMailMessageIdList &messageIds, qui
             appendStrategy(&_service->_client->strategyContext()->moveMessagesStrategy, SIGNAL(messagesFlagged(QMailMessageIdList)));
             if (!_unavailable)
                 return initiateStrategy();
+
             return true;
         }
     }
@@ -1214,8 +1216,8 @@ bool ImapService::Source::prepareMessages(const QList<QPair<QMailMessagePart::Lo
         QMailMessageKey::Properties props(QMailMessageKey::Id | QMailMessageKey::ParentAccountId | QMailMessageKey::Status);
 
         for (const QMailMessageMetaData &metaData : QMailStore::instance()->messagesMetaData(key, props)) {
-            if ((metaData.parentAccountId() != _service->accountId()) ||
-                !(metaData.status() & QMailMessage::TransmitFromExternal)) {
+            if ((metaData.parentAccountId() != _service->accountId())
+                || !(metaData.status() & QMailMessage::TransmitFromExternal)) {
                 // This message won't be transmitted by reference from the IMAP server - supply an external reference
                 external = true;
                 break;

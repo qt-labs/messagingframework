@@ -111,13 +111,13 @@ private:
 };
 
 PushFolderList::PushFolderList(QWidget *parent, QGridLayout *parentLayout)
-    :QObject(parent),
-     _parent(parent),
-     _parentLayout(parentLayout),
-     _hasFolders(false),
-     _pushEnabled(false),
-     _startRow(parentLayout->rowCount()),
-     _items(0)
+    : QObject(parent)
+    , _parent(parent)
+    , _parentLayout(parentLayout)
+    , _hasFolders(false)
+    , _pushEnabled(false)
+    , _startRow(parentLayout->rowCount())
+    , _items(0)
 {
 }
 

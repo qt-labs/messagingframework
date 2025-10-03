@@ -154,8 +154,8 @@ bool MessageServer::init()
     new MessageserverAdaptor(handler);
 
     QDBusConnection dbus = QDBusConnection::sessionBus();
-    if (!dbus.registerObject("/messageserver", handler) ||
-        !dbus.registerService("org.qt.messageserver")) {
+    if (!dbus.registerObject("/messageserver", handler)
+        || !dbus.registerService("org.qt.messageserver")) {
         qCWarning(lcMessaging) << "Failed to register to D-Bus, aborting start";
         return false;
     }
@@ -353,8 +353,8 @@ void MessageServer::messagesAdded(const QMailMessageIdList &ids)
             bool complete(false);
             if (!(message.status() & QMailMessage::ContentAvailable)) {
                 // Automatically download voicemail messages
-                if (message.content() == QMailMessage::VoicemailContent ||
-                    message.content() == QMailMessage::VideomailContent) {
+                if (message.content() == QMailMessage::VoicemailContent
+                    || message.content() == QMailMessage::VideomailContent) {
                     complete = true;
                 }
             }
