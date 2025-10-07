@@ -122,7 +122,7 @@ public:
 
     Connectivity connectivity() const;
     Activity activity() const;
-    const Status status() const;
+    Status status() const;
     QPair<uint, uint> progress() const;
 
     bool isRunning() const;

@@ -655,7 +655,7 @@ QMailServiceAction::Activity QMailServiceAction::activity() const
 
     \sa statusChanged()
 */
-const QMailServiceAction::Status QMailServiceAction::status() const
+QMailServiceAction::Status QMailServiceAction::status() const
 {
     Q_D(const QMailServiceAction);
     return d->_status;

@@ -56,6 +56,7 @@
 #include <QTextCodec>
 #include <QtDebug>
 #include <QMimeDatabase>
+
 #ifdef USE_HTML_PARSER
 #include <QTextDocument>
 #endif
@@ -4178,6 +4179,7 @@ void QMailMessagePartContainerPrivate::setBoundary(const QByteArray& text)
 }
 
 static QByteArray boundaryString(const QByteArray &hash);
+
 void QMailMessagePartContainerPrivate::generateBoundary()
 {
     if (_multipartType != QMailMessagePartContainer::MultipartNone
@@ -5537,7 +5539,7 @@ bool QMailMessagePartPrivate::partialContentAvailable() const
     return ((_multipartType != QMailMessage::MultipartNone) || !_body.isEmpty());
 }
 
-const QByteArray QMailMessagePartPrivate::undecodedData() const
+QByteArray QMailMessagePartPrivate::undecodedData() const
 {
     return _undecodedData;
 }
@@ -6137,7 +6139,7 @@ bool QMailMessagePart::hasUndecodedData() const
     return !impl(this)->undecodedData().isEmpty();
 }
 
-const QByteArray QMailMessagePart::undecodedData() const
+QByteArray QMailMessagePart::undecodedData() const
 {
     return impl(this)->undecodedData();
 }

@@ -814,10 +814,10 @@ int QMailStore::sizeOfMessages(const QMailMessageKey& key) const
     it should not attempt to perform a query where either of these values is non-zero;
     instead, it should return an empty list and set lastError() to QMailStore::NotYetImplemented.
 */
-const QMailAccountIdList QMailStore::queryAccounts(const QMailAccountKey& key,
-                                                   const QMailAccountSortKey& sortKey,
-                                                   uint limit,
-                                                   uint offset) const
+QMailAccountIdList QMailStore::queryAccounts(const QMailAccountKey& key,
+                                             const QMailAccountSortKey& sortKey,
+                                             uint limit,
+                                             uint offset) const
 {
     d->setLastError(NoError);
     return d->queryAccounts(key, sortKey, limit, offset);
@@ -838,10 +838,10 @@ const QMailAccountIdList QMailStore::queryAccounts(const QMailAccountKey& key,
     it should not attempt to perform a query where either of these values is non-zero;
     instead, it should return an empty list and set lastError() to QMailStore::NotYetImplemented.
 */
-const QMailFolderIdList QMailStore::queryFolders(const QMailFolderKey& key,
-                                                 const QMailFolderSortKey& sortKey,
-                                                 uint limit,
-                                                 uint offset) const
+QMailFolderIdList QMailStore::queryFolders(const QMailFolderKey& key,
+                                           const QMailFolderSortKey& sortKey,
+                                           uint limit,
+                                           uint offset) const
 {
     d->setLastError(NoError);
     return d->queryFolders(key, sortKey, limit, offset);
@@ -862,15 +862,14 @@ const QMailFolderIdList QMailStore::queryFolders(const QMailFolderKey& key,
     it should not attempt to perform a query where either of these values is non-zero;
     instead, it should return an empty list and set lastError() to QMailStore::NotYetImplemented.
 */
-const QMailMessageIdList QMailStore::queryMessages(const QMailMessageKey& key,
-                                                   const QMailMessageSortKey& sortKey,
-                                                   uint limit,
-                                                   uint offset) const
+QMailMessageIdList QMailStore::queryMessages(const QMailMessageKey& key,
+                                             const QMailMessageSortKey& sortKey,
+                                             uint limit,
+                                             uint offset) const
 {
     d->setLastError(NoError);
     return d->queryMessages(key, sortKey, limit, offset);
 }
-
 
 /*!
     Returns the \l{QMailThreadId}s of threads in the message store. If \a key is not empty
@@ -887,12 +886,12 @@ const QMailMessageIdList QMailStore::queryMessages(const QMailMessageKey& key,
     it should not attempt to perform a query where either of these values is non-zero;
     instead, it should return an empty list and set lastError() to QMailStore::NotYetImplemented.
 */
-const QMailThreadIdList QMailStore::queryThreads(const QMailThreadKey &key, const QMailThreadSortKey &sortKey, uint limit, uint offset) const
+QMailThreadIdList QMailStore::queryThreads(const QMailThreadKey &key, const QMailThreadSortKey &sortKey,
+                                           uint limit, uint offset) const
 {
     d->setLastError(NoError);
     return d->queryThreads(key, sortKey, limit, offset);
 }
-
 
 /*!
    Returns the QMailAccount defined by the QMailAccountId \a id from the store.
@@ -977,9 +976,9 @@ QMailMessageMetaData QMailStore::messageMetaData(const QString& uid, const QMail
 
     Note: Custom fields cannot be queried by this function.
 */
-const QMailMessageMetaDataList QMailStore::messagesMetaData(const QMailMessageKey& key,
-                                                            const QMailMessageKey::Properties& properties,
-                                                            ReturnOption option) const
+QMailMessageMetaDataList QMailStore::messagesMetaData(const QMailMessageKey& key,
+                                                      const QMailMessageKey::Properties& properties,
+                                                      ReturnOption option) const
 {
     d->setLastError(NoError);
     return d->messagesMetaData(key, properties, option);
@@ -995,8 +994,8 @@ const QMailMessageMetaDataList QMailStore::messagesMetaData(const QMailMessageKe
     Returns a list of QMailMessageRemovalRecord objects if successfully completed, or an empty list for
     an error or no data.
 */
-const QMailMessageRemovalRecordList QMailStore::messageRemovalRecords(const QMailAccountId& accountId,
-                                                                      const QMailFolderId& folderId) const
+QMailMessageRemovalRecordList QMailStore::messageRemovalRecords(const QMailAccountId& accountId,
+                                                                const QMailFolderId& folderId) const
 {
     d->setLastError(NoError);
     return d->messageRemovalRecords(accountId, folderId);

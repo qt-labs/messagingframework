@@ -616,7 +616,7 @@ QMailAccountIdList LibAccountManager::queryAccounts(const QMailAccountKey &key,
         }
 
         Accounts::ServiceList services = account->enabledServices();
-        const int &count = services.count();
+        const int count = services.count();
         switch (count) {
         case 0: // ignore such accounts
             break;

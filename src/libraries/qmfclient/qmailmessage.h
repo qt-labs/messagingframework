@@ -540,7 +540,7 @@ public:
 
     // Undecoded data handling:
     bool hasUndecodedData() const;
-    const QByteArray undecodedData() const;
+    QByteArray undecodedData() const;
     void setUndecodedData(const QByteArray &data);
     void appendUndecodedData(const QByteArray &data);
 

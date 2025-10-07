@@ -48,6 +48,7 @@
 #include "qmailstoreimplementation_p.h"
 #include "qmailstoresql_p.h"
 #include "qmailstoreaccount.h"
+
 #include <QCache>
 #include <QTimer>
 

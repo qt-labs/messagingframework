@@ -138,10 +138,18 @@ public:
 
     int sizeOfMessages(const QMailMessageKey& key = QMailMessageKey()) const;
 
-    const QMailAccountIdList queryAccounts(const QMailAccountKey& key = QMailAccountKey(), const QMailAccountSortKey& sortKey = QMailAccountSortKey(), uint limit = 0, uint offset = 0) const;
-    const QMailFolderIdList queryFolders(const QMailFolderKey& key = QMailFolderKey(), const QMailFolderSortKey& sortKey = QMailFolderSortKey(), uint limit = 0, uint offset = 0) const;
-    const QMailMessageIdList queryMessages(const QMailMessageKey& key = QMailMessageKey(), const QMailMessageSortKey& sortKey = QMailMessageSortKey(), uint limit = 0, uint offset = 0) const;
-    const QMailThreadIdList queryThreads(const QMailThreadKey &key = QMailThreadKey(), const QMailThreadSortKey &sortKey = QMailThreadSortKey(), uint limit = 0, uint offset = 0) const;
+    QMailAccountIdList queryAccounts(const QMailAccountKey& key = QMailAccountKey(),
+                                     const QMailAccountSortKey& sortKey = QMailAccountSortKey(),
+                                     uint limit = 0, uint offset = 0) const;
+    QMailFolderIdList queryFolders(const QMailFolderKey& key = QMailFolderKey(),
+                                   const QMailFolderSortKey& sortKey = QMailFolderSortKey(),
+                                   uint limit = 0, uint offset = 0) const;
+    QMailMessageIdList queryMessages(const QMailMessageKey& key = QMailMessageKey(),
+                                     const QMailMessageSortKey& sortKey = QMailMessageSortKey(),
+                                     uint limit = 0, uint offset = 0) const;
+    QMailThreadIdList queryThreads(const QMailThreadKey &key = QMailThreadKey(),
+                                   const QMailThreadSortKey &sortKey = QMailThreadSortKey(),
+                                   uint limit = 0, uint offset = 0) const;
 
     QMailAccount account(const QMailAccountId& id) const;
     QMailAccountConfiguration accountConfiguration(const QMailAccountId& id) const;
@@ -155,9 +163,12 @@ public:
 
     QMailMessageMetaData messageMetaData(const QMailMessageId& id) const;
     QMailMessageMetaData messageMetaData(const QString& uid, const QMailAccountId& accountId) const;
-    const QMailMessageMetaDataList messagesMetaData(const QMailMessageKey& key, const QMailMessageKey::Properties& properties, ReturnOption option = ReturnAll) const;
+    QMailMessageMetaDataList messagesMetaData(const QMailMessageKey &key,
+                                              const QMailMessageKey::Properties &properties,
+                                              ReturnOption option = ReturnAll) const;
 
-    const QMailMessageRemovalRecordList messageRemovalRecords(const QMailAccountId& parentAccountId, const QMailFolderId& parentFolderId = QMailFolderId()) const;
+    QMailMessageRemovalRecordList messageRemovalRecords(const QMailAccountId &parentAccountId,
+                                                        const QMailFolderId &parentFolderId = QMailFolderId()) const;
 
     void lock();
     void unlock();

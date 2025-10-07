@@ -273,7 +273,7 @@ public:
     bool contentAvailable() const;
     bool partialContentAvailable() const;
 
-    const QByteArray undecodedData() const;
+    QByteArray undecodedData() const;
     void setUndecodedData(const QByteArray &data);
     void appendUndecodedData(const QByteArray &data);
 
