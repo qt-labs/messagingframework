@@ -54,6 +54,7 @@ static PluginMap initMap(QMailPluginManager& manager)
     }
     return map;
 }
+
 /*! \internal
     Return a reference to a map containing all loaded plugin objects
 */

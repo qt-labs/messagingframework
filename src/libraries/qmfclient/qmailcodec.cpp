@@ -1143,7 +1143,6 @@ static QString encodeModifiedBase64(const QString &in)
     i = 0;
     // encode every 6 bits separately in pattern by 3 symbols
     while (i < buf.length()) {
-
         result += encodingSchema[(buf[i] & 0xfc00) >> 10];
         result += encodingSchema[(buf[i] & 0x3f0) >> 4];
 

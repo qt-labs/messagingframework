@@ -190,7 +190,6 @@ QMailAccountIdList::iterator QMailAccountListModelPrivate::lowerBound(const QMai
     By default, the model will match all accounts in the database, and display them in
     the order they were submitted. Synchronization defaults to true.
 */
-
 QMailAccountListModel::QMailAccountListModel(QObject* parent)
     : QAbstractListModel(parent)
     , d(new QMailAccountListModelPrivate(QMailAccountKey(), QMailAccountSortKey(), true))
@@ -212,7 +211,6 @@ QMailAccountListModel::QMailAccountListModel(QObject* parent)
 /*!
     Deletes the QMailMessageListModel object.
 */
-
 QMailAccountListModel::~QMailAccountListModel()
 {
     delete d;
@@ -221,7 +219,6 @@ QMailAccountListModel::~QMailAccountListModel()
 /*!
     \reimp
 */
-
 int QMailAccountListModel::rowCount(const QModelIndex& index) const
 {
     Q_UNUSED(index);
@@ -231,7 +228,6 @@ int QMailAccountListModel::rowCount(const QModelIndex& index) const
 /*!
     \reimp
 */
-
 QVariant QMailAccountListModel::data(const QModelIndex& index, int role) const
 {
     if (!index.isValid())
@@ -265,7 +261,6 @@ QVariant QMailAccountListModel::data(const QModelIndex& index, int role) const
 /*!
     Returns the QMailAccountKey used to select the contents of this model.
 */
-
 QMailAccountKey QMailAccountListModel::key() const
 {
     return d->key;
@@ -275,7 +270,6 @@ QMailAccountKey QMailAccountListModel::key() const
     Sets the QMailAccountKey used to select the contents of the model to \a key.
     If the key is empty, the model lists all the accounts from the database.
 */
-
 void QMailAccountListModel::setKey(const QMailAccountKey& key)
 {
     beginResetModel();
@@ -287,7 +281,6 @@ void QMailAccountListModel::setKey(const QMailAccountKey& key)
 /*!
     Returns the QMailAccountSortKey used to sort the contents of the model.
 */
-
 QMailAccountSortKey QMailAccountListModel::sortKey() const
 {
     return d->sortKey;
@@ -298,7 +291,6 @@ QMailAccountSortKey QMailAccountListModel::sortKey() const
     If the sort key is invalid, no sorting is applied to the model contents and accounts
     are displayed in the order in which they were added into the database.
 */
-
 void QMailAccountListModel::setSortKey(const QMailAccountSortKey& sortKey)
 {
     beginResetModel();
@@ -308,7 +300,6 @@ void QMailAccountListModel::setSortKey(const QMailAccountSortKey& sortKey)
 }
 
 /*! \internal */
-
 void QMailAccountListModel::accountsAdded(const QMailAccountIdList& ids)
 {
     d->needSynchronize = true;
@@ -362,7 +353,6 @@ void QMailAccountListModel::accountsAdded(const QMailAccountIdList& ids)
 }
 
 /*! \internal */
-
 void QMailAccountListModel::accountsUpdated(const QMailAccountIdList& ids)
 {
     d->needSynchronize = true;
@@ -450,7 +440,6 @@ void QMailAccountListModel::accountsUpdated(const QMailAccountIdList& ids)
 }
 
 /*! \internal */
-
 void QMailAccountListModel::accountsRemoved(const QMailAccountIdList& ids)
 {
     d->needSynchronize = true;
@@ -480,7 +469,6 @@ void QMailAccountListModel::accountsRemoved(const QMailAccountIdList& ids)
     Returns the QMailAccountId of the account represented by the QModelIndex \a index.
     If the index is not valid an invalid QMailAccountId is returned.
 */
-
 QMailAccountId QMailAccountListModel::idFromIndex(const QModelIndex& index) const
 {
     if (!index.isValid())
@@ -493,7 +481,6 @@ QMailAccountId QMailAccountListModel::idFromIndex(const QModelIndex& index) cons
     Returns the QModelIndex that represents the account with QMailAccountId \a id.
     If the id is not contained in this model, an invalid QModelIndex is returned.
 */
-
 QModelIndex QMailAccountListModel::indexFromId(const QMailAccountId& id) const
 {
     //if the id does not exist return null
@@ -509,7 +496,6 @@ QModelIndex QMailAccountListModel::indexFromId(const QMailAccountId& id) const
     Returns \c true if the model sychronizes its contents based on account changes
     in the database, otherwise returns \c false.
 */
-
 bool QMailAccountListModel::synchronizeEnabled() const
 {
     return d->synchronizeEnabled;
@@ -519,7 +505,6 @@ bool QMailAccountListModel::synchronizeEnabled() const
     Sets whether the model synchronizes its contents based on account changes
     in the database to \a val.
 */
-
 void QMailAccountListModel::setSynchronizeEnabled(bool val)
 {
     d->synchronizeEnabled = val;
@@ -528,7 +513,6 @@ void QMailAccountListModel::setSynchronizeEnabled(bool val)
 }
 
 /*! \internal */
-
 void QMailAccountListModel::fullRefresh()
 {
     beginResetModel();

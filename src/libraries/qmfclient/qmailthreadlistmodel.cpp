@@ -193,7 +193,6 @@ QMailThreadIdList::iterator QMailThreadListModelPrivate::lowerBound(const QMailT
     By default, the model will match all threads in the database, and display them in
     the order they were submitted. Synchronization defaults to true.
 */
-
 QMailThreadListModel::QMailThreadListModel(QObject* parent)
 :
     QAbstractListModel(parent),
@@ -216,7 +215,6 @@ QMailThreadListModel::QMailThreadListModel(QObject* parent)
 /*!
     Deletes the QMailThreadListModel object.
 */
-
 QMailThreadListModel::~QMailThreadListModel()
 {
     delete d; d = 0;
@@ -225,7 +223,6 @@ QMailThreadListModel::~QMailThreadListModel()
 /*!
     \reimp
 */
-
 int QMailThreadListModel::rowCount(const QModelIndex& index) const
 {
     Q_UNUSED(index);
@@ -235,7 +232,6 @@ int QMailThreadListModel::rowCount(const QModelIndex& index) const
 /*!
     \reimp
 */
-
 QVariant QMailThreadListModel::data(const QModelIndex& index, int role) const
 {
     if (!index.isValid())
@@ -281,7 +277,6 @@ QVariant QMailThreadListModel::data(const QModelIndex& index, int role) const
 /*!
     Returns the QMailThreadKey used to populate the contents of this model.
 */
-
 QMailThreadKey QMailThreadListModel::key() const
 {
     return d->key;
@@ -292,7 +287,6 @@ QMailThreadKey QMailThreadListModel::key() const
     If the key is empty, the model is populated with all the threads from the
     database.
 */
-
 void QMailThreadListModel::setKey(const QMailThreadKey& key)
 {
     beginResetModel();
@@ -304,7 +298,6 @@ void QMailThreadListModel::setKey(const QMailThreadKey& key)
 /*!
     Returns the QMailThreadSortKey used to sort the contents of the model.
 */
-
 QMailThreadSortKey QMailThreadListModel::sortKey() const
 {
    return d->sortKey;
@@ -315,7 +308,6 @@ QMailThreadSortKey QMailThreadListModel::sortKey() const
     If the sort key is invalid, no sorting is applied to the model contents and threads
     are displayed in the order in which they were added into the database.
 */
-
 void QMailThreadListModel::setSortKey(const QMailThreadSortKey& sortKey)
 {
     beginResetModel();
@@ -325,7 +317,6 @@ void QMailThreadListModel::setSortKey(const QMailThreadSortKey& sortKey)
 }
 
 /*! \internal */
-
 void QMailThreadListModel::threadsAdded(const QMailThreadIdList& ids)
 {
     d->needSynchronize = true;
@@ -372,7 +363,6 @@ void QMailThreadListModel::threadsAdded(const QMailThreadIdList& ids)
 }
 
 /*! \internal */
-
 void QMailThreadListModel::threadsUpdated(const QMailThreadIdList& ids)
 {
     d->needSynchronize = true;
@@ -454,7 +444,6 @@ void QMailThreadListModel::threadsUpdated(const QMailThreadIdList& ids)
 }
 
 /*! \internal */
-
 void QMailThreadListModel::threadsRemoved(const QMailThreadIdList& ids)
 {
     d->needSynchronize = true;
@@ -482,7 +471,6 @@ void QMailThreadListModel::threadsRemoved(const QMailThreadIdList& ids)
     Returns the QMailThreadId of the thread represented by the QModelIndex \a index.
     If the index is not valid an invalid QMailThreadId is returned.
 */
-
 QMailThreadId QMailThreadListModel::idFromIndex(const QModelIndex& index) const
 {
     if (!index.isValid())
@@ -495,7 +483,6 @@ QMailThreadId QMailThreadListModel::idFromIndex(const QModelIndex& index) const
     Returns the QModelIndex that represents the thread with QMailThreadId \a id.
     If the id is not conatained in this model, an invalid QModelIndex is returned.
 */
-
 QModelIndex QMailThreadListModel::indexFromId(const QMailThreadId& id) const
 {
     //if the id does not exist return null
@@ -516,7 +503,6 @@ const QMailThreadIdList & QMailThreadListModel::ids() const
     Returns \c true if the model sychronizes its contents based on thread changes
     in the database, otherwise returns \c false.
 */
-
 bool QMailThreadListModel::synchronizeEnabled() const
 {
     return d->synchronizeEnabled;
@@ -526,7 +512,6 @@ bool QMailThreadListModel::synchronizeEnabled() const
     Sets wheather the model synchronizes its contents based on thread changes
     in the database to \a val.
 */
-
 void QMailThreadListModel::setSynchronizeEnabled(bool val)
 {
     d->synchronizeEnabled = val;
@@ -535,7 +520,6 @@ void QMailThreadListModel::setSynchronizeEnabled(bool val)
 }
 
 /*! \internal */
-
 void QMailThreadListModel::fullRefresh()
 {
     beginResetModel();

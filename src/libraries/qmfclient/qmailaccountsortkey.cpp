@@ -85,7 +85,6 @@
 
     The result of combining two empty keys is an empty key.
 */
-
 QMailAccountSortKey::QMailAccountSortKey()
     : d(new QMailAccountSortKeyPrivate())
 {

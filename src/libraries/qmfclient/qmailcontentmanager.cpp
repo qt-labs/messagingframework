@@ -434,7 +434,6 @@ QMailContentManager::~QMailContentManager()
 
     If the identified content does not already exist, the content manager should return \l{QMailStore::InvalidId}{InvalidId}.
 */
-
 QMailStore::ErrorCode QMailContentManager::remove(const QList<QString> &identifiers)
 {
     QMailStore::ErrorCode returnError(QMailStore::NoError);

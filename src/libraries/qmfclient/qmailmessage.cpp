@@ -1530,7 +1530,6 @@ namespace attachments
         bool addedSome = false;
 
         foreach (const QString &attachmentPath, attachmentPaths) {
-
             const QFileInfo fi(attachmentPath);
             if (!fi.isFile()) {
                 qCWarning(lcMessaging) << Q_FUNC_INFO << ":" << attachmentPath << "is not regular file. Cannot attach.";
@@ -1609,8 +1608,8 @@ QMailMessageHeaderFieldPrivate::QMailMessageHeaderFieldPrivate(const QByteArray&
 static bool validExtension(const QByteArray& trailer, int* number = Q_NULLPTR, bool* encoded = Q_NULLPTR)
 {
     // Extensions according to RFC 2231:
-    QRegularExpressionMatch extensionFormat =
-        QRegularExpression(QLatin1String("^(?:\\*(\\d+))?(\\*?)$")).match(QLatin1String(trailer));
+    QRegularExpressionMatch extensionFormat
+            = QRegularExpression(QLatin1String("^(?:\\*(\\d+))?(\\*?)$")).match(QLatin1String(trailer));
     if (extensionFormat.hasMatch()) {
         if (number)
             *number = extensionFormat.captured(1).toInt();
@@ -3523,7 +3522,8 @@ void QMailMessageBodyPrivate::deserialize(Stream &stream)
 
     \ingroup messaginglibrary
 
-    The body of a message or message part is treated as an atomic unit by the Qt Extended messaging library.  It can only be inserted into a message part container or extracted
+    The body of a message or message part is treated as an atomic unit by the Qt Extended messaging library.
+    It can only be inserted into a message part container or extracted
     from one.  It can be inserted or extracted using either a QByteArray, a QDataStream
     or to/from a file.  In the case of unicode text data, the insertion and extraction can
     operate on either a QString, a QTextStream or to/from a file.
@@ -6789,7 +6789,8 @@ void QMailMessageMetaDataPrivate::deserialize(Stream &stream)
 
     \ingroup messaginglibrary
 
-    The QMailMessageMetaData class provides information about messages stored in the Qt Extended system as QMailMessage objects.  The meta data is more compact and more easily accessed and
+    The QMailMessageMetaData class provides information about messages stored in the Qt Extended system as QMailMessage objects.
+    The meta data is more compact and more easily accessed and
     manipulated than the content of the message itself.  Many messaging-related tasks can
     be accomplished by manipulating the message meta data, such as listing, filtering, and
     searching through sets of messages.

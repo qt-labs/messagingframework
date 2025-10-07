@@ -322,7 +322,6 @@ const quint64 &QMailFolder::Favourite = favouriteFlag;
   An empty folder is one which has no path, no parent folder and no parent account.
   An invalid folder does not exist in the database and has an invalid id.
 */
-
 QMailFolder::QMailFolder()
 {
     d = new QMailFolderPrivate();
@@ -333,7 +332,6 @@ QMailFolder::QMailFolder()
   specified by the QMailFolderId \a id. If the folder does not exist in the message store,
   then this constructor will create an empty and invalid QMailFolder.
 */
-
 QMailFolder::QMailFolder(const QMailFolderId& id)
 {
     *this = QMailStore::instance()->folder(id);
@@ -344,7 +342,6 @@ QMailFolder::QMailFolder(const QMailFolderId& id)
   Creates a QMailFolder object with path \a path and  parent folder ID \a parentFolderId,
   that is linked to a parent account \a parentAccountId.
 */
-
 QMailFolder::QMailFolder(const QString& path, const QMailFolderId& parentFolderId, const QMailAccountId& parentAccountId)
     : d(new QMailFolderPrivate())
 {
@@ -356,7 +353,6 @@ QMailFolder::QMailFolder(const QString& path, const QMailFolderId& parentFolderI
 /*!
   Creates a copy of the \c QMailFolder object \a other.
 */
-
 QMailFolder::QMailFolder(const QMailFolder& other)
 {
     d = other.d;
@@ -366,7 +362,6 @@ QMailFolder::QMailFolder(const QMailFolder& other)
 /*!
   Destroys the \c QMailFolder object.
 */
-
 QMailFolder::~QMailFolder()
 {
 }
@@ -374,7 +369,6 @@ QMailFolder::~QMailFolder()
 /*!
   Assigns the value of the \c QMailFolder object \a other to this.
 */
-
 QMailFolder& QMailFolder::operator=(const QMailFolder& other)
 {
     d = other.d;
@@ -385,7 +379,6 @@ QMailFolder& QMailFolder::operator=(const QMailFolder& other)
   Returns the \c ID of the \c QMailFolder object. A \c QMailFolder with an invalid ID
   is one which does not yet exist on the message store.
 */
-
 QMailFolderId QMailFolder::id() const
 {
     return d->id;
@@ -394,7 +387,6 @@ QMailFolderId QMailFolder::id() const
 /*!
   Sets the ID of this folder to \a id
 */
-
 void QMailFolder::setId(const QMailFolderId& id)
 {
     d->id = id;
@@ -411,7 +403,6 @@ QString QMailFolder::path() const
 /*!
   Sets the path of this folder within the parent account to \a path.
 */
-
 void QMailFolder::setPath(const QString& path)
 {
     d->path = path;
@@ -431,7 +422,6 @@ QString QMailFolder::displayName() const
 /*!
   Sets the display name of this folder to \a displayName.
 */
-
 void QMailFolder::setDisplayName(const QString& displayName)
 {
     d->displayName = displayName;
@@ -441,7 +431,6 @@ void QMailFolder::setDisplayName(const QString& displayName)
   Returns the ID of the parent folder. This folder is a root folder if the parent
   ID is invalid.
 */
-
 QMailFolderId QMailFolder::parentFolderId() const
 {
     return d->parentFolderId;
@@ -451,7 +440,6 @@ QMailFolderId QMailFolder::parentFolderId() const
  Sets the parent folder ID to \a id. \bold{Warning}: it is the responsibility of the
  application to make sure that no circular folder refernces are created.
 */
-
 void QMailFolder::setParentFolderId(const QMailFolderId& id)
 {
     d->parentFolderId = id;
@@ -461,7 +449,6 @@ void QMailFolder::setParentFolderId(const QMailFolderId& id)
   Returns the id of the account which owns the folder. If the folder
   is not linked to an account an invalid id is returned.
 */
-
 QMailAccountId QMailFolder::parentAccountId() const
 {
     return d->parentAccountId;
@@ -470,7 +457,6 @@ QMailAccountId QMailFolder::parentAccountId() const
 /*!
   Sets the id of the account which owns the folder to \a id.
 */
-
 void QMailFolder::setParentAccountId(const QMailAccountId& id)
 {
     d->parentAccountId = id;

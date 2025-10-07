@@ -546,6 +546,8 @@ bool QMailMessageListModelPrivate::removeMessages(const QMailMessageIdList &ids)
 
 void QMailMessageListModelPrivate::insertItemAt(int row, const QModelIndex &parentIndex, const QMailMessageId &id)
 {
+    Q_UNUSED(parentIndex)
+
     _idList.insert(row, id);
     _itemIndex.insert(id, row);
 
@@ -554,12 +556,12 @@ void QMailMessageListModelPrivate::insertItemAt(int row, const QModelIndex &pare
     for ( ; it != end; ++it) {
         _itemIndex[*it] += 1;
     }
-
-    Q_UNUSED(parentIndex)
 }
 
 void QMailMessageListModelPrivate::removeItemAt(int row, const QModelIndex &parentIndex)
 {
+    Q_UNUSED(parentIndex)
+
     QMailMessageId id(_idList.at(row));
     _checkedIds.remove(id);
     _itemIndex.remove(id);
@@ -570,8 +572,6 @@ void QMailMessageListModelPrivate::removeItemAt(int row, const QModelIndex &pare
     for ( ; it != end; ++it) {
         _itemIndex[*it] -= 1;
     }
-
-    Q_UNUSED(parentIndex)
 }
 
 void QMailMessageListModelPrivate::init() const
