@@ -832,11 +832,6 @@ public:
     using QMailMessageMetaData::ContentType;
     using QMailMessageMetaData::ResponseType;
 
-    // Mail content needs to use CRLF explicitly
-    static const char CarriageReturn;
-    static const char LineFeed;
-    static const char* CRLF;
-
     static QMailMessage fromRfc2822(const QByteArray &ba);
     static QMailMessage fromRfc2822File(const QString& fileName);
     static QMailMessage fromSkeletonRfc2822File(const QString& fileName);

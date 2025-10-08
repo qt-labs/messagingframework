@@ -182,20 +182,20 @@ static QString token( QString str, QChar c1, QChar c2, int *index, const QString
 
     // The strings we're tokenizing use CRLF as the line delimiters - assume that the
     // caller considers the sequence to be atomic.
-    if (c1 == QMailMessage::CarriageReturn)
-        c1 = QMailMessage::LineFeed;
+    if (c1 == QChar::CarriageReturn)
+        c1 = QChar::LineFeed;
     start = indexOfWithEscape(str, c1, *index, ignoreEscape);
     if (start == -1)
         return QString();
 
-    if (c2 == QMailMessage::CarriageReturn)
-        c2 = QMailMessage::LineFeed;
+    if (c2 == QChar::CarriageReturn)
+        c2 = QChar::LineFeed;
     stop = indexOfWithEscape(str, c2, ++start, ignoreEscape);
     if (stop == -1)
         return QString();
 
     // Exclude the CR if necessary
-    if (stop && (str[stop-1] == QMailMessage::CarriageReturn))
+    if (stop && (str[stop - 1] == QChar::CarriageReturn))
         --stop;
 
     // Bypass the LF if necessary

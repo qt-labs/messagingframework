@@ -44,6 +44,7 @@
 #include "qmailstore.h"
 
 #include <QtGlobal>
+#include <QChar>
 #include <QCryptographicHash>
 #include <QDir>
 #include <QFile>
@@ -63,6 +64,10 @@
 #include <stdlib.h>
 #include <limits.h>
 #include <ctype.h>
+
+static const char* CRLF = "\015\012";
+static const char CarriageReturnChar = QChar::CarriageReturn;
+static const char LineFeedChar = QChar::LineFeed;
 
 static const QByteArray internalPrefix()
 {
@@ -845,7 +850,7 @@ struct DataString
             out.writeRawData(_data, _length);
         else if (_datum == '\n')
             // Ensure that line-feeds are always CRLF sequences
-            out.writeRawData(QMailMessage::CRLF, 2);
+            out.writeRawData(CRLF, 2);
         else if (_datum != '\0')
             out.writeRawData(&_datum, 1);
 
@@ -2884,7 +2889,7 @@ static QList<QByteArray> parseHeaders(const QByteArray& input)
             }
             status = None;
         } else if (status == Cr) {
-            if (*it == QMailMessage::LineFeed) {
+            if (*it == LineFeedChar) {
                 // CRLF sequence completed
                 status = CrLf;
             } else {
@@ -2912,9 +2917,9 @@ static QList<QByteArray> parseHeaders(const QByteArray& input)
             status = None;
 
         } else {
-            if (*it == QMailMessage::CarriageReturn)
+            if (*it == CarriageReturnChar)
                 status = Cr;
-            else if (*it == QMailMessage::LineFeed)
+            else if (*it == LineFeedChar)
                 status = Lf;
         }
     }
@@ -4437,7 +4442,7 @@ void QMailMessagePartContainerPrivate::parseMimeSinglePart(const QMailMessageHea
 
 void QMailMessagePartContainerPrivate::parseMimeMultipart(const QMailMessageHeader& partHeader, LongString body, bool insertIntoSelf)
 {
-    static const QByteArray lineFeed(1, QMailMessage::LineFeed);
+    static const QByteArray lineFeed(1, LineFeedChar);
     static const QByteArray marker("--");
 
     QMailMessagePart part;
@@ -4474,7 +4479,7 @@ void QMailMessagePartContainerPrivate::parseMimeMultipart(const QMailMessageHead
     int endPos = body.indexOf(partTerminator, 0);
 
     // Consider CRLF also (which happens to be the standard, so we honor it)
-    if (endPos > 1 && body.mid(endPos - 1, 1).indexOf(QByteArray(1, QMailMessage::CarriageReturn)) != -1)
+    if (endPos > 1 && body.mid(endPos - 1, 1).indexOf(QByteArray(1, CarriageReturnChar)) != -1)
         endPos--;
 
     // invalid message handling: handles truncated multipart messages
@@ -4485,7 +4490,7 @@ void QMailMessagePartContainerPrivate::parseMimeMultipart(const QMailMessageHead
         // Skip the boundary line
         startPos = body.indexOf(lineFeed, startPos);
 
-        if (startPos > 0 && body.mid(startPos - 1, 1).indexOf(QByteArray(1, QMailMessage::CarriageReturn)) != -1)
+        if (startPos > 0 && body.mid(startPos - 1, 1).indexOf(QByteArray(1, CarriageReturnChar)) != -1)
             startPos--;
 
         if ((startPos != -1) && (startPos < endPos)) {
@@ -4493,7 +4498,7 @@ void QMailMessagePartContainerPrivate::parseMimeMultipart(const QMailMessageHead
             int nextPos = body.indexOf(partDelimiter, startPos);
 
             // Honor CRLF too...
-            if (nextPos > 0 && body.mid(nextPos - 1, 1).indexOf(QByteArray(1, QMailMessage::CarriageReturn)) != -1)
+            if (nextPos > 0 && body.mid(nextPos - 1, 1).indexOf(QByteArray(1, CarriageReturnChar)) != -1)
                 nextPos--;
 
             // invalid message handling: handles truncated multipart messages
@@ -4502,7 +4507,7 @@ void QMailMessagePartContainerPrivate::parseMimeMultipart(const QMailMessageHead
 
             multipartContainer->parseMimePart(body.mid(startPos, (nextPos - startPos)));
 
-            if (body.mid(nextPos, 1).indexOf(QByteArray(1, QMailMessage::CarriageReturn)) ==0)
+            if (body.mid(nextPos, 1).indexOf(QByteArray(1, CarriageReturnChar)) == 0)
                 nextPos++;
 
             // Try the next part
@@ -4517,9 +4522,9 @@ void QMailMessagePartContainerPrivate::parseMimeMultipart(const QMailMessageHead
 
 bool QMailMessagePartContainerPrivate::parseMimePart(LongString body)
 {
-    static const QByteArray CRLFdelimiter((QByteArray(QMailMessage::CRLF) + QMailMessage::CRLF));
-    static const QByteArray CRdelimiter(2, QMailMessage::CarriageReturn);
-    static const QByteArray LFdelimiter(2, QMailMessage::LineFeed);
+    static const QByteArray CRLFdelimiter((QByteArray(CRLF) + CRLF));
+    static const QByteArray CRdelimiter(2, CarriageReturnChar);
+    static const QByteArray LFdelimiter(2, LineFeedChar);
 
     int CRLFindex = body.indexOf(CRLFdelimiter);
     int LFindex = body.indexOf(LFdelimiter);
@@ -7821,7 +7826,7 @@ void QMailMessagePrivate::fromRfc2822(const LongString &ls)
             QByteArray bodyData;
 
             // Remove the pop-style terminator if present
-            const QByteArray popTerminator((QByteArray(QMailMessage::CRLF) + '.' + QMailMessage::CRLF));
+            const QByteArray popTerminator((QByteArray(CRLF) + '.' + CRLF));
             if ( ls.indexOf(popTerminator, -popTerminator.length()) != -1)
                 bodyData = ls.left( ls.length() - popTerminator.length() ).toQByteArray();
             else
@@ -8077,10 +8082,6 @@ void QMailMessagePrivate::deserialize(Stream &stream)
 
     This type defines a single chunk in a sequence of partitioned output data.
 */
-
-const char QMailMessage::CarriageReturn = '\015';
-const char QMailMessage::LineFeed = '\012';
-const char* QMailMessage::CRLF = "\015\012";
 
 /*!
     Constructs an empty message object.
@@ -8944,9 +8945,9 @@ void QMailMessage::refreshPreview()
 /*! \internal */
 QMailMessage QMailMessage::fromRfc2822(LongString& ls)
 {
-    const QByteArray CRLFterminator((QByteArray(QMailMessage::CRLF) + QMailMessage::CRLF));
-    const QByteArray LFterminator(2, QMailMessage::LineFeed);
-    const QByteArray CRterminator(2, QMailMessage::CarriageReturn);
+    const QByteArray CRLFterminator((QByteArray(CRLF) + CRLF));
+    const QByteArray LFterminator(2, LineFeedChar);
+    const QByteArray CRterminator(2, CarriageReturnChar);
 
     QMailMessage mail;
     mail.setMessageType(QMailMessage::Email);
@@ -9038,9 +9039,9 @@ bool QMailMessage::extractUndecodedData(const LongString &ls)
     QMailMessagePartContainer *signedContainer =
         QMailCryptographicService::findSignedContainer(this);
     if (signedContainer) {
-        const QByteArray CRLFterminator((QByteArray(QMailMessage::CRLF) + QMailMessage::CRLF));
-        const QByteArray LFterminator(2, QMailMessage::LineFeed);
-        const QByteArray CRterminator(2, QMailMessage::CarriageReturn);
+        const QByteArray CRLFterminator((QByteArray(CRLF) + CRLF));
+        const QByteArray LFterminator(2, LineFeedChar);
+        const QByteArray CRterminator(2, CarriageReturnChar);
 
         int CRLFindex = ls.indexOf(CRLFterminator);
         int LFindex = ls.indexOf(LFterminator);

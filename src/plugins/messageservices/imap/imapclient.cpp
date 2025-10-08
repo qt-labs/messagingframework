@@ -979,7 +979,9 @@ void ImapClient::folderMoved(const QMailFolder &folder, const QString &newPath,
 
 static bool updateParts(QMailMessagePart &part, const QByteArray &bodyData)
 {
-    static const QByteArray newLine(QMailMessage::CRLF);
+    static const char CarriageReturnChar = QChar::CarriageReturn;
+    static const char LineFeedChar = QChar::LineFeed;
+    static const QByteArray newLine((QByteArray() + CarriageReturnChar + LineFeedChar));
     static const QByteArray marker("--");
     static const QByteArray bodyDelimiter(newLine + newLine);
 
@@ -994,7 +996,7 @@ static bool updateParts(QMailMessagePart &part, const QByteArray &bodyData)
 
         // Separate the body into parts delimited by the boundary, and update them individually
         QByteArray partDelimiter = marker + boundary;
-        QByteArray partTerminator = QByteArray(1, QMailMessage::LineFeed) + partDelimiter + marker;
+        QByteArray partTerminator = QByteArray(1, QChar::LineFeed) + partDelimiter + marker;
 
         int startPos = bodyData.indexOf(partDelimiter, 0);
         if (startPos != -1)
@@ -1007,7 +1009,7 @@ static bool updateParts(QMailMessagePart &part, const QByteArray &bodyData)
         int partIndex = 0;
 
         int endPos = bodyData.indexOf(partTerminator, 0);
-        if (endPos > 0 && bodyData[endPos - 1] == QMailMessage::CarriageReturn) {
+        if (endPos > 0 && bodyData[endPos - 1] == CarriageReturnChar) {
             endPos--;
         }
         while ((startPos != -1) && (startPos < endPos)) {
@@ -1018,7 +1020,7 @@ static bool updateParts(QMailMessagePart &part, const QByteArray &bodyData)
                 // Parse the section up to the next boundary marker
                 int nextPos = bodyData.indexOf(partDelimiter, startPos);
 
-                if (nextPos > 0 && bodyData[nextPos - 1] == QMailMessage::CarriageReturn) {
+                if (nextPos > 0 && bodyData[nextPos - 1] == CarriageReturnChar) {
                     nextPos--;
                 }
 
@@ -1034,7 +1036,7 @@ static bool updateParts(QMailMessagePart &part, const QByteArray &bodyData)
                     ++partIndex;
                 }
 
-                if (bodyData[nextPos] == QMailMessage::CarriageReturn) {
+                if (bodyData[nextPos] == CarriageReturnChar) {
                     nextPos++;
                 }
                 // Move to the next part
