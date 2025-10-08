@@ -38,7 +38,6 @@
 #include "qmailaccountkey.h"
 #include <ctype.h>
 
-
 class tst_locks : public QObject
 {
     Q_OBJECT

@@ -51,14 +51,11 @@ public:
     virtual ~tst_LongStream() {}
 
 private slots:
-
     void test_new_stream();
     void test_status();
     void test_errorMessage();
     void test_temp_files();
 };
-
-QTEST_MAIN(tst_LongStream)
 
 void tst_LongStream::test_new_stream()
 {
@@ -147,5 +144,7 @@ void tst_LongStream::test_temp_files()
     QCOMPARE(dir.exists(), true);
     QVERIFY2(dir.entryList().isEmpty(), qPrintable(dir.entryList().join(" ")));
 }
+
+QTEST_MAIN(tst_LongStream)
 
 #include "tst_longstream.moc"

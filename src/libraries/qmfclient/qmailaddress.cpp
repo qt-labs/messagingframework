@@ -601,12 +601,13 @@ QPair<int, int> findDelimiters(const QString& text)
     return qMakePair(first, second);
 }
 
-void parseMailbox(QString& input, QString& name, QString& address, QString& suffix)
+void parseMailbox(const QString &text, QString *name, QString *address, QString *suffix)
 {
+    QString input = text;
     // See if there is a trailing suffix
     int pos = input.indexOf(QLatin1String("/TYPE="));
     if (pos != -1) {
-        suffix = input.mid(pos + 6);
+        *suffix = input.mid(pos + 6);
         input = input.left(pos);
     }
 
@@ -614,22 +615,22 @@ void parseMailbox(QString& input, QString& name, QString& address, QString& suff
     QPair<int, int> delimiters = findDelimiters(input);
 
     if (delimiters.first == -1 && delimiters.second == -1) {
-        name = address = input.trimmed();
+        *name = *address = input.trimmed();
     } else {
         if (delimiters.first == -1) {
             // Unmatched '>'
-            address = input.left( delimiters.second );
+            *address = input.left(delimiters.second);
         } else {
-            name = input.left( delimiters.first );
+            *name = input.left(delimiters.first);
 
             if (delimiters.second == -1)
-                address = input.right(input.length() - delimiters.first - 1);
+                *address = input.right(input.length() - delimiters.first - 1);
             else
-                address = input.mid(delimiters.first + 1, (delimiters.second - delimiters.first - 1)).trimmed();
+                *address = input.mid(delimiters.first + 1, (delimiters.second - delimiters.first - 1)).trimmed();
         }
 
-        if (name.isEmpty()) {
-            name = address;
+        if (name->isEmpty()) {
+            *name = *address;
         }
     }
 }
@@ -701,7 +702,7 @@ QMailAddressPrivate::QMailAddressPrivate(const QString& addressText)
                 _group = true;
             }
         } else {
-            parseMailbox(input, _name, _address, _suffix);
+            parseMailbox(input, &_name, &_address, &_suffix);
             setComponents(_name, _address);
         }
     }

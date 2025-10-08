@@ -169,11 +169,6 @@ private slots:
     void test_rfc2231_unencoded_then_encoded_segments();
 };
 
-QTEST_MAIN(tst_python_email)
-
-#include "tst_python_email.moc"
-
-
 tst_python_email::tst_python_email()
 {
 }
@@ -1961,3 +1956,7 @@ CRLF;
     QVERIFY( msg.contentType().isParameterEncoded("name") == false );
     QCOMPARE( QMailMessageHeaderField::decodeParameter(msg.contentType().name()), QString("My Document For You") );
 }
+
+QTEST_MAIN(tst_python_email)
+
+#include "tst_python_email.moc"
