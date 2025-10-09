@@ -40,10 +40,8 @@
 #include <QDateTime>
 #include <QStringList>
 
-#ifndef USE_ALTERNATE_MAILSTORE_IMPLEMENTATION
 // This value is defined in qmailstore_p.cpp
 const int IdLookupThreshold = 256;
-#endif
 
 using namespace QMailKey;
 
@@ -375,14 +373,12 @@ QMailMessageKey QMailMessageKey::id(const QMailMessageId &id, QMailDataComparato
 */
 QMailMessageKey QMailMessageKey::id(const QMailMessageIdList &ids, QMailDataComparator::InclusionComparator cmp)
 {
-#ifndef USE_ALTERNATE_MAILSTORE_IMPLEMENTATION
     if (ids.count() >= IdLookupThreshold) {
         // If there are a large number of IDs, they will be inserted into a temporary table
         // with a uniqueness constraint; ensure only unique values are supplied
         const QSet<QMailMessageId> uniqueIds(ids.constBegin(), ids.constEnd());
         return QMailMessageKey(uniqueIds.values(), Id, QMailKey::comparator(cmp));
     }
-#endif
 
     return QMailMessageKey(ids, Id, QMailKey::comparator(cmp));
 }
@@ -656,14 +652,12 @@ QMailMessageKey QMailMessageKey::serverUid(const QString &uid, QMailDataComparat
 */
 QMailMessageKey QMailMessageKey::serverUid(const QStringList &uids, QMailDataComparator::InclusionComparator cmp)
 {
-#ifndef USE_ALTERNATE_MAILSTORE_IMPLEMENTATION
     if (uids.count() >= IdLookupThreshold) {
         // If there are a large number of UIDs, they will be inserted into a temporary table
         // with a uniqueness constraint; ensure only unique values are supplied
         const QSet<QString> uniqueIds(uids.constBegin(), uids.constEnd());
         return QMailMessageKey(uniqueIds.values(), ServerUid, QMailKey::comparator(cmp));
     }
-#endif
 
     return QMailMessageKey(uids, ServerUid, QMailKey::comparator(cmp));
 }
@@ -988,14 +982,12 @@ QMailMessageKey QMailMessageKey::copyServerUid(const QString &uid, QMailDataComp
 */
 QMailMessageKey QMailMessageKey::copyServerUid(const QStringList &uids, QMailDataComparator::InclusionComparator cmp)
 {
-#ifndef USE_ALTERNATE_MAILSTORE_IMPLEMENTATION
     if (uids.count() >= IdLookupThreshold) {
         // If there are a large number of UIDs, they will be inserted into a temporary table
         // with a uniqueness constraint; ensure only unique values are supplied
         const QSet<QString> uniqueIds(uids.constBegin(), uids.constEnd());
         return QMailMessageKey(uniqueIds.values(), CopyServerUid, QMailKey::comparator(cmp));
     }
-#endif
 
     return QMailMessageKey(uids, CopyServerUid, QMailKey::comparator(cmp));
 }

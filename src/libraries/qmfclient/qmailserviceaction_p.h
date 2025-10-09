@@ -163,7 +163,6 @@ public:
     void synchronize(const QMailAccountId &accountId, uint minimum);
 
     void retrieveAll(const QMailAccountId &accountId);
-    void synchronizeAllHelper(const QMailAccountId &accountId);
     void synchronizeAll(const QMailAccountId &accountId);
 
 protected slots:
@@ -179,18 +178,6 @@ public:
     QMailExportUpdatesCommand(QMailRetrievalActionPrivate *action, const QMailAccountId &accountId)
         : _action(action), _accountId(accountId) {}
     void execute() override { _action->exportUpdatesHelper(_accountId); }
-
-private:
-    QMailRetrievalActionPrivate *_action;
-    QMailAccountId _accountId;
-};
-
-class QMailSynchronizeCommand : public QMailServiceActionCommand
-{
-public:
-    QMailSynchronizeCommand(QMailRetrievalActionPrivate *action, const QMailAccountId &accountId)
-        : _action(action), _accountId(accountId) {}
-    void execute() override { _action->synchronizeAllHelper(_accountId); }
 
 private:
     QMailRetrievalActionPrivate *_action;
@@ -259,7 +246,6 @@ public:
     QMailStorageActionPrivate(QMailStorageAction *i);
 
     void onlineDeleteMessages(const QMailMessageIdList &ids);
-    void onlineDeleteMessagesHelper(const QMailMessageIdList &ids);
     void discardMessages(const QMailMessageIdList &ids);
 
     void onlineCopyMessages(const QMailMessageIdList &ids, const QMailFolderId &destination);
@@ -278,7 +264,6 @@ public:
     void onlineCreateFolder(const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId);
     void onlineRenameFolder(const QMailFolderId &id, const QString &name);
     void onlineDeleteFolder(const QMailFolderId &id);
-    void onlineDeleteFolderHelper(const QMailFolderId &id);
     void onlineMoveFolder(const QMailFolderId &id, const QMailFolderId &newParentId);
 
 protected:
@@ -295,43 +280,6 @@ private:
 
     QMailMessageIdList _ids;
     QMailMessageIdList _addedOrUpdatedIds;
-};
-
-class QMailDeleteFolderCommand : public QMailServiceActionCommand
-{
-public:
-    QMailDeleteFolderCommand(QMailStorageActionPrivate *action, const QMailFolderId &folderId)
-        : _action(action), _folderId(folderId) {}
-    void execute() override { _action->onlineDeleteFolderHelper(_folderId); }
-
-private:
-    QMailStorageActionPrivate *_action;
-    QMailFolderId _folderId;
-};
-
-class QMailMoveCommand : public QMailServiceActionCommand
-{
-public:
-    QMailMoveCommand(QMailStorageActionPrivate *action, const QMailMessageIdList &ids, const QMailFolderId &destinationId)
-        : _action(action), _ids(ids), _folderId(destinationId) {}
-    void execute() override { _action->onlineMoveMessages(_ids, _folderId); }
-
-private:
-    QMailStorageActionPrivate *_action;
-    QMailMessageIdList _ids;
-    QMailFolderId _folderId;
-};
-
-class QMailDeleteMessagesCommand : public QMailServiceActionCommand
-{
-public:
-    QMailDeleteMessagesCommand(QMailStorageActionPrivate *action, const QMailMessageIdList &ids)
-        : _action(action), _ids(ids) {}
-    void execute() override { _action->onlineDeleteMessagesHelper(_ids); }
-
-private:
-    QMailStorageActionPrivate *_action;
-    QMailMessageIdList _ids;
 };
 
 class QMailSearchActionPrivate : public QMailServiceActionPrivate

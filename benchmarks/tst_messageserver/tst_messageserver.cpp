@@ -40,6 +40,7 @@
 #include <qmailstore.h>
 #include <QTest>
 #include <QtCore>
+
 #ifdef Q_OS_WIN
 #else
 #include <errno.h>
@@ -50,6 +51,7 @@
 #include <sys/wait.h>
 #include <unistd.h>
 #endif
+
 #ifdef HAVE_VALGRIND
 #include "3rdparty/callgrind_p.h"
 #include "3rdparty/valgrind_p.h"
@@ -59,16 +61,11 @@
 #define CALLGRIND_DUMP_STATS
 #endif
 
-/*
-    This file is $TROLLTECH_INTERNAL$
-    It contains information about internal mail accounts.
-*/
-
 class tst_MessageServer;
 typedef void (tst_MessageServer::*TestFunction)();
 
 typedef QList<QByteArray> TestMail;
-typedef QList<TestMail>   TestMailList;
+typedef QList<TestMail> TestMailList;
 Q_DECLARE_METATYPE(TestMailList)
 
 class tst_MessageServer : public QObject
@@ -76,6 +73,7 @@ class tst_MessageServer : public QObject
     Q_OBJECT
 public:
     bool verbose;
+
 private slots:
     void initTestCase();
     void cleanupTestCase();
@@ -93,7 +91,7 @@ private slots:
 
 protected slots:
     void onActivityChanged(QMailServiceAction::Activity);
-    void onProgressChanged(uint,uint);
+    void onProgressChanged(uint, uint);
 
 private:
     void completeRetrievalImap_impl();
@@ -144,7 +142,9 @@ void tst_MessageServer::init()
 }
 
 void tst_MessageServer::cleanup()
-{ init(); }
+{
+    init();
+}
 
 void tst_MessageServer::removePath(QString const& path)
 {
@@ -165,8 +165,7 @@ void tst_MessageServer::removePath(QString const& path)
         bool ok;
         if (fi.isDir() && !fi.isSymLink()) {
             ok = parent.rmdir(filename);
-        }
-        else {
+        } else {
             ok = parent.remove(filename);
         }
         if (!ok) {
@@ -178,7 +177,8 @@ void tst_MessageServer::removePath(QString const& path)
 void tst_MessageServer::completeRetrievalImap()
 {
     runInChildProcess(&tst_MessageServer::completeRetrievalImap_impl);
-    if (QTest::currentTestFailed()) return;
+    if (QTest::currentTestFailed())
+        return;
 
     QByteArray tag = QTest::currentDataTag();
     if (tag == "small_messages--100" || tag == "small_messages--500") {
@@ -345,7 +345,7 @@ void tst_MessageServer::completeRetrievalImap_impl()
     QFETCH(QString, password);
     QFETCH(QString, server);
     QFETCH(int,     port);
-    QFETCH(TestMailList,mails);
+    QFETCH(TestMailList, mails);
 
     QMailMessageIdList fetched;
     /* Valgrind slows things down quite a lot. */
@@ -362,14 +362,16 @@ void tst_MessageServer::completeRetrievalImap_impl()
 
         QMailAccount account;
         addAccount(&account, service, user, password, server, port);
-        if (QTest::currentTestFailed()) return;
+        if (QTest::currentTestFailed())
+            return;
 
         /* Get message count for this account */
         QMailRetrievalAction retrieve;
 
         retrieve.synchronizeAll(account.id());
         waitForActivity(&retrieve, QMailServiceAction::Successful, MAXTIME);
-        if (QTest::currentTestFailed()) return;
+        if (QTest::currentTestFailed())
+            return;
 
         /* Ensure we have all the messages we expect */
         QCOMPARE(ms->countMessages(), mails.count());
@@ -379,7 +381,8 @@ void tst_MessageServer::completeRetrievalImap_impl()
         QCOMPARE(fetched.count(), mails.count());
         retrieve.retrieveMessages(fetched, QMailRetrievalAction::Content);
         waitForActivity(&retrieve, QMailServiceAction::Successful, MAXTIME);
-        if (QTest::currentTestFailed()) return;
+        if (QTest::currentTestFailed())
+            return;
     }
 
     compareMessages(fetched, mails);
@@ -486,8 +489,7 @@ void tst_MessageServer::completeRetrievalImap_data()
         << QString::fromLatin1("testme31")
         << m_imapServer
         << 143
-        << list
-    ;
+        << list;
 
     list.clear();
     for (int i = 0; i < 1000; ++i)
@@ -497,9 +499,9 @@ void tst_MessageServer::completeRetrievalImap_data()
         << QString::fromLatin1("testme33")
         << m_imapServer
         << 143
-        << list
-    ;
+        << list;
     list.clear();
+
     for (int i = 0; i < 100; ++i)
         list << TestMail();
     QTest::newRow("small_messages--100")
@@ -507,8 +509,7 @@ void tst_MessageServer::completeRetrievalImap_data()
         << QString::fromLatin1("testme30")
         << m_imapServer
         << 143
-        << list
-    ;
+        << list;
 
     QTest::newRow("big_messages")
         << QString::fromLatin1("mailtst37")
@@ -535,8 +536,7 @@ void tst_MessageServer::completeRetrievalImap_data()
                 << QByteArray("Content-Type: image/jpeg; name=snapshot11.jpg")
                 << QByteArray("CUAAAAAAPWYXQrHZ0+CZDhdCsdnT4JlGwAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
             )
-        )
-    ;
+        );
 
     list.clear();
     for (int i = 0; i < 500; ++i)
@@ -546,8 +546,7 @@ void tst_MessageServer::completeRetrievalImap_data()
         << QString::fromLatin1("testme32")
         << m_imapServer
         << 143
-        << list
-    ;
+        << list;
 
     list.clear();
     for (int i = 0; i < 2000; ++i)
@@ -557,8 +556,7 @@ void tst_MessageServer::completeRetrievalImap_data()
         << QString::fromLatin1("testme34")
         << m_imapServer
         << 143
-        << list
-    ;
+        << list;
 
 #if VERY_PATIENT_TESTER
     list.clear();
@@ -569,8 +567,7 @@ void tst_MessageServer::completeRetrievalImap_data()
         << QString::fromLatin1("testme35")
         << m_imapServer
         << 143
-        << list
-    ;
+        << list;
 
     list.clear();
     for (int i = 0; i < 10000; ++i)
@@ -580,13 +577,14 @@ void tst_MessageServer::completeRetrievalImap_data()
         << QString::fromLatin1("testme36")
         << m_imapServer
         << 143
-        << list
-    ;
+        << list;
 #endif
 }
 
 void tst_MessageServer::removeMessages()
-{ runInChildProcess(&tst_MessageServer::removeMessages_impl); }
+{
+    runInChildProcess(&tst_MessageServer::removeMessages_impl);
+}
 
 void tst_MessageServer::removeMessages_impl()
 {
@@ -596,7 +594,7 @@ void tst_MessageServer::removeMessages_impl()
     QFETCH(QString, password);
     QFETCH(QString, server);
     QFETCH(int,     port);
-    QFETCH(TestMailList,mails);
+    QFETCH(TestMailList, mails);
 
     QMailMessageIdList fetched;
     /* Valgrind slows things down quite a lot. */
@@ -609,14 +607,16 @@ void tst_MessageServer::removeMessages_impl()
 
     QMailAccount account;
     addAccount(&account, service, user, password, server, port);
-    if (QTest::currentTestFailed()) return;
+    if (QTest::currentTestFailed())
+        return;
 
     /* Get message count for this account */
     QMailRetrievalAction retrieve;
 
     retrieve.synchronizeAll(account.id());
     waitForActivity(&retrieve, QMailServiceAction::Successful, MAXTIME);
-    if (QTest::currentTestFailed()) return;
+    if (QTest::currentTestFailed())
+        return;
 
     /* Ensure we have all the messages we expect */
     QCOMPARE(ms->countMessages(), mails.count());
@@ -626,10 +626,12 @@ void tst_MessageServer::removeMessages_impl()
     QCOMPARE(fetched.count(), mails.count());
     retrieve.retrieveMessages(fetched, QMailRetrievalAction::Content);
     waitForActivity(&retrieve, QMailServiceAction::Successful, MAXTIME);
-    if (QTest::currentTestFailed()) return;
+    if (QTest::currentTestFailed())
+        return;
 
     compareMessages(fetched, mails);
-    if (QTest::currentTestFailed()) return;
+    if (QTest::currentTestFailed())
+        return;
 
     {
         BenchmarkContext ctx(m_xml);
@@ -640,10 +642,14 @@ void tst_MessageServer::removeMessages_impl()
 }
 
 void tst_MessageServer::removeMessages_data()
-{ completeRetrievalImap_data(); }
+{
+    completeRetrievalImap_data();
+}
 
 void tst_MessageServer::replaceMessages()
-{ runInChildProcess(&tst_MessageServer::replaceMessages_impl); }
+{
+    runInChildProcess(&tst_MessageServer::replaceMessages_impl);
+}
 
 /*
     Tests that downloading, deleting and redownloading the same mails does
@@ -659,7 +665,7 @@ void tst_MessageServer::replaceMessages_impl()
     QFETCH(QString, password);
     QFETCH(QString, server);
     QFETCH(int,     port);
-    QFETCH(TestMailList,mails);
+    QFETCH(TestMailList, mails);
 
     QMailMessageIdList fetched;
     /* Valgrind slows things down quite a lot. */
@@ -672,14 +678,16 @@ void tst_MessageServer::replaceMessages_impl()
 
     QMailAccount account;
     addAccount(&account, service, user, password, server, port);
-    if (QTest::currentTestFailed()) return;
+    if (QTest::currentTestFailed())
+        return;
 
     /* Get message count for this account */
     QMailRetrievalAction retrieve;
 
     retrieve.synchronizeAll(account.id());
     waitForActivity(&retrieve, QMailServiceAction::Successful, MAXTIME);
-    if (QTest::currentTestFailed()) return;
+    if (QTest::currentTestFailed())
+        return;
 
     /* Ensure we have all the messages we expect */
     QCOMPARE(ms->countMessages(), mails.count());
@@ -689,10 +697,12 @@ void tst_MessageServer::replaceMessages_impl()
     QCOMPARE(fetched.count(), mails.count());
     retrieve.retrieveMessages(fetched, QMailRetrievalAction::Content);
     waitForActivity(&retrieve, QMailServiceAction::Successful, MAXTIME);
-    if (QTest::currentTestFailed()) return;
+    if (QTest::currentTestFailed())
+        return;
 
     compareMessages(fetched, mails);
-    if (QTest::currentTestFailed()) return;
+    if (QTest::currentTestFailed())
+        return;
 
     {
         /* Remove the messages. */
@@ -703,7 +713,8 @@ void tst_MessageServer::replaceMessages_impl()
         /* Redownload the same messages. */
         retrieve.synchronizeAll(account.id());
         waitForActivity(&retrieve, QMailServiceAction::Successful, MAXTIME);
-        if (QTest::currentTestFailed()) return;
+        if (QTest::currentTestFailed())
+            return;
 
         /* Ensure we have all the messages we expect */
         QCOMPARE(ms->countMessages(), mails.count());
@@ -713,19 +724,22 @@ void tst_MessageServer::replaceMessages_impl()
         QCOMPARE(fetched.count(), mails.count());
         retrieve.retrieveMessages(fetched, QMailRetrievalAction::Content);
         waitForActivity(&retrieve, QMailServiceAction::Successful, MAXTIME);
-        if (QTest::currentTestFailed()) return;
+        if (QTest::currentTestFailed())
+            return;
     }
 
     compareMessages(fetched, mails);
 }
 
 void tst_MessageServer::replaceMessages_data()
-{ completeRetrievalImap_data(); }
-
+{
+    completeRetrievalImap_data();
+}
 
 void tst_MessageServer::onActivityChanged(QMailServiceAction::Activity a)
 {
-    if (!m_loop) return;
+    if (!m_loop)
+        return;
 
     /*
         Exit the inner loop with success if we got the expected state, failure
@@ -735,14 +749,13 @@ void tst_MessageServer::onActivityChanged(QMailServiceAction::Activity a)
     if (a == m_expectedState) {
         m_loop->exit(0);
         m_loop = 0;
-    }
-    else if (a == QMailServiceAction::Failed) {
+    } else if (a == QMailServiceAction::Failed) {
         m_loop->exit(1);
         m_loop = 0;
     }
 }
 
-void tst_MessageServer::onProgressChanged(uint value,uint total)
+void tst_MessageServer::onProgressChanged(uint value, uint total)
 {
     /*
         Running in valgrind takes a long time... output some progress so it's
@@ -776,8 +789,7 @@ int main(int argc, char** argv)
             bool ok;
             int n = QString::fromLatin1(argv[i+1]).toInt(&ok);
             if (ok && n > 0) iters = n;
-        }
-        else if (!strncmp(argv[i], "-v", 2)) {
+        } else if (!strncmp(argv[i], "-v", 2)) {
             verbose = true;
         }
     }
@@ -792,4 +804,3 @@ int main(int argc, char** argv)
 }
 
 #include "tst_messageserver.moc"
-

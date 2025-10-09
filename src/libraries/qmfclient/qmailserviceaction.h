@@ -166,13 +166,14 @@ public:
     QMailRetrievalAction(QObject *parent = Q_NULLPTR);
     ~QMailRetrievalAction();
 
+    static uint defaultMinimum() { return 20; }
+
 public Q_SLOTS:
     void retrieveFolderList(const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending = true);
     void retrieveMessageList(const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum = 0,
                              const QMailMessageSortKey &sort = QMailMessageSortKey());
     void retrieveMessageLists(const QMailAccountId &accountId, const QMailFolderIdList &folderIds, uint minimum = 0,
                               const QMailMessageSortKey &sort = QMailMessageSortKey());
-    static uint defaultMinimum() { return 20; }
     void retrieveNewMessages(const QMailAccountId &accountId, const QMailFolderIdList &folderIds);
 
     void createStandardFolders(const QMailAccountId &accountId);
@@ -276,6 +277,7 @@ public:
     QMailMessageIdList matchingMessageIds() const;
     uint remainingMessagesCount() const;
     uint messagesCount() const;
+
     static QMailMessageKey temporaryKey();
 
 Q_SIGNALS:

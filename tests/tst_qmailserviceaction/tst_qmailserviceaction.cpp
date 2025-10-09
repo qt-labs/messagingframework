@@ -393,7 +393,6 @@ void tst_QMailServiceAction::initTestCase()
     }
 }
 
-
 void tst_QMailServiceAction::cleanupTestCase()
 {
     QMailStore::instance()->removeAccounts(QMailAccountKey::customField("verified"));
@@ -426,7 +425,6 @@ void tst_QMailServiceAction::test_transmitaction()
     action.transmitMessages(QMailAccountId(999u));
     //qCritical() << "pass spy count = " << pass.count();
     //qCritical() << "fail spy count = " << fail.count();
-
 }
 
 void tst_QMailServiceAction::test_storageaction()

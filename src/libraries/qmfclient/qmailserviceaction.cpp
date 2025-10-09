@@ -830,15 +830,10 @@ void QMailRetrievalActionPrivate::exportUpdates(const QMailAccountId &accountId)
     exportUpdatesHelper(accountId);
 }
 
-void QMailRetrievalActionPrivate::synchronizeAllHelper(const QMailAccountId &accountId)
-{
-    _server->synchronize(newAction(), accountId);
-}
-
 void QMailRetrievalActionPrivate::synchronizeAll(const QMailAccountId &accountId)
 {
     Q_ASSERT(!_pendingActions.count());
-    synchronizeAllHelper(accountId);
+    _server->synchronize(newAction(), accountId);
 }
 
 void QMailRetrievalActionPrivate::synchronize(const QMailAccountId &accountId, uint minimum)
@@ -1006,8 +1001,8 @@ void QMailRetrievalAction::retrieveMessageList(const QMailAccountId &accountId, 
 /*!
     Requests that the message server retrieve the list of messages available for the account \a accountId.
     If \a folderIds is not empty, then only messages within those folders should be retrieved and the
-    lastSynchronized() time of the account updated; otherwise
-    no messages should be retrieved, .  If \a minimum is non-zero, then that value will be used to restrict the
+    lastSynchronized() time of the account updated; otherwise no messages should be retrieved.
+    If \a minimum is non-zero, then that value will be used to restrict the
     number of messages to be retrieved from each folder.
 
     If \a sort is not empty, the external service will report the discovered messages in the
@@ -1255,7 +1250,6 @@ void QMailRetrievalAction::synchronizeAll(const QMailAccountId &accountId)
     d->synchronizeAll(accountId);
 }
 
-
 /*!
     Essentially performs the same functions as calling exportUpdates(), retrieveFolderList()
     and retrieveMessageList() consecutively using the given \a accountId and \a minimum, but
@@ -1275,7 +1269,6 @@ void QMailRetrievalAction::synchronize(const QMailAccountId &accountId, uint min
     Q_D(QMailRetrievalAction);
     d->synchronize(accountId, minimum);
 }
-
 
 /*!
     \fn QMailRetrievalAction::defaultMinimum()
@@ -1456,19 +1449,15 @@ QMailStorageActionPrivate::QMailStorageActionPrivate(QMailStorageAction *i)
     init();
 }
 
-void QMailStorageActionPrivate::onlineDeleteMessagesHelper(const QMailMessageIdList &ids)
+void QMailStorageActionPrivate::onlineDeleteMessages(const QMailMessageIdList &ids)
 {
+    Q_ASSERT(!_pendingActions.count());
+
     _server->onlineDeleteMessages(newAction(), ids, QMailStore::CreateRemovalRecord);
     // Successful as long as ids have been deleted,
     // this action doesn't have to be the one to have deleted them
     _ids.clear();
     emitChanges();
-}
-
-void QMailStorageActionPrivate::onlineDeleteMessages(const QMailMessageIdList &ids)
-{
-    Q_ASSERT(!_pendingActions.count());
-    onlineDeleteMessagesHelper(ids);
 }
 
 void QMailStorageActionPrivate::discardMessages(const QMailMessageIdList &ids)
@@ -1688,16 +1677,12 @@ void QMailStorageActionPrivate::onlineRenameFolder(const QMailFolderId &folderId
     emitChanges();
 }
 
-void QMailStorageActionPrivate::onlineDeleteFolderHelper(const QMailFolderId &folderId)
-{
-    _server->onlineDeleteFolder(newAction(), folderId);
-    emitChanges();
-}
-
 void QMailStorageActionPrivate::onlineDeleteFolder(const QMailFolderId &folderId)
 {
     Q_ASSERT(!_pendingActions.count());
-    onlineDeleteFolderHelper(folderId);
+
+    _server->onlineDeleteFolder(newAction(), folderId);
+    emitChanges();
 }
 
 void QMailStorageActionPrivate::onlineMoveFolder(const QMailFolderId &folderId, const QMailFolderId &newParentId)
