@@ -38,21 +38,22 @@
 #include "qmailid.h"
 #include "qmailaddress.h"
 #include "qmailtimestamp.h"
-#include "qprivateimplementation.h"
 
 #include <QString>
 #include <QList>
-#include <QSharedData>
+#include <QSharedDataPointer>
 
 class QMailThreadPrivate;
 
-class QMF_EXPORT QMailThread : public QPrivatelyImplemented<QMailThreadPrivate>
+class QMF_EXPORT QMailThread
 {
 public:
-    typedef QMailThreadPrivate ImplementationType;
-
     QMailThread();
+    QMailThread(const QMailThread &other);
     explicit QMailThread(const QMailThreadId &id);
+    virtual ~QMailThread();
+
+    const QMailThread& operator=(const QMailThread &other);
 
     QMailThreadId id() const;
     void setId(const QMailThreadId& id);
@@ -87,6 +88,9 @@ public:
 
     quint64 status() const;
     void setStatus(quint64 value);
+
+private:
+    QSharedDataPointer<QMailThreadPrivate> d;
 };
 
 typedef QList<QMailThread> QMailThreadList;

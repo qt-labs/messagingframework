@@ -31,10 +31,34 @@
 **
 ****************************************************************************/
 
-#include "qmailthread_p.h"
 #include "qmailstore.h"
+#include "qmailthread.h"
 #include "qmaillog.h"
 
+#include <QSharedData>
+
+class QMailThreadPrivate : public QSharedData
+{
+public:
+    QMailThreadPrivate()
+        : messageCount(0)
+        , unreadCount(0)
+        , status(0)
+    {
+    }
+
+    QMailThreadId id;
+    uint messageCount;
+    uint unreadCount;
+    QString serverUid;
+    QMailAccountId parentAccountId;
+    QString subject;
+    QString preview;
+    QString senders;
+    QMailTimeStamp lastDate;
+    QMailTimeStamp startedDate;
+    quint64 status;
+};
 
 /*!
     \class QMailThread
@@ -53,9 +77,13 @@
   An empty thread is one which has no id or messages account.
   An invalid thread does not exist in the database and has an invalid id.
 */
-
 QMailThread::QMailThread()
-    : QPrivatelyImplemented<QMailThreadPrivate>(new QMailThreadPrivate())
+    : d(new QMailThreadPrivate)
+{
+}
+
+QMailThread::QMailThread(const QMailThread &other)
+    : d(other.d)
 {
 }
 
@@ -64,18 +92,25 @@ QMailThread::QMailThread()
   specified by the QMailThreadId \a id. If the thread does not exist in the message store,
   then this constructor will create an empty and invalid QMailThread.
 */
-
-QMailThread::QMailThread(const QMailThreadId& id)
-    : QPrivatelyImplemented<QMailThreadPrivate>(NULL)
+QMailThread::QMailThread(const QMailThreadId &id)
 {
     *this = QMailStore::instance()->thread(id);
+}
+
+QMailThread::~QMailThread()
+{
+}
+
+const QMailThread &QMailThread::operator=(const QMailThread &other)
+{
+    d = other.d;
+    return *this;
 }
 
 /*!
   Returns the \c ID of the \c QMailThread object. A \c QMailThread with an invalid ID
   is one which does not yet exist on the message store.
 */
-
 QMailThreadId QMailThread::id() const
 {
     return d->id;
@@ -84,7 +119,6 @@ QMailThreadId QMailThread::id() const
 /*!
   Sets the ID of this thread to \a id
 */
-
 void QMailThread::setId(const QMailThreadId& id)
 {
     d->id = id;
@@ -154,7 +188,6 @@ void QMailThread::setUnreadCount(uint value)
     d->unreadCount = value;
 }
 
-
 QString QMailThread::subject() const
 {
     return d->subject;
@@ -165,7 +198,6 @@ void QMailThread::setSubject(const QString &value)
     d->subject = value;
 }
 
-
 QMailAddressList QMailThread::senders() const
 {
     return QMailAddress::fromStringList(d->senders);
@@ -173,7 +205,6 @@ QMailAddressList QMailThread::senders() const
 
 void QMailThread::setSenders(const QMailAddressList &value)
 {
-    d->senders.clear();
     d->senders = QMailAddress::toStringList(value).join(QLatin1String(","));
 }
 

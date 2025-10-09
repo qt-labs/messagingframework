@@ -80,7 +80,6 @@ HEADERS += \
     qmailstorenotifier_p.h \
     qmailstoreimplementation_p.h \
     qmailstoresql_p.h \
-    qmailthread_p.h \
     qmailthreadkey_p.h \
     qmailthreadsortkey_p.h \
     longstring_p.h
