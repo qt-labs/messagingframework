@@ -75,10 +75,12 @@ public:
     QMailMessageHeaderField(const QByteArray& text, FieldType fieldType = StructuredField);
     QMailMessageHeaderField(const QByteArray& name, const QByteArray& text, FieldType fieldType = StructuredField);
 
+    bool operator==(const QMailMessageHeaderField &other) const;
+
     bool isNull() const;
 
     QByteArray id() const;
-    void setId(const QByteArray& text);
+    virtual void setId(const QByteArray& text);
 
     QByteArray content() const;
     void setContent(const QByteArray& text);
@@ -94,8 +96,6 @@ public:
     virtual QByteArray toString(bool includeName = true, bool presentable = true) const;
 
     virtual QString decodedContent() const;
-
-    bool operator== (const QMailMessageHeaderField& other) const;
 
     static QByteArray encodeWord(const QString& input, const QByteArray& charset = "");
     static QString decodeWord(const QByteArray& input);
@@ -153,9 +153,8 @@ public:
 
     bool matches(const QByteArray& primary, const QByteArray& sub = QByteArray()) const;
 
-private:
-    // Don't allow the Id to be changed
-    void setId(const QByteArray& text);
+    // can't be used. Class is about fixed type.
+    void setId(const QByteArray& text) override;
 };
 
 
@@ -191,9 +190,8 @@ public:
     int size() const;
     void setSize(int size);
 
-private:
-    // Don't allow the Id to be changed
-    void setId(const QByteArray& text);
+    // can't be used. Class is about fixed type.
+    void setId(const QByteArray &text) override;
 };
 
 
@@ -303,6 +301,7 @@ private:
     void setEncoded(bool value);
 
     void output(QDataStream& out, bool includeAttachments) const;
+
     static QMailMessageBody fromLongString(LongString& ls, const QMailMessageContentType& type, TransferEncoding encoding, EncodingStatus status);
 };
 
@@ -743,8 +742,6 @@ public:
     virtual bool contentAvailable() const;
     virtual bool partialContentAvailable() const;
 
-    static quint64 statusMask(const QString &flagName);
-
     QString customField(const QString &name) const;
     void setCustomField(const QString &name, const QString &value);
     void setCustomFields(const QMap<QString, QString> &fields);
@@ -754,6 +751,23 @@ public:
     const QMap<QString, QString> &customFields() const;
 
     virtual bool dataModified() const;
+
+    virtual QString copyServerUid() const;
+    virtual void setCopyServerUid(const QString &s);
+
+    virtual QMailFolderId restoreFolderId() const;
+    virtual void setRestoreFolderId(const QMailFolderId &s);
+
+    virtual QString listId() const;
+    virtual void setListId(const QString &s);
+
+    virtual QString rfcId() const;
+    virtual void setRfcId(const QString &s);
+
+    virtual QMailThreadId parentThreadId() const;
+    virtual void setParentThreadId(const QMailThreadId &id);
+
+    static quint64 statusMask(const QString &flagName);
 
     template <typename Stream> void serialize(Stream &stream) const;
     template <typename Stream> void deserialize(Stream &stream);
@@ -773,22 +787,6 @@ private:
 
     bool customFieldsModified() const;
     void setCustomFieldsModified(bool set);
-
-public:
-    virtual QString copyServerUid() const;
-    virtual void setCopyServerUid(const QString &s);
-
-    virtual QMailFolderId restoreFolderId() const;
-    virtual void setRestoreFolderId(const QMailFolderId &s);
-
-    virtual QString listId() const;
-    virtual void setListId(const QString &s);
-
-    virtual QString rfcId() const;
-    virtual void setRfcId(const QString &s);
-
-    virtual QMailThreadId parentThreadId() const;
-    virtual void setParentThreadId(const QMailThreadId &id);
 };
 
 class QMailMessagePrivate;
@@ -917,6 +915,8 @@ public:
 
     virtual bool contentModified() const;
 
+    QString preview() const override;
+
     template <typename Stream> void serialize(Stream &stream) const;
     template <typename Stream> void deserialize(Stream &stream);
 
@@ -940,12 +940,10 @@ private:
     QByteArray duplicatedData(const QString&) const;
     void updateMetaData(const QByteArray& id, const QString& value);
 
-    static QMailMessage fromRfc2822(LongString& ls);
     bool extractUndecodedData(const LongString& ls);
     void refreshPreview();
 
-public:
-    QString preview() const override;
+    static QMailMessage fromRfc2822(LongString& ls);
 };
 
 QMF_EXPORT QDebug operator<<(QDebug dbg, const QMailMessagePart &part);

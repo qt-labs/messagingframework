@@ -2663,6 +2663,11 @@ bool QMailMessageContentType::matches(const QByteArray& primary, const QByteArra
             && (sub.isEmpty() || qstricmp(subType(), sub) == 0));
 }
 
+void QMailMessageContentType::setId(const QByteArray &text)
+{
+    qWarning() << "QMailMessageContentType::setId() cannot be used, it's of fixed type";
+}
+
 /*!
     \class QMailMessageContentDisposition
 
@@ -2834,6 +2839,10 @@ void QMailMessageContentDisposition::setSize(int size)
     setParameter("size", QByteArray::number(size));
 }
 
+void QMailMessageContentDisposition::setId(const QByteArray &text)
+{
+    qWarning() << "QMailMessageContentDisposition::setId() cannot be used, it's of fixed type";
+}
 
 /* QMailMessageHeader*/
 // According to RFC2822-3.6, these header fields should be present at most once.
