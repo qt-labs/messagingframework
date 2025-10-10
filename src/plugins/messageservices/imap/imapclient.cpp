@@ -303,19 +303,16 @@ void IdleProtocol::idleCommandTransition(const ImapCommand command, const Operat
     QMailAccountConfiguration config(_client->account());
     switch ( command ) {
         case IMAP_Init:
-        {
             if (receivedCapabilities()) {
                 // Already received capabilities in unsolicited response, no need to request them again
                 setReceivedCapabilities(false);
                 idleCommandTransition(IMAP_Capability, status);
-                return;
+            } else {
+                // We need to request the capabilities
+                sendCapability();
             }
-            // We need to request the capabilities
-            sendCapability();
-            return;
-        }
+            break;
         case IMAP_Capability:
-        {
             if (!encrypted()) {
                 if (ImapAuthenticator::useEncryption(ImapConfiguration(config), capabilities())) {
                     // Switch to encrypted mode
@@ -325,13 +322,10 @@ void IdleProtocol::idleCommandTransition(const ImapCommand command, const Operat
             }
             // We are now connected
             logIn();
-            return;
-        }
+            break;
         case IMAP_StartTLS:
-        {
             logIn();
             break;
-        }
         case IMAP_Login: // Fall through
         case IMAP_Compress:
         {
@@ -339,35 +333,25 @@ void IdleProtocol::idleCommandTransition(const ImapCommand command, const Operat
             if (!encrypted() && QMFALLOWCOMPRESS && compressCapable && !compress()) {
                 // Server supports COMPRESS and we are not yet compressing
                 sendCompress(); // Must not pipeline compress
-                return;
+            } else {
+                // Server does not support COMPRESS or already compressing
+                sendSelect(_folder);
             }
-
-            // Server does not support COMPRESS or already compressing
-            sendSelect(_folder);
-            return;
+            break;
         }
         case IMAP_Select:
-        {
             sendIdle();
-            return;
-        }
+            break;
         case IMAP_Idle:
-        {
             // Restart idling (TODO: unless we're closing)
             sendIdle();
-            return;
-        }
+            break;
         case IMAP_Logout:
-        {
             // Ensure connection is closed on logout
             close();
-            return;
-        }
+            break;
         default:        //default = all critical messages
-        {
             qCWarning(lcIMAP) << objectName() << "IDLE: IMAP Idle unknown command response: " << command;
-            return;
-        }
     }
 }
 
@@ -381,8 +365,7 @@ void IdleProtocol::idleRenew()
 
 void IdleProtocol::idleTransportError()
 {
-    qCWarning(lcIMAP) << objectName()
-                   << "IDLE: An IMAP IDLE related error occurred.";
+    qCWarning(lcIMAP) << objectName() << "IDLE: An IMAP IDLE related error occurred.";
 
     if (inUse())
         close();
@@ -523,68 +506,61 @@ void ImapClient::commandCompleted(ImapCommand command, OperationStatus status)
 
 void ImapClient::checkCommandResponse(ImapCommand command, OperationStatus status)
 {
-    if ( status != OpOk ) {
-        switch ( command ) {
-            case IMAP_Enable:
-            {
-                // Couldn't enable QRESYNC, remove capability and continue
-                qCWarning(lcIMAP) << _protocol.objectName() << "unable to enable QRESYNC";
-                QStringList capa(_protocol.capabilities());
-                capa.removeAll("QRESYNC");
-                capa.removeAll("CONDSTORE");
-                _protocol.setCapabilities(capa);
-                commandTransition(command, OpOk);
-                break;
-            }
-            case IMAP_UIDStore:
-            {
-                // Couldn't set a flag, ignore as we can stil continue
-                qCWarning(lcIMAP) << _protocol.objectName() << "could not store message flag";
-                commandTransition(command, OpOk);
-                break;
-            }
-
-            case IMAP_Login:
-            {
-                _credentials->authFailureNotice(QStringLiteral("messageserver5"));
-                if (_credentials->shouldRetryAuth()) {
-                    _protocol.close();
-                    newConnection();
-                } else {
-                    operationFailed(QMailServiceAction::Status::ErrLoginFailed, _protocol.lastError());
-                }
-                return;
-            }
-
-            case IMAP_Full:
-            {
-                operationFailed(QMailServiceAction::Status::ErrFileSystemFull, _protocol.lastError());
-                return;
-            }
-
-            default:        //default = all critical messages
-            {
-                QString msg;
-                if (_accountId.isValid()) {
-                    QMailAccountConfiguration config(_accountId);
-                    ImapConfiguration imapCfg(config);
-                    msg = imapCfg.mailServer() + ": ";
-                }
-                msg.append(_protocol.lastError());
-
-                operationFailed(QMailServiceAction::Status::ErrUnknownResponse, msg);
-                return;
-            }
+    if (status != OpOk) {
+        switch (command) {
+        case IMAP_Enable:
+        {
+            // Couldn't enable QRESYNC, remove capability and continue
+            qCWarning(lcIMAP) << _protocol.objectName() << "unable to enable QRESYNC";
+            QStringList capa(_protocol.capabilities());
+            capa.removeAll("QRESYNC");
+            capa.removeAll("CONDSTORE");
+            _protocol.setCapabilities(capa);
+            commandTransition(command, OpOk);
+            break;
         }
-    }
+        case IMAP_UIDStore:
+            // Couldn't set a flag, ignore as we can stil continue
+            qCWarning(lcIMAP) << _protocol.objectName() << "could not store message flag";
+            commandTransition(command, OpOk);
+            break;
 
-    switch (command) {
+        case IMAP_Login:
+            _credentials->authFailureNotice(QStringLiteral("messageserver5"));
+            if (_credentials->shouldRetryAuth()) {
+                _protocol.close();
+                newConnection();
+            } else {
+                operationFailed(QMailServiceAction::Status::ErrLoginFailed, _protocol.lastError());
+            }
+            break;
+
+        case IMAP_Full:
+            operationFailed(QMailServiceAction::Status::ErrFileSystemFull, _protocol.lastError());
+            break;
+
+        default:        //default = all critical messages
+        {
+            QString msg;
+            if (_accountId.isValid()) {
+                QMailAccountConfiguration config(_accountId);
+                ImapConfiguration imapCfg(config);
+                msg = imapCfg.mailServer() + ": ";
+            }
+            msg.append(_protocol.lastError());
+
+            operationFailed(QMailServiceAction::Status::ErrUnknownResponse, msg);
+            break;
+        }
+        }
+    } else {
+        switch (command) {
         case IMAP_Full:
             qFatal( "Logic error, IMAP_Full" );
             break;
         case IMAP_Unconnected:
             operationFailed(QMailServiceAction::Status::ErrNoConnection, _protocol.lastError());
-            return;
+            break;
         case IMAP_Login:
             if (status == OpOk) {
                 _credentials->authSuccessNotice(QStringLiteral("messageserver5"));
@@ -592,15 +568,14 @@ void ImapClient::checkCommandResponse(ImapCommand command, OperationStatus statu
             break;
         default:
             break;
+        }
     }
-
 }
 
 void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
 {
     switch ( command ) {
         case IMAP_Init:
-        {
             // We need to request the capabilities. Even in the case that an unsolicited response
             // has been received, as some servers report incomplete info in unsolicited responses,
             // missing the IDLE capability.
@@ -609,7 +584,6 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
             emit updateStatus( tr("Checking capabilities" ) );
             _protocol.sendCapability();
             break;
-        }
 
         case IMAP_Capability:
         {
@@ -618,7 +592,7 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
                 Q_ASSERT(_protocol.receivedCapabilities());
                 _protocol.setReceivedCapabilities(true);
                 commandTransition(IMAP_Login, status);
-                return;
+                break;
             }
 
             if (!_protocol.encrypted()) {
@@ -650,17 +624,13 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
         }
 
         case IMAP_Idle_Continuation:
-        {
             logIn();
             break;
-        }
 
         case IMAP_StartTLS:
-        {
             // Check capabilities for encrypted mode
             _protocol.sendCapability();
             break;
-        }
 
         case IMAP_Login:
         {
@@ -669,7 +639,7 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
             if (!_protocol.receivedCapabilities()) {
                 emit updateStatus( tr("Checking capabilities" ) );
                 _protocol.sendCapability();
-                return;
+                break;
             }
 
             // Now that we know the capabilities, check for Reference and idle support
@@ -705,15 +675,14 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
             bool compressCapable(_protocol.capabilities().contains("COMPRESS=DEFLATE", Qt::CaseInsensitive));
             if (!_protocol.encrypted() && QMFALLOWCOMPRESS && compressCapable && !_protocol.compress()) {
                 _protocol.sendCompress(); // MUST not pipeline compress
-                return;
+            } else {
+                // Server does not support compression, continue with post compress step
+                commandTransition(IMAP_Compress, status);
             }
-            // Server does not support compression, continue with post compress step
-            commandTransition(IMAP_Compress, status);
-            return;
+            break;
         }
 
         case IMAP_Compress:
-        {
             // Sent a compress, or logged in and server doesn't support compress
             if (!_protocol.capabilities().contains("QRESYNC", Qt::CaseInsensitive)) {
                 _strategyContext->commandTransition(IMAP_Login, status);
@@ -724,14 +693,11 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
                 }
             }
             break;
-        }
 
         case IMAP_Enable:
-        {
             // Equivalent to having just logged in
             _strategyContext->commandTransition(IMAP_Login, status);
             break;
-        }
 
         case IMAP_Noop:
         {
@@ -741,16 +707,13 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
         }
 
         case IMAP_Logout:
-        {
             // Ensure connection is closed on logout
             _protocol.close();
-            return;
-        }
+            break;
 
         case IMAP_Select:
         case IMAP_Examine:
         case IMAP_QResync:
-        {
             if (_protocol.mailbox().isSelected()) {
                 const ImapMailboxProperties &properties(_protocol.mailbox());
 
@@ -783,14 +746,9 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
                     }
                 }
             }
-        }
         // fall through
-
         default:
-        {
             _strategyContext->commandTransition(command, status);
-            break;
-        }
     }
 }
 
@@ -1166,36 +1124,36 @@ public:
                     return false;
                 }
             } else if (existingFile.open(QIODevice::ReadOnly)) {
-                if (dataFile.open(QIODevice::WriteOnly)) {
-                    qint64 existingLength = QFileInfo(existingFile).size();
-                    qint64 dataLength = QFileInfo(dataFile).size();
-
-                    if (!dataFile.resize(existingLength + dataLength)) {
-                        qCWarning(lcMailStore) << "Unable to resize data file:" << fileName;
-                        return false;
-                    } else {
-                        QFile readDataFile(fileName);
-                        if (!readDataFile.open(QIODevice::ReadOnly)) {
-                            qCWarning(lcMailStore) << "Unable to reopen data file for read:" << fileName;
-                            return false;
-                        }
-
-                        // Copy the data to the end of the file
-                        dataFile.seek(existingLength);
-                        if (!copyFileData(readDataFile, dataFile, dataLength)) {
-                            qCWarning(lcMailStore) << "Unable to copy existing data in file:" << fileName;
-                            return false;
-                        }
-                    }
-
-                    // Copy the existing data before the new data
-                    dataFile.seek(0);
-                    if (!copyFileData(existingFile, dataFile, existingLength)) {
-                        qCWarning(lcMailStore) << "Unable to copy existing data to file:" << fileName;
-                        return false;
-                    }
-                } else {
+                if (!dataFile.open(QIODevice::WriteOnly)) {
                     qCWarning(lcMailStore) << "Unable to open new data for write:" << fileName;
+                    return false;
+                }
+
+                qint64 existingLength = QFileInfo(existingFile).size();
+                qint64 dataLength = QFileInfo(dataFile).size();
+
+                if (!dataFile.resize(existingLength + dataLength)) {
+                    qCWarning(lcMailStore) << "Unable to resize data file:" << fileName;
+                    return false;
+                }
+
+                QFile readDataFile(fileName);
+                if (!readDataFile.open(QIODevice::ReadOnly)) {
+                    qCWarning(lcMailStore) << "Unable to reopen data file for read:" << fileName;
+                    return false;
+                }
+
+                // Copy the data to the end of the file
+                dataFile.seek(existingLength);
+                if (!copyFileData(readDataFile, dataFile, dataLength)) {
+                    qCWarning(lcMailStore) << "Unable to copy existing data in file:" << fileName;
+                    return false;
+                }
+
+                // Copy the existing data before the new data
+                dataFile.seek(0);
+                if (!copyFileData(existingFile, dataFile, existingLength)) {
+                    qCWarning(lcMailStore) << "Unable to copy existing data to file:" << fileName;
                     return false;
                 }
 

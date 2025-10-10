@@ -469,7 +469,6 @@ void tst_QMailMessageSet::test_filtermessageset()
 
     QCOMPARE(model.data(set1, QMailMessageSetModel::DisplayNameRole, 0).toString(), newname);
     QCOMPARE(model.data(set1, QMailMessageSetModel::MessageKeyRole, 0).value<QMailMessageKey>(), keysms);
-
 }
 
 void tst_QMailMessageSet::test_messagesetcontainer()

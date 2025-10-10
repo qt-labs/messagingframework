@@ -120,7 +120,7 @@ public slots:
                                       const QMailFolderIdList &_folderIds,
                                       uint minimum,
                                       const QMailMessageSortKey &sort,
-                                      bool retrieveAll);
+                                      bool accountCheck);
 
     bool retrieveMessages(const QMailMessageIdList &messageIds,
                           QMailRetrievalAction::RetrievalSpecification spec) override;
@@ -267,7 +267,8 @@ bool ImapService::Source::retrieveNewMessages(const QMailAccountId &accountId, c
     // Use defaultMinimum so that for a freshly created push enabled account
     // defaultMinimum messages are retrieved. But this means when new push
     // emails arrive, flags will be checked, but for only defaultMinimum messages.
-    return retrieveMessageLists(accountId, ids, QMailRetrievalAction::defaultMinimum(), QMailMessageSortKey(), false /* not accountCheck, don't detect flag changes and removed messages */);
+    return retrieveMessageLists(accountId, ids, QMailRetrievalAction::defaultMinimum(), QMailMessageSortKey(),
+                                false /* not accountCheck, don't detect flag changes and removed messages */);
 }
 
 bool ImapService::Source::retrieveMessageLists(const QMailAccountId &accountId, const QMailFolderIdList &_folderIds, uint minimum, const QMailMessageSortKey &sort, bool accountCheck)
@@ -1321,11 +1322,13 @@ void ImapService::Source::retrievalCompleted()
             _mailCheckPhase = RetrieveMessages;
             if (!_mailCheckFolderId.isValid()) {
                 // Full check all folders
-                _actionQueue.append(new RetrieveMessageListCommand(_service->accountId(), QMailFolderId(), QMailRetrievalAction::defaultMinimum()));
+                _actionQueue.append(new RetrieveMessageListCommand(_service->accountId(), QMailFolderId(),
+                                                                   QMailRetrievalAction::defaultMinimum()));
             } else if (_queuedFoldersFullCheck.contains(_mailCheckFolderId)) {
                 // Full check only _mailCheckFolderId
                 folders.append(_mailCheckFolderId);
-                _actionQueue.append(new RetrieveMessageListsCommand(_service->accountId(), folders, QMailRetrievalAction::defaultMinimum()));
+                _actionQueue.append(new RetrieveMessageListsCommand(_service->accountId(), folders,
+                                                                    QMailRetrievalAction::defaultMinimum()));
             } else {
                 // Retrieve only new mail in _mailCheckFolderId
                 folders.append(_mailCheckFolderId);

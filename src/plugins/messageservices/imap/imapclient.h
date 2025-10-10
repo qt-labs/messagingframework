@@ -135,9 +135,9 @@ public slots:
 
 protected slots:
     void connectionInactive();
-    void commandCompleted(const ImapCommand, const OperationStatus);
-    void checkCommandResponse(const ImapCommand, const OperationStatus);
-    void commandTransition(const ImapCommand, const OperationStatus);
+    void commandCompleted(ImapCommand, OperationStatus);
+    void checkCommandResponse(ImapCommand, OperationStatus);
+    void commandTransition(ImapCommand, OperationStatus);
     void transportStatus(const QString& status);
     void messageBufferFlushed();
     void onCredentialsStatusChanged();
