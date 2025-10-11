@@ -215,12 +215,6 @@
       <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
       <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="QMailMessagePartContainer::Location"/>
     </method>
-    <method name="retrieveAll">
-      <arg name="actionId" type="t" direction="in"/>
-      <arg name="accountId" type="(t)" direction="in"/>
-      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="QMailAccountId"/>
-    </method>
     <method name="exportUpdates">
       <arg name="actionId" type="t" direction="in"/>
       <arg name="accountId" type="(t)" direction="in"/>

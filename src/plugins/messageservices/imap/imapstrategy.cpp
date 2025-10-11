@@ -2463,7 +2463,7 @@ void ImapRetrieveFolderListStrategy::setQuickList(bool quickList)
 {
     // Ideally clients wouldn't request listing all folders in an account as some accounts can be huge
     // but if the client does request this then do it as efficiently as possible
-    // Doesn't work for search, synchronizeAll and retrieveAll subclasses.
+    // Doesn't work for search and synchronizeAll subclasses.
     _quickList = quickList;
 }
 
@@ -3034,18 +3034,6 @@ void ImapSynchronizeAllStrategy::folderPreviewCompleted(ImapStrategyContextBase 
         updateAccountLastSynchronized(context);
     }
 
-}
-
-
-/* A strategy to retrieve all messages from an account.
-
-   That is to retrieve message previews for all known messages
-   in an account, and to complete messages where appropriate.
-*/
-ImapRetrieveAllStrategy::ImapRetrieveAllStrategy()
-{
-    // This is just synchronize without update-exporting
-    setOptions(static_cast<Options>(RetrieveMail | ImportChanges));
 }
 
 

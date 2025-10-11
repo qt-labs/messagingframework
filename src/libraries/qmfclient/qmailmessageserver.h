@@ -117,7 +117,6 @@ public Q_SLOTS:
     void retrieveMessageRange(quint64, const QMailMessageId &messageId, uint minimum);
     void retrieveMessagePartRange(quint64, const QMailMessagePart::Location &partLocation, uint minimum);
 
-    void retrieveAll(quint64, const QMailAccountId &accountId);
     void exportUpdates(quint64, const QMailAccountId &accountId);
 
     void synchronize(quint64, const QMailAccountId &accountId);

@@ -85,7 +85,6 @@ public slots:
     bool retrieveMessages(const QMailMessageIdList &messageIds,
                           QMailRetrievalAction::RetrievalSpecification spec) override;
 
-    bool retrieveAll(const QMailAccountId &accountId) override;
     bool exportUpdates(const QMailAccountId &accountId) override;
 
     bool synchronize(const QMailAccountId &accountId) override;
@@ -194,19 +193,6 @@ bool PopService::Source::retrieveMessages(const QMailMessageIdList &messageIds, 
     return true;
 }
 
-bool PopService::Source::retrieveAll(const QMailAccountId &accountId)
-{
-    if (!accountId.isValid()) {
-        _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("No account specified"));
-        return false;
-    }
-
-    _service->_client.setOperation(QMailRetrievalAction::MetaData);
-    _service->_client.newConnection();
-    _unavailable = true;
-    return true;
-}
-
 bool PopService::Source::exportUpdates(const QMailAccountId &accountId)
 {
     if (!accountId.isValid()) {
@@ -221,7 +207,15 @@ bool PopService::Source::exportUpdates(const QMailAccountId &accountId)
 
 bool PopService::Source::synchronize(const QMailAccountId &accountId)
 {
-    return retrieveAll(accountId);
+    if (!accountId.isValid()) {
+        _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("No account specified"));
+        return false;
+    }
+
+    _service->_client.setOperation(QMailRetrievalAction::MetaData);
+    _service->_client.newConnection();
+    _unavailable = true;
+    return true;
 }
 
 bool PopService::Source::deleteMessages(const QMailMessageIdList &messageIds)

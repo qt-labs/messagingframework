@@ -52,7 +52,7 @@ enum QMailServerRequestType {
     RetrieveMessagePartRequestType,
     RetrieveMessageRangeRequestType,
     RetrieveMessagePartRangeRequestType,
-    RetrieveAllRequestType,
+    RetrieveAllRequestType /* deprecated */,
     ExportUpdatesRequestType,
     SynchronizeRequestType,
     CopyMessagesRequestType,

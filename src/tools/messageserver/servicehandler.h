@@ -80,7 +80,6 @@ public slots:
     void retrieveMessagePart(quint64, const QMailMessagePart::Location &partLocation);
     void retrieveMessageRange(quint64, const QMailMessageId &messageId, uint minimum);
     void retrieveMessagePartRange(quint64, const QMailMessagePart::Location &partLocation, uint minimum);
-    void retrieveAll(quint64, const QMailAccountId &accountId);
     void exportUpdates(quint64, const QMailAccountId &accountId);
     void synchronize(quint64, const QMailAccountId &accountId);
     void onlineDeleteMessages(quint64 action, const QMailMessageIdList& mailList, QMailStore::MessageRemovalOption);
@@ -272,7 +271,6 @@ private:
     bool dispatchRetrieveMessagePart(Request *req);
     bool dispatchRetrieveMessageRange(Request *req);
     bool dispatchRetrieveMessagePartRange(Request *req);
-    bool dispatchRetrieveAll(Request *req);
     bool dispatchExportUpdates(Request *req);
     bool dispatchSynchronize(Request *req);
     bool dispatchOnlineDeleteMessages(Request *req);

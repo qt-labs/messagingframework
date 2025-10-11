@@ -1950,52 +1950,6 @@ bool ServiceHandler::dispatchRetrieveMessagePartRange(Request *req)
     return true;
 }
 
-class RetrieveAllRequest : public Request
-{
-public:
-    RetrieveAllRequest(QMailAccountId accountId)
-        : Request(RetrieveAllRequestType)
-        , accountId(accountId) {}
-
-    QMailAccountId accountId;
-};
-
-void ServiceHandler::retrieveAll(quint64 action, const QMailAccountId &accountId)
-{
-    QSet<QMailMessageService*> sources(sourceServiceSet(accountId));
-    if (sources.isEmpty()) {
-        reportFailure(action, QMailServiceAction::Status::ErrNoConnection, tr("Unable to retrieve all messages for unconfigured account"));
-    } else {
-        enqueueRequest(new RetrieveAllRequest(accountId), action, sources,
-                       &ServiceHandler::dispatchRetrieveAll, &ServiceHandler::retrievalReady);
-    }
-}
-
-bool ServiceHandler::dispatchRetrieveAll(Request *req)
-{
-    RetrieveAllRequest *request = static_cast<RetrieveAllRequest*>(req);
-
-    if (QMailMessageSource *source = accountSource(request->accountId)) {
-        bool success(sourceService.value(source)->usesConcurrentActions()
-            ? source->retrieveAll(request->accountId, request->action)
-            : source->retrieveAll(request->accountId));
-
-        if (success) {
-            // This account is now retrieving
-            setRetrievalInProgress(request->accountId, true);
-        } else {
-            qCWarning(lcMessaging) << "Unable to service request to retrieve all messages for account:" << request->accountId;
-            return false;
-        }
-    } else {
-        reportFailure(request->action, QMailServiceAction::Status::ErrFrameworkFault,
-                      tr("Unable to locate source for account"), request->accountId);
-        return false;
-    }
-
-    return true;
-}
-
 class ExportUpdatesRequest : public Request
 {
 public:

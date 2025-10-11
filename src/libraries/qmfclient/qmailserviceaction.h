@@ -187,7 +187,6 @@ public Q_SLOTS:
     void exportUpdates(const QMailAccountId &accountId);
     void synchronize(const QMailAccountId &accountId, uint minimum);
 
-    void retrieveAll(const QMailAccountId &accountId); // deprecated
     void synchronizeAll(const QMailAccountId &accountId); // deprecated
 
 private:

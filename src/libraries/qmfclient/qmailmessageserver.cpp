@@ -648,21 +648,6 @@ void QMailMessageServer::retrieveMessagePartRange(quint64 action, const QMailMes
 }
 
 /*!
-    Requests that the message server retrieve the meta data for all messages available
-    for the account \a accountId.
-    The request has the identifier \a action.
-
-    This function requires the device to be online, it may initiate communication
-    with external servers.
-
-    \sa retrievalCompleted()
-*/
-void QMailMessageServer::retrieveAll(quint64 action, const QMailAccountId &accountId)
-{
-    d->retrieveAll(action, accountId);
-}
-
-/*!
     Requests that the message server update the external server with changes that have
     been effected on the local device for account \a accountId.
     Local changes to \l QMailMessage::Read, and \l QMailMessage::Important message status

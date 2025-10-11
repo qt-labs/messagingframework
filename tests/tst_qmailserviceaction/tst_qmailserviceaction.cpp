@@ -412,7 +412,6 @@ void tst_QMailServiceAction::test_retrievalaction()
 
     action.exportUpdates(accountId1);
     action.synchronize(accountId1, min);
-    action.retrieveAll(accountId2);
 }
 
 void tst_QMailServiceAction::test_transmitaction()

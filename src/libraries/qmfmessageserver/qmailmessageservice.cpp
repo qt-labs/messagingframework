@@ -650,7 +650,7 @@ bool QMailMessageSource::retrieveMessagePartRange(const QMailMessagePart::Locati
 }
 
 /*!
-    Invoked by the message server to initiate a retrieval operation.
+    Deprecated. Was invoked by the message server to initiate a retrieval operation.
 
     Retrieve all folders and meta data for all messages available for the account \a accountId.
 

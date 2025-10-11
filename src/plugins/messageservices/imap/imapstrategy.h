@@ -626,13 +626,6 @@ private:
     QStringList _flaggedUids;
 };
 
-class ImapRetrieveAllStrategy : public ImapSynchronizeAllStrategy
-{
-public:
-    ImapRetrieveAllStrategy();
-    virtual ~ImapRetrieveAllStrategy() {}
-};
-
 class ImapSearchMessageStrategy : public ImapRetrieveFolderListStrategy
 {
 public:
@@ -858,7 +851,6 @@ public:
     ImapFlagMessagesStrategy flagMessagesStrategy;
     ImapDeleteMessagesStrategy deleteMessagesStrategy;
     ImapRetrieveMessageListStrategy retrieveMessageListStrategy;
-    ImapRetrieveAllStrategy retrieveAllStrategy;
     ImapCreateFolderStrategy createFolderStrategy;
     ImapDeleteFolderStrategy deleteFolderStrategy;
     ImapRenameFolderStrategy renameFolderStrategy;

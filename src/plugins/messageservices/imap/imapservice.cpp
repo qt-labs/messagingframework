@@ -129,7 +129,6 @@ public slots:
     bool retrieveMessageRange(const QMailMessageId &messageId, uint minimum) override;
     bool retrieveMessagePartRange(const QMailMessagePart::Location &partLocation, uint minimum) override;
 
-    bool retrieveAll(const QMailAccountId &accountId) override;
     bool exportUpdates(const QMailAccountId &accountId) override;
 
     bool synchronize(const QMailAccountId &accountId) override;
@@ -477,31 +476,6 @@ bool ImapService::Source::retrieveMessagePartRange(const QMailMessagePart::Locat
     _service->_client->strategyContext()->selectedStrategy.selectedSectionsAppend(partLocation, minimum);
     appendStrategy(&_service->_client->strategyContext()->selectedStrategy);
 
-    if (!_unavailable)
-        return initiateStrategy();
-    return true;
-}
-
-bool ImapService::Source::retrieveAll(const QMailAccountId &accountId)
-{
-    Q_ASSERT(!_unavailable);
-    if (!_service->_client) {
-        _service->errorOccurred(QMailServiceAction::Status::ErrFrameworkFault, tr("Account disabled"));
-        return false;
-    }
-
-    if (!accountId.isValid()) {
-        _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("No account specified"));
-        return false;
-    }
-
-    _service->_client->strategyContext()->retrieveAllStrategy.clearSelection();
-    _service->_client->strategyContext()->retrieveAllStrategy.setBase(QMailFolderId());
-    _service->_client->strategyContext()->retrieveAllStrategy.setQuickList(false);
-    _service->_client->strategyContext()->retrieveAllStrategy.setDescending(true);
-    _service->_client->strategyContext()->retrieveAllStrategy.setOperation(_service->_client->strategyContext(), QMailRetrievalAction::Auto);
-    _service->_client->strategyContext()->retrieveAllStrategy.setIgnoreSyncFlag(false);
-    appendStrategy(&_service->_client->strategyContext()->retrieveAllStrategy);
     if (!_unavailable)
         return initiateStrategy();
     return true;

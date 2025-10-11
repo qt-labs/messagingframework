@@ -138,8 +138,10 @@ public Q_SLOTS:
     virtual bool retrieveMessagePartRange(const QMailMessagePart::Location &partLocation, uint minimum);
     virtual bool retrieveMessagePartRange(const QMailMessagePart::Location &partLocation, uint minimum, quint64 action);
 
+    // deprecated
     virtual bool retrieveAll(const QMailAccountId &accountId);
     virtual bool retrieveAll(const QMailAccountId &accountId, quint64 action);
+
     virtual bool exportUpdates(const QMailAccountId &accountId);
     virtual bool exportUpdates(const QMailAccountId &accountId, quint64 action);
 

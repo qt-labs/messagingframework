@@ -814,11 +814,6 @@ void QMailRetrievalActionPrivate::retrieveMessagePartRange(const QMailMessagePar
     _server->retrieveMessagePartRange(newAction(), partLocation, minimum);
 }
 
-void QMailRetrievalActionPrivate::retrieveAll(const QMailAccountId &accountId)
-{
-    _server->retrieveAll(newAction(), accountId);
-}
-
 void QMailRetrievalActionPrivate::exportUpdatesHelper(const QMailAccountId &accountId)
 {
     _server->exportUpdates(newAction(), accountId);
@@ -1164,33 +1159,6 @@ void QMailRetrievalAction::retrieveMessagePartRange(const QMailMessagePart::Loca
 {
     Q_D(QMailRetrievalAction);
     d->retrieveMessagePartRange(partLocation, minimum);
-}
-
-/*!
-    \deprecated
-
-    Requests that the message server retrieve all folders and meta data for messages available
-    for the account \a accountId.
-
-    All folders within the account will be discovered and searched for child folders.
-    The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and
-    QMailFolder::serverUndiscoveredCount() properties will be updated for each folder
-    in the account.
-
-    Meta data will be retrieved for every message found in the account.
-    New messages will be added to the mail store as they are retrieved, and
-    marked with the \l QMailMessage::New status flag.  Messages that are no longer
-    available will be marked with the \l QMailMessage::Removed status flag.
-
-    This function requires the device to be online, it may initiate communication
-    with external servers.
-
-    \sa retrieveFolderList(), retrieveMessageList(), retrieveMessageLists()
-*/
-void QMailRetrievalAction::retrieveAll(const QMailAccountId &accountId)
-{
-    Q_D(QMailRetrievalAction);
-    d->retrieveAll(accountId);
 }
 
 /*!
