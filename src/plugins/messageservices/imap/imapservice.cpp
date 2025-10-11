@@ -131,8 +131,6 @@ public slots:
 
     bool exportUpdates(const QMailAccountId &accountId) override;
 
-    bool synchronize(const QMailAccountId &accountId) override;
-
     bool deleteMessages(const QMailMessageIdList &ids) override;
 
     bool copyMessages(const QMailMessageIdList &ids, const QMailFolderId &destinationId) override;
@@ -525,33 +523,6 @@ bool ImapService::Source::exportUpdates(const QMailAccountId &accountId)
 
     _service->_client->strategyContext()->exportUpdatesStrategy.clearSelection();
     appendStrategy(&_service->_client->strategyContext()->exportUpdatesStrategy);
-    if (!_unavailable)
-        return initiateStrategy();
-    return true;
-}
-
-bool ImapService::Source::synchronize(const QMailAccountId &accountId)
-{
-    Q_ASSERT(!_unavailable);
-    if (!_service->_client) {
-        _service->errorOccurred(QMailServiceAction::Status::ErrFrameworkFault, tr("Account disabled"));
-        return false;
-    }
-
-    if (!accountId.isValid()) {
-        _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("No account specified"));
-        return false;
-    }
-
-    queueDisconnectedOperations(accountId);
-
-    _service->_client->strategyContext()->synchronizeAccountStrategy.clearSelection();
-    _service->_client->strategyContext()->synchronizeAccountStrategy.setBase(QMailFolderId());
-    _service->_client->strategyContext()->synchronizeAccountStrategy.setQuickList(false);
-    _service->_client->strategyContext()->synchronizeAccountStrategy.setDescending(true);
-    _service->_client->strategyContext()->synchronizeAccountStrategy.setOperation(_service->_client->strategyContext(), QMailRetrievalAction::Auto);
-    _service->_client->strategyContext()->synchronizeAccountStrategy.setIgnoreSyncFlag(false);
-    appendStrategy(&_service->_client->strategyContext()->synchronizeAccountStrategy);
     if (!_unavailable)
         return initiateStrategy();
     return true;

@@ -695,7 +695,7 @@ bool QMailMessageSource::exportUpdates(const QMailAccountId &accountId)
 }
 
 /*!
-    Invoked by the message server to initiate a synchronization operation.
+    Deprecated. Was invoked by the message server to initiate a synchronization operation.
 
     Synchronize the set of known folder and message identifiers with those currently
     available for the account identified by \a accountId.

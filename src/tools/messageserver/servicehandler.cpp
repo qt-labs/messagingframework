@@ -1993,52 +1993,6 @@ bool ServiceHandler::dispatchExportUpdates(Request *req)
     return true;
 }
 
-class SynchronizeRequest : public Request
-{
-public:
-    SynchronizeRequest(QMailAccountId accountId)
-        : Request(SynchronizeRequestType)
-        , accountId(accountId) {}
-
-    QMailAccountId accountId;
-};
-
-void ServiceHandler::synchronize(quint64 action, const QMailAccountId &accountId)
-{
-    QSet<QMailMessageService*> sources(sourceServiceSet(accountId));
-    if (sources.isEmpty()) {
-        reportFailure(action, QMailServiceAction::Status::ErrNoConnection, tr("Unable to synchronize unconfigured account"));
-    } else {
-        enqueueRequest(new SynchronizeRequest(accountId), action, sources,
-                       &ServiceHandler::dispatchSynchronize, &ServiceHandler::retrievalReady);
-    }
-}
-
-bool ServiceHandler::dispatchSynchronize(Request *req)
-{
-    SynchronizeRequest *request = static_cast<SynchronizeRequest*>(req);
-
-    if (QMailMessageSource *source = accountSource(request->accountId)) {
-        bool success(sourceService.value(source)->usesConcurrentActions()
-            ? source->exportUpdates(request->accountId, request->action)
-            : source->exportUpdates(request->accountId));
-
-        if (success) {
-            // This account is now retrieving
-            setRetrievalInProgress(request->accountId, true);
-        } else {
-            qCWarning(lcMessaging) << "Unable to service request to synchronize account:" << request->accountId;
-            return false;
-        }
-    } else {
-        reportFailure(request->action, QMailServiceAction::Status::ErrFrameworkFault,
-                      tr("Unable to locate source for account"), request->accountId);
-        return false;
-    }
-
-    return true;
-}
-
 class OnlineDeleteMessagesRequest : public Request
 {
 public:

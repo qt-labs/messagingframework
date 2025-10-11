@@ -667,28 +667,6 @@ void QMailMessageServer::exportUpdates(quint64 action, const QMailAccountId &acc
 }
 
 /*!
-    Requests that the message server synchronize the messages and folders in the account
-    identified by \a accountId.
-
-    Newly discovered messages should have their meta data retrieved,
-    local changes to \l QMailMessage::Read, and \l QMailMessage::Important message status
-    flags should be exported to the external server, and messages that have been removed
-    locally using the \l QMailStore::CreateRemovalRecord option should be removed from the
-    external server.
-
-    The request has the identifier \a action.
-
-    This function requires the device to be online, it may initiate communication
-    with external servers.
-
-    \sa retrievalCompleted()
-*/
-void QMailMessageServer::synchronize(quint64 action, const QMailAccountId &accountId)
-{
-    d->synchronize(action, accountId);
-}
-
-/*!
     Requests that the MessageServer create a copy of each message listed in \a mailList
     in the folder identified by \a destinationId.
 

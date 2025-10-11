@@ -81,7 +81,6 @@ public slots:
     void retrieveMessageRange(quint64, const QMailMessageId &messageId, uint minimum);
     void retrieveMessagePartRange(quint64, const QMailMessagePart::Location &partLocation, uint minimum);
     void exportUpdates(quint64, const QMailAccountId &accountId);
-    void synchronize(quint64, const QMailAccountId &accountId);
     void onlineDeleteMessages(quint64 action, const QMailMessageIdList& mailList, QMailStore::MessageRemovalOption);
     void discardMessages(quint64 action, QMailMessageIdList messageIds);
     void onlineCopyMessages(quint64 action, const QMailMessageIdList& mailList, const QMailFolderId &destination);
@@ -272,7 +271,6 @@ private:
     bool dispatchRetrieveMessageRange(Request *req);
     bool dispatchRetrieveMessagePartRange(Request *req);
     bool dispatchExportUpdates(Request *req);
-    bool dispatchSynchronize(Request *req);
     bool dispatchOnlineDeleteMessages(Request *req);
     bool dispatchOnlineCopyMessages(Request *req);
     bool dispatchCopyToLocal(Request *req);

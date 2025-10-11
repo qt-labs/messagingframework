@@ -825,17 +825,12 @@ void QMailRetrievalActionPrivate::exportUpdates(const QMailAccountId &accountId)
     exportUpdatesHelper(accountId);
 }
 
-void QMailRetrievalActionPrivate::synchronizeAll(const QMailAccountId &accountId)
-{
-    Q_ASSERT(!_pendingActions.count());
-    _server->synchronize(newAction(), accountId);
-}
-
 void QMailRetrievalActionPrivate::synchronize(const QMailAccountId &accountId, uint minimum)
 {
     Q_ASSERT(!_pendingActions.count());
     newAction();
 
+    // TODO: consider if we should just (re)introduce a synchronize IPC method and let server deal with sub-actions
     QMailRetrievalAction *exportAction = new QMailRetrievalAction();
     QMailExportUpdatesCommand *exportCommand = new QMailExportUpdatesCommand(exportAction->d_func(), accountId);
     appendSubAction(exportAction, QSharedPointer<QMailServiceActionCommand>(exportCommand));
@@ -1184,38 +1179,6 @@ void QMailRetrievalAction::exportUpdates(const QMailAccountId &accountId)
     } else {
         d->exportUpdates(accountId);
     }
-}
-
-/*!
-    \deprecated
-
-    Requests that the message server synchronize the set of known folder and message
-    identifiers with those currently available for the account identified by \a accountId.
-    Newly discovered messages should have their meta data retrieved, messages that have been
-    removed locally using the \l QMailStore::CreateRemovalRecord option should be removed
-    from the external server.
-
-    Changes to the \l QMailMessage::Read, and \l QMailMessage::Important status flags of a
-    message should be exported to the external server, and the status flags of the message
-    should be updated to reflect any changes to the message on the external server.
-
-    New messages will be added to the mail store as they are discovered, and
-    marked with the \l QMailMessage::New status flag.  Messages that are no longer
-    available will be marked with the \l QMailMessage::Removed status flag.
-
-    The folder structure of the account will be synchronized with that available from
-    the external server.  The QMailFolder::serverCount(), QMailFolder::serverUnreadCount() and
-    QMailFolder::serverUndiscoveredCount() properties will be updated for each folder.
-
-    This function requires the device to be online, it may initiate communication
-    with external servers.
-
-    \sa retrieveFolderList(), retrieveMessageList(), retrieveMessageLists(), exportUpdates()
-*/
-void QMailRetrievalAction::synchronizeAll(const QMailAccountId &accountId)
-{
-    Q_D(QMailRetrievalAction);
-    d->synchronizeAll(accountId);
 }
 
 /*!

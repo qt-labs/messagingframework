@@ -221,12 +221,6 @@
       <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
       <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="QMailAccountId"/>
     </method>
-    <method name="synchronize">
-      <arg name="actionId" type="t" direction="in"/>
-      <arg name="accountId" type="(t)" direction="in"/>
-      <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
-      <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="QMailAccountId"/>
-    </method>
     <method name="onlineDeleteMessages">
       <arg name="actionId" type="t" direction="in"/>
       <arg name="mailList" type="a(t)" direction="in"/>

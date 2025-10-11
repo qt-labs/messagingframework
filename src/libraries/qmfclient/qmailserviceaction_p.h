@@ -162,8 +162,6 @@ public:
     void exportUpdates(const QMailAccountId &accountId);
     void synchronize(const QMailAccountId &accountId, uint minimum);
 
-    void synchronizeAll(const QMailAccountId &accountId);
-
 protected slots:
     void retrievalCompleted(quint64);
 

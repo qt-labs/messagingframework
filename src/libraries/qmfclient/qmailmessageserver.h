@@ -119,8 +119,6 @@ public Q_SLOTS:
 
     void exportUpdates(quint64, const QMailAccountId &accountId);
 
-    void synchronize(quint64, const QMailAccountId &accountId);
-
     void onlineCopyMessages(quint64, const QMailMessageIdList& mailList, const QMailFolderId &destinationId);
     void onlineMoveMessages(quint64, const QMailMessageIdList& mailList, const QMailFolderId &destinationId);
     void onlineFlagMessagesAndMoveToStandardFolder(quint64, const QMailMessageIdList& mailList, quint64 setMask, quint64 unsetMask);

@@ -368,7 +368,7 @@ void tst_MessageServer::completeRetrievalImap_impl()
         /* Get message count for this account */
         QMailRetrievalAction retrieve;
 
-        retrieve.synchronizeAll(account.id());
+        retrieve.synchronize(account.id(), 100);
         waitForActivity(&retrieve, QMailServiceAction::Successful, MAXTIME);
         if (QTest::currentTestFailed())
             return;
@@ -613,7 +613,7 @@ void tst_MessageServer::removeMessages_impl()
     /* Get message count for this account */
     QMailRetrievalAction retrieve;
 
-    retrieve.synchronizeAll(account.id());
+    retrieve.synchronize(account.id(), 100);
     waitForActivity(&retrieve, QMailServiceAction::Successful, MAXTIME);
     if (QTest::currentTestFailed())
         return;
@@ -684,7 +684,7 @@ void tst_MessageServer::replaceMessages_impl()
     /* Get message count for this account */
     QMailRetrievalAction retrieve;
 
-    retrieve.synchronizeAll(account.id());
+    retrieve.synchronize(account.id(), 100);
     waitForActivity(&retrieve, QMailServiceAction::Successful, MAXTIME);
     if (QTest::currentTestFailed())
         return;
@@ -711,7 +711,7 @@ void tst_MessageServer::replaceMessages_impl()
         QCOMPARE(ms->queryMessages().count(), 0);
 
         /* Redownload the same messages. */
-        retrieve.synchronizeAll(account.id());
+        retrieve.synchronize(account.id(), 100);
         waitForActivity(&retrieve, QMailServiceAction::Successful, MAXTIME);
         if (QTest::currentTestFailed())
             return;

@@ -145,6 +145,7 @@ public Q_SLOTS:
     virtual bool exportUpdates(const QMailAccountId &accountId);
     virtual bool exportUpdates(const QMailAccountId &accountId, quint64 action);
 
+    // deprecated
     virtual bool synchronize(const QMailAccountId &accountId);
     virtual bool synchronize(const QMailAccountId &accountId, quint64 action);
 
