@@ -1714,7 +1714,7 @@ void ServiceHandler::createStandardFolders(quint64 action, const QMailAccountId 
 
 bool ServiceHandler::dispatchCreateStandardFolders(Request *req)
 {
-    RetrieveNewMessagesRequest *request = static_cast<RetrieveNewMessagesRequest*>(req);
+    CreateStandardFoldersRequest *request = static_cast<CreateStandardFoldersRequest*>(req);
 
     if (QMailMessageSource *source = accountSource(request->accountId)) {
         bool success(sourceService.value(source)->usesConcurrentActions()
@@ -2019,7 +2019,7 @@ void ServiceHandler::exportUpdates(quint64 action, const QMailAccountId &account
 
 bool ServiceHandler::dispatchExportUpdates(Request *req)
 {
-    RetrieveAllRequest *request = static_cast<RetrieveAllRequest*>(req);
+    ExportUpdatesRequest *request = static_cast<ExportUpdatesRequest*>(req);
 
     if (QMailMessageSource *source = accountSource(request->accountId)) {
         bool success(sourceService.value(source)->usesConcurrentActions()
