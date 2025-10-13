@@ -23,7 +23,7 @@ target_include_directories(MessageServer PUBLIC
   ../../libraries/qmfclient
   ../../libraries/qmfclient/support)
 target_link_libraries(MessageServer
-  PRIVATE Qt6::Core5Compat Qt6::DBus
+  PRIVATE Qt6::DBus
   PUBLIC Qt6::Core QmfClient QmfMessageServer)
 
 if (USE_HTML_PARSER)

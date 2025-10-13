@@ -30,13 +30,15 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
-#include <QFileInfo>
-#include <QRegExp>
+
+#include <QFile>
+#include <QRegularExpression>
 
 #include "popclient.h"
 #include "popauthenticator.h"
 #include "popconfiguration.h"
 #include "poplog.h"
+
 #include <longstream_p.h>
 #include <qmailstore.h>
 #include <qmailmessagebuffer.h>
@@ -425,11 +427,13 @@ void PopClient::sendCommand(const char *data, int len)
     out.writeRawData(data, len);
     out.writeRawData("\r\n", 2);
 
-    if (len){
+    if (len) {
         QString logData(data);
-        QRegExp passExp("^PASS\\s");
-        if (passExp.indexIn(logData) != -1) {
-            logData = logData.left(passExp.matchedLength()) + "<password hidden>";
+        QRegularExpression passExp("^PASS\\s");
+        QRegularExpressionMatch match = passExp.match(logData);
+
+        if (match.hasMatch()) {
+            logData = logData.left(match.capturedLength()) + "<password hidden>";
         }
 
         qCDebug(lcPOP) << "[" << config.id() << "]" << "SEND:" << logData;
@@ -473,23 +477,23 @@ void PopClient::processResponse(const QString &response)
 
     switch (status) {
     case Init:
-    {
         if (!response.isEmpty()) {
             // See if there is an APOP timestamp in the greeting
-            QRegExp timeStampPattern("<\\S+>");
-            if (timeStampPattern.indexIn(response) != -1)
-                capabilities.append(QString("APOP:") + timeStampPattern.cap(0));
+            QRegularExpression timeStampPattern("<\\S+>");
+            QRegularExpressionMatch match = timeStampPattern.match(response);
+
+            if (match.hasMatch())
+                capabilities.append(QString("APOP:") + match.captured());
         }
         break;
-    }
+
     case CapabilityTest:
-    {
         if (response[0] != '+') {
             // CAPA command not supported - just continue without it
             status = Capabilities;
         }
         break;
-    }
+
     case Capabilities:
     {
         QString capability(response.left(response.length() - 2));
@@ -502,7 +506,6 @@ void PopClient::processResponse(const QString &response)
         break;
     }
     case TLS:
-    {
         if (response[0] != '+') {
             // Unable to initiate TLS
             operationFailed(QMailServiceAction::Status::ErrLoginFailed, "");
@@ -512,9 +515,8 @@ void PopClient::processResponse(const QString &response)
             waitForInput = true;
         }
         break;
-    }
+
     case Auth:
-    {
         if (response[0] != '+') {
             // Authentication failed
             credentials->authFailureNotice(QStringLiteral("messageserver5"));
@@ -546,23 +548,24 @@ void PopClient::processResponse(const QString &response)
             }
         }
         break;
-    }
+
     case Uidl:
-    {
         if (response[0] != '+') {
             operationFailed(QMailServiceAction::Status::ErrUnknownResponse, response);
         }
         break;
-    }
+
     case UidList:
     {
         QString input(response.left(response.length() - 2));
         if (!input.isEmpty() && (input != QString('.'))) {
             // Extract the number and UID
-            QRegExp pattern("(\\d+) +(.*)");
-            if (pattern.indexIn(input) != -1) {
-                int number(pattern.cap(1).toInt());
-                QString uid(pattern.cap(2));
+            QRegularExpression pattern("(\\d+) +(.*)");
+            QRegularExpressionMatch match = pattern.match(input);
+
+            if (match.hasMatch()) {
+                int number(match.captured(1).toInt());
+                QString uid(match.captured(2));
 
                 serverUidNumber.insert(uid.toLatin1(), number);
                 serverUid.insert(number, uid.toLatin1());
@@ -578,20 +581,21 @@ void PopClient::processResponse(const QString &response)
         break;
     }
     case List:
-    {
         if (response[0] != '+') {
             operationFailed(QMailServiceAction::Status::ErrUnknownResponse, response);
         }
         break;
-    }
+
     case SizeList:
     {
         QString input(response.left(response.length() - 2));
         if (!input.isEmpty() && (input != QString('.'))) {
             // Extract the number and size
-            QRegExp pattern("(\\d+) +(\\d+)");
-            if (pattern.indexIn(input) != -1) {
-                serverSize.insert(pattern.cap(1).toInt(), pattern.cap(2).toUInt());
+            QRegularExpression pattern("(\\d+) +(\\d+)");
+            QRegularExpressionMatch match = pattern.match(input);
+
+            if (match.hasMatch()) {
+                serverSize.insert(match.captured(1).toInt(), match.captured(2).toUInt());
             }
 
             waitForInput = true;
@@ -604,15 +608,13 @@ void PopClient::processResponse(const QString &response)
     }
     case Retr:
     case Top:
-    {
         if (response[0] != '+') {
             operationFailed(QMailServiceAction::Status::ErrUnknownResponse, response);
         }
         break;
-    }
+
     case MessageDataRetr:
     case MessageDataTop:
-    {
         if (response != QString(".\r\n")) {
             if (response.startsWith('.')) {
                 // This line has been byte-stuffed
@@ -653,22 +655,19 @@ void PopClient::processResponse(const QString &response)
             createMail();
         }
         break;
-    }
+
     case DeleAfterRetr:
     case Dele:
-    {
         if (response[0] != '+') {
             operationFailed(QMailServiceAction::Status::ErrUnknownResponse, response);
         }
         break;
-    }
+
     case Exit:
-    {
         closeConnection(); //close regardless of response
         retrieveOperationCompleted();
         waitForInput = true;
         break;
-    }
 
     // The following cases do not relate to input processing
     case StartTLS:

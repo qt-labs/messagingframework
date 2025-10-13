@@ -1105,7 +1105,7 @@ void ServiceHandler::dispatchRequest()
 
 void ServiceHandler::updateAction(quint64 action)
 {
-    QLinkedList<quint64>::iterator it = std::find(mActionExpiry.begin(), mActionExpiry.end(), action);
+    QList<quint64>::iterator it = std::find(mActionExpiry.begin(), mActionExpiry.end(), action);
     if (it != mActionExpiry.end()) {
         // Move this action to the end of the list
         mActionExpiry.erase(it);
@@ -1190,7 +1190,7 @@ void ServiceHandler::expireAction()
         }
     }
 
-    QLinkedList<quint64>::iterator expiryIt(mActionExpiry.begin());
+    QList<quint64>::iterator expiryIt(mActionExpiry.begin());
     while (expiryIt != mActionExpiry.end()) {
         if (mActiveActions.contains(*expiryIt)) {
             quint64 nextExpiry(mActiveActions.value(*expiryIt).unixTimeExpiry);

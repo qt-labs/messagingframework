@@ -55,7 +55,7 @@ LessThanFunctorT::LessThanFunctorT(const QMailThreadSortKey& sortKey)
 {
 }
 
-LessThanFunctorT::~LessThanFunctorT(){}
+LessThanFunctorT::~LessThanFunctorT() {}
 
 bool LessThanFunctorT::operator()(const QMailThreadId& first, const QMailThreadId& second)
 {

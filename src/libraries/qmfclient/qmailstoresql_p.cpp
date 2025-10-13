@@ -38,13 +38,13 @@
 #include "qmailtimestamp.h"
 #include "qmailnamespace.h"
 #include "qmaillog.h"
+
 #include <QCoreApplication>
 #include <QDir>
 #include <QFile>
 #include <QSqlQuery>
 #include <QSqlError>
 #include <QSqlRecord>
-#include <QTextCodec>
 #include <QThread>
 #include <QRegularExpression>
 
@@ -9360,7 +9360,7 @@ QSqlQuery QMailStoreSql::performQuery(const QString& statement, bool batch, cons
         foreach (const QVariant& value, keyValues)
             query.addBindValue(value);
 
-        if (!execute(query, batch)){
+        if (!execute(query, batch)) {
             qCWarning(lcMailStore) << "Could not execute query" << descriptor;
         }
     }

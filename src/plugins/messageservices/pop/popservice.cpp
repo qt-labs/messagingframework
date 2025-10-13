@@ -119,7 +119,7 @@ bool PopService::Source::retrieveFolderList(const QMailAccountId &accountId, con
         _unavailable = true;
     } else {
         // Just report success
-        _service->updateStatus("");
+        _service->updateStatus(QString());
         QTimer::singleShot(0, this, SLOT(retrievalCompleted()));
     }
     return true;
@@ -155,7 +155,7 @@ bool PopService::Source::retrieveMessageList(const QMailAccountId &accountId, co
 
     if (!_service->_client.synchronizationEnabled(folderId)) {
         // Just report success
-        _service->updateStatus("");
+        _service->updateStatus(QString());
         QTimer::singleShot(0, this, SLOT(retrievalCompleted()));
         return true;
     }

@@ -33,10 +33,11 @@
 
 #include <QObject>
 #include <QTest>
+#include <QSettings>
+
 #include <qmailmessagelistmodel.h>
 #include <qmailmessagethreadedmodel.h>
 #include <qmailstore.h>
-#include <QSettings>
 #include <qmailnamespace.h>
 #include <locks_p.h>
 

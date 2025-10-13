@@ -33,6 +33,7 @@
 
 #include <QObject>
 #include <QTest>
+
 #include <qmailaddress.h>
 #include <qmailcodec.h>
 #include <qmailmessage.h>

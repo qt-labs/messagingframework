@@ -16,7 +16,7 @@ target_include_directories(tst_pop
   ../../src/libraries/qmfclient/support
   ../../src/plugins/messageservices/pop)
 target_link_libraries(tst_pop
-  PRIVATE Qt6::Core Qt6::Core5Compat Qt6::Network Qt6::Test QmfClient QmfMessageServer)
+  PRIVATE Qt6::Core Qt6::Network Qt6::Test QmfClient QmfMessageServer)
 
 add_test(NAME tst_pop COMMAND tst_pop)
 set_tests_properties(tst_pop PROPERTIES

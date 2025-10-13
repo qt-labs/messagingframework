@@ -21,7 +21,7 @@ target_include_directories(tst_messageserver
   ../../src/tools/messageserver
   ../../src/plugins/messageservices/imap)
 target_link_libraries(tst_messageserver
-  PRIVATE Qt6::Core Qt6::Core5Compat Qt6::Test QmfClient MessageServer)
+  PRIVATE Qt6::Core Qt6::Test QmfClient MessageServer)
 
 install(TARGETS tst_messageserver
   RUNTIME DESTINATION /opt/tests/qmf)

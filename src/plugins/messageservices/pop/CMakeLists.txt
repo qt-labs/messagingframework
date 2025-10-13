@@ -23,7 +23,7 @@ add_library(pop MODULE ${SRC} ${HEADERS})
 target_include_directories(pop
   PRIVATE ../../../libraries/qmfclient ../../../libraries/qmfclient/support ../../../libraries/qmfmessageserver)
 target_link_libraries(pop
-  PRIVATE Qt6::Core Qt6::Core5Compat Qt6::Network QmfClient QmfMessageServer)
+  PRIVATE Qt6::Core Qt6::Network QmfClient QmfMessageServer)
 if (BUILD_WIDGETS)
   target_link_libraries(pop PUBLIC QmfWidgets)
   target_include_directories(pop

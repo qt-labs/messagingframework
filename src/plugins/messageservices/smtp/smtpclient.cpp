@@ -37,14 +37,13 @@
 #include "smtpconfiguration.h"
 
 #include <QHostAddress>
-#include <QTextCodec>
 #include <QTemporaryFile>
 #include <QCoreApplication>
 #include <QDir>
 #include <QHostInfo>
 #include <QNetworkInterface>
 #include <QRandomGenerator>
-#include <QRegExp>
+#include <QRegularExpression>
 #include <QSslSocket>
 
 #include <qmailaddress.h>
@@ -347,9 +346,11 @@ void SmtpClient::sendCommand(const char *data, int len, bool maskDebug)
         qCDebug(lcSMTP) << "SEND: <login hidden>";
     } else {
         QString logCmd = QString::fromLatin1(data);
-        QRegExp loginExp("^AUTH\\s[^\\s]+\\s");
-        if (loginExp.indexIn(data) != -1) {
-            logCmd = logCmd.left(loginExp.matchedLength()) + "<login hidden>";
+        QRegularExpression loginExp("^AUTH\\s[^\\s]+\\s");
+        QRegularExpressionMatch match = loginExp.match(data);
+
+        if (match.hasMatch()) {
+            logCmd = logCmd.left(match.capturedLength()) + "<login hidden>";
         }
 
         qCDebug(lcSMTP) << "SEND:" << logCmd;

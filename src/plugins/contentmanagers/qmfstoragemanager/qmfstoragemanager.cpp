@@ -227,7 +227,7 @@ QMailStore::ErrorCode QmfStorageManager::addOrRename(QMailMessage *message, cons
         // Remove the file
         file->close();
         qCWarning(lcMailStore) << "Unable to save message content, removing temporary file:" << filePath;
-        if (!QFile::remove(filePath)){
+        if (!QFile::remove(filePath)) {
             qCWarning(lcMailStore) << "Unable to remove temporary message content file:" << filePath;
         }
 
@@ -582,7 +582,7 @@ static bool storePartUndecoded(const QMailMessagePart &part, const QString &file
     if (file->write(undecodedData) != undecodedData.length()) {
         qCWarning(lcMailStore) << "Unable to save message part content, removing temporary file:" << partFilePath;
         file->close();
-        if (!QFile::remove(partFilePath)){
+        if (!QFile::remove(partFilePath)) {
             qCWarning(lcMailStore)  << "Unable to remove temporary message part content file:" << partFilePath;
         }
         return false;
@@ -653,7 +653,7 @@ struct PartStorer
             if (!part.body().toStream(out, outputFormat) || (out.status() != QDataStream::Ok)) {
                 qCWarning(lcMailStore) << "Unable to save message part content, removing temporary file:" << partFilePath;
                 file->close();
-                if (!QFile::remove(partFilePath)){
+                if (!QFile::remove(partFilePath)) {
                     qCWarning(lcMailStore)  << "Unable to remove temporary message part content file:" << partFilePath;
                 }
                 return false;

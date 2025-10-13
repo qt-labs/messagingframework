@@ -31,13 +31,13 @@
 **
 ****************************************************************************/
 
-#include <QObject>
-#include <QTest>
 #include <qmailcodec.h>
 #include <qmailmessage.h>
+
+#include <QObject>
 #include <QTemporaryFile>
-#include <QTextCodec>
 #include <QDir>
+#include <QTest>
 
 Q_DECLARE_METATYPE(QMailMessageBody::EncodingStatus)
 Q_DECLARE_METATYPE(QMailMessageBody::EncodingFormat)

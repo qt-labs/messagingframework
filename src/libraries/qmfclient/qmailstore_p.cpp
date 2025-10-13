@@ -37,10 +37,10 @@
 #include "qmailtimestamp.h"
 #include "qmailnamespace.h"
 #include "qmaillog.h"
+
 #include <QCoreApplication>
 #include <QDir>
 #include <QFile>
-#include <QTextCodec>
 #include <QThread>
 #include <QRegularExpression>
 

@@ -31,9 +31,10 @@
 **
 ****************************************************************************/
 
+#include <qmailcodec.h>
+
 #include <QObject>
 #include <QTest>
-#include <qmailcodec.h>
 #include <QTextCodec>
 
 //TESTED_CLASS=QMailCodec

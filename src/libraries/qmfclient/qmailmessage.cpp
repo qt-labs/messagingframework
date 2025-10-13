@@ -5336,7 +5336,7 @@ void QMailMessagePartContainer::setHtmlAndPlainTextBody(const QMailMessageBody& 
 
     QMailMessagePart htmlBodyPart;
     htmlBodyPart.setBody(htmlBody);
-    if (hasInlineImages){
+    if (hasInlineImages) {
         subpart.prependPart(htmlBodyPart);
         bodyContainer->appendPart(subpart);
     } else {

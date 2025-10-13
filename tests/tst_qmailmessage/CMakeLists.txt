@@ -2,7 +2,7 @@ add_executable(tst_qmailmessage tst_qmailmessage.cpp)
 target_include_directories(tst_qmailmessage
   PRIVATE ../../src/libraries/qmfclient ../../src/libraries/qmfclient/support)
 target_link_libraries(tst_qmailmessage
-  PRIVATE Qt6::Core Qt6::Core5Compat Qt6::Test QmfClient)
+  PRIVATE Qt6::Core Qt6::Test QmfClient)
 
 add_test(NAME tst_qmailmessage COMMAND tst_qmailmessage)
 set_tests_properties(tst_qmailmessage PROPERTIES

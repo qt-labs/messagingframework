@@ -4,7 +4,7 @@ PLUGIN_TYPE = messageservices
 PLUGIN_CLASS_NAME = QmfSmtpPlugin
 load(qt_plugin)
 
-QT = core core5compat network qmfclient qmfmessageserver
+QT = core network qmfclient qmfmessageserver
 
 HEADERS += smtpauthenticator.h \
            smtpclient.h \

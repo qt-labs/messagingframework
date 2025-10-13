@@ -26,7 +26,7 @@ target_include_directories(tst_imap
   ../../src/libraries/qmfclient/support
   ../../src/plugins/messageservices/imap)
 target_link_libraries(tst_imap
-  PRIVATE Qt6::Core Qt6::Core5Compat Qt6::Network Qt6::Test QmfClient QmfMessageServer)
+  PRIVATE Qt6::Core Qt6::Network Qt6::Test QmfClient QmfMessageServer)
 
 add_test(NAME tst_imap COMMAND tst_imap)
 set_tests_properties(tst_imap PROPERTIES

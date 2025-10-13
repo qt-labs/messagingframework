@@ -35,7 +35,6 @@
 #define SERVICEHANDLER_H
 
 #include <QFile>
-#include <QLinkedList>
 #include <QList>
 #include <QMap>
 #include <QObject>
@@ -322,7 +321,7 @@ private:
     };
 
     QMap<quint64, ActionData> mActiveActions;
-    QLinkedList<quint64> mActionExpiry;
+    QList<quint64> mActionExpiry;
 
     QMap<QPointer<QMailMessageService>, quint64> mServiceAction;
 

@@ -57,7 +57,7 @@ LessThanFunctorA::LessThanFunctorA(const QMailAccountSortKey& sortKey)
 {
 }
 
-LessThanFunctorA::~LessThanFunctorA(){}
+LessThanFunctorA::~LessThanFunctorA() {}
 
 bool LessThanFunctorA::operator()(const QMailAccountId& first, const QMailAccountId& second)
 {
