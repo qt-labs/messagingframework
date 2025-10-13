@@ -289,7 +289,6 @@ private slots:
 private:
     void connectServiceAction(QMailServiceAction* action);
 
-    bool isMessageServerRunning() const;
     virtual EmailFolderView* createFolderView();
     virtual MessageListView* createMessageListView();
 

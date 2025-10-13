@@ -45,6 +45,7 @@
 #include <QPointer>
 #include <QMouseEvent>
 #include <QHeaderView>
+#include <QMimeDatabase>
 #include <qmailnamespace.h>
 
 class AttachmentListWidget;
@@ -344,7 +345,7 @@ QVariant AttachmentListModel::data( const QModelIndex & index, int role) const
                 return sizeString(fi.size());
                 break;
             case 2:
-                QString mimeType = QMail::mimeTypeFromFileName(path);
+                QString mimeType = QMimeDatabase().mimeTypeForFile(path).name();
                 if (mimeType.isEmpty()) mimeType = "Unknown";
                 return mimeType;
                 break;

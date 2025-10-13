@@ -264,7 +264,8 @@ QVariant MessageListModel<BaseModel>::data(const QModelIndex & index, int role) 
             if (state == Qt::Unchecked)
                 return QVariant();
         } else if (role == Qt::DecorationRole) {
-            return QIcon(SuperType::data(index, QMailMessageModelBase::MessageStatusIconRole).toString());
+            //return QIcon(SuperType::data(index, QMailMessageModelBase::MessageStatusIconRole).toString());
+            return QIcon(); // FIXME
         } else if (role == Qt::ForegroundRole) {
             QMailMessageMetaData message(SuperType::idFromIndex(index));
             if (message.id().isValid()) {

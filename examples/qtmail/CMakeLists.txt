@@ -51,7 +51,7 @@ target_include_directories(QtMail
   ../../src/libraries/qmfmessageserver
   ../../src/libraries/qmfwidgets)
 target_link_libraries(QtMail
-  PUBLIC Qt6::Core Qt6::Core5Compat Qt6::Widgets QmfClient QmfMessageServer QmfWidgets)
+  PUBLIC Qt6::Core Qt6::Widgets QmfClient QmfMessageServer QmfWidgets)
 
 add_executable(qtmail5 main.cpp)
 target_link_libraries(qtmail5

@@ -45,22 +45,11 @@ static void fakeSleep(int time)
     cond.wait(&m, time);
 }
 
-static bool messageServerRunning()
-{
-    QString lockfile = "messageserver-instance.lock";
-    int lockid = QMail::fileLock(lockfile);
-        if (lockid == -1)
-                return true;
-
-    QMail::fileUnlock(lockid);
-    return false;
-}
-
 int main(int argc, char *argv[])
 {
     QApplication app(argc, argv);
 
-    while (!messageServerRunning()) {
+    while (!QMail::isMessageServerRunning()) {
         qWarning() << "Message server is not running. Waiting.";
         fakeSleep(5000);
     }

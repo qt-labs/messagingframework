@@ -43,7 +43,6 @@
 #include <qcursor.h>
 #include <qtooltip.h>
 #include <qwhatsthis.h>
-#include <qregexp.h>
 #include <qstackedwidget.h>
 #include <qmessagebox.h>
 #include <qboxlayout.h>

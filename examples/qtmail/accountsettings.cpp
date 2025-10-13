@@ -41,7 +41,6 @@
 #include <QListView>
 #include <QTimer>
 #include <QMessageBox>
-#include <QRegExp>
 #include <QToolBar>
 #include <qtmailnamespace.h>
 

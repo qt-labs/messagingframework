@@ -474,7 +474,7 @@ EmailClient::EmailClient(QWidget *parent, Qt::WindowFlags f)
     setObjectName( "EmailClient" );
 
     //start messageserver if it's not running
-    if (!isMessageServerRunning() && !startMessageServer())
+    if (!QMail::isMessageServerRunning && !startMessageServer())
         qFatal("Unable to start messageserver!");
 
     //run account setup if we don't have any defined yet
@@ -594,17 +594,6 @@ void EmailClient::connectServiceAction(QMailServiceAction* action)
     connect(action, SIGNAL(activityChanged(QMailServiceAction::Activity)), this, SLOT(activityChanged(QMailServiceAction::Activity)));
     connect(action, SIGNAL(statusChanged(QMailServiceAction::Status)), this, SLOT(statusChanged(QMailServiceAction::Status)));
     connect(action, SIGNAL(progressChanged(uint, uint)), this, SLOT(progressChanged(uint, uint)));
-}
-
-bool EmailClient::isMessageServerRunning() const
-{
-    QString lockfile = "messageserver-instance.lock";
-    int lockid = QMail::fileLock(lockfile);
-    if (lockid == -1)
-        return true;
-
-    QMail::fileUnlock(lockid);
-    return false;
 }
 
 bool EmailClient::cleanExit(bool force)

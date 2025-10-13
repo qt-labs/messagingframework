@@ -64,6 +64,7 @@
 #include <QSyntaxHighlighter>
 #include <QCompleter>
 #include <QRegularExpression>
+#include <QMimeDatabase>
 
 static int minimumLeftWidth = 65;
 static const QString placeholder("(no subject)");
@@ -805,7 +806,7 @@ QMailMessage EmailComposerInterface::message() const
                 QString partName(fi.fileName());
                 QString filePath(fi.absoluteFilePath());
 
-                QString mimeType(QMail::mimeTypeFromFileName(attachment));
+                QString mimeType(QMimeDatabase().mimeTypeForFile(attachment).name());
                 QMailMessageContentType type(mimeType.toLatin1());
                 type.setName(partName.toLatin1());
 
