@@ -73,14 +73,13 @@ int QMF_EXPORT QuotedPrintableMaxLineLength = 74;
   output QDataStream, or for convenience, from an input QByteArray to an output QByteArray.
 
   If the data to be encoded is in unicode form, then the QMailCodec interface can be used to
-  convert the data to ASCII via an intermediate QTextCodec, which converts the incoming text
-  to a sequence of octets.  The QTextCodec used is specified by the name of the encoding
+  convert the data to ASCII.  The text codec used is specified by the name of the encoding
   produced, or that decoded when decoding an ASCII input sequence.  QMailCodec provides functions
   to encode from a QTextStream to a QDataStream, and to decode from a QDataStream to a QTextStream.
   For convenience, it is also possible to encode a QString to a QByteArray, and to decode a
   QByteArray to a QString.
 
-  \sa QDataStream, QTextStream, QTextCodec
+  \sa QDataStream, QTextStream
 */
 
 /*!
@@ -131,8 +130,6 @@ static void enumerateCodecs()
     Writes the data read from the stream \a in to the stream \a out, as a sequence
     of 7-bit ASCII characters.  The unicode characters read from \a in are first
     encoded to the text encoding \a charset.
-
-    \sa QTextCodec::codecForName()
 */
 void QMailCodec::encode(QDataStream& out, QTextStream& in, const QByteArray& charset)
 {
@@ -155,8 +152,6 @@ void QMailCodec::encode(QDataStream& out, QTextStream& in, const QByteArray& cha
     Writes the data read from the stream \a in to the stream \a out, converting from
     a sequence of 7-bit ASCII characters.  The characters read from \a in are
     decoded from the text encoding \a icharset to unicode.
-
-    \sa QTextCodec::codecForName()
 */
 void QMailCodec::decode(QTextStream& out, QDataStream& in, const QByteArray& icharset)
 {
@@ -314,8 +309,6 @@ void QMailCodec::copy(QTextStream& out, QDataStream& in, const QByteArray& chars
 /*!
     Returns a QByteArray containing the string \a input, encoded to the text encoding \a charset
     and then to a sequence of 7-bit ASCII characters.
-
-    \sa QTextCodec::codecForName()
 */
 QByteArray QMailCodec::encode(const QString& input, const QByteArray& charset)
 {
@@ -336,8 +329,6 @@ QByteArray QMailCodec::encode(const QString& input, const QByteArray& charset)
 /*!
     Returns a QString containing characters decoded from the text encoding \a charset, which
     are decoded from the sequence of 7-bit ASCII characters read from \a input.
-
-    \sa QTextCodec::codecForName()
 */
 QString QMailCodec::decode(const QByteArray& input, const QByteArray& charset)
 {
@@ -388,8 +379,6 @@ QByteArray QMailCodec::decode(const QByteArray& input)
 /*!
     Returns the charset of \a text using automatic detection; or an empty
     string if detection fails.
-
-    \sa QTextCodec::codecForName()
 */
 QString QMailCodec::autoDetectEncoding(const QByteArray& text)
 {

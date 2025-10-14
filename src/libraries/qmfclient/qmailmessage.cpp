@@ -3544,7 +3544,7 @@ void QMailMessageBodyPrivate::deserialize(Stream &stream)
     The body data must be associated with a QMailMessageContentType describing that data.
     When extracting body data from a message or part to unicode text, the content type
     description must include a parameter named 'charset'; this parameter is used to locate
-    a QTextCodec to be used to extract unicode data from the body data octet stream.
+    a text codec to be used to extract unicode data from the body data octet stream.
 
     If the Content-Type of the data is a subtype of "text", then line-ending translation
     will be used to ensure that the text is transmitted with CR/LF line endings.  The text
@@ -3559,7 +3559,7 @@ void QMailMessageBodyPrivate::deserialize(Stream &stream)
     QMailMessageBody class, the encoding to be used must be specified using the
     QMailMessageBody::TransferEncoding enum.
 
-    \sa QMailMessagePart, QMailMessage, QTextCodec
+    \sa QMailMessagePart, QMailMessage
 */
 
 /*!
@@ -3619,7 +3619,7 @@ QMailMessageBody::QMailMessageBody()
     If \a type is a subtype of "text", the data will be treated as text, and line-ending
     translation will be employed.  Otherwise, the file will be treated as containing binary
     data.  If the file contains unicode text data, it will be converted to an octet stream using
-    a QTextCodec object identified by the 'charset' parameter of \a type.
+    a text codec identified by the 'charset' parameter of \a type.
 
     If \a encoding is QMailMessageBody::QuotedPrintable, encoding will be performed assuming
     conformance to RFC 2045.
@@ -3628,7 +3628,7 @@ QMailMessageBody::QMailMessageBody()
     unless it is of type "text/plain" or "text/html". In these latter cases, automatic character
     set detection may take place by reading all the data from the file.
 
-    \sa QMailCodec, QMailQuotedPrintableCodec, QMailMessageContentType, QTextCodec
+    \sa QMailCodec, QMailQuotedPrintableCodec, QMailMessageContentType
 */
 QMailMessageBody QMailMessageBody::fromFile(const QString& filename, const QMailMessageContentType& type, TransferEncoding encoding, EncodingStatus status)
 {
@@ -3688,12 +3688,12 @@ QMailMessageBody QMailMessageBody::fromData(const QByteArray& input, const QMail
     Creates a message body from the data read from \a in, having the content type \a type.
     The data read from \a in will be encoded to \a encoding for transmission, and line-ending
     translation will be employed.  The unicode text data will be converted to an octet stream
-    using a QTextCodec object identified by the 'charset' parameter of \a type.
+    using a text codec identified by the 'charset' parameter of \a type.
 
     If \a encoding is QMailMessageBody::QuotedPrintable, encoding will be performed assuming
     conformance to RFC 2045.
 
-    \sa QMailCodec, QMailQuotedPrintableCodec, QMailMessageContentType, QTextCodec
+    \sa QMailCodec, QMailQuotedPrintableCodec, QMailMessageContentType
 */
 QMailMessageBody QMailMessageBody::fromStream(QTextStream& in, const QMailMessageContentType& type, TransferEncoding encoding)
 {
@@ -3706,12 +3706,12 @@ QMailMessageBody QMailMessageBody::fromStream(QTextStream& in, const QMailMessag
     Creates a message body from the data contained in \a input, having the content type
     \a type.  The data from \a input will be encoded to \a encoding for transmission, and
     line-ending translation will be employed.  The unicode text data will be converted to
-    an octet stream using a QTextCodec object identified by the 'charset' parameter of \a type.
+    an octet stream using a text codec identified by the 'charset' parameter of \a type.
 
     If \a encoding is QMailMessageBody::QuotedPrintable, encoding will be performed assuming
     conformance to RFC 2045.
 
-    \sa QMailCodec, QMailMessageContentType, QTextCodec
+    \sa QMailCodec, QMailMessageContentType
 */
 QMailMessageBody QMailMessageBody::fromData(const QString& input, const QMailMessageContentType& type, TransferEncoding encoding)
 {
@@ -3739,11 +3739,11 @@ QMailMessageBody QMailMessageBody::fromLongString(LongString& ls, const QMailMes
 
     If the body has a content type with a QMailMessageContentType::type() of "text", and the
     content type parameter 'charset' is not empty, then the unencoded data will be written
-    as unicode text data, using the charset parameter to locate the appropriate QTextCodec.
+    as unicode text data, using the charset parameter to locate the appropriate text codec.
 
     Returns false if the operation causes an error; otherwise returns true.
 
-    \sa QMailCodec, QMailMessageContentType, QTextCodec
+    \sa QMailCodec, QMailMessageContentType
 */
 bool QMailMessageBody::toFile(const QString& filename, EncodingFormat format) const
 {
@@ -3786,9 +3786,9 @@ bool QMailMessageBody::toStream(QDataStream& out, EncodingFormat format) const
     transmitted as CR/LF pairs are converted to \c \n on extraction.
 
     The 'charset' parameter of the body's content type is used to locate the appropriate
-    QTextCodec to convert the data from an octet stream to unicode, if necessary.
+    text codec to convert the data from an octet stream to unicode, if necessary.
 
-    \sa QMailCodec, QMailMessageContentType, QTextCodec
+    \sa QMailCodec, QMailMessageContentType
 */
 QString QMailMessageBody::data() const
 {
@@ -3806,9 +3806,9 @@ QString QMailMessageBody::data() const
     Returns false if the operation causes an error; otherwise returns true.
 
     The 'charset' parameter of the body's content type is used to locate the appropriate
-    QTextCodec to convert the data from an octet stream to unicode, if necessary.
+    text codec to convert the data from an octet stream to unicode, if necessary.
 
-    \sa QMailCodec, QMailMessageContentType, QTextCodec
+    \sa QMailCodec, QMailMessageContentType
 */
 bool QMailMessageBody::toStream(QTextStream& out) const
 {
