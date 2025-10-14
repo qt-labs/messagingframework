@@ -48,6 +48,8 @@
 #include "qmailmessage.h"
 #include "longstring_p.h"
 
+#include <optional>
+
 // These classes are implemented via qmailmessage.cpp and qmailinstantiations.cpp
 
 class QMF_EXPORT QMailMessageHeaderFieldPrivate : public QPrivateImplementationBase
@@ -297,65 +299,6 @@ private:
     QByteArray _undecodedData;
 };
 
-template <typename T>
-struct Maybe
-{
-    Maybe()
-        : _value(NULL)
-    {}
-
-    Maybe(T other)
-        : _value(new T(other))
-    {}
-
-    Maybe(const Maybe<T> &other)
-    {
-        if (other.isInitialized())
-            _value = new T(*other);
-        else
-            _value = NULL;
-    }
-
-    ~Maybe()
-    {
-        delete _value;
-    }
-
-    bool isInitialized() const
-    {
-        return (_value != NULL);
-    }
-
-    T *operator->() const
-    {
-        return _value;
-    }
-
-    T &operator*() const
-    {
-        return *_value;
-    }
-
-    Maybe &operator=(const T &value)
-    {
-        if (isInitialized())
-            clear();
-        _value = new T(value);
-        return *this;
-    }
-
-    void clear()
-    {
-        Q_ASSERT(_value != NULL);
-        delete _value;
-        _value = NULL;
-    }
-
-private:
-    T *_value;
-};
-
-
 class QMF_EXPORT QMailMessageMetaDataPrivate : public QPrivateImplementationBase
 {
 public:
@@ -437,7 +380,7 @@ public:
     QString _preview;
     QMailThreadId _parentThreadId;
 
-    mutable Maybe< QMap<QString, QString> > _customFields;
+    mutable std::optional< QMap<QString, QString> > _customFields;
     bool _customFieldsModified;
 
     template <typename T>
