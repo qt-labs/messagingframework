@@ -46,7 +46,7 @@
 //
 
 // We need slightly different semantics to those of QSystemMutex - all users of
-// the qtopiamail library are peers, so no single caller is the owner.  We will
+// the messagingframework library are peers, so no single caller is the owner.  We will
 // allow the first library user to create the semaphore, and any subsequent users
 // will attach to the same semaphore set.  No-one will close the semaphore set,
 // we will rely on process undo to maintain sensible semaphore values as

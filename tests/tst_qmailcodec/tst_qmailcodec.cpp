@@ -37,9 +37,6 @@
 #include <QTest>
 #include <QTextCodec>
 
-//TESTED_CLASS=QMailCodec
-//TESTED_FILES=src/libraries/qtopiamail/qmailcodec.cpp
-
 /*
     This class primarily tests that QMailBase64Codec correctly handles encoding/decoding
 */

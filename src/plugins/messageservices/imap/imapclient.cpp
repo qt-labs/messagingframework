@@ -556,15 +556,14 @@ void ImapClient::checkCommandResponse(ImapCommand command, OperationStatus statu
     } else {
         switch (command) {
         case IMAP_Full:
-            qFatal( "Logic error, IMAP_Full" );
+            qCWarning(lcIMAP) << "Logic error, IMAP_Full";
+            closeConnection();
             break;
         case IMAP_Unconnected:
             operationFailed(QMailServiceAction::Status::ErrNoConnection, _protocol.lastError());
             break;
         case IMAP_Login:
-            if (status == OpOk) {
-                _credentials->authSuccessNotice(QStringLiteral("messageserver5"));
-            }
+            _credentials->authSuccessNotice(QStringLiteral("messageserver5"));
             break;
         default:
             break;
@@ -770,7 +769,6 @@ void ImapClient::mailboxListed(const QString &flags, const QString &path)
     QStringList list = _protocol.flatHierarchy() ? QStringList(path) : path.split(_protocol.delimiter());
 
     for ( QStringList::Iterator it = list.begin(); it != list.end(); ++it ) {
-
         if (it->isEmpty())
             continue; // Skip empty folder names
 

@@ -51,9 +51,6 @@ as defined by RFC 2606.  Therefore, they should use one of the following domains
 // RFC 2822 messages use CRLF as the newline indicator
 #define CRLF "\015\012"
 
-//TESTED_CLASS=QMailMessage
-//TESTED_FILES=src/libraries/qtopiamail/qmailmessage.cpp
-
 /*
     This class primarily tests that QMailMessage correctly handles e-mail messages.
 */

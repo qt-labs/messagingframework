@@ -252,9 +252,9 @@ QSet<QMailAccountId> accountsApplicableTo(QMailMessageKey messagekey, QSet<QMail
     IncludedExcludedPair result(L::extractAccounts(messagekey));
     if (result.first.isEmpty()) {
         return total - result.second;
-    } else {
-        return (total & result.first) - result.second;
     }
+
+    return (total & result.first) - result.second;
 }
 
 struct TextPartSearcher
@@ -2502,9 +2502,9 @@ bool ServiceHandler::dispatchOnlineCreateFolder(Request *req)
         }
 
         return success;
-    } else {
-        return false;
     }
+
+    return false;
 }
 
 class OnlineRenameFolderRequest : public Request
@@ -2546,9 +2546,9 @@ bool ServiceHandler::dispatchOnlineRenameFolder(Request *req)
         }
 
         return success;
-    } else {
-        return false;
     }
+
+    return false;
 }
 
 class OnlineDeleteFolderRequest : public Request
