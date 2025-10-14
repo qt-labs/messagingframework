@@ -102,7 +102,6 @@ set(PRIVATE_HEADERS
   qmailfoldersortkey_p.h
   qmailmessage_p.h
   qmailmessagekey_p.h
-  qmailmessageset_p.h
   qmailmessagesortkey_p.h
   qmailserviceaction_p.h
   qmailstore_p.h

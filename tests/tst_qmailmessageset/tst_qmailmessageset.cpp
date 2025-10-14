@@ -34,8 +34,8 @@
 #include <QObject>
 #include <QTest>
 #include <ctype.h>
+
 #include "qmailmessageset.h"
-#include <qmailmessageset_p.h>
 #include "qmailstore.h"
 
 /*

@@ -31,7 +31,7 @@
 **
 ****************************************************************************/
 
-#include "qmailmessageset_p.h"
+#include "qmailmessageset.h"
 
 #include "qmailaccount.h"
 #include "qmailfolder.h"
@@ -39,6 +39,17 @@
 #include "qmaillog.h"
 #include <QTimer>
 
+class QMailMessageSetContainerPrivate
+{
+public:
+    QMailMessageSetContainerPrivate(QMailMessageSetContainer *parent)
+        : _container(parent)
+    {
+    }
+
+    QMailMessageSetContainer *_container;
+    QList<QMailMessageSet*> _children;
+};
 
 /*!
     \class QMailMessageSetContainer
@@ -54,30 +65,18 @@
     nodes, which must inherit from QMailMessageSet.
 */
 
-/*!
-    \typedef QMailMessageSetContainer::ImplementationType
-    \internal
-*/
-
-/*!
-    \fn QMailMessageSetContainer::QMailMessageSetContainer(Subclass *p)
-
-    \internal
-
-    Constructs the QMailMessageSetContainer element of a derived class, whose
-    internal structure is located at \a p.
-*/
-template<typename Subclass>
-QMailMessageSetContainer::QMailMessageSetContainer(Subclass *p)
-    : QPrivatelyNoncopyable<QMailMessageSetContainerPrivate>(p)
+QMailMessageSetContainer::QMailMessageSetContainer(QMailMessageSetContainerPrivate *priv)
+    : priv(priv)
 {
 }
 
 /*! \internal */
 QMailMessageSetContainer::~QMailMessageSetContainer()
 {
-    while (!impl(this)->_children.isEmpty()) {
-        delete impl(this)->_children.takeFirst();
+    Q_D(QMailMessageSetContainer);
+
+    while (!d->_children.isEmpty()) {
+        delete d->_children.takeFirst();
     }
 }
 
@@ -86,7 +85,8 @@ QMailMessageSetContainer::~QMailMessageSetContainer()
 */
 QMailMessageSetContainer *QMailMessageSetContainer::parentContainer()
 {
-    return impl(this)->_container;
+    Q_D(QMailMessageSetContainer);
+    return d->_container;
 }
 
 /*!
@@ -94,7 +94,8 @@ QMailMessageSetContainer *QMailMessageSetContainer::parentContainer()
 */
 int QMailMessageSetContainer::count() const
 {
-    return impl(this)->_children.count();
+    Q_D(const QMailMessageSetContainer);
+    return d->_children.count();
 }
 
 /*!
@@ -104,7 +105,8 @@ int QMailMessageSetContainer::count() const
 */
 QMailMessageSet *QMailMessageSetContainer::at(int i) const
 {
-    return impl(this)->_children.at(i);
+    Q_D(const QMailMessageSetContainer);
+    return d->_children.at(i);
 }
 
 /*!
@@ -115,7 +117,8 @@ QMailMessageSet *QMailMessageSetContainer::at(int i) const
 */
 int QMailMessageSetContainer::indexOf(QMailMessageSet *child) const
 {
-    return impl(this)->_children.indexOf(child);
+    Q_D(const QMailMessageSetContainer);
+    return d->_children.indexOf(child);
 }
 
 /*!
@@ -125,9 +128,10 @@ int QMailMessageSetContainer::indexOf(QMailMessageSet *child) const
 */
 void QMailMessageSetContainer::append(QMailMessageSet *child)
 {
+    Q_D(QMailMessageSetContainer);
     model()->beginAppend(child);
 
-    impl(this)->_children.append(child);
+    d->_children.append(child);
     child->init();
 
     model()->endAppend(child);
@@ -147,13 +151,13 @@ void QMailMessageSetContainer::update(QMailMessageSet *child)
 */
 void QMailMessageSetContainer::remove(QMailMessageSet *child)
 {
+    Q_D(QMailMessageSetContainer);
+
     // Any descendants of this child must first be removed
     child->removeDescendants();
 
     model()->beginRemove(child);
-
-    impl(this)->_children.removeAll(child);
-
+    d->_children.removeAll(child);
     model()->endRemove(child);
 
     delete child;
@@ -164,8 +168,10 @@ void QMailMessageSetContainer::remove(QMailMessageSet *child)
 */
 void QMailMessageSetContainer::remove(const QList<QMailMessageSet*> &obsoleteChildren)
 {
+    Q_D(QMailMessageSetContainer);
+
     foreach (QMailMessageSet *child, obsoleteChildren)
-        if (impl(this)->_children.contains(child))
+        if (d->_children.contains(child))
             remove(child);
 }
 
@@ -174,7 +180,9 @@ void QMailMessageSetContainer::remove(const QList<QMailMessageSet*> &obsoleteChi
 */
 void QMailMessageSetContainer::removeDescendants()
 {
-    foreach (QMailMessageSet *child, impl(this)->_children)
+    Q_D(QMailMessageSetContainer);
+
+    foreach (QMailMessageSet *child, d->_children)
         remove(child);
 }
 
@@ -183,7 +191,9 @@ void QMailMessageSetContainer::removeDescendants()
 */
 void QMailMessageSetContainer::resyncState()
 {
-    for (QMailMessageSet *child : impl(this)->_children) {
+    Q_D(QMailMessageSetContainer);
+
+    for (QMailMessageSet *child : d->_children) {
         child->resyncState();
         update(child);
     }
@@ -201,14 +211,8 @@ void QMailMessageSetContainer::resyncState()
 class QMailMessageSetPrivate : public QMailMessageSetContainerPrivate
 {
 public:
-    template<typename Subclass>
-    QMailMessageSetPrivate(Subclass *p, QMailMessageSetContainer* parent)
-        : QMailMessageSetContainerPrivate(p, parent)
-    {
-    }
-
     QMailMessageSetPrivate(QMailMessageSetContainer* parent)
-        : QMailMessageSetContainerPrivate(this, parent)
+        : QMailMessageSetContainerPrivate(parent)
     {
     }
 
@@ -248,31 +252,17 @@ public:
 */
 
 /*!
-    \typedef QMailMessageSet::ImplementationType
-    \internal
-*/
-
-/*!
     Constructs a new QMailMessageSet within the container object \a container.
 */
 QMailMessageSet::QMailMessageSet(QMailMessageSetContainer *container)
-    : QObject(container->qObject()),
-      QMailMessageSetContainer(new QMailMessageSetPrivate(container))
+    : QObject(container ? container->qObject() : nullptr)
+    , QMailMessageSetContainer(new QMailMessageSetPrivate(container))
 {
 }
 
-/*!
-    \fn QMailMessageSet::QMailMessageSet(Subclass *p, QMailMessageSetContainer *container)
-
-    \internal
-
-    Constructs the QMailMessageSet element of a derived class within the parent container
-    \a container, and whose internal structure is located at \a p.
-*/
-template<typename Subclass>
-QMailMessageSet::QMailMessageSet(Subclass *p, QMailMessageSetContainer *container)
-    : QObject(container->qObject()),
-      QMailMessageSetContainer(p)
+QMailMessageSet::QMailMessageSet(QMailMessageSetPrivate *priv)
+    : QObject(priv->_container ? priv->_container->qObject() : nullptr)
+    , QMailMessageSetContainer(priv)
 {
 }
 
@@ -360,7 +350,7 @@ class QMailFolderMessageSetPrivate : public QMailMessageSetPrivate
 {
 public:
     QMailFolderMessageSetPrivate(QMailMessageSetContainer *container, const QMailFolderId &folderId, bool hierarchical)
-        : QMailMessageSetPrivate(this, container),
+        : QMailMessageSetPrivate(container),
           _id(folderId),
           _hierarchical(hierarchical)
     {
@@ -390,11 +380,6 @@ public:
 */
 
 /*!
-    \typedef QMailFolderMessageSet::ImplementationType
-    \internal
-*/
-
-/*!
     Constructs a QMailFolderMessageSet within the parent container \a container,
     whose message set is defined by the content of the QMailFolder identified by
     \a folderId.  If \a hierarchical is true, the message set will automatically
@@ -402,7 +387,7 @@ public:
     whose \l{QMailFolder::parentFolderId()}{parentFolderId} is \a folderId.
 */
 QMailFolderMessageSet::QMailFolderMessageSet(QMailMessageSetContainer *container, const QMailFolderId &folderId, bool hierarchical)
-    : QMailMessageSet(new QMailFolderMessageSetPrivate(container, folderId, hierarchical), container)
+    : QMailMessageSet(new QMailFolderMessageSetPrivate(container, folderId, hierarchical))
 {
 }
 
@@ -411,7 +396,8 @@ QMailFolderMessageSet::QMailFolderMessageSet(QMailMessageSetContainer *container
 */
 QMailFolderId QMailFolderMessageSet::folderId() const
 {
-    return impl(this)->_id;
+    Q_D(const QMailFolderMessageSet);
+    return d->_id;
 }
 
 /*!
@@ -419,7 +405,8 @@ QMailFolderId QMailFolderMessageSet::folderId() const
 */
 bool QMailFolderMessageSet::hierarchical() const
 {
-    return impl(this)->_hierarchical;
+    Q_D(const QMailFolderMessageSet);
+    return d->_hierarchical;
 }
 
 /*!
@@ -427,7 +414,8 @@ bool QMailFolderMessageSet::hierarchical() const
 */
 QMailMessageKey QMailFolderMessageSet::messageKey() const
 {
-    return contentKey(impl(this)->_id, false);
+    Q_D(const QMailFolderMessageSet);
+    return contentKey(d->_id, false);
 }
 
 /*!
@@ -435,8 +423,10 @@ QMailMessageKey QMailFolderMessageSet::messageKey() const
 */
 QMailMessageKey QMailFolderMessageSet::descendantsMessageKey() const
 {
-    if (impl(this)->_hierarchical) {
-        return contentKey(impl(this)->_id, true);
+    Q_D(const QMailFolderMessageSet);
+
+    if (d->_hierarchical) {
+        return contentKey(d->_id, true);
     } else {
         return QMailMessageSet::descendantsMessageKey();
     }
@@ -449,19 +439,19 @@ QMailMessageKey QMailFolderMessageSet::descendantsMessageKey() const
 */
 QString QMailFolderMessageSet::displayName() const
 {
-    const ImplementationType *i = impl(this);
+    Q_D(const QMailFolderMessageSet);
 
-    if (i->_name.isNull()) {
-        if (i->_id.isValid()) {
-            QMailFolder folder(i->_id);
-            i->_name = folder.displayName();
+    if (d->_name.isNull()) {
+        if (d->_id.isValid()) {
+            QMailFolder folder(d->_id);
+            d->_name = folder.displayName();
         }
     }
-    if (i->_name.isNull()) {
-        i->_name = QLatin1String("");
+    if (d->_name.isNull()) {
+        d->_name = QLatin1String("");
     }
 
-    return i->_name;
+    return d->_name;
 }
 
 /*!
@@ -493,15 +483,15 @@ void QMailFolderMessageSet::foldersRemoved(const QMailFolderIdList &)
 /*! \internal */
 void QMailFolderMessageSet::foldersUpdated(const QMailFolderIdList &ids)
 {
-    const ImplementationType *i = impl(this);
+    Q_D(QMailFolderMessageSet);
 
-    if (i->_hierarchical)
+    if (d->_hierarchical)
         synchronizeChildren();
 
 
-    if (ids.contains(i->_id)) {
+    if (ids.contains(d->_id)) {
         //update our folder name
-        i->_name.clear();
+        d->_name.clear();
 
         update(this);
     }
@@ -511,14 +501,18 @@ void QMailFolderMessageSet::foldersUpdated(const QMailFolderIdList &ids)
 /*! \internal */
 void QMailFolderMessageSet::folderContentsModified(const QMailFolderIdList &ids)
 {
-    if (ids.contains(impl(this)->_id))
+    Q_D(QMailFolderMessageSet);
+
+    if (ids.contains(d->_id))
         update(this);
 }
 
 /*! \internal */
 void QMailFolderMessageSet::resyncState()
 {
-    if (impl(this)->_hierarchical) {
+    Q_D(QMailFolderMessageSet);
+
+    if (d->_hierarchical) {
         synchronizeChildren();
     }
 
@@ -528,8 +522,10 @@ void QMailFolderMessageSet::resyncState()
 /*! \internal */
 void QMailFolderMessageSet::init()
 {
-    if (impl(this)->_id.isValid()) {
-        if (impl(this)->_hierarchical) {
+    Q_D(QMailFolderMessageSet);
+
+    if (d->_id.isValid()) {
+        if (d->_hierarchical) {
             // Add items for any child folders
             synchronizeChildren();
 
@@ -545,10 +541,12 @@ void QMailFolderMessageSet::init()
 /*! \internal */
 void QMailFolderMessageSet::synchronizeChildren()
 {
+    Q_D(QMailFolderMessageSet);
+
     QMailFolderIdList newFolderIds(QMailStore::instance()->queryFolders(folderKey()));
-    if (newFolderIds != impl(this)->_folderIds) {
+    if (newFolderIds != d->_folderIds) {
         // Our subfolder set has changed
-        impl(this)->_folderIds = newFolderIds;
+        d->_folderIds = newFolderIds;
 
         // Delete any child folders that are no longer present
         QList<QMailMessageSet*> obsoleteChildren;
@@ -579,14 +577,18 @@ void QMailFolderMessageSet::synchronizeChildren()
 */
 void QMailFolderMessageSet::createChild(const QMailFolderId &childId)
 {
-    QMailFolderMessageSet *child = new QMailFolderMessageSet(this, childId, impl(this)->_hierarchical);
+    Q_D(QMailFolderMessageSet);
+
+    QMailFolderMessageSet *child = new QMailFolderMessageSet(this, childId, d->_hierarchical);
     append(child);
 }
 
 /*! \internal */
 QMailFolderKey QMailFolderMessageSet::folderKey() const
 {
-    return QMailFolderKey::parentFolderId(impl(this)->_id);
+    Q_D(const QMailFolderMessageSet);
+
+    return QMailFolderKey::parentFolderId(d->_id);
 }
 
 
@@ -596,7 +598,7 @@ class QMailAccountMessageSetPrivate : public QMailMessageSetPrivate
 {
 public:
     QMailAccountMessageSetPrivate(QMailMessageSetContainer *container, const QMailAccountId &accountId, bool hierarchical)
-        : QMailMessageSetPrivate(this, container),
+        : QMailMessageSetPrivate(container),
           _id(accountId),
           _hierarchical(hierarchical)
     {
@@ -626,11 +628,6 @@ public:
 */
 
 /*!
-    \typedef QMailAccountMessageSet::ImplementationType
-    \internal
-*/
-
-/*!
     Constructs a QMailAccountMessageSet within the parent container \a container,
     whose message set is defined by the content of the QMailAccount identified by
     \a accountId.  If \a hierarchical is true, the message set will automatically
@@ -639,7 +636,7 @@ public:
     whose \l{QMailFolder::parentFolderId()}{parentFolderId} is empty.
 */
 QMailAccountMessageSet::QMailAccountMessageSet(QMailMessageSetContainer *container, const QMailAccountId &accountId, bool hierarchical)
-    : QMailMessageSet(new QMailAccountMessageSetPrivate(container, accountId, hierarchical), container)
+    : QMailMessageSet(new QMailAccountMessageSetPrivate(container, accountId, hierarchical))
 {
 }
 
@@ -648,7 +645,8 @@ QMailAccountMessageSet::QMailAccountMessageSet(QMailMessageSetContainer *contain
 */
 QMailAccountId QMailAccountMessageSet::accountId() const
 {
-    return impl(this)->_id;
+    Q_D(const QMailAccountMessageSet);
+    return d->_id;
 }
 
 /*!
@@ -656,7 +654,8 @@ QMailAccountId QMailAccountMessageSet::accountId() const
 */
 bool QMailAccountMessageSet::hierarchical() const
 {
-    return impl(this)->_hierarchical;
+    Q_D(const QMailAccountMessageSet);
+    return d->_hierarchical;
 }
 
 /*!
@@ -664,7 +663,8 @@ bool QMailAccountMessageSet::hierarchical() const
 */
 QMailMessageKey QMailAccountMessageSet::messageKey() const
 {
-    return contentKey(impl(this)->_id, false);
+    Q_D(const QMailAccountMessageSet);
+    return contentKey(d->_id, false);
 }
 
 /*!
@@ -672,8 +672,10 @@ QMailMessageKey QMailAccountMessageSet::messageKey() const
 */
 QMailMessageKey QMailAccountMessageSet::descendantsMessageKey() const
 {
-    if (impl(this)->_hierarchical) {
-        return contentKey(impl(this)->_id, true);
+    Q_D(const QMailAccountMessageSet);
+
+    if (d->_hierarchical) {
+        return contentKey(d->_id, true);
     } else {
         return QMailMessageSet::descendantsMessageKey();
     }
@@ -686,19 +688,19 @@ QMailMessageKey QMailAccountMessageSet::descendantsMessageKey() const
 */
 QString QMailAccountMessageSet::displayName() const
 {
-    const ImplementationType *i = impl(this);
+    Q_D(const QMailAccountMessageSet);
 
-    if (i->_name.isNull()) {
-        if (i->_id.isValid()) {
-            QMailAccount account(i->_id);
-            i->_name = account.name();
+    if (d->_name.isNull()) {
+        if (d->_id.isValid()) {
+            QMailAccount account(d->_id);
+            d->_name = account.name();
         }
     }
-    if (i->_name.isNull()) {
-        i->_name = QLatin1String("");
+    if (d->_name.isNull()) {
+        d->_name = QLatin1String("");
     }
 
-    return i->_name;
+    return d->_name;
 }
 
 /*!
@@ -738,11 +740,11 @@ void QMailAccountMessageSet::foldersUpdated(const QMailFolderIdList &)
 /*! \internal */
 void QMailAccountMessageSet::accountsUpdated(const QMailAccountIdList &ids)
 {
-    const ImplementationType *i = impl(this);
+    Q_D(QMailAccountMessageSet);
 
-    if (ids.contains(i->_id)) {
+    if (ids.contains(d->_id)) {
         //update our account name
-        i->_name.clear();
+        d->_name.clear();
         update(this);
     }
 }
@@ -750,14 +752,18 @@ void QMailAccountMessageSet::accountsUpdated(const QMailAccountIdList &ids)
 /*! \internal */
 void QMailAccountMessageSet::accountContentsModified(const QMailAccountIdList &ids)
 {
-    if (ids.contains(impl(this)->_id))
+    Q_D(QMailAccountMessageSet);
+
+    if (ids.contains(d->_id))
         update(this);
 }
 
 /*! \internal */
 void QMailAccountMessageSet::resyncState()
 {
-    if (impl(this)->_hierarchical) {
+    Q_D(QMailAccountMessageSet);
+
+    if (d->_hierarchical) {
         synchronizeChildren();
     }
 
@@ -767,8 +773,10 @@ void QMailAccountMessageSet::resyncState()
 /*! \internal */
 void QMailAccountMessageSet::init()
 {
-    if (impl(this)->_id.isValid()) {
-        if (impl(this)->_hierarchical) {
+    Q_D(QMailAccountMessageSet);
+
+    if (d->_id.isValid()) {
+        if (d->_hierarchical) {
             // Add items for any child folders
             synchronizeChildren();
 
@@ -785,10 +793,12 @@ void QMailAccountMessageSet::init()
 /*! \internal */
 void QMailAccountMessageSet::synchronizeChildren()
 {
+    Q_D(QMailAccountMessageSet);
+
     QMailFolderIdList newFolderIds(QMailStore::instance()->queryFolders(rootFolderKey()));
-    if (newFolderIds != impl(this)->_folderIds) {
+    if (newFolderIds != d->_folderIds) {
         // Our subfolder set has changed
-        impl(this)->_folderIds = newFolderIds;
+        d->_folderIds = newFolderIds;
 
         // Delete any child folders that are no longer present
         QList<QMailMessageSet*> obsoleteChildren;
@@ -819,16 +829,19 @@ void QMailAccountMessageSet::synchronizeChildren()
 */
 void QMailAccountMessageSet::createChild(const QMailFolderId &childId)
 {
-    QMailFolderMessageSet *child = new QMailFolderMessageSet(this, childId, impl(this)->_hierarchical);
+    Q_D(QMailAccountMessageSet);
+
+    QMailFolderMessageSet *child = new QMailFolderMessageSet(this, childId, d->_hierarchical);
     append(child);
 }
 
 /*! \internal */
 QMailFolderKey QMailAccountMessageSet::rootFolderKey() const
 {
+    Q_D(const QMailAccountMessageSet);
+
     // Select folders belonging to the account, that have no parent folder ID
-    return (QMailFolderKey::parentAccountId(impl(this)->_id) &
-            QMailFolderKey::parentFolderId(QMailFolderId()));
+    return QMailFolderKey::parentAccountId(d->_id) & QMailFolderKey::parentFolderId(QMailFolderId());
 }
 
 
@@ -838,7 +851,7 @@ class QMailFilterMessageSetPrivate : public QMailMessageSetPrivate
 {
 public:
     QMailFilterMessageSetPrivate(QMailMessageSetContainer *container, const QMailMessageKey &key, const QString &name, bool minimized)
-        : QMailMessageSetPrivate(this, container),
+        : QMailMessageSetPrivate(container),
           _key(key),
           _name(name),
           _minimized(minimized)
@@ -866,11 +879,6 @@ public:
 */
 
 /*!
-    \typedef QMailFilterMessageSet::ImplementationType
-    \internal
-*/
-
-/*!
     Constructs a QMailFilterMessageSet within the parent container \a container,
     named \a name, whose message set is specified by the filter \a key, and with
     update minimization set to \a minimalUpdates.
@@ -878,7 +886,7 @@ public:
     \sa setUpdatesMinimized()
 */
 QMailFilterMessageSet::QMailFilterMessageSet(QMailMessageSetContainer *container, const QMailMessageKey &key, const QString &name, bool minimalUpdates)
-    : QMailMessageSet(new QMailFilterMessageSetPrivate(container, key, name, minimalUpdates), container)
+    : QMailMessageSet(new QMailFilterMessageSetPrivate(container, key, name, minimalUpdates))
 {
 }
 
@@ -887,7 +895,9 @@ QMailFilterMessageSet::QMailFilterMessageSet(QMailMessageSetContainer *container
 */
 QMailMessageKey QMailFilterMessageSet::messageKey() const
 {
-    return impl(this)->_key;
+    Q_D(const QMailFilterMessageSet);
+
+    return d->_key;
 }
 
 /*!
@@ -895,7 +905,9 @@ QMailMessageKey QMailFilterMessageSet::messageKey() const
 */
 void QMailFilterMessageSet::setMessageKey(const QMailMessageKey &key)
 {
-    impl(this)->_key = key;
+    Q_D(QMailFilterMessageSet);
+
+    d->_key = key;
     update(this);
 }
 
@@ -904,7 +916,8 @@ void QMailFilterMessageSet::setMessageKey(const QMailMessageKey &key)
 */
 QString QMailFilterMessageSet::displayName() const
 {
-    return impl(this)->_name;
+    Q_D(const QMailFilterMessageSet);
+    return d->_name;
 }
 
 /*!
@@ -912,7 +925,9 @@ QString QMailFilterMessageSet::displayName() const
 */
 void QMailFilterMessageSet::setDisplayName(const QString &name)
 {
-    impl(this)->_name = name;
+    Q_D(QMailFilterMessageSet);
+
+    d->_name = name;
     update(this);
 }
 
@@ -923,7 +938,8 @@ void QMailFilterMessageSet::setDisplayName(const QString &name)
 */
 bool QMailFilterMessageSet::updatesMinimized() const
 {
-    return impl(this)->_minimized;
+    Q_D(const QMailFilterMessageSet);
+    return d->_minimized;
 }
 
 /*!
@@ -940,8 +956,10 @@ bool QMailFilterMessageSet::updatesMinimized() const
 */
 void QMailFilterMessageSet::setUpdatesMinimized(bool set)
 {
-    if (impl(this)->_minimized != set) {
-        impl(this)->_minimized = set;
+    Q_D(QMailFilterMessageSet);
+
+    if (d->_minimized != set) {
+        d->_minimized = set;
         reset();
     }
 }
@@ -949,6 +967,8 @@ void QMailFilterMessageSet::setUpdatesMinimized(bool set)
 /*! \internal */
 void QMailFilterMessageSet::messagesAdded(const QMailMessageIdList &ids)
 {
+    Q_D(QMailFilterMessageSet);
+
     QMailMessageKey key(messageKey());
     if (!key.isNonMatching()) {
         // See if any of these messages match our filter
@@ -956,7 +976,7 @@ void QMailFilterMessageSet::messagesAdded(const QMailMessageIdList &ids)
         QMailMessageIdList matchingIds = QMailStore::instance()->queryMessages(key & idFilter);
         if (!matchingIds.isEmpty()) {
             // Our filtered message set has changed
-            impl(this)->_messageIds.unite(QSet<QMailMessageId>(matchingIds.constBegin(), matchingIds.constEnd()));
+            d->_messageIds.unite(QSet<QMailMessageId>(matchingIds.constBegin(), matchingIds.constEnd()));
             update(this);
         }
     }
@@ -965,7 +985,9 @@ void QMailFilterMessageSet::messagesAdded(const QMailMessageIdList &ids)
 /*! \internal */
 void QMailFilterMessageSet::messagesRemoved(const QMailMessageIdList &ids)
 {
-    QSet<QMailMessageId>& _messageIds = impl(this)->_messageIds;
+    Q_D(QMailFilterMessageSet);
+
+    QSet<QMailMessageId>& _messageIds = d->_messageIds;
     if (!_messageIds.isEmpty()) {
         QSet<QMailMessageId> removedIds = QSet<QMailMessageId>(ids.constBegin(), ids.constEnd());
 
@@ -981,9 +1003,11 @@ void QMailFilterMessageSet::messagesRemoved(const QMailMessageIdList &ids)
 /*! \internal */
 void QMailFilterMessageSet::messagesUpdated(const QMailMessageIdList &ids)
 {
+    Q_D(QMailFilterMessageSet);
+
     QMailMessageKey key(messageKey());
     if (!key.isNonMatching()) {
-        QSet<QMailMessageId>& _messageIds = impl(this)->_messageIds;
+        QSet<QMailMessageId>& _messageIds = d->_messageIds;
         QSet<QMailMessageId> updatedIds = QSet<QMailMessageId>(ids.constBegin(), ids.constEnd());
 
         // Find which of the updated messages should be in our set
@@ -1035,11 +1059,13 @@ void QMailFilterMessageSet::folderContentsModified(const QMailFolderIdList &)
 /*! \internal */
 void QMailFilterMessageSet::resyncState()
 {
-    if (impl(this)->_minimized) {
+    Q_D(QMailFilterMessageSet);
+
+    if (d->_minimized) {
         const QMailMessageIdList ids = QMailStore::instance()->queryMessages(messageKey());
-        impl(this)->_messageIds = QSet<QMailMessageId>(ids.constBegin(), ids.constEnd());
+        d->_messageIds = QSet<QMailMessageId>(ids.constBegin(), ids.constEnd());
     } else {
-        impl(this)->_messageIds.clear();
+        d->_messageIds.clear();
     }
 
     QMailMessageSet::resyncState();
@@ -1054,11 +1080,13 @@ void QMailFilterMessageSet::init()
 /*! \internal */
 void QMailFilterMessageSet::reset()
 {
-    if (impl(this)->_minimized) {
+    Q_D(QMailFilterMessageSet);
+
+    if (d->_minimized) {
         disconnect(model(), SIGNAL(folderContentsModified(QMailFolderIdList)), this, SLOT(folderContentsModified(QMailFolderIdList)));
 
         const QMailMessageIdList ids = QMailStore::instance()->queryMessages(messageKey());
-        impl(this)->_messageIds = QSet<QMailMessageId>(ids.constBegin(), ids.constEnd());
+        d->_messageIds = QSet<QMailMessageId>(ids.constBegin(), ids.constEnd());
 
         connect(model(), SIGNAL(messagesAdded(QMailMessageIdList)), this, SLOT(messagesAdded(QMailMessageIdList)));
         connect(model(), SIGNAL(messagesRemoved(QMailMessageIdList)), this, SLOT(messagesRemoved(QMailMessageIdList)));
@@ -1068,7 +1096,7 @@ void QMailFilterMessageSet::reset()
         disconnect(model(), SIGNAL(messagesRemoved(QMailMessageIdList)), this, SLOT(messagesRemoved(QMailMessageIdList)));
         disconnect(model(), SIGNAL(messagesUpdated(QMailMessageIdList)), this, SLOT(messagesUpdated(QMailMessageIdList)));
 
-        impl(this)->_messageIds.clear();
+        d->_messageIds.clear();
 
         connect(model(), SIGNAL(folderContentsModified(QMailFolderIdList)), this, SLOT(folderContentsModified(QMailFolderIdList)));
     }
@@ -1083,7 +1111,7 @@ public:
     enum UpdateState { Propagate, Detect, Detected, Suppressed };
 
     QMailMessageSetModelPrivate()
-        : QMailMessageSetContainerPrivate(this, 0),
+        : QMailMessageSetContainerPrivate(nullptr),
           _updateState(Propagate)
     {
     }
@@ -1138,11 +1166,6 @@ public:
     \value DisplayNameRole  The name of the message set for display purposes.
     \value MessageKeyRole   The message selection key associated with a message set.
     \value SubclassUserRole The first value that should be used by subclasses when defining new message set roles.
-*/
-
-/*!
-    \typedef QMailMessageSetModel::ImplementationType
-    \internal
 */
 
 /*!
@@ -1225,8 +1248,10 @@ QModelIndex QMailMessageSetModel::parent(const QModelIndex &index) const
 */
 QModelIndex QMailMessageSetModel::indexFromAccountId(const QMailAccountId &id) const
 {
-    QMap<QMailAccountId, QModelIndex>::const_iterator it = impl(this)->_accountMap.find(id);
-    if (it != impl(this)->_accountMap.end())
+    Q_D(const QMailMessageSetModel);
+
+    QMap<QMailAccountId, QModelIndex>::const_iterator it = d->_accountMap.find(id);
+    if (it != d->_accountMap.end())
         return *it;
 
     return QModelIndex();
@@ -1240,8 +1265,10 @@ QModelIndex QMailMessageSetModel::indexFromAccountId(const QMailAccountId &id) c
 */
 QModelIndex QMailMessageSetModel::indexFromFolderId(const QMailFolderId &id) const
 {
-    QMap<QMailFolderId, QModelIndex>::const_iterator it = impl(this)->_folderMap.find(id);
-    if (it != impl(this)->_folderMap.end())
+    Q_D(const QMailMessageSetModel);
+
+    QMap<QMailFolderId, QModelIndex>::const_iterator it = d->_folderMap.find(id);
+    if (it != d->_folderMap.end())
         return *it;
 
     return QModelIndex();
@@ -1331,7 +1358,9 @@ QMailMessageSetModel *QMailMessageSetModel::model()
 */
 bool QMailMessageSetModel::ignoreMailStoreUpdates() const
 {
-    return (impl(this)->_updateState != QMailMessageSetModelPrivate::Propagate);
+    Q_D(const QMailMessageSetModel);
+
+    return d->_updateState != QMailMessageSetModelPrivate::Propagate;
 }
 
 /*!
@@ -1348,16 +1377,16 @@ bool QMailMessageSetModel::ignoreMailStoreUpdates() const
 */
 void QMailMessageSetModel::setIgnoreMailStoreUpdates(bool ignore)
 {
-    ImplementationType *i = impl(this);
+    Q_D(QMailMessageSetModel);
 
     if (ignore) {
-        if (i->_updateState == QMailMessageSetModelPrivate::Propagate)
-            i->_updateState = QMailMessageSetModelPrivate::Detect;
+        if (d->_updateState == QMailMessageSetModelPrivate::Propagate)
+            d->_updateState = QMailMessageSetModelPrivate::Detect;
     } else {
-        bool resyncRequired((i->_updateState == QMailMessageSetModelPrivate::Detected)
-                            || (i->_updateState == QMailMessageSetModelPrivate::Suppressed));
+        bool resyncRequired(d->_updateState == QMailMessageSetModelPrivate::Detected
+                            || d->_updateState == QMailMessageSetModelPrivate::Suppressed);
 
-        i->_updateState = QMailMessageSetModelPrivate::Propagate;
+        d->_updateState = QMailMessageSetModelPrivate::Propagate;
         if (resyncRequired) {
             // We need to resynchronize our descendants
             resyncState();
@@ -1372,13 +1401,15 @@ void QMailMessageSetModel::setIgnoreMailStoreUpdates(bool ignore)
 /*! \internal */
 bool QMailMessageSetModel::propagateUpdates() const
 {
-    return (impl(this)->_updateState != QMailMessageSetModelPrivate::Suppressed);
+    Q_D(const QMailMessageSetModel);
+    return (d->_updateState != QMailMessageSetModelPrivate::Suppressed);
 }
 
 /*! \internal */
 void QMailMessageSetModel::ceasePropagatingUpdates()
 {
-    impl(this)->_updateState = QMailMessageSetModelPrivate::Suppressed;
+    Q_D(QMailMessageSetModel);
+    d->_updateState = QMailMessageSetModelPrivate::Suppressed;
 }
 
 /*! \internal */
@@ -1404,11 +1435,11 @@ void QMailMessageSetModel::delayedInit()
 /*! \internal */
 void QMailMessageSetModel::testForResync()
 {
-    ImplementationType *i = impl(this);
+    Q_D(QMailMessageSetModel);
 
-    if (i->_updateState == QMailMessageSetModelPrivate::Detect) {
+    if (d->_updateState == QMailMessageSetModelPrivate::Detect) {
         QTimer::singleShot(0, this, SLOT(ceasePropagatingUpdates()));
-        i->_updateState = QMailMessageSetModelPrivate::Detected;
+        d->_updateState = QMailMessageSetModelPrivate::Detected;
     }
 }
 
@@ -1516,15 +1547,17 @@ QMailFolderId QMailMessageSetModel::itemFolderId(QMailMessageSet *item) const
 */
 void QMailMessageSetModel::appended(QMailMessageSet *item)
 {
+    Q_D(QMailMessageSetModel);
+
     QMailFolderId folderId = itemFolderId(item);
     if (folderId.isValid()) {
-        impl(this)->_folderMap[folderId] = item->modelIndex();
+        d->_folderMap[folderId] = item->modelIndex();
         return;
     }
 
     QMailAccountId accountId = itemAccountId(item);
     if (accountId.isValid()) {
-        impl(this)->_accountMap[accountId] = item->modelIndex();
+        d->_accountMap[accountId] = item->modelIndex();
         return;
     }
 }
@@ -1536,15 +1569,17 @@ void QMailMessageSetModel::appended(QMailMessageSet *item)
 */
 void QMailMessageSetModel::removed(QMailMessageSet *item)
 {
+    Q_D(QMailMessageSetModel);
+
     QMailFolderId folderId = itemFolderId(item);
     if (folderId.isValid()) {
-        impl(this)->_folderMap.remove(folderId);
+        d->_folderMap.remove(folderId);
         return;
     }
 
     QMailAccountId accountId = itemAccountId(item);
     if (accountId.isValid()) {
-        impl(this)->_accountMap.remove(accountId);
+        d->_accountMap.remove(accountId);
         return;
     }
 }

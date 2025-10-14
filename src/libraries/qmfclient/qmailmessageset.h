@@ -34,8 +34,7 @@
 #ifndef QMAILMESSAGESET_H
 #define QMAILMESSAGESET_H
 
-#include "qprivateimplementation.h"
-
+#include <QScopedPointer>
 #include <QAbstractItemModel>
 #include <QList>
 #include <QMap>
@@ -51,11 +50,9 @@ class QMailStore;
 
 class QMailMessageSetContainerPrivate;
 
-class QMF_EXPORT QMailMessageSetContainer : public QPrivatelyNoncopyable<QMailMessageSetContainerPrivate>
+class QMF_EXPORT QMailMessageSetContainer
 {
 public:
-    typedef QMailMessageSetContainerPrivate ImplementationType;
-
     virtual ~QMailMessageSetContainer();
 
     int count() const;
@@ -74,12 +71,17 @@ public:
     virtual QMailMessageSetModel *model() = 0;
 
 protected:
-    template<typename Subclass>
-    QMailMessageSetContainer(Subclass *p);
+    QMailMessageSetContainer(QMailMessageSetContainerPrivate*);
 
     virtual void resyncState();
 
+    QScopedPointer<QMailMessageSetContainerPrivate> priv;
+
 private:
+    // _D version and 'priv' to avoid collision with QObject::d_ptr
+    Q_DECLARE_PRIVATE_D(priv, QMailMessageSetContainer)
+    Q_DISABLE_COPY(QMailMessageSetContainer)
+
     friend class QMailMessageSet;
 
     virtual QObject *qObject() = 0;
@@ -93,8 +95,6 @@ class QMF_EXPORT QMailMessageSet : public QObject, public QMailMessageSetContain
     Q_OBJECT
 
 public:
-    typedef QMailMessageSetPrivate ImplementationType;
-
     QMailMessageSet(QMailMessageSetContainer *container);
     ~QMailMessageSet();
 
@@ -112,11 +112,12 @@ public:
 
 protected:
     friend class QMailMessageSetContainer;
-
-    template<typename Subclass>
-    QMailMessageSet(Subclass *p, QMailMessageSetContainer *container);
+    QMailMessageSet(QMailMessageSetPrivate *priv);
 
     virtual void init();
+
+private:
+    Q_DECLARE_PRIVATE_D(priv, QMailMessageSet)
 };
 
 
@@ -127,8 +128,6 @@ class QMF_EXPORT QMailFolderMessageSet : public QMailMessageSet
     Q_OBJECT
 
 public:
-    typedef QMailFolderMessageSetPrivate ImplementationType;
-
     QMailFolderMessageSet(QMailMessageSetContainer *container, const QMailFolderId &folderId, bool hierarchical = true);
 
     QMailFolderId folderId() const;
@@ -154,6 +153,9 @@ protected:
     void resyncState() override;
 
     QMailFolderKey folderKey() const;
+
+private:
+    Q_DECLARE_PRIVATE_D(priv, QMailFolderMessageSet)
 };
 
 
@@ -164,8 +166,6 @@ class QMF_EXPORT QMailAccountMessageSet : public QMailMessageSet
     Q_OBJECT
 
 public:
-    typedef QMailAccountMessageSetPrivate ImplementationType;
-
     QMailAccountMessageSet(QMailMessageSetContainer *container, const QMailAccountId &accountId, bool hierarchical = true);
 
     QMailAccountId accountId() const;
@@ -192,6 +192,9 @@ protected:
     void resyncState() override;
 
     QMailFolderKey rootFolderKey() const;
+
+private:
+    Q_DECLARE_PRIVATE_D(priv, QMailAccountMessageSet)
 };
 
 
@@ -202,8 +205,6 @@ class QMF_EXPORT QMailFilterMessageSet : public QMailMessageSet
     Q_OBJECT
 
 public:
-    typedef QMailFilterMessageSetPrivate ImplementationType;
-
     QMailFilterMessageSet(QMailMessageSetContainer *container, const QMailMessageKey &key, const QString &name, bool minimalUpdates = true);
 
     QMailMessageKey messageKey() const override;
@@ -225,6 +226,9 @@ protected:
     void init() override;
     virtual void reset();
     void resyncState() override;
+
+private:
+    Q_DECLARE_PRIVATE_D(priv, QMailFilterMessageSet)
 };
 
 
@@ -235,8 +239,6 @@ class QMF_EXPORT QMailMessageSetModel : public QAbstractItemModel, public QMailM
     Q_OBJECT
 
 public:
-    typedef QMailMessageSetModelPrivate ImplementationType;
-
     enum Roles {
         DisplayNameRole = Qt::UserRole,
         MessageKeyRole,
@@ -315,6 +317,8 @@ protected:
     virtual void updated(QMailMessageSet *child);
 
 private:
+    Q_DECLARE_PRIVATE_D(priv, QMailMessageSetModel)
+
     friend class QMailMessageSetContainer;
     friend class QMailMessageSet;
 
