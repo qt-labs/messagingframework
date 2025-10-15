@@ -1075,17 +1075,6 @@
         <hardware>true</hardware>
       </environments>
     </set>
-    <set name="_usr_tests_qmf_tst_qmailnamespace">
-      <description>libqmf-tests:tst_qmailnamespace</description>
-      <case name="tst_qmailnamespace-test_qmailnamespace">
-        <description>libqmf-tests:tst_qmailnamespace:test_qmailnamespace</description>
-        <step>/usr/tests/qmf/tst_qmailnamespace test_qmailnamespace</step>
-      </case>
-      <environments>
-        <scratchbox>true</scratchbox>
-        <hardware>true</hardware>
-      </environments>
-    </set>
     <set name="_usr_tests_qmf_tst_qmail_listmodels">
       <description>libqmf-tests:tst_qmail_listmodels</description>
         <case name="tst_qmail_listmodels-test_qmailaccountlistmodel">

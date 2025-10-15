@@ -57,9 +57,7 @@
 #include <fcntl.h>
 #endif
 
-static const char* QMF_DATA_ENV="QMF_DATA";
-static const char* QMF_SERVER_ENV="QMF_SERVER";
-static const char* QMF_SETTINGS_ENV="QMF_SETTINGS";
+static const char* QMF_DATA_ENV = "QMF_DATA";
 
 struct StandardFolderInfo
 {
@@ -132,7 +130,6 @@ QDateTime QMail::lastDbUpdated()
     return info.lastModified();
 }
 
-
 /*!
     Returns the path to where the Messaging framework will store its temporary files.
 */
@@ -151,29 +148,6 @@ QString QMail::tempPath()
     }
 
     return path;
-}
-
-/*!
-    Returns the path to where the Messaging framework will invoke the messageserver process.
-*/
-QString QMail::messageServerPath()
-{
-    static QString serverEnv(QString::fromUtf8(qgetenv(QMF_SERVER_ENV)));
-    if (!serverEnv.isEmpty())
-        return serverEnv + QChar::fromLatin1('/');
-
-    return QCoreApplication::applicationDirPath() + QChar::fromLatin1('/');
-}
-
-/*!
-    Returns the path to where the Messaging framework will search for settings information.
-*/
-QString QMail::messageSettingsPath()
-{
-    static QString settingsEnv(QString::fromUtf8(qgetenv(QMF_SETTINGS_ENV)));
-    if (!settingsEnv.isEmpty())
-        return settingsEnv + QChar::fromLatin1('/');
-    return QCoreApplication::applicationDirPath() + QChar::fromLatin1('/');
 }
 
 /*!
@@ -216,7 +190,7 @@ void QMail::closeDatabase()
         qCDebug(lcMailStore) << "closing database";
         instance->init = false;
         QSqlDatabase::removeDatabase(instance->dbConnectionName());
-    } // else nothing todo
+    }
 }
 
 QSqlDatabase QMail::createDatabase()

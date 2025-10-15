@@ -44,7 +44,6 @@
 #include <QSystemTrayIcon>
 #include <QTime>
 #include <QTimer>
-#include <QProcess>
 
 class EmailFolderModel;
 class EmailFolderView;
@@ -279,8 +278,6 @@ private slots:
     void threadMessages();
     void resumeInterruptedComposition();
     bool startMessageServer();
-    bool waitForMessageServer();
-    void messageServerProcessError(QProcess::ProcessError);
 
     void createFolder();
     void deleteFolder();
@@ -432,7 +429,6 @@ private:
 
     QMailMessageId lastDraftId;
 
-    QProcess* m_messageServerProcess;
     QSet<QMailMessageId> flagMessageIds;
     QMenu* m_contextMenu;
     QToolBar* m_toolBar;

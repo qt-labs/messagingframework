@@ -464,7 +464,6 @@ EmailClient::EmailClient(QWidget *parent, Qt::WindowFlags f)
       autoGetMail(false),
       initialAction(None),
       preSearchWidgetId(-1),
-      m_messageServerProcess(0),
       m_contextMenu(0),
       m_transmitAction(0),
       m_retrievalAction(0),
@@ -489,9 +488,7 @@ EmailClient::EmailClient(QWidget *parent, Qt::WindowFlags f)
 EmailClient::~EmailClient()
 {
     clearNewMessageStatus(messageListView()->key());
-    waitForMessageServer();
 }
-
 
 void EmailClient::openFiles()
 {
@@ -553,39 +550,10 @@ void EmailClient::resumeInterruptedComposition()
 
 bool EmailClient::startMessageServer()
 {
-    qCDebug(lcMessaging) << "Starting messageserver child process...";
-    if (m_messageServerProcess) delete m_messageServerProcess;
-    m_messageServerProcess = new QProcess(this);
-    connect(m_messageServerProcess,SIGNAL(error(QProcess::ProcessError)),
-            this,SLOT(messageServerProcessError(QProcess::ProcessError)));
-
-#ifdef Q_OS_WIN
-    static const QString binary(QString("/messageserver5%1.exe").arg(debugSuffix));
-#else
-    static const QString binary(QString("/messageserver5%1").arg(debugSuffix));
-#endif
-
-	m_messageServerProcess->start(QMail::messageServerPath() + binary);
-    return m_messageServerProcess->waitForStarted();
-}
-
-bool EmailClient::waitForMessageServer()
-{
-    if (m_messageServerProcess)
-    {
-        qCDebug(lcMessaging) << "Shutting down messageserver child process..";
-        bool result = m_messageServerProcess->waitForFinished();
-        delete m_messageServerProcess; m_messageServerProcess = 0;
-        return result;
-    }
-    return true;
-}
-
-void EmailClient::messageServerProcessError(QProcess::ProcessError e)
-{
-    QString errorMsg = tr("The Message server child process encountered an error (%1). Qtmail will now exit.").arg(static_cast<int>(e));
-    QMessageBox::critical(this, tr("Message Server"), errorMsg);
-    qFatal(errorMsg.toLatin1(), "");
+    // TODO: old implementation removed
+    // should qmfclient API have some method to request starting the message server?
+    qCWarning(lcMessaging) << "Starting messageserver by app not supported at the moment";
+    return false;
 }
 
 void EmailClient::connectServiceAction(QMailServiceAction* action)
@@ -2339,15 +2307,7 @@ void EmailClient::quit()
         }
     }
 
-    if (m_messageServerProcess)
-    {
-        //we started the messageserver, direct it to shut down
-        //before we quit ourselves
-        QMailMessageServer server;
-        server.shutdown();
-        QTimer::singleShot(0,qApp,SLOT(quit()));
-    }
-    else QApplication::quit();
+    QApplication::quit();
 }
 
 void EmailClient::closeEvent(QCloseEvent *e)
