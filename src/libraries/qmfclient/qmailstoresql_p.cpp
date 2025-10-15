@@ -4257,18 +4257,6 @@ bool QMailStoreSql::setupTables(const QList<TableInfo> &tableList)
         }
     }
 
-    // quick and dirty check if they're using an old version
-    // TODO: remove this
-    QSqlQuery query(simpleQuery(QLatin1String("SELECT count(*) FROM sqlite_master WHERE `type` = \"table\" AND `name` = \"mailmessages\" AND `sql` LIKE \"%latestinconversation%\""),
-                                QLatin1String("old check")));
-    if (query.next()) {
-        if (query.value(0).toInt() != 0) {
-            qFatal("Unsupported database. Please delete the %s directory and try again.", qPrintable(QMail::dataPath()));
-        }
-    } else {
-        qCWarning(lcMailStore) << "Failure running check";
-    }
-
     return result;
 }
 
