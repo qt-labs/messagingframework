@@ -42,17 +42,6 @@
 
 namespace { const QString serviceKey("smtp"); }
 
-/* TODO: in future, use QNetworkInformation class */
-class NetworkStatusMonitor : public QObject
-{
-    Q_OBJECT
-public:
-    NetworkStatusMonitor(QObject *parent = nullptr) : QObject(parent) {}
-    bool isOnline() const { return true; }
-Q_SIGNALS:
-    void onlineStateChanged(bool online);
-};
-
 class SmtpService::Sink : public QMailMessageSink
 {
     Q_OBJECT
@@ -144,6 +133,8 @@ void SmtpService::onCapabilitiesFetched()
 {
     QMailAccount account(_client.account());
     if (account.customField("qmf-smtp-capabilities-listed") != "true") {
+        // TODO: could consider should we give up faster if there's no network connectivity,
+        // e.g. check status with QNetworkInformation
         uint timeout = 1000;
         if (!_capabilityFetchTimeout) {
             _capabilityFetchTimeout = new QTimer(this);
