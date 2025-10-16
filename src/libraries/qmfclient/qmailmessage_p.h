@@ -120,7 +120,7 @@ private:
 };
 
 
-class QMF_EXPORT QMailMessageBodyPrivate : public QPrivateImplementationBase
+class QMailMessageBodyPrivate : public QSharedData
 {
 public:
     QMailMessageBodyPrivate();

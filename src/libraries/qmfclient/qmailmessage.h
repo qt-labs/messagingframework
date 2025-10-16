@@ -242,7 +242,7 @@ Stream& operator>>(Stream &stream, QMailMessageHeader& header) { header.deserial
 class QMailMessageBodyPrivate;
 class LongString;
 
-class QMF_EXPORT QMailMessageBody : public QPrivatelyImplemented<QMailMessageBodyPrivate>
+class QMF_EXPORT QMailMessageBody
 {
 public:
     enum TransferEncoding {
@@ -265,8 +265,6 @@ public:
         Decoded = 2
     };
 
-    typedef QMailMessageBodyPrivate ImplementationType;
-
     // Construction functions
     static QMailMessageBody fromFile(const QString& filename, const QMailMessageContentType& type, TransferEncoding encoding, EncodingStatus status);
 
@@ -275,6 +273,10 @@ public:
 
     static QMailMessageBody fromStream(QTextStream& in, const QMailMessageContentType& type, TransferEncoding encoding);
     static QMailMessageBody fromData(const QString& input, const QMailMessageContentType& type, TransferEncoding encoding);
+
+    QMailMessageBody(const QMailMessageBody &other);
+    virtual ~QMailMessageBody();
+    QMailMessageBody& operator=(const QMailMessageBody &other);
 
     // Output functions
     bool toFile(const QString& filename, EncodingFormat format) const;
@@ -308,6 +310,8 @@ private:
     void output(QDataStream& out, bool includeAttachments) const;
 
     static QMailMessageBody fromLongString(LongString& ls, const QMailMessageContentType& type, TransferEncoding encoding, EncodingStatus status);
+
+    QSharedDataPointer<QMailMessageBodyPrivate> d;
 };
 
 template <typename Stream>

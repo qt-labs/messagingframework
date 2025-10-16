@@ -3193,9 +3193,8 @@ void QMailMessageHeader::deserialize(Stream &stream)
 /* QMailMessageBody */
 
 QMailMessageBodyPrivate::QMailMessageBodyPrivate()
-    : QPrivateImplementationBase(this),
-    _encoding(QMailMessageBody::SevenBit), // Default encoding
-    _encoded(true)
+    : _encoding(QMailMessageBody::SevenBit) // Default encoding
+    , _encoded(true)
 {
 }
 
@@ -3578,11 +3577,6 @@ void QMailMessageBodyPrivate::deserialize(Stream &stream)
 */
 
 /*!
-    \typedef QMailMessageBody::ImplementationType
-    \internal
-*/
-
-/*!
     \enum QMailMessageBody::TransferEncoding
 
     This enum type is used to describe a type of binary to text encoding.
@@ -3621,8 +3615,24 @@ void QMailMessageBodyPrivate::deserialize(Stream &stream)
     Creates an instance of QMailMessageBody.
 */
 QMailMessageBody::QMailMessageBody()
-    : QPrivatelyImplemented<QMailMessageBodyPrivate>(new QMailMessageBodyPrivate())
+    : d(new QMailMessageBodyPrivate())
 {
+}
+
+QMailMessageBody::QMailMessageBody(const QMailMessageBody &other)
+{
+    d = other.d;
+}
+
+QMailMessageBody::~QMailMessageBody()
+{
+}
+
+QMailMessageBody& QMailMessageBody::operator=(const QMailMessageBody &other)
+{
+    if (&other != this)
+        d = other.d;
+    return *this;
 }
 
 /*!
@@ -3648,7 +3658,7 @@ QMailMessageBody::QMailMessageBody()
 QMailMessageBody QMailMessageBody::fromFile(const QString& filename, const QMailMessageContentType& type, TransferEncoding encoding, EncodingStatus status)
 {
     QMailMessageBody body;
-    body.impl<QMailMessageBodyPrivate>()->fromFile(filename, type, encoding, status);
+    body.d->fromFile(filename, type, encoding, status);
     return body;
 }
 
@@ -3670,7 +3680,7 @@ QMailMessageBody QMailMessageBody::fromFile(const QString& filename, const QMail
 QMailMessageBody QMailMessageBody::fromStream(QDataStream& in, const QMailMessageContentType& type, TransferEncoding encoding, EncodingStatus status)
 {
     QMailMessageBody body;
-    body.impl<QMailMessageBodyPrivate>()->fromStream(in, type, encoding, status);
+    body.d->fromStream(in, type, encoding, status);
     return body;
 }
 
@@ -3694,7 +3704,7 @@ QMailMessageBody QMailMessageBody::fromData(const QByteArray& input, const QMail
     QMailMessageBody body;
     {
         QDataStream in(input);
-        body.impl<QMailMessageBodyPrivate>()->fromStream(in, type, encoding, status);
+        body.d->fromStream(in, type, encoding, status);
     }
     return body;
 }
@@ -3713,7 +3723,7 @@ QMailMessageBody QMailMessageBody::fromData(const QByteArray& input, const QMail
 QMailMessageBody QMailMessageBody::fromStream(QTextStream& in, const QMailMessageContentType& type, TransferEncoding encoding)
 {
     QMailMessageBody body;
-    body.impl<QMailMessageBodyPrivate>()->fromStream(in, type, encoding);
+    body.d->fromStream(in, type, encoding);
     return body;
 }
 
@@ -3733,7 +3743,7 @@ QMailMessageBody QMailMessageBody::fromData(const QString& input, const QMailMes
     QMailMessageBody body;
     {
         QTextStream in(const_cast<QString*>(&input), QIODevice::ReadOnly);
-        body.impl<QMailMessageBodyPrivate>()->fromStream(in, type, encoding);
+        body.d->fromStream(in, type, encoding);
     }
     return body;
 }
@@ -3742,7 +3752,7 @@ QMailMessageBody QMailMessageBody::fromLongString(LongString& ls, const QMailMes
 {
     QMailMessageBody body;
     {
-        body.impl<QMailMessageBodyPrivate>()->fromLongString(ls, type, encoding, status);
+        body.d->fromLongString(ls, type, encoding, status);
     }
     return body;
 }
@@ -3762,7 +3772,7 @@ QMailMessageBody QMailMessageBody::fromLongString(LongString& ls, const QMailMes
 */
 bool QMailMessageBody::toFile(const QString& filename, EncodingFormat format) const
 {
-    return impl(this)->toFile(filename, format);
+    return d->toFile(filename, format);
 }
 
 /*!
@@ -3777,7 +3787,7 @@ QByteArray QMailMessageBody::data(EncodingFormat format) const
     QByteArray result;
     {
         QDataStream out(&result, QIODevice::WriteOnly);
-        impl(this)->toStream(out, format);
+        d->toStream(out, format);
     }
     return result;
 }
@@ -3793,7 +3803,7 @@ QByteArray QMailMessageBody::data(EncodingFormat format) const
 */
 bool QMailMessageBody::toStream(QDataStream& out, EncodingFormat format) const
 {
-    return impl(this)->toStream(out, format);
+    return d->toStream(out, format);
 }
 
 /*!
@@ -3810,7 +3820,7 @@ QString QMailMessageBody::data() const
     QString result;
     {
         QTextStream out(&result, QIODevice::WriteOnly);
-        impl(this)->toStream(out);
+        d->toStream(out);
     }
     return result;
 }
@@ -3827,7 +3837,7 @@ QString QMailMessageBody::data() const
 */
 bool QMailMessageBody::toStream(QTextStream& out) const
 {
-    return impl(this)->toStream(out);
+    return d->toStream(out);
 }
 
 /*!
@@ -3835,7 +3845,7 @@ bool QMailMessageBody::toStream(QTextStream& out) const
 */
 QMailMessageContentType QMailMessageBody::contentType() const
 {
-    return impl(this)->contentType();
+    return d->contentType();
 }
 
 /*!
@@ -3843,7 +3853,7 @@ QMailMessageContentType QMailMessageBody::contentType() const
 */
 QMailMessageBody::TransferEncoding QMailMessageBody::transferEncoding() const
 {
-    return impl(this)->transferEncoding();
+    return d->transferEncoding();
 }
 
 /*!
@@ -3851,7 +3861,7 @@ QMailMessageBody::TransferEncoding QMailMessageBody::transferEncoding() const
 */
 bool QMailMessageBody::isEmpty() const
 {
-    return impl(this)->isEmpty();
+    return d->isEmpty();
 }
 
 /*!
@@ -3859,31 +3869,31 @@ bool QMailMessageBody::isEmpty() const
 */
 int QMailMessageBody::length() const
 {
-    return impl(this)->length();
+    return d->length();
 }
 
 /*! \internal */
 uint QMailMessageBody::indicativeSize() const
 {
-    return impl(this)->indicativeSize();
+    return d->indicativeSize();
 }
 
 /*! \internal */
 bool QMailMessageBody::encoded() const
 {
-    return impl(this)->encoded();
+    return d->encoded();
 }
 
 /*! \internal */
 void QMailMessageBody::setEncoded(bool value)
 {
-    impl(this)->setEncoded(value);
+    d->setEncoded(value);
 }
 
 /*! \internal */
 void QMailMessageBody::output(QDataStream& out, bool includeAttachments) const
 {
-    impl(this)->output(out, includeAttachments);
+    d->output(out, includeAttachments);
 }
 
 /*!
@@ -3893,7 +3903,7 @@ void QMailMessageBody::output(QDataStream& out, bool includeAttachments) const
 template <typename Stream>
 void QMailMessageBody::serialize(Stream &stream) const
 {
-    impl(this)->serialize(stream);
+    d->serialize(stream);
 }
 
 /*!
@@ -3903,7 +3913,7 @@ void QMailMessageBody::serialize(Stream &stream) const
 template <typename Stream>
 void QMailMessageBody::deserialize(Stream &stream)
 {
-    impl(this)->deserialize(stream);
+    d->deserialize(stream);
 }
 
 
