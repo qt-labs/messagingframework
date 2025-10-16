@@ -46,7 +46,6 @@ class QMailIdPrivate;
 
 class QMF_EXPORT QMailAccountId
 {
-    QScopedPointer<QMailIdPrivate> d;
 public:
     QMailAccountId();
     explicit QMailAccountId(quint64 value);
@@ -66,12 +65,14 @@ public:
 
     template <typename Stream> void serialize(Stream &stream) const;
     template <typename Stream> void deserialize(Stream &stream);
+
+private:
+    QScopedPointer<QMailIdPrivate> d;
 };
 
 
 class QMF_EXPORT QMailFolderId
 {
-    QScopedPointer<QMailIdPrivate> d;
 public:
     enum PredefinedFolderId { LocalStorageFolderId = 1 };
 
@@ -94,12 +95,14 @@ public:
 
     template <typename Stream> void serialize(Stream &stream) const;
     template <typename Stream> void deserialize(Stream &stream);
+
+private:
+    QScopedPointer<QMailIdPrivate> d;
 };
 
 
 class QMF_EXPORT QMailMessageId
 {
-    QScopedPointer<QMailIdPrivate> d;
 public:
     QMailMessageId();
     explicit QMailMessageId(quint64 value);
@@ -119,11 +122,13 @@ public:
 
     template <typename Stream> void serialize(Stream &stream) const;
     template <typename Stream> void deserialize(Stream &stream);
+
+private:
+    QScopedPointer<QMailIdPrivate> d;
 };
 
 class QMF_EXPORT QMailThreadId
 {
-    QScopedPointer<QMailIdPrivate> d;
 public:
     QMailThreadId();
     explicit QMailThreadId(quint64 value);
@@ -143,6 +148,9 @@ public:
 
     template <typename Stream> void serialize(Stream &stream) const;
     template <typename Stream> void deserialize(Stream &stream);
+
+private:
+    QScopedPointer<QMailIdPrivate> d;
 };
 
 
