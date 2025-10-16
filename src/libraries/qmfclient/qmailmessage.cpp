@@ -1591,19 +1591,16 @@ namespace attachments
 /* QMailMessageHeaderField */
 
 QMailMessageHeaderFieldPrivate::QMailMessageHeaderFieldPrivate()
-    : QPrivateImplementationBase(this),
-      _structured(true)
+    : _structured(true)
 {
 }
 
 QMailMessageHeaderFieldPrivate::QMailMessageHeaderFieldPrivate(const QByteArray& text, bool structured)
-    : QPrivateImplementationBase(this)
 {
     parse(text, structured);
 }
 
 QMailMessageHeaderFieldPrivate::QMailMessageHeaderFieldPrivate(const QByteArray& id, const QByteArray& text, bool structured)
-    : QPrivateImplementationBase(this)
 {
     _id = id;
     parse(text, structured);
@@ -2180,11 +2177,6 @@ void QMailMessageHeaderFieldPrivate::deserialize(Stream &stream)
 */
 
 /*!
-    \typedef QMailMessageHeaderField::ImplementationType
-    \internal
-*/
-
-/*!
     \typedef QMailMessageHeaderField::ParameterType
     \internal
 */
@@ -2193,7 +2185,7 @@ void QMailMessageHeaderFieldPrivate::deserialize(Stream &stream)
     Creates an uninitialised message header field object.
 */
 QMailMessageHeaderField::QMailMessageHeaderField()
-    : QPrivatelyImplemented<QMailMessageHeaderFieldPrivate>(new QMailMessageHeaderFieldPrivate())
+    : d(new QMailMessageHeaderFieldPrivate())
 {
 }
 
@@ -2204,7 +2196,7 @@ QMailMessageHeaderField::QMailMessageHeaderField()
     RFC 2183 'Content-Disposition' header fields.
 */
 QMailMessageHeaderField::QMailMessageHeaderField(const QByteArray& text, FieldType fieldType)
-    : QPrivatelyImplemented<QMailMessageHeaderFieldPrivate>(new QMailMessageHeaderFieldPrivate(text, (fieldType == StructuredField)))
+    : d(new QMailMessageHeaderFieldPrivate(text, (fieldType == StructuredField)))
 {
 }
 
@@ -2215,14 +2207,30 @@ QMailMessageHeaderField::QMailMessageHeaderField(const QByteArray& text, FieldTy
     RFC 2045 'Content-Type' and RFC 2183 'Content-Disposition' header fields.
 */
 QMailMessageHeaderField::QMailMessageHeaderField(const QByteArray& id, const QByteArray& text, FieldType fieldType)
-    : QPrivatelyImplemented<QMailMessageHeaderFieldPrivate>(new QMailMessageHeaderFieldPrivate(id, text, (fieldType == StructuredField)))
+    : d(new QMailMessageHeaderFieldPrivate(id, text, (fieldType == StructuredField)))
 {
 }
 
-/*! \internal */
-bool QMailMessageHeaderField::operator== (const QMailMessageHeaderField& other) const
+QMailMessageHeaderField::QMailMessageHeaderField(const QMailMessageHeaderField &other)
 {
-    return impl(this)->operator==(*other.impl(&other));
+    d = other.d;
+}
+
+QMailMessageHeaderField::~QMailMessageHeaderField()
+{
+}
+
+QMailMessageHeaderField& QMailMessageHeaderField::operator=(const QMailMessageHeaderField &other)
+{
+    if (&other != this)
+        d = other.d;
+    return *this;
+}
+
+/*! \internal */
+bool QMailMessageHeaderField::operator==(const QMailMessageHeaderField& other) const
+{
+    return d->operator==(*other.d);
 }
 
 /*!
@@ -2230,7 +2238,7 @@ bool QMailMessageHeaderField::operator== (const QMailMessageHeaderField& other) 
 */
 bool QMailMessageHeaderField::isNull() const
 {
-    return impl(this)->isNull();
+    return d->isNull();
 }
 
 /*!
@@ -2238,7 +2246,7 @@ bool QMailMessageHeaderField::isNull() const
 */
 QByteArray QMailMessageHeaderField::id() const
 {
-    return impl(this)->id();
+    return d->id();
 }
 
 /*!
@@ -2246,7 +2254,7 @@ QByteArray QMailMessageHeaderField::id() const
 */
 void QMailMessageHeaderField::setId(const QByteArray& id)
 {
-    impl(this)->setId(id);
+    d->setId(id);
 }
 
 /*!
@@ -2254,7 +2262,7 @@ void QMailMessageHeaderField::setId(const QByteArray& id)
 */
 QByteArray QMailMessageHeaderField::content() const
 {
-    return impl(this)->content();
+    return d->content();
 }
 
 /*!
@@ -2262,7 +2270,7 @@ QByteArray QMailMessageHeaderField::content() const
 */
 void QMailMessageHeaderField::setContent(const QByteArray& text)
 {
-    impl(this)->setContent(text);
+    d->setContent(text);
 }
 
 /*!
@@ -2271,7 +2279,7 @@ void QMailMessageHeaderField::setContent(const QByteArray& text)
 */
 QByteArray QMailMessageHeaderField::parameter(const QByteArray& name) const
 {
-    return impl(this)->parameter(name);
+    return d->parameter(name);
 }
 
 /*!
@@ -2283,7 +2291,7 @@ QByteArray QMailMessageHeaderField::parameter(const QByteArray& name) const
 */
 void QMailMessageHeaderField::setParameter(const QByteArray& name, const QByteArray& value)
 {
-    impl(this)->setParameter(name, value);
+    d->setParameter(name, value);
 }
 
 /*!
@@ -2293,7 +2301,7 @@ void QMailMessageHeaderField::setParameter(const QByteArray& name, const QByteAr
 */
 bool QMailMessageHeaderField::isParameterEncoded(const QByteArray& name) const
 {
-    return impl(this)->isParameterEncoded(name);
+    return d->isParameterEncoded(name);
 }
 
 /*!
@@ -2302,7 +2310,7 @@ bool QMailMessageHeaderField::isParameterEncoded(const QByteArray& name) const
 */
 void QMailMessageHeaderField::setParameterEncoded(const QByteArray& name)
 {
-    impl(this)->setParameterEncoded(name);
+    d->setParameterEncoded(name);
 }
 
 /*!
@@ -2311,7 +2319,7 @@ void QMailMessageHeaderField::setParameterEncoded(const QByteArray& name)
 */
 QList<QMailMessageHeaderField::ParameterType> QMailMessageHeaderField::parameters() const
 {
-    return impl(this)->parameters();
+    return d->parameters();
 }
 
 /*!
@@ -2330,7 +2338,7 @@ QList<QMailMessageHeaderField::ParameterType> QMailMessageHeaderField::parameter
 */
 QByteArray QMailMessageHeaderField::toString(bool includeName, bool presentable) const
 {
-    return impl(this)->toString(includeName, presentable);
+    return d->toString(includeName, presentable);
 }
 
 /*!
@@ -2339,13 +2347,13 @@ QByteArray QMailMessageHeaderField::toString(bool includeName, bool presentable)
 */
 QString QMailMessageHeaderField::decodedContent() const
 {
-    return impl(this)->decodedContent();
+    return d->decodedContent();
 }
 
 /*! \internal */
 void QMailMessageHeaderField::parse(const QByteArray& text, FieldType fieldType)
 {
-    return impl(this)->parse(text, (fieldType == StructuredField));
+    return d->parse(text, (fieldType == StructuredField));
 }
 
 /*!
@@ -2441,7 +2449,7 @@ QByteArray QMailMessageHeaderField::removeWhitespace(const QByteArray& input)
 /*! \internal */
 void QMailMessageHeaderField::output(QDataStream& out) const
 {
-    impl(this)->output(out);
+    d->output(out);
 }
 
 /*!
@@ -2451,7 +2459,7 @@ void QMailMessageHeaderField::output(QDataStream& out) const
 template <typename Stream>
 void QMailMessageHeaderField::serialize(Stream &stream) const
 {
-    impl(this)->serialize(stream);
+    d->serialize(stream);
 }
 
 /*!
@@ -2461,7 +2469,7 @@ void QMailMessageHeaderField::serialize(Stream &stream) const
 template <typename Stream>
 void QMailMessageHeaderField::deserialize(Stream &stream)
 {
-    impl(this)->deserialize(stream);
+    d->deserialize(stream);
 }
 
 

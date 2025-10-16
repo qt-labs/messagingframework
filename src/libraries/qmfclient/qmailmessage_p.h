@@ -50,16 +50,16 @@
 
 #include <optional>
 
-// These classes are implemented via qmailmessage.cpp and qmailinstantiations.cpp
+#include <QSharedData>
 
-class QMF_EXPORT QMailMessageHeaderFieldPrivate : public QPrivateImplementationBase
+class QMailMessageHeaderFieldPrivate : public QSharedData
 {
 public:
     QMailMessageHeaderFieldPrivate();
     QMailMessageHeaderFieldPrivate(const QByteArray& text, bool structured);
     QMailMessageHeaderFieldPrivate(const QByteArray& name, const QByteArray& text, bool structured);
 
-    bool operator== (const QMailMessageHeaderFieldPrivate& other) const;
+    bool operator==(const QMailMessageHeaderFieldPrivate &other) const;
 
     void addParameter(const QByteArray& name, const QByteArray& value);
     void parse(const QByteArray& text, bool structured);

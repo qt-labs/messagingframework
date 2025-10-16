@@ -59,7 +59,7 @@ QT_END_NAMESPACE
 
 class QMailMessageHeaderFieldPrivate;
 
-class QMF_EXPORT QMailMessageHeaderField : public QPrivatelyImplemented<QMailMessageHeaderFieldPrivate>
+class QMF_EXPORT QMailMessageHeaderField
 {
 public:
     enum FieldType {
@@ -67,14 +67,15 @@ public:
         UnstructuredField = 2
     };
 
-    typedef QMailMessageHeaderFieldPrivate ImplementationType;
-
     typedef QPair<QByteArray, QByteArray> ParameterType;
 
     QMailMessageHeaderField();
     QMailMessageHeaderField(const QByteArray& text, FieldType fieldType = StructuredField);
     QMailMessageHeaderField(const QByteArray& name, const QByteArray& text, FieldType fieldType = StructuredField);
+    QMailMessageHeaderField(const QMailMessageHeaderField &other);
+    virtual ~QMailMessageHeaderField();
 
+    QMailMessageHeaderField& operator=(const QMailMessageHeaderField &other);
     bool operator==(const QMailMessageHeaderField &other) const;
 
     bool isNull() const;
@@ -114,6 +115,8 @@ public:
 
 protected:
     void parse(const QByteArray& text, FieldType fieldType);
+
+    QSharedDataPointer<QMailMessageHeaderFieldPrivate> d;
 
 private:
     friend class QMailMessageHeaderFieldPrivate;

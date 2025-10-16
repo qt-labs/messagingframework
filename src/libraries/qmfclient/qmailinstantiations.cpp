@@ -36,8 +36,6 @@
 
 #include "qprivateimplementationdef_p.h"
 
-template class QPrivateImplementationPointer<QMailMessageHeaderFieldPrivate>;
-template class QPrivatelyImplemented<QMailMessageHeaderFieldPrivate>;
 template class QPrivateImplementationPointer<QMailMessageHeaderPrivate>;
 template class QPrivatelyImplemented<QMailMessageHeaderPrivate>;
 template class QPrivateImplementationPointer<QMailMessageBodyPrivate>;
