@@ -96,7 +96,7 @@ public:
 };
 
 
-class QMailMessageHeaderPrivate : public QPrivateImplementationBase
+class QMailMessageHeaderPrivate : public QSharedData
 {
 public:
     QMailMessageHeaderPrivate();

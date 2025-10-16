@@ -2869,11 +2869,6 @@ Q_GLOBAL_STATIC_WITH_ARGS(QList<QByteArray>, singleHeaders,
                            << "references:"
                            << "subject:"));
 
-QMailMessageHeaderPrivate::QMailMessageHeaderPrivate()
-    : QPrivateImplementationBase(this)
-{
-}
-
 enum NewLineStatus { None, Cr, CrLf, Lf };
 
 static QList<QByteArray> parseHeaders(const QByteArray& input)
@@ -2956,9 +2951,12 @@ static QList<QByteArray> parseHeaders(const QByteArray& input)
     return result;
 }
 
+QMailMessageHeaderPrivate::QMailMessageHeaderPrivate()
+{
+}
+
 QMailMessageHeaderPrivate::QMailMessageHeaderPrivate(const QByteArray& input)
-    : QPrivateImplementationBase(this),
-      _headerFields(parseHeaders(input))
+    : _headerFields(parseHeaders(input))
 {
 }
 
@@ -3110,33 +3108,40 @@ void QMailMessageHeaderPrivate::deserialize(Stream &stream)
 */
 
 QMailMessageHeader::QMailMessageHeader()
-    : QPrivatelyImplemented<QMailMessageHeaderPrivate>(new QMailMessageHeaderPrivate())
+    : d(new QMailMessageHeaderPrivate())
 {
 }
 
 QMailMessageHeader::QMailMessageHeader(const QByteArray& input)
-    : QPrivatelyImplemented<QMailMessageHeaderPrivate>(new QMailMessageHeaderPrivate(input))
+    : d(new QMailMessageHeaderPrivate(input))
 {
+}
+
+QMailMessageHeader& QMailMessageHeader::operator=(const QMailMessageHeader &other)
+{
+    if (&other != this)
+        d = other.d;
+    return *this;
 }
 
 void QMailMessageHeader::update(const QByteArray &id, const QByteArray &content)
 {
-    impl(this)->update(id, content);
+    d->update(id, content);
 }
 
 void QMailMessageHeader::append(const QByteArray &id, const QByteArray &content)
 {
-    impl(this)->append(id, content);
+    d->append(id, content);
 }
 
 void QMailMessageHeader::remove(const QByteArray &id)
 {
-    impl(this)->remove(id);
+    d->remove(id);
 }
 
 QMailMessageHeaderField QMailMessageHeader::field(const QByteArray& id) const
 {
-    QList<QMailMessageHeaderField> result = impl(this)->fields(id, 1);
+    QList<QMailMessageHeaderField> result = d->fields(id, 1);
     if (result.count())
         return result[0];
 
@@ -3145,15 +3150,15 @@ QMailMessageHeaderField QMailMessageHeader::field(const QByteArray& id) const
 
 QList<QMailMessageHeaderField> QMailMessageHeader::fields(const QByteArray& id) const
 {
-    return impl(this)->fields(id);
+    return d->fields(id);
 }
 
 QList<const QByteArray*> QMailMessageHeader::fieldList() const
 {
     QList<const QByteArray*> result;
+    QList<QByteArray>::const_iterator const end = d->_headerFields.end();
 
-    QList<QByteArray>::const_iterator const end = impl(this)->_headerFields.end();
-    for (QList<QByteArray>::const_iterator it = impl(this)->_headerFields.begin(); it != end; ++it)
+    for (QList<QByteArray>::const_iterator it = d->_headerFields.begin(); it != end; ++it)
         result.append(&(*it));
 
     return result;
@@ -3161,7 +3166,7 @@ QList<const QByteArray*> QMailMessageHeader::fieldList() const
 
 void QMailMessageHeader::output(QDataStream& out, const QList<QByteArray>& exclusions, bool excludeInternalFields) const
 {
-    impl(this)->output(out, exclusions, excludeInternalFields);
+    d->output(out, exclusions, excludeInternalFields);
 }
 
 /*!
@@ -3171,7 +3176,7 @@ void QMailMessageHeader::output(QDataStream& out, const QList<QByteArray>& exclu
 template <typename Stream>
 void QMailMessageHeader::serialize(Stream &stream) const
 {
-    impl(this)->serialize(stream);
+    d->serialize(stream);
 }
 
 /*!
@@ -3181,7 +3186,7 @@ void QMailMessageHeader::serialize(Stream &stream) const
 template <typename Stream>
 void QMailMessageHeader::deserialize(Stream &stream)
 {
-    impl(this)->deserialize(stream);
+    d->deserialize(stream);
 }
 
 
@@ -4569,7 +4574,7 @@ bool QMailMessagePartContainerPrivate::parseMimePart(LongString body)
         // Bypass the delimiter
         LongString remainder = body.mid(endPos + delimiter.length());
 
-        QMailMessageHeader partHeader = QMailMessageHeader(header);
+        QMailMessageHeader partHeader(header);
         QMailMessageContentType contentType(partHeader.field("Content-Type"));
 
         // If the content is not available, treat the part as simple

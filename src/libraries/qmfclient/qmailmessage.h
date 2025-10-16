@@ -201,13 +201,13 @@ public:
 class QMailMessageHeaderPrivate;
 
 // This class is not exposed to clients:
-class QMailMessageHeader : public QPrivatelyImplemented<QMailMessageHeaderPrivate>
+class QMailMessageHeader
 {
 public:
-    typedef QMailMessageHeaderPrivate ImplementationType;
-
     QMailMessageHeader();
     QMailMessageHeader(const QByteArray& input);
+
+    QMailMessageHeader& operator=(const QMailMessageHeader &other);
 
     void update(const QByteArray& id, const QByteArray& content);
     void append(const QByteArray& id, const QByteArray& content);
@@ -228,6 +228,8 @@ private:
     friend class QMailMessagePrivate;
 
     void output(QDataStream& out, const QList<QByteArray>& exclusions, bool stripInternal) const;
+
+    QSharedDataPointer<QMailMessageHeaderPrivate> d;
 };
 
 template <typename Stream>
