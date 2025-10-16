@@ -938,8 +938,7 @@ void ImapClient::messageFetched(QMailMessage& mail, const QString &detachedFilen
     }
     mail.setCustomField("qmf-detached-filename", detachedFilename);
 
-    _classifier.classifyMessage(mail);
-
+    _classifier.classifyMessage(&mail);
 
     QMailMessage *bufferMessage(new QMailMessage(mail));
     _bufferedMessages.append(bufferMessage);

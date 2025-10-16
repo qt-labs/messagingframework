@@ -1209,7 +1209,7 @@ void PopClient::createMail()
         qCDebug(lcPOP) << "Bad message retrieved serverUid" << mail->serverUid() << "contents" << contents;
     }
 
-    classifier.classifyMessage(*mail);
+    classifier.classifyMessage(mail);
 
     // Store this message to the mail store
     if (mail->id().isValid()) {
@@ -1221,7 +1221,6 @@ void PopClient::createMail()
     }
 
     dataStream->reset();
-
 
     QMailMessageBufferFlushCallback *callback = new MessageFlushedWrapper(this, isComplete);
     QMailMessageBuffer::instance()->setCallback(mail, callback);

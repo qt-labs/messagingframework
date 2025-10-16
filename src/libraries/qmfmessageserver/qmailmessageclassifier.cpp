@@ -115,17 +115,17 @@ static QMailMessage::ContentType fromContentType(const QMailMessageContentType& 
 
     \sa QMailMessageMetaData::setContent()
 */
-bool QMailMessageClassifier::classifyMessage(QMailMessageMetaData& metaData)
+bool QMailMessageClassifier::classifyMessage(QMailMessageMetaData *metaData)
 {
-    if (metaData.content() == QMailMessage::UnknownContent) {
+    if (metaData && metaData->content() == QMailMessage::UnknownContent) {
         QMailMessage::ContentType content = QMailMessage::UnknownContent;
 
-        switch (metaData.messageType()) {
+        switch (metaData->messageType()) {
         case QMailMessage::Email:
             // Handle voicemail emails, from pre-configured addresses
-            if (voiceMailAddresses.contains(metaData.from().address())) {
+            if (voiceMailAddresses.contains(metaData->from().address())) {
                 content = QMailMessage::VoicemailContent;
-            } else if (videoMailAddresses.contains(metaData.from().address())) {
+            } else if (videoMailAddresses.contains(metaData->from().address())) {
                 content = QMailMessage::VideomailContent;
             }
             break;
@@ -134,8 +134,8 @@ bool QMailMessageClassifier::classifyMessage(QMailMessageMetaData& metaData)
             break;
         }
 
-        if ((content != metaData.content()) && (content != QMailMessage::UnknownContent)) {
-            metaData.setContent(content);
+        if ((content != metaData->content()) && (content != QMailMessage::UnknownContent)) {
+            metaData->setContent(content);
             return true;
         }
     }
@@ -150,21 +150,21 @@ bool QMailMessageClassifier::classifyMessage(QMailMessageMetaData& metaData)
 
     \sa QMailMessageMetaData::setContent()
 */
-bool QMailMessageClassifier::classifyMessage(QMailMessage& message)
+bool QMailMessageClassifier::classifyMessage(QMailMessage *message)
 {
-    if (message.content() == QMailMessage::UnknownContent) {
-        QMailMessagePartContainer::MultipartType multipartType(message.multipartType());
-        QMailMessageContentType contentType(message.contentType());
+    if (message && message->content() == QMailMessage::UnknownContent) {
+        QMailMessagePartContainer::MultipartType multipartType(message->multipartType());
+        QMailMessageContentType contentType(message->contentType());
 
         // The content type is used to categorise the message more narrowly than
         // its transport categorisation
         QMailMessage::ContentType content = QMailMessage::UnknownContent;
 
-        switch (message.messageType()) {
+        switch (message->messageType()) {
         case QMailMessage::Sms:
             content = fromContentType(contentType);
             if (content == QMailMessage::UnknownContent) {
-                if (message.hasBody()) {
+                if (message->hasBody()) {
                     // Assume plain text
                     content = QMailMessage::PlainTextContent;
                 } else {
@@ -217,7 +217,7 @@ bool QMailMessageClassifier::classifyMessage(QMailMessage& message)
         }
 
         if (content != QMailMessage::UnknownContent) {
-            message.setContent(content);
+            message->setContent(content);
             return true;
         }
     }

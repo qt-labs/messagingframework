@@ -46,8 +46,8 @@ public:
     QMailMessageClassifier();
     ~QMailMessageClassifier();
 
-    bool classifyMessage(QMailMessageMetaData& message);
-    bool classifyMessage(QMailMessage& message);
+    bool classifyMessage(QMailMessageMetaData *message);
+    bool classifyMessage(QMailMessage *message);
 
 private:
     QStringList voiceMailAddresses;
