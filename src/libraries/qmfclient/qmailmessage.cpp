@@ -2665,6 +2665,7 @@ bool QMailMessageContentType::matches(const QByteArray& primary, const QByteArra
 
 void QMailMessageContentType::setId(const QByteArray &text)
 {
+    Q_UNUSED(text)
     qWarning() << "QMailMessageContentType::setId() cannot be used, it's of fixed type";
 }
 
@@ -2841,6 +2842,7 @@ void QMailMessageContentDisposition::setSize(int size)
 
 void QMailMessageContentDisposition::setId(const QByteArray &text)
 {
+    Q_UNUSED(text)
     qWarning() << "QMailMessageContentDisposition::setId() cannot be used, it's of fixed type";
 }
 
