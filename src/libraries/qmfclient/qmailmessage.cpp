@@ -6523,8 +6523,7 @@ static quint64 calendarCancellationFlag = 0;
 /*  QMailMessageMetaData */
 
 QMailMessageMetaDataPrivate::QMailMessageMetaDataPrivate()
-    : QPrivateImplementationBase(this),
-      _messageType(QMailMessage::None),
+    : _messageType(QMailMessage::None),
       _status(0),
       _contentType(QMailMessage::UnknownContent),
       _size(0),
@@ -6833,11 +6832,6 @@ void QMailMessageMetaDataPrivate::deserialize(Stream &stream)
     a QMailMessage object specifying the identifier returned by QMailMessageMetaData::id().
 
     \sa QMailStore, QMailMessageId
-*/
-
-/*!
-    \typedef QMailMessageMetaData::ImplementationType
-    \internal
 */
 
 /*!
@@ -7194,15 +7188,19 @@ const quint64 &QMailMessageMetaData::CalendarCancellation = calendarCancellation
     Constructs an empty message meta data object.
 */
 QMailMessageMetaData::QMailMessageMetaData()
-    : QPrivatelyImplemented<QMailMessageMetaDataPrivate>(new QMailMessageMetaDataPrivate())
+    : d(new QMailMessageMetaDataPrivate())
 {
+}
+
+QMailMessageMetaData::QMailMessageMetaData(const QMailMessageMetaData &other)
+{
+    d = other.d;
 }
 
 /*!
     Constructs a message meta data object from data stored in the message store with QMailMessageId \a id.
 */
 QMailMessageMetaData::QMailMessageMetaData(const QMailMessageId& id)
-    : QPrivatelyImplemented<QMailMessageMetaDataPrivate>(0)
 {
     *this = QMailStore::instance()->messageMetaData(id);
 }
@@ -7212,9 +7210,21 @@ QMailMessageMetaData::QMailMessageMetaData(const QMailMessageId& id)
     identifier \a uid from the account with id \a accountId.
 */
 QMailMessageMetaData::QMailMessageMetaData(const QString& uid, const QMailAccountId& accountId)
-    : QPrivatelyImplemented<QMailMessageMetaDataPrivate>(0)
 {
     *this = QMailStore::instance()->messageMetaData(uid, accountId);
+}
+
+QMailMessageMetaData::~QMailMessageMetaData()
+{
+}
+
+QMailMessageMetaData& QMailMessageMetaData::operator=(const QMailMessageMetaData &other)
+{
+    if (this != &other) {
+        d = other.d;
+    }
+
+    return *this;
 }
 
 /*!
@@ -7236,7 +7246,7 @@ void QMailMessageMetaData::setMessageType(QMailMessageMetaData::MessageType type
             return;
     }
 
-    impl(this)->setMessageType(type);
+    d->setMessageType(type);
 }
 
 /*!
@@ -7246,7 +7256,7 @@ void QMailMessageMetaData::setMessageType(QMailMessageMetaData::MessageType type
 */
 QMailMessageMetaData::MessageType QMailMessageMetaData::messageType() const
 {
-    return impl(this)->_messageType;
+    return d->_messageType;
 }
 
 /*!
@@ -7254,7 +7264,7 @@ QMailMessageMetaData::MessageType QMailMessageMetaData::messageType() const
 */
 QMailFolderId QMailMessageMetaData::parentFolderId() const
 {
-    return impl(this)->_parentFolderId;
+    return d->_parentFolderId;
 }
 
 /*!
@@ -7262,7 +7272,7 @@ QMailFolderId QMailMessageMetaData::parentFolderId() const
 */
 void QMailMessageMetaData::setParentFolderId(const QMailFolderId &id)
 {
-    impl(this)->setParentFolderId(id);
+    d->setParentFolderId(id);
 }
 
 /*!
@@ -7270,7 +7280,7 @@ void QMailMessageMetaData::setParentFolderId(const QMailFolderId &id)
 */
 QMailMessageId QMailMessageMetaData::id() const
 {
-    return impl(this)->_id;
+    return d->_id;
 }
 
 /*!
@@ -7279,7 +7289,7 @@ QMailMessageId QMailMessageMetaData::id() const
 */
 void QMailMessageMetaData::setId(const QMailMessageId &id)
 {
-    impl(this)->setId(id);
+    d->setId(id);
 }
 
 /*!
@@ -7287,7 +7297,7 @@ void QMailMessageMetaData::setId(const QMailMessageId &id)
 */
 QMailAddress QMailMessageMetaData::from() const
 {
-    return QMailAddress(impl(this)->_from);
+    return QMailAddress(d->_from);
 }
 
 /*!
@@ -7295,7 +7305,7 @@ QMailAddress QMailMessageMetaData::from() const
 */
 void QMailMessageMetaData::setFrom(const QMailAddress &from)
 {
-    impl(this)->setFrom(from.toString());
+    d->setFrom(from.toString());
 }
 
 /*!
@@ -7303,7 +7313,7 @@ void QMailMessageMetaData::setFrom(const QMailAddress &from)
 */
 QString QMailMessageMetaData::subject() const
 {
-    return impl(this)->_subject;
+    return d->_subject;
 }
 
 /*!
@@ -7311,7 +7321,7 @@ QString QMailMessageMetaData::subject() const
 */
 void QMailMessageMetaData::setSubject(const QString &subject)
 {
-    impl(this)->setSubject(subject);
+    d->setSubject(subject);
 }
 
 
@@ -7321,7 +7331,7 @@ void QMailMessageMetaData::setSubject(const QString &subject)
 */
 QMailTimeStamp QMailMessageMetaData::date() const
 {
-    return QMailTimeStamp(impl(this)->_date);
+    return d->_date;
 }
 
 /*!
@@ -7329,7 +7339,7 @@ QMailTimeStamp QMailMessageMetaData::date() const
 */
 void QMailMessageMetaData::setDate(const QMailTimeStamp &timeStamp)
 {
-    impl(this)->setDate(timeStamp);
+    d->setDate(timeStamp);
 }
 
 /*!
@@ -7339,7 +7349,7 @@ void QMailMessageMetaData::setDate(const QMailTimeStamp &timeStamp)
 */
 QMailTimeStamp QMailMessageMetaData::receivedDate() const
 {
-    return QMailTimeStamp(impl(this)->_receivedDate);
+    return d->_receivedDate;
 }
 
 /*!
@@ -7347,7 +7357,7 @@ QMailTimeStamp QMailMessageMetaData::receivedDate() const
 */
 void QMailMessageMetaData::setReceivedDate(const QMailTimeStamp &timeStamp)
 {
-    impl(this)->setReceivedDate(timeStamp);
+    d->setReceivedDate(timeStamp);
 }
 
 /*!
@@ -7357,7 +7367,7 @@ void QMailMessageMetaData::setReceivedDate(const QMailTimeStamp &timeStamp)
 */
 QList<QMailAddress> QMailMessageMetaData::recipients() const
 {
-    return QMailAddress::fromStringList(impl(this)->_to);
+    return QMailAddress::fromStringList(d->_to);
 }
 
 /*!
@@ -7365,7 +7375,7 @@ QList<QMailAddress> QMailMessageMetaData::recipients() const
 */
 void QMailMessageMetaData::setRecipients(const QList<QMailAddress>& toList)
 {
-    impl(this)->setRecipients(QMailAddress::toStringList(toList).join(QLatin1String(", ")));
+    d->setRecipients(QMailAddress::toStringList(toList).join(QLatin1String(", ")));
 }
 
 /*!
@@ -7386,7 +7396,7 @@ void QMailMessageMetaData::setRecipients(const QMailAddress& address)
 */
 QString QMailMessageMetaData::copyServerUid() const
 {
-    return impl(this)->_copyServerUid.isNull() ? QLatin1String("") : impl(this)->_copyServerUid;
+    return d->_copyServerUid.isNull() ? QLatin1String("") : d->_copyServerUid;
 }
 
 /*!
@@ -7398,7 +7408,7 @@ QString QMailMessageMetaData::copyServerUid() const
 */
 void QMailMessageMetaData::setCopyServerUid(const QString &serverUid)
 {
-    impl(this)->setCopyServerUid(serverUid);
+    d->setCopyServerUid(serverUid);
 }
 
 /*!
@@ -7407,7 +7417,7 @@ void QMailMessageMetaData::setCopyServerUid(const QString &serverUid)
 */
 QMailFolderId QMailMessageMetaData::restoreFolderId() const
 {
-    return impl(this)->_restoreFolderId;
+    return d->_restoreFolderId;
 }
 
 /*!
@@ -7416,7 +7426,7 @@ QMailFolderId QMailMessageMetaData::restoreFolderId() const
 */
 void QMailMessageMetaData::setRestoreFolderId(const QMailFolderId &id)
 {
-    impl(this)->setRestoreFolderId(id);
+    d->setRestoreFolderId(id);
 }
 
 /*!
@@ -7425,7 +7435,7 @@ void QMailMessageMetaData::setRestoreFolderId(const QMailFolderId &id)
 */
 QString QMailMessageMetaData::listId() const
 {
-    return impl(this)->_listId.isNull() ? QLatin1String("") : impl(this)->_listId;
+    return d->_listId.isNull() ? QLatin1String("") : d->_listId;
 }
 
 /*!
@@ -7434,7 +7444,7 @@ QString QMailMessageMetaData::listId() const
 */
 void QMailMessageMetaData::setListId(const QString &id)
 {
-    impl(this)->setListId(id);
+    d->setListId(id);
 }
 
 /*!
@@ -7443,7 +7453,7 @@ void QMailMessageMetaData::setListId(const QString &id)
 */
 QString QMailMessageMetaData::rfcId() const
 {
-    return impl(this)->_rfcId.isNull() ? QLatin1String("") : impl(this)->_rfcId;
+    return d->_rfcId.isNull() ? QLatin1String("") : d->_rfcId;
 }
 
 /*!
@@ -7452,7 +7462,7 @@ QString QMailMessageMetaData::rfcId() const
 */
 void QMailMessageMetaData::setRfcId(const QString &id)
 {
-    impl(this)->setRfcId(id);
+    d->setRfcId(id);
 }
 
 /*!
@@ -7460,7 +7470,7 @@ void QMailMessageMetaData::setRfcId(const QString &id)
 */
 QMailThreadId QMailMessageMetaData::parentThreadId() const
 {
-    return impl(this)->_parentThreadId;
+    return d->_parentThreadId;
 }
 
 /*!
@@ -7468,7 +7478,7 @@ QMailThreadId QMailMessageMetaData::parentThreadId() const
 */
 void QMailMessageMetaData::setParentThreadId(const QMailThreadId &id)
 {
-    impl(this)->setParentThreadId(id);
+    d->setParentThreadId(id);
 }
 
 /*!
@@ -7478,7 +7488,7 @@ void QMailMessageMetaData::setParentThreadId(const QMailThreadId &id)
 */
 quint64 QMailMessageMetaData::status() const
 {
-    return impl(this)->_status;
+    return d->_status;
 }
 
 /*!
@@ -7488,7 +7498,7 @@ quint64 QMailMessageMetaData::status() const
 */
 void QMailMessageMetaData::setStatus(quint64 newStatus)
 {
-    impl(this)->setStatus(newStatus);
+    d->setStatus(newStatus);
 }
 
 /*!
@@ -7498,13 +7508,13 @@ void QMailMessageMetaData::setStatus(quint64 newStatus)
 */
 void QMailMessageMetaData::setStatus(quint64 mask, bool set)
 {
-    quint64 newStatus = impl(this)->_status;
+    quint64 newStatus = d->_status;
 
     if (set)
         newStatus |= mask;
     else
         newStatus &= ~mask;
-    impl(this)->setStatus(newStatus);
+    d->setStatus(newStatus);
 }
 
 /*!
@@ -7512,7 +7522,7 @@ void QMailMessageMetaData::setStatus(quint64 mask, bool set)
 */
 QMailAccountId QMailMessageMetaData::parentAccountId() const
 {
-    return impl(this)->_parentAccountId;
+    return d->_parentAccountId;
 }
 
 /*!
@@ -7520,7 +7530,7 @@ QMailAccountId QMailMessageMetaData::parentAccountId() const
 */
 void QMailMessageMetaData::setParentAccountId(const QMailAccountId& id)
 {
-    impl(this)->setParentAccountId(id);
+    d->setParentAccountId(id);
 }
 
 /*!
@@ -7528,7 +7538,7 @@ void QMailMessageMetaData::setParentAccountId(const QMailAccountId& id)
 */
 QString QMailMessageMetaData::serverUid() const
 {
-    return impl(this)->_serverUid;
+    return d->_serverUid;
 }
 
 /*!
@@ -7537,7 +7547,7 @@ QString QMailMessageMetaData::serverUid() const
 */
 void QMailMessageMetaData::setServerUid(const QString &server)
 {
-    impl(this)->setServerUid(server);
+    d->setServerUid(server);
 }
 
 /*!
@@ -7545,7 +7555,7 @@ void QMailMessageMetaData::setServerUid(const QString &server)
 */
 uint QMailMessageMetaData::size() const
 {
-    return impl(this)->_size;
+    return d->_size;
 }
 
 /*!
@@ -7553,7 +7563,7 @@ uint QMailMessageMetaData::size() const
 */
 void QMailMessageMetaData::setSize(uint size)
 {
-    impl(this)->setSize(size);
+    d->setSize(size);
 }
 
 /*!
@@ -7562,7 +7572,7 @@ void QMailMessageMetaData::setSize(uint size)
 */
 uint QMailMessageMetaData::indicativeSize() const
 {
-    return impl(this)->indicativeSize();
+    return d->indicativeSize();
 }
 
 /*!
@@ -7570,7 +7580,7 @@ uint QMailMessageMetaData::indicativeSize() const
 */
 QMailMessage::ContentType QMailMessageMetaData::content() const
 {
-    return impl(this)->_contentType;
+    return d->_contentType;
 }
 
 /*!
@@ -7581,7 +7591,7 @@ QMailMessage::ContentType QMailMessageMetaData::content() const
 */
 void QMailMessageMetaData::setContent(QMailMessage::ContentType type)
 {
-    impl(this)->setContent(type);
+    d->setContent(type);
 }
 
 /*!
@@ -7590,7 +7600,7 @@ void QMailMessageMetaData::setContent(QMailMessage::ContentType type)
 */
 QMailFolderId QMailMessageMetaData::previousParentFolderId() const
 {
-    return impl(this)->_previousParentFolderId;
+    return d->_previousParentFolderId;
 }
 
 /*!
@@ -7599,7 +7609,7 @@ QMailFolderId QMailMessageMetaData::previousParentFolderId() const
 */
 void QMailMessageMetaData::setPreviousParentFolderId(const QMailFolderId &id)
 {
-    impl(this)->setPreviousParentFolderId(id);
+    d->setPreviousParentFolderId(id);
 }
 
 /*!
@@ -7607,7 +7617,7 @@ void QMailMessageMetaData::setPreviousParentFolderId(const QMailFolderId &id)
 */
 QString QMailMessageMetaData::contentScheme() const
 {
-    return impl(this)->_contentScheme;
+    return d->_contentScheme;
 }
 
 /*!
@@ -7616,12 +7626,12 @@ QString QMailMessageMetaData::contentScheme() const
 */
 bool QMailMessageMetaData::setContentScheme(const QString &scheme)
 {
-    if (!impl(this)->_contentScheme.isEmpty() && (impl(this)->_contentScheme != scheme)) {
+    if (!d->_contentScheme.isEmpty() && (d->_contentScheme != scheme)) {
         qCWarning(lcMessaging) << "modifying existing content scheme from:"
-                               << impl(this)->_contentScheme << "to:" << scheme;
+                               << d->_contentScheme << "to:" << scheme;
     }
 
-    impl(this)->setContentScheme(scheme);
+    d->setContentScheme(scheme);
     return true;
 }
 
@@ -7630,7 +7640,7 @@ bool QMailMessageMetaData::setContentScheme(const QString &scheme)
 */
 QString QMailMessageMetaData::contentIdentifier() const
 {
-    return impl(this)->_contentIdentifier;
+    return d->_contentIdentifier;
 }
 
 /*!
@@ -7641,7 +7651,7 @@ QString QMailMessageMetaData::contentIdentifier() const
 */
 bool QMailMessageMetaData::setContentIdentifier(const QString &identifier)
 {
-    impl(this)->setContentIdentifier(identifier);
+    d->setContentIdentifier(identifier);
     return true;
 }
 
@@ -7650,7 +7660,7 @@ bool QMailMessageMetaData::setContentIdentifier(const QString &identifier)
 */
 QMailMessageId QMailMessageMetaData::inResponseTo() const
 {
-    return impl(this)->_responseId;
+    return d->_responseId;
 }
 
 /*!
@@ -7658,7 +7668,7 @@ QMailMessageId QMailMessageMetaData::inResponseTo() const
 */
 void QMailMessageMetaData::setInResponseTo(const QMailMessageId &id)
 {
-    impl(this)->setInResponseTo(id);
+    d->setInResponseTo(id);
 }
 
 /*!
@@ -7668,7 +7678,7 @@ void QMailMessageMetaData::setInResponseTo(const QMailMessageId &id)
 */
 QMailMessageMetaData::ResponseType QMailMessageMetaData::responseType() const
 {
-    return impl(this)->_responseType;
+    return d->_responseType;
 }
 
 /*!
@@ -7678,7 +7688,7 @@ QMailMessageMetaData::ResponseType QMailMessageMetaData::responseType() const
 */
 void QMailMessageMetaData::setResponseType(QMailMessageMetaData::ResponseType type)
 {
-    impl(this)->setResponseType(type);
+    d->setResponseType(type);
 }
 
 /*!
@@ -7688,7 +7698,7 @@ void QMailMessageMetaData::setResponseType(QMailMessageMetaData::ResponseType ty
 */
 QString QMailMessageMetaData::preview() const
 {
-    return impl(this)->_preview.isNull() ? QLatin1String("") : impl(this)->_preview;
+    return d->_preview.isNull() ? QLatin1String("") : d->_preview;
 }
 
 /*!
@@ -7698,7 +7708,7 @@ QString QMailMessageMetaData::preview() const
 */
 void QMailMessageMetaData::setPreview(const QString &s)
 {
-    impl(this)->setPreview(s);
+    d->setPreview(s);
 }
 
 /*!
@@ -7720,13 +7730,13 @@ bool QMailMessageMetaData::partialContentAvailable() const
 /*! \internal */
 bool QMailMessageMetaData::dataModified() const
 {
-    return impl(this)->dataModified();
+    return d->dataModified();
 }
 
 /*! \internal */
 void QMailMessageMetaData::setUnmodified()
 {
-    impl(this)->setUnmodified();
+    d->setUnmodified();
 }
 
 /*!
@@ -7806,7 +7816,7 @@ void QMailMessageMetaData::setCustomFieldsModified(bool set)
 template <typename Stream>
 void QMailMessageMetaData::serialize(Stream &stream) const
 {
-    impl(this)->serialize(stream);
+    d->serialize(stream);
 }
 
 template void QMailMessageMetaData::serialize(QDataStream &) const;
@@ -7819,7 +7829,7 @@ template void QMailMessageMetaData::serialize(QDBusArgument &) const;
 template <typename Stream>
 void QMailMessageMetaData::deserialize(Stream &stream)
 {
-    impl(this)->deserialize(stream);
+    d->deserialize(stream);
 }
 
 template void QMailMessageMetaData::deserialize(QDataStream &);
@@ -8721,13 +8731,13 @@ QString QMailMessage::preview() const
 /*! \internal */
 QMailMessageMetaDataPrivate* QMailMessage::metaDataImpl()
 {
-    return QMailMessageMetaData::impl<QMailMessageMetaDataPrivate>();
+    return QMailMessageMetaData::d.data();
 }
 
 /*! \internal */
 const QMailMessageMetaDataPrivate* QMailMessage::metaDataImpl() const
 {
-    return QMailMessageMetaData::impl<const QMailMessageMetaDataPrivate>();
+    return QMailMessageMetaData::d.data();
 }
 
 // The QMMPartContainer half of this object is implemented in a QMailMessagePrivate object

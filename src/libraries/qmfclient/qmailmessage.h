@@ -604,7 +604,7 @@ bool QMailMessagePartContainer::foreachPart(F func) const
 
 class QMailMessageMetaDataPrivate;
 
-class QMF_EXPORT QMailMessageMetaData : public QPrivatelyImplemented<QMailMessageMetaDataPrivate>
+class QMF_EXPORT QMailMessageMetaData
 {
 public:
     enum MessageType {
@@ -648,8 +648,6 @@ public:
         UnspecifiedResponse = 6
     };
 
-    typedef QMailMessageMetaDataPrivate ImplementationType;
-
     static const quint64 &Incoming;
     static const quint64 &Outgoing;
     static const quint64 &Sent;
@@ -686,8 +684,12 @@ public:
     static const quint64 &CalendarCancellation;
 
     QMailMessageMetaData();
+    QMailMessageMetaData(const QMailMessageMetaData &other);
     QMailMessageMetaData(const QMailMessageId& id);
     QMailMessageMetaData(const QString& uid, const QMailAccountId& accountId);
+    virtual ~QMailMessageMetaData();
+
+    QMailMessageMetaData& operator=(const QMailMessageMetaData &other);
 
     virtual QMailMessageId id() const;
     virtual void setId(const QMailMessageId &id);
@@ -784,6 +786,8 @@ public:
 protected:
     virtual void setRecipients(const QList<QMailAddress>& s);
     virtual void setRecipients(const QMailAddress& s);
+
+    QSharedDataPointer<QMailMessageMetaDataPrivate> d;
 
 private:
     friend class QMailMessage;

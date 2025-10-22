@@ -38,8 +38,6 @@
 
 template class QPrivateImplementationPointer<QMailMessagePartContainerPrivate>;
 template class QPrivatelyImplemented<QMailMessagePartContainerPrivate>;
-template class QPrivateImplementationPointer<QMailMessageMetaDataPrivate>;
-template class QPrivatelyImplemented<QMailMessageMetaDataPrivate>;
 
 Q_IMPLEMENT_USER_METATYPE_ENUM(QMailMessageBody::TransferEncoding)
 Q_IMPLEMENT_USER_METATYPE_ENUM(QMailMessagePartContainer::MultipartType)

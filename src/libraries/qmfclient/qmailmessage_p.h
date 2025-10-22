@@ -299,7 +299,7 @@ private:
     QByteArray _undecodedData;
 };
 
-class QMF_EXPORT QMailMessageMetaDataPrivate : public QPrivateImplementationBase
+class QMailMessageMetaDataPrivate : public QSharedData
 {
 public:
     QMailMessageMetaDataPrivate();
