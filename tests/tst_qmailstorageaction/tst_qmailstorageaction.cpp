@@ -469,7 +469,6 @@ void tst_QMailStorageAction::initTestCase()
     }
 }
 
-
 void tst_QMailStorageAction::cleanupTestCase()
 {
     QMailStore::instance()->removeAccounts(QMailAccountKey::customField("verified"));
@@ -824,7 +823,6 @@ void tst_QMailStorageAction::test_storageaction_deleteMessages()
     list = QMailStore::instance()->queryMessages(QMailMessageKey::serverUid("savedMessage3"));
     QVERIFY(list.count() == 0);
 }
-
 
 void tst_QMailStorageAction::test_storageaction_discardMessages()
 {

@@ -78,7 +78,7 @@ public:
                            QMailFolderIdList *addedFolderIds, QMailAccountIdList *modifiedAccountIds) = 0;
 
     virtual bool addMessages(const QList<QMailMessage *> &m,
-                             QMailMessageIdList *addedMessageIds, QMailThreadIdList *addedThreadIds, QMailMessageIdList *updatedMessageIds, QMailThreadIdList *updatedThreadIds, QMailFolderIdList *modifiedFolderIds,  QMailThreadIdList *modifiedThreadIds, QMailAccountIdList *modifiedAccountIds) = 0;
+                             QMailMessageIdList *addedMessageIds, QMailThreadIdList *addedThreadIds, QMailMessageIdList *updatedMessageIds, QMailThreadIdList *updatedThreadIds, QMailFolderIdList *modifiedFolderIds, QMailThreadIdList *modifiedThreadIds, QMailAccountIdList *modifiedAccountIds) = 0;
 
     virtual bool addMessages(const QList<QMailMessageMetaData *> &m,
                              QMailMessageIdList *addedMessageIds, QMailThreadIdList *addedThreadIds, QMailMessageIdList *updatedMessageIds, QMailThreadIdList *updatedThreadIds, QMailFolderIdList *modifiedFolderIds, QMailThreadIdList *modifiedThreadIds, QMailAccountIdList *modifiedAccountIds) = 0;

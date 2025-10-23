@@ -938,7 +938,7 @@ QMailRetrievalAction::~QMailRetrievalAction()
     This function requires the device to be online, it may initiate communication
     with external servers.
 
-    \sa retrieveMessageList(),  retrieveMessageLists()
+    \sa retrieveMessageList(), retrieveMessageLists()
 */
 void QMailRetrievalAction::retrieveFolderList(const QMailAccountId &accountId, const QMailFolderId &folderId,
                                               bool descending)

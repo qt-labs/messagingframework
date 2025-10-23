@@ -69,7 +69,6 @@ private:
 private:
     friend class QMailStore;
     friend class QMailStorePrivate;
-
 };
 
 typedef QList<QMailMessageRemovalRecord> QMailMessageRemovalRecordList;

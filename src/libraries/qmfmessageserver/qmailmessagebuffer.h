@@ -44,7 +44,6 @@ class QMailMessageBufferPrivate;
 
 #include <qmailglobal.h>
 
-
 class MESSAGESERVER_EXPORT QMailMessageBufferFlushCallback
 {
 public:

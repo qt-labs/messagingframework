@@ -53,8 +53,8 @@ struct SectionProperties {
 
     SectionProperties(const QMailMessagePart::Location &location = QMailMessagePart::Location(),
                       int minimum = All)
-        :  _location(location),
-          _minimum(minimum)
+        : _location(location)
+        , _minimum(minimum)
     {
     }
 

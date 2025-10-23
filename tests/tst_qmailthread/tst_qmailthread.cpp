@@ -419,12 +419,10 @@ void tst_qmailthread::cleanupTestCase()
 
 void tst_qmailthread::init()
 {
-
 }
 
 void tst_qmailthread::cleanup()
 {
-
 }
 
 void tst_qmailthread::test_UnreadCount()
@@ -469,10 +467,6 @@ void tst_qmailthread::test_threadKeys()
 {
     QMailThreadKey threadkey;
     QCOMPARE(threadkey.isEmpty(), true);
-
-
-
-
 
     QMailAccount account;
     account.setName("Account");

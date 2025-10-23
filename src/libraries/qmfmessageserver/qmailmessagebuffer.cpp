@@ -164,7 +164,7 @@ void QMailMessageBuffer::messageFlush()
             item->callback->messageFlushed(item->message);
     }
 
-    // Now we process all tne updated messages
+    // Now we process all the updated messages
     work.clear();
     for (BufferItem *item : d->waitingForFlush) {
         if (!item->add)

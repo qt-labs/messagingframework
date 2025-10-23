@@ -47,7 +47,6 @@
 
 #define PLUGIN_KEY "messageservices"
 
-
 namespace {
 
 class PluginMap : public QMap<QString, QMailMessageServicePlugin*>
@@ -267,18 +266,18 @@ static ErrorMap socketErrorInit()
 {
     static const ErrorEntry map[] =
     {
-        { QAbstractSocket::ConnectionRefusedError, QT_TRANSLATE_NOOP( "QMailServiceAction",  "Connection refused" ) },
-        { QAbstractSocket::RemoteHostClosedError, QT_TRANSLATE_NOOP( "QMailServiceAction",  "Remote host closed the connection" ) },
-        { QAbstractSocket::HostNotFoundError, QT_TRANSLATE_NOOP( "QMailServiceAction",  "Host not found" ) },
-        { QAbstractSocket::SocketAccessError, QT_TRANSLATE_NOOP( "QMailServiceAction",  "Permission denied" ) },
-        { QAbstractSocket::SocketResourceError, QT_TRANSLATE_NOOP( "QMailServiceAction",  "Insufficient resources" ) },
-        { QAbstractSocket::SocketTimeoutError, QT_TRANSLATE_NOOP( "QMailServiceAction",  "Operation timed out" ) },
-        { QAbstractSocket::DatagramTooLargeError, QT_TRANSLATE_NOOP( "QMailServiceAction",  "Datagram too large" ) },
-        { QAbstractSocket::NetworkError, QT_TRANSLATE_NOOP( "QMailServiceAction",  "Network error" ) },
-        { QAbstractSocket::AddressInUseError, QT_TRANSLATE_NOOP( "QMailServiceAction",  "Address in use" ) },
-        { QAbstractSocket::SocketAddressNotAvailableError, QT_TRANSLATE_NOOP( "QMailServiceAction",  "Address not available" ) },
-        { QAbstractSocket::UnsupportedSocketOperationError, QT_TRANSLATE_NOOP( "QMailServiceAction",  "Unsupported operation" ) },
-        { QAbstractSocket::UnknownSocketError, QT_TRANSLATE_NOOP( "QMailServiceAction",  "Unknown error" ) },
+        { QAbstractSocket::ConnectionRefusedError, QT_TRANSLATE_NOOP( "QMailServiceAction", "Connection refused" ) },
+        { QAbstractSocket::RemoteHostClosedError, QT_TRANSLATE_NOOP( "QMailServiceAction", "Remote host closed the connection" ) },
+        { QAbstractSocket::HostNotFoundError, QT_TRANSLATE_NOOP( "QMailServiceAction", "Host not found" ) },
+        { QAbstractSocket::SocketAccessError, QT_TRANSLATE_NOOP( "QMailServiceAction", "Permission denied" ) },
+        { QAbstractSocket::SocketResourceError, QT_TRANSLATE_NOOP( "QMailServiceAction", "Insufficient resources" ) },
+        { QAbstractSocket::SocketTimeoutError, QT_TRANSLATE_NOOP( "QMailServiceAction", "Operation timed out" ) },
+        { QAbstractSocket::DatagramTooLargeError, QT_TRANSLATE_NOOP( "QMailServiceAction", "Datagram too large" ) },
+        { QAbstractSocket::NetworkError, QT_TRANSLATE_NOOP( "QMailServiceAction", "Network error" ) },
+        { QAbstractSocket::AddressInUseError, QT_TRANSLATE_NOOP( "QMailServiceAction", "Address in use" ) },
+        { QAbstractSocket::SocketAddressNotAvailableError, QT_TRANSLATE_NOOP( "QMailServiceAction", "Address not available" ) },
+        { QAbstractSocket::UnsupportedSocketOperationError, QT_TRANSLATE_NOOP( "QMailServiceAction", "Unsupported operation" ) },
+        { QAbstractSocket::UnknownSocketError, QT_TRANSLATE_NOOP( "QMailServiceAction", "Unknown error" ) },
     };
 
     return qMakePair( static_cast<const ErrorEntry*>(map), ARRAY_SIZE(map) );

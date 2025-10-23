@@ -76,7 +76,7 @@ void dispatchMessageMetaDataNotifications(MailstoreAdaptor &adaptor, QMailMessag
 }
 
 typedef QPair<QPair<QMailMessageKey::Properties, QMailMessageMetaData>, QSet<QMailMessageId> > MessagesProperties;
-typedef QList <MessagesProperties> MessagesPropertiesBuffer;
+typedef QList<MessagesProperties> MessagesPropertiesBuffer;
 
 void dispatchMessagePropertyNotifications(MailstoreAdaptor &adaptor, MessagesPropertiesBuffer& data)
 {

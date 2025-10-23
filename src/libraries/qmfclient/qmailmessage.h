@@ -397,7 +397,7 @@ public:
     void setContentDisposition(const QMailMessageContentDisposition& disposition);
 
     // Body management interface:
-    void setBody(const QMailMessageBody& body, QMailMessageBody::EncodingFormat encodingStatus = QMailMessageBody::None);
+    virtual void setBody(const QMailMessageBody &body, QMailMessageBody::EncodingFormat encodingStatus = QMailMessageBody::None);
     QMailMessageBody body() const;
 
     bool hasBody() const;
@@ -448,9 +448,9 @@ public:
     void setHtmlAndPlainTextBody(const QMailMessageBody& htmlBody, const QMailMessageBody& plainTextBody);
     void setInlineImages(const QMap<QString, QString> &htmlImagesMap);
     void setInlineImages(const QList<const QMailMessagePart*> images);
-    void setAttachments(const QStringList& attachments);
-    void setAttachments(const QList<const QMailMessagePart*> attachments);
-    void addAttachments(const QStringList& attachments);
+    virtual void setAttachments(const QStringList& attachments);
+    virtual void setAttachments(const QList<const QMailMessagePart*> attachments);
+    virtual void addAttachments(const QStringList& attachments);
 
 protected:
     template<typename Subclass>
@@ -875,6 +875,8 @@ public:
     void appendHeaderField( const QMailMessageHeaderField &field ) override;
 
     void removeHeaderField( const QString &id ) override;
+
+    void setBody(const QMailMessageBody &body, QMailMessageBody::EncodingFormat encodingStatus = QMailMessageBody::None) override;
 
     // Overrides of QMMMD functions where the data needs to be stored to the part container also:
 

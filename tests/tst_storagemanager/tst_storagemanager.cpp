@@ -61,7 +61,6 @@ private:
 
     QMailMessage msg1;
     QMailMessage msg2;
-
 };
 
 #define CRLF "\015\012"
@@ -184,7 +183,6 @@ void tst_StorageManager::initTestCase()
     msg2.setCustomField("present", "true");
     msg2.setBody(QMailMessageBody::fromData(mime1,QMailMessageContentType("multipart/digest"),QMailMessageBody::QuotedPrintable));
     QVERIFY(QMailStore::instance()->addMessage(&msg2));
-
 }
 
 void tst_StorageManager::cleanupTestCase()
@@ -251,7 +249,6 @@ void tst_StorageManager::test_remove()
     msg4.setAttachments(QStringList() << "/fake/path");
     msg4.setAttachments(QStringList() << "qmf-detached-filename");
     QVERIFY(QMailStore::instance()->addMessage(&msg4));
-
 }
 
 void tst_StorageManager::test_update()

@@ -193,7 +193,7 @@ static QByteArray charsetForInput(const QString& input)
         }
     }
 
-    return (latin1? QByteArray("ISO-8859-1") : QByteArray());
+    return (latin1 ? QByteArray("ISO-8859-1") : QByteArray());
 }
 
 static QByteArray fromUnicode(const QString& input, const QByteArray& charset)
@@ -403,14 +403,13 @@ static QList<QByteArray> splitUtf8(const QByteArray& input, int maximumEncoded)
     // Need to cut the utf8 string.
     QByteArray str(input);
     do {
-
         const char *iter = str.constData() + maxUtf8Chars;
 
         // Check if we reached a valid cutting point.
         int index = maxUtf8Chars;
         while (!isFirstCodePoint(iter--)) {
             qCDebug(lcMessaging) << Q_FUNC_INFO << "Cutting point not valid, looking for the previous one !!!";
-            Q_ASSERT (index >= 0);
+            Q_ASSERT(index >= 0);
             index--;
         }
 
@@ -872,16 +871,16 @@ QDataStream& operator<<(QDataStream& out, const DataString& dataString)
 
 /* Utility namespaces for message part detection, finding and building */
 
-const static char* imageContentType = "image";
-const static char* textContentType = "text";
-const static char* plainContentSubtype = "plain";
-const static char* htmlContentSubtype = "html";
+const static char* ImageContentType = "image";
+const static char* TextContentType = "text";
+const static char* PlainContentSubtype = "plain";
+const static char* HtmlContentSubtype = "html";
 
 namespace findBody
 {
     struct Context
     {
-        Context() : found(nullptr), alternateParent(nullptr), contentType(textContentType) {}
+        Context() : found(nullptr), alternateParent(nullptr), contentType(TextContentType) {}
 
         QMailMessagePartContainer *found;
         QMailMessagePartContainer *alternateParent;
@@ -983,7 +982,7 @@ namespace findBody
         for (int i = (int)container.partCount() - 1; i >= 0; i--) {
             if (i != bodyPart) {
                 const QMailMessagePart &part = container.partAt(i);
-                if (part.contentType().matches(imageContentType)) {
+                if (part.contentType().matches(ImageContentType)) {
                     ctx.htmlImageLoc << part.location();
                     ctx.htmlImageParts << &part;
                 } else if (!part.contentID().isEmpty()) {
@@ -1286,8 +1285,9 @@ namespace findAttachments
 
 namespace attachments
 {
-    static int maxDepth = 8;
+    static const int maxDepth = 8;
 
+#if 0 // usage commented out later
     // Remove unnecessary parts of a message:
     // * empty containers,
     // * containers with a single child
@@ -1327,6 +1327,7 @@ namespace attachments
         }
         return message.partCount();
     }
+#endif
 
     QMailMessagePart* partAt(QMailMessagePartContainer& container, QMailMessagePart::Location& location)
     {
@@ -1337,7 +1338,7 @@ namespace attachments
                 return &part;
             }
         }
-        return 0;
+        return nullptr;
     }
 
     void removeInlineImages(QMailMessagePartContainer &container, int depth)
@@ -1486,11 +1487,10 @@ namespace attachments
 
     void addImagesToMultipart(QMailMessagePartContainer *container, const QMap<QString, QString> &htmlImagesMap)
     {
-        Q_ASSERT (NULL != container);
-        Q_ASSERT (QMailMessagePartContainer::MultipartRelated == container->multipartType());
+        Q_ASSERT(container);
+        Q_ASSERT(QMailMessagePartContainer::MultipartRelated == container->multipartType());
 
         foreach (const QString &imageID, htmlImagesMap) {
-
             const QString &imagePath = htmlImagesMap.value(imageID);
             const QFileInfo fi(imagePath);
             if (!fi.isFile()) {
@@ -1517,19 +1517,19 @@ namespace attachments
 
     void addImagesToMultipart(QMailMessagePartContainer *container, const QList<const QMailMessagePart*> imageParts)
     {
-        Q_ASSERT (NULL != container);
-        Q_ASSERT (QMailMessagePartContainer::MultipartRelated == container->multipartType());
+        Q_ASSERT(container);
+        Q_ASSERT(QMailMessagePartContainer::MultipartRelated == container->multipartType());
 
         foreach (const QMailMessagePart *imagePart, imageParts) {
-            Q_ASSERT(NULL != imagePart);
+            Q_ASSERT(imagePart);
             container->appendPart(*imagePart);
         }
     }
 
     void addAttachmentsToMultipart(QMailMessagePartContainer *container, const QStringList &attachmentPaths)
     {
-        Q_ASSERT (NULL != container);
-        Q_ASSERT (QMailMessagePartContainer::MultipartMixed == container->multipartType());
+        Q_ASSERT(container);
+        Q_ASSERT(QMailMessagePartContainer::MultipartMixed == container->multipartType());
 
         bool addedSome = false;
 
@@ -1570,13 +1570,13 @@ namespace attachments
     void addAttachmentsToMultipart(QMailMessagePartContainer *container,
                                    const QList<const QMailMessagePart*> attachmentParts)
     {
-        Q_ASSERT (NULL != container);
-        Q_ASSERT (QMailMessagePartContainer::MultipartMixed == container->multipartType());
+        Q_ASSERT(container);
+        Q_ASSERT(QMailMessagePartContainer::MultipartMixed == container->multipartType());
 
         bool addedSome = false;
 
         foreach (const QMailMessagePart *attachmentPart, attachmentParts) {
-            Q_ASSERT(NULL != attachmentPart);
+            Q_ASSERT(attachmentPart);
             container->appendPart(*attachmentPart);
             addedSome = true;
         }
@@ -1670,7 +1670,7 @@ void QMailMessageHeaderFieldPrivate::parse(const QByteArray& text, bool structur
 
     const char* token = begin;
     const char* it = begin;
-    const char* separator = 0;
+    const char* separator = nullptr;
 
     for (bool quoted = false; it != end; ++it) {
         if (*it == '"') {
@@ -1686,7 +1686,7 @@ void QMailMessageHeaderFieldPrivate::parse(const QByteArray& text, bool structur
                 token = (it + 1);
             }
         } else if (*it == '=' && !quoted && structured) {
-            if (separator == 0) {
+            if (separator == nullptr) {
                 // This is a parameter separator
                 separator = it;
             } else {
@@ -1709,7 +1709,7 @@ void QMailMessageHeaderFieldPrivate::parse(const QByteArray& text, bool structur
             }
 
             token = (it + 1);
-            separator = 0;
+            separator = nullptr;
         }
     }
 
@@ -2009,7 +2009,7 @@ static void outputHeaderPart(QDataStream& out, const QByteArray& inText, int* li
             do {
                 lastIndex = wsIndex;
                 if ((lastIndex > 0)
-                   && ((text[lastIndex - 1] == ';') || (text[lastIndex - 1] == ','))) {
+                    && ((text[lastIndex - 1] == ';') || (text[lastIndex - 1] == ','))) {
                     // Prefer to split after (possible) parameters and commas
                     preferredIndex = lastIndex;
                 }
@@ -3959,7 +3959,6 @@ int QMailMessagePartContainerPrivate::partNumber() const
 
 bool QMailMessagePartContainerPrivate::contains(const QMailMessagePart::Location& location) const
 {
-    const QMailMessagePart* part = 0;
     const QList<QMailMessagePart>* partList = &_messageParts;
 
     foreach (int index, location.d->_indices) {
@@ -3967,7 +3966,7 @@ bool QMailMessagePartContainerPrivate::contains(const QMailMessagePart::Location
             return false;
         }
 
-        part = &(partList->at(index - 1));
+        const QMailMessagePart *part = &(partList->at(index - 1));
         partList = &(part->impl<const QMailMessagePartContainerPrivate>()->_messageParts);
     }
 
@@ -3976,7 +3975,7 @@ bool QMailMessagePartContainerPrivate::contains(const QMailMessagePart::Location
 
 const QMailMessagePart& QMailMessagePartContainerPrivate::partAt(const QMailMessagePart::Location& location) const
 {
-    const QMailMessagePart* part = 0;
+    const QMailMessagePart* part = nullptr;
     const QList<QMailMessagePart>* partList = &_messageParts;
 
     foreach (int index, location.d->_indices) {
@@ -3995,7 +3994,7 @@ const QMailMessagePart& QMailMessagePartContainerPrivate::partAt(const QMailMess
 
 QMailMessagePart& QMailMessagePartContainerPrivate::partAt(const QMailMessagePart::Location& location)
 {
-    QMailMessagePart* part = 0;
+    QMailMessagePart* part = nullptr;
     QList<QMailMessagePart>* partList = &_messageParts;
 
     foreach (int index, location.d->_indices) {
@@ -4015,7 +4014,7 @@ void QMailMessagePartContainerPrivate::setHeader(const QMailMessageHeader& partH
 {
     _header = partHeader;
 
-    defaultContentType(parent);
+    updateDefaultContentType(parent);
 
     QByteArray contentType = headerField("Content-Type");
     if (!contentType.isEmpty()) {
@@ -4026,16 +4025,16 @@ void QMailMessagePartContainerPrivate::setHeader(const QMailMessageHeader& partH
     }
 }
 
-void QMailMessagePartContainerPrivate::defaultContentType(const QMailMessagePartContainerPrivate* parent)
+void QMailMessagePartContainerPrivate::updateDefaultContentType(const QMailMessagePartContainerPrivate* parent)
 {
     QMailMessageContentType type;
 
     // Find the content-type, or use default values
-    QByteArray contentType = headerField("Content-Type");
-    bool useDefault = contentType.isEmpty();
+    QByteArray contentTypeValue = headerField("Content-Type");
+    bool useDefault = contentTypeValue.isEmpty();
 
     if (!useDefault) {
-        type = QMailMessageContentType(contentType);
+        type = QMailMessageContentType(contentTypeValue);
 
         if (type.type().isEmpty() || type.subType().isEmpty()) {
             useDefault = true;
@@ -4098,12 +4097,12 @@ void QMailMessagePartContainerPrivate::outputParts(QDataStream **out, bool addMi
         return;
 
     if (addMimePreamble) {
-        // This is a preamble (not for conformance, to assist readibility on non-conforming renderers):
+        // This is a preamble (not for conformance, to assist readability on non-conforming renderers):
         **out << DataString("This is a multipart message in Mime 1.0 format"); // No tr
         **out << newLine;
     }
 
-    for ( int i = 0; i < _messageParts.count(); i++ ) {
+    for (int i = 0; i < _messageParts.count(); i++) {
         **out << newLine << marker << DataString(_boundary) << newLine;
 
         QMailMessagePart& part = const_cast<QMailMessagePart&>(_messageParts[i]);
@@ -4480,14 +4479,12 @@ void QMailMessagePartContainerPrivate::parseMimeMultipart(const QMailMessageHead
     static const QByteArray marker("--");
 
     QMailMessagePart part;
-    QMailMessageContentType contentType;
     QByteArray boundary;
-    QMailMessagePartContainerPrivate* multipartContainer = 0;
+    QMailMessagePartContainerPrivate *multipartContainer = nullptr;
 
     if (insertIntoSelf) {
         // Insert the parts into ourself
         multipartContainer = this;
-        contentType = QMailMessageContentType(headerField("Content-Type"));
         boundary = _boundary;
     } else {
         // This object already contains part(s) - use a new part to contain the parts
@@ -4495,7 +4492,7 @@ void QMailMessagePartContainerPrivate::parseMimeMultipart(const QMailMessageHead
 
         // Parse the header fields, and update the part
         part.setHeader(partHeader, this);
-        contentType = QMailMessageContentType(part.headerField(QLatin1String("Content-Type")));
+        QMailMessageContentType contentType(part.headerField(QLatin1String("Content-Type")));
         boundary = contentType.boundary();
     }
 
@@ -4890,13 +4887,6 @@ void QMailMessagePartContainer::setContentDisposition(const QMailMessageContentD
 void QMailMessagePartContainer::setBody(const QMailMessageBody& body, QMailMessageBody::EncodingFormat encodingStatus)
 {
     impl(this)->setBody(body, encodingStatus);
-
-    QMailMessage* message = dynamic_cast<QMailMessage*>(this);
-    if (message) {
-        // A message with a simple body don't have attachment.
-        // Any previously attached parts have been removed by the above setBody() call.
-        message->setStatus(QMailMessage::HasAttachments, false);
-    }
 }
 
 /*!
@@ -5170,17 +5160,15 @@ QByteArray QMailMessagePartContainer::nameForMultipartType(QMailMessagePartConta
  */
 QMailMessagePartContainer* QMailMessagePartContainer::findPlainTextContainer() const
 {
-    QMailMessagePartContainer* result;
     findBody::Context ctx;
 
-    ctx.contentSubtype = plainContentSubtype;
+    ctx.contentSubtype = PlainContentSubtype;
 
     if (findBody::inPartContainer(*this, ctx)) {
-        result = ctx.found;
-    } else {
-        result = 0;
+        return ctx.found;
     }
-    return result;
+
+    return nullptr;
 }
 
 /*!
@@ -5188,16 +5176,14 @@ QMailMessagePartContainer* QMailMessagePartContainer::findPlainTextContainer() c
  */
 QMailMessagePartContainer* QMailMessagePartContainer::findHtmlContainer() const
 {
-    QMailMessagePartContainer* result;
     findBody::Context ctx;
-    ctx.contentSubtype = htmlContentSubtype;
+    ctx.contentSubtype = HtmlContentSubtype;
 
     if (findBody::inPartContainer(*this, ctx)) {
-        result = ctx.found;
-    } else {
-        result = 0;
+        return ctx.found;
     }
-    return result;
+
+    return nullptr;
 }
 
 /*!
@@ -5226,7 +5212,7 @@ QList<QMailMessagePart::Location> QMailMessagePartContainer::findAttachmentLocat
 QList<QMailMessagePart::Location> QMailMessagePartContainer::findInlineImageLocations() const
 {
     findBody::Context ctx;
-    ctx.contentSubtype = htmlContentSubtype;
+    ctx.contentSubtype = HtmlContentSubtype;
     if (findBody::inPartContainer(*this, ctx)) {
         return ctx.htmlImageLoc;
     } else {
@@ -5240,7 +5226,7 @@ QList<QMailMessagePart::Location> QMailMessagePartContainer::findInlineImageLoca
 QList<QMailMessagePart::Location> QMailMessagePartContainer::findInlinePartLocations() const
 {
     findBody::Context ctx;
-    ctx.contentSubtype = htmlContentSubtype;
+    ctx.contentSubtype = HtmlContentSubtype;
     if (findBody::inPartContainer(*this, ctx)) {
         return ctx.htmlImageLoc << ctx.htmlExtraPartsLoc;
     } else {
@@ -5302,7 +5288,7 @@ void QMailMessagePartContainer::setPlainTextBody(const QMailMessageBody& plainTe
 {
     findBody::Context ctx;
     if (findBody::inPartContainer(*this, ctx)) {
-        if (0 == ctx.alternateParent) {
+        if (!ctx.alternateParent) {
             ctx.found->setBody(plainTextBody);
         } else {
             ctx.alternateParent->clearParts();
@@ -5327,15 +5313,16 @@ void QMailMessagePartContainer::setPlainTextBody(const QMailMessageBody& plainTe
  */
 void QMailMessagePartContainer::setHtmlAndPlainTextBody(const QMailMessageBody& htmlBody, const QMailMessageBody& plainTextBody)
 {
-    QMailMessagePartContainer *bodyContainer = 0;
+    QMailMessagePartContainer *bodyContainer = nullptr;
     QMailMessagePart subpart;
     bool hasInlineImages = false;
 
     findBody::Context ctx;
     if (findBody::inPartContainer(*this, ctx)) {
-        Q_ASSERT (0 != ctx.found);
+        Q_ASSERT(ctx.found);
         hasInlineImages = !ctx.htmlImageParts.isEmpty();
-        if (0 != ctx.alternateParent) {
+
+        if (ctx.alternateParent) {
             bodyContainer = ctx.alternateParent;
         } else {
             bodyContainer = ctx.found;
@@ -5366,7 +5353,7 @@ void QMailMessagePartContainer::setHtmlAndPlainTextBody(const QMailMessageBody& 
             break;
         }
     }
-    Q_ASSERT (NULL != bodyContainer);
+    Q_ASSERT(bodyContainer);
     bodyContainer->setMultipartType(QMailMessagePartContainer::MultipartAlternative);
 
     QMailMessagePart plainTextBodyPart;
@@ -6220,10 +6207,14 @@ QMailMessagePart::Location QMailMessagePart::location() const
 */
 QString QMailMessagePart::displayName() const
 {
-    QString id(contentType().isParameterEncoded("name")?decodeParameter(contentType().name()):decodeWordSequence(contentType().name()));
+    QString id(contentType().isParameterEncoded("name")
+               ? decodeParameter(contentType().name())
+               : decodeWordSequence(contentType().name()));
 
     if (id.isEmpty())
-        id = contentDisposition().isParameterEncoded("filename")?decodeParameter(contentDisposition().filename()):decodeWordSequence(contentDisposition().filename());
+        id = contentDisposition().isParameterEncoded("filename")
+             ? decodeParameter(contentDisposition().filename())
+             : decodeWordSequence(contentDisposition().filename());
 
     if (id.isEmpty())
         id = contentID();
@@ -8391,6 +8382,16 @@ void QMailMessage::removeHeaderField( const QString& id )
     }
 }
 
+/*! \reimp */
+void QMailMessage::setBody(const QMailMessageBody &body, QMailMessageBody::EncodingFormat encodingStatus)
+{
+    QMailMessagePartContainer::setBody(body, encodingStatus);
+
+    // A message with a simple body don't have attachment.
+    // Any previously attached parts have been removed by the above setBody() call.
+    setStatus(QMailMessage::HasAttachments, false);
+}
+
 /*!
     Returns the message in RFC 2822 format. The encoded content will vary depending on the value of \a format.
 */
@@ -8434,7 +8435,7 @@ struct ChunkStore
     {
         if (ds) {
             delete ds;
-            ds = 0;
+            ds = nullptr;
 
             if (!chunk.isEmpty()) {
                 chunks.append(qMakePair(QMailMessage::Text, chunk));
@@ -8887,13 +8888,13 @@ static void setMessagePriorityFromHeaderFields(QMailMessage *mail)
     // If X-Priority is not set, consider X-MSMail-Priority
     QString msPriority = mail->headerFieldText (QLatin1String("X-MSMail-Priority"));
     if (!msPriority.isEmpty()) {
-        if (msPriority.contains (QLatin1String("high"), Qt::CaseInsensitive)) {
+        if (msPriority.contains(QLatin1String("high"), Qt::CaseInsensitive)) {
             mail->setStatus(QMailMessage::HighPriority, true);
             return;
-        } else if (msPriority.contains (QLatin1String("low"), Qt::CaseInsensitive)) {
+        } else if (msPriority.contains(QLatin1String("low"), Qt::CaseInsensitive)) {
             mail->setStatus(QMailMessage::LowPriority, true);
             return;
-        } else if (msPriority.contains (QLatin1String("normal"), Qt::CaseInsensitive)) {
+        } else if (msPriority.contains(QLatin1String("normal"), Qt::CaseInsensitive)) {
             return; // Normal Priority
         }
     }
@@ -8901,13 +8902,13 @@ static void setMessagePriorityFromHeaderFields(QMailMessage *mail)
     // Finally, consider Importance
     QString importance = mail->headerFieldText(QLatin1String("Importance"));
     if (!importance.isEmpty()) {
-        if (importance.contains (QLatin1String("high"), Qt::CaseInsensitive)) {
+        if (importance.contains(QLatin1String("high"), Qt::CaseInsensitive)) {
             mail->setStatus(QMailMessage::HighPriority, true);
             return;
-        } else if (importance.contains (QLatin1String("low"), Qt::CaseInsensitive)) {
+        } else if (importance.contains(QLatin1String("low"), Qt::CaseInsensitive)) {
             mail->setStatus(QMailMessage::LowPriority, true);
             return;
-        } else if (importance.contains (QLatin1String("normal"), Qt::CaseInsensitive)) {
+        } else if (importance.contains(QLatin1String("normal"), Qt::CaseInsensitive)) {
             return; // Normal Priority
         }
     }
@@ -8959,16 +8960,16 @@ void QMailMessage::refreshPreview()
 {
     const int maxPreviewLength = 280;
     // TODO: don't load entire body into memory
-    QMailMessagePartContainer *htmlPart= findHtmlContainer();
-    QMailMessagePartContainer *plainTextPart= findPlainTextContainer();
+    QMailMessagePartContainer *htmlPart = findHtmlContainer();
+    QMailMessagePartContainer *plainTextPart = findPlainTextContainer();
 
     if (multipartType() == MultipartRelated && htmlPart) // force taking the html in this case
-        plainTextPart=0;
+        plainTextPart = nullptr;
 
-    if ( plainTextPart && plainTextPart->hasBody()) {
+    if (plainTextPart && plainTextPart->hasBody()) {
         QString plainText = plainTextPart->body().data();
         metaDataImpl()->setPreview(plainText.left(maxPreviewLength));
-    } else if (htmlPart && ( multipartType() == MultipartRelated || htmlPart->hasBody())) {
+    } else if (htmlPart && (multipartType() == MultipartRelated || htmlPart->hasBody())) {
         QString markup = htmlPart->body().data();
         metaDataImpl()->setPreview(htmlToPlainText(markup).left(maxPreviewLength));
     }

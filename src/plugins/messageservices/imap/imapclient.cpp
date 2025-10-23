@@ -951,7 +951,6 @@ void ImapClient::messageFetched(QMailMessage& mail, const QString &detachedFilen
     QMailMessageBuffer::instance()->setCallback(bufferMessage, callback);
 }
 
-
 void ImapClient::folderCreated(const QString &folder, bool success)
 {
     if (success) {

@@ -4382,10 +4382,8 @@ bool QMailStoreSql::performMaintenanceTask(const QString &task, uint secondsFreq
         if (!query.exec()) {
             qCWarning(lcMailStore) << "Failed to query performed timestamp - query:" << sql << "- error:" << query.lastError().text();
             return false;
-        } else {
-            if (query.first()) {
-                lastPerformed = query.value(0).value<QDateTime>();
-            }
+        } else if (query.first()) {
+            lastPerformed = query.value(0).value<QDateTime>();
         }
     }
 
@@ -4433,13 +4431,12 @@ bool QMailStoreSql::performMaintenance()
 QString QMailStoreSql::parseSql(QTextStream& ts)
 {
     QString qry;
-    while (!ts.atEnd())
-    {
+    while (!ts.atEnd()) {
         QString line = ts.readLine();
         // comment, remove.
         if (line.contains(QLatin1String("--")))
-            line.truncate (line.indexOf (QLatin1String("--")));
-        if (line.trimmed ().length () == 0)
+            line.truncate(line.indexOf(QLatin1String("--")));
+        if (line.trimmed().length() == 0)
             continue;
         qry += line;
 
@@ -4652,7 +4649,7 @@ bool QMailStoreSql::addThread(QMailThread *thread, QMailThreadIdList *addedThrea
 bool QMailStoreSql::removeAccounts(const QMailAccountKey &key,
                                    QMailAccountIdList *deletedAccountIds, QMailFolderIdList *deletedFolderIds, QMailThreadIdList *deletedThreadIds, QMailMessageIdList *deletedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailThreadIdList *modifiedThreadIds, QMailAccountIdList *modifiedAccountIds)
 {
-    AttemptRemoveAccountOut out(deletedAccountIds, deletedFolderIds,  deletedThreadIds, deletedMessageIds, updatedMessageIds, modifiedFolderIds, modifiedThreadIds, modifiedAccountIds);
+    AttemptRemoveAccountOut out(deletedAccountIds, deletedFolderIds, deletedThreadIds, deletedMessageIds, updatedMessageIds, modifiedFolderIds, modifiedThreadIds, modifiedAccountIds);
 
     return repeatedly<WriteAccess>(bind(&QMailStoreSql::attemptRemoveAccounts, this,
                                         cref(key),
@@ -5798,15 +5795,12 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptAddMessage(QMailMessage *mess
     ReferenceStorer refStorer(message);
     const_cast<const QMailMessage*>(message)->foreachPart<ReferenceStorer&>(refStorer);
 
-
-
     QList<QMailContentManager*> contentManagers;
 
     foreach (QString scheme, QStringList()
                                 << QMailContentManagerFactory::defaultFilterScheme()
                                 << message->contentScheme()
-                                << QMailContentManagerFactory::defaultIndexerScheme())
-     {
+                                << QMailContentManagerFactory::defaultIndexerScheme()) {
         if (!scheme.isEmpty()) {
             QMailContentManager *manager(QMailContentManagerFactory::create(scheme));
             if (!manager) {
@@ -5816,7 +5810,6 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptAddMessage(QMailMessage *mess
                 contentManagers.append(manager);
             }
         }
-
     }
 
     foreach (QMailContentManager *manager, contentManagers) {
@@ -5866,8 +5859,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptAddMessage(QMailMessageMetaDa
     }
 
     if (!metaData->serverUid().isEmpty() && metaData->parentAccountId().isValid()
-        && messageExists(metaData->serverUid(), metaData->parentAccountId()))
-    {
+        && messageExists(metaData->serverUid(), metaData->parentAccountId())) {
         qCWarning(lcMailStore) << "Message with serveruid: " << metaData->serverUid() << "and accountid:" << metaData->parentAccountId()
                                << "already exist. Use update instead.";
         return Failure;

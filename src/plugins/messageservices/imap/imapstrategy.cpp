@@ -2084,7 +2084,7 @@ void ImapFolderListStrategy::handleList(ImapStrategyContextBase *context)
                     processNextFolder(context);
                 } else {
                     // Select this folder
-                    selectFolder(context,  _currentMailbox );
+                    selectFolder(context, _currentMailbox );
                     return;
                 }
             } else {
@@ -2368,7 +2368,7 @@ bool ImapSynchronizeBaseStrategy::selectNextPreviewFolder(ImapStrategyContextBas
                 context->updateStatus( status );
             }
 
-            selectFolder(context,  _currentMailbox );
+            selectFolder(context, _currentMailbox );
         }
     }
 

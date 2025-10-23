@@ -206,7 +206,7 @@ public:
 
     uint indicativeSize() const;
 
-    void defaultContentType(const QMailMessagePartContainerPrivate* parent);
+    void updateDefaultContentType(const QMailMessagePartContainerPrivate* parent);
 
     template <typename F>
     void outputParts(QDataStream **out, bool addMimePreamble, bool includeAttachments, bool excludeInternalFields, F *func) const;
@@ -231,8 +231,6 @@ public:
     void parseMimeMultipart(const QMailMessageHeader& partHeader, LongString body, bool insertIntoSelf);
     bool parseMimePart(LongString body);
 
-    static QMailMessagePartContainerPrivate* privatePointer(QMailMessagePart& part);
-
     bool dirty(bool recursive = false) const;
     void setDirty(bool value = true, bool recursive = false);
 
@@ -241,6 +239,8 @@ public:
 
     QMailMessagePartContainer *findPlainTextContainer() const;
     QMailMessagePartContainer *findHtmlContainer() const;
+
+    static QMailMessagePartContainerPrivate* privatePointer(QMailMessagePart& part);
 
     template <typename Stream> void serialize(Stream &stream) const;
     template <typename Stream> void deserialize(Stream &stream);
@@ -324,7 +324,6 @@ public:
     void setListId(const QString &listId);
     void setRestoreFolderId(const QMailFolderId &folderId);
     void setRfcId(const QString &rfcId);
-
 
     void setContentScheme(const QString& scheme);
     void setContentIdentifier(const QString& identifier);

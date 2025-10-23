@@ -213,7 +213,7 @@ Q_SIGNALS:
 
     void messageDataAdded(const QMailMessageMetaDataList &data);
     void messageDataUpdated(const QMailMessageMetaDataList &data);
-    void messagePropertyUpdated(const QMailMessageIdList& ids,  const QMailMessageKey::Properties& properties,
+    void messagePropertyUpdated(const QMailMessageIdList& ids, const QMailMessageKey::Properties& properties,
                             const QMailMessageMetaData& data);
     void messageStatusUpdated(const QMailMessageIdList& ids, quint64 status, bool set);
 
@@ -258,7 +258,7 @@ private:
     void emitThreadNotification(ChangeType type, const QMailThreadIdList &ids);
     void emitMessageNotification(ChangeType type, const QMailMessageIdList &ids);
     void emitMessageDataNotification(ChangeType type, const QMailMessageMetaDataList &data);
-    void emitMessageDataNotification(const QMailMessageIdList& ids,  const QMailMessageKey::Properties& properties,
+    void emitMessageDataNotification(const QMailMessageIdList& ids, const QMailMessageKey::Properties& properties,
                                      const QMailMessageMetaData& data);
     void emitMessageDataNotification(const QMailMessageIdList& ids, quint64 status, bool set);
     void emitRemovalRecordNotification(ChangeType type, const QMailAccountIdList &ids);
