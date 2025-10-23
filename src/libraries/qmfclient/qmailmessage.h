@@ -37,7 +37,6 @@
 #include "qmailaddress.h"
 #include "qmailid.h"
 #include "qmailtimestamp.h"
-#include "qprivateimplementation.h"
 
 #include <QByteArray>
 #include <QFlags>
@@ -320,7 +319,7 @@ Stream& operator<<(Stream &stream, const QMailMessageBody& body) { body.serializ
 template <typename Stream>
 Stream& operator>>(Stream &stream, QMailMessageBody& body) { body.deserialize(stream); return stream; }
 
-class QMF_EXPORT QMailMessagePartContainer : public QPrivatelyImplemented<QMailMessagePartContainerPrivate>
+class QMF_EXPORT QMailMessagePartContainer
 {
 public:
     enum MultipartType {
@@ -336,7 +335,6 @@ public:
         MultipartReport = 9
     };
 
-    typedef QMailMessagePartContainerPrivate ImplementationType;
     class LocationPrivate;
 
     class QMF_EXPORT Location
@@ -370,6 +368,9 @@ public:
 
         LocationPrivate *d;
     };
+
+    QMailMessagePartContainer &operator=(const QMailMessagePartContainer &other);
+    virtual ~QMailMessagePartContainer();
 
     // Parts management interface:
     MultipartType multipartType() const;
@@ -453,10 +454,13 @@ public:
     virtual void addAttachments(const QStringList& attachments);
 
 protected:
-    template<typename Subclass>
-    QMailMessagePartContainer(Subclass* p);
+    QMailMessagePartContainer();
+    QMailMessagePartContainer(const QMailMessagePartContainer &other);
+    QMailMessagePartContainer(QMailMessagePartContainerPrivate *priv);
 
     virtual void setHeader(const QMailMessageHeader& header, const QMailMessagePartContainerPrivate* parent = Q_NULLPTR);
+
+    QSharedDataPointer<QMailMessagePartContainerPrivate> d;
 
 private:
     friend class QMailMessagePartContainerPrivate;
@@ -477,8 +481,6 @@ public:
         MessageReference,
         PartReference
     };
-
-    typedef QMailMessagePartPrivate ImplementationType;
 
     QMailMessagePart();
 
@@ -556,6 +558,9 @@ private:
     friend class QMailMessagePartContainerPrivate;
 
     virtual void setUnmodified();
+
+    QMailMessagePartPrivate *messagePartImpl();
+    const QMailMessagePartPrivate *messagePartImpl() const;
 
     void output(QDataStream& out, bool includeAttachments, bool stripInternal) const;
 };
@@ -853,8 +858,10 @@ public:
                                       DispositionNotificationType type = Displayed);
 
     QMailMessage();
+    QMailMessage(const QMailMessage &other);
     QMailMessage(const QMailMessageId& id);
     QMailMessage(const QString& uid, const QMailAccountId& accountId);
+    virtual ~QMailMessage();
 
     QByteArray toRfc2822(EncodingFormat format = TransmissionFormat) const;
     void toRfc2822(QDataStream& out, EncodingFormat format = TransmissionFormat) const;

@@ -34,11 +34,6 @@
 #include "qmailmessage_p.h"
 #include "qmailserviceaction_p.h"
 
-#include "qprivateimplementationdef_p.h"
-
-template class QPrivateImplementationPointer<QMailMessagePartContainerPrivate>;
-template class QPrivatelyImplemented<QMailMessagePartContainerPrivate>;
-
 Q_IMPLEMENT_USER_METATYPE_ENUM(QMailMessageBody::TransferEncoding)
 Q_IMPLEMENT_USER_METATYPE_ENUM(QMailMessagePartContainer::MultipartType)
 Q_IMPLEMENT_USER_METATYPE_ENUM(QMailMessage::MessageType)

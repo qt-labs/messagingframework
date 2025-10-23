@@ -165,11 +165,13 @@ private:
 };
 
 
-class QMF_EXPORT QMailMessagePartContainerPrivate : public QPrivateImplementationBase
+class QMailMessagePartContainerPrivate : public QSharedData
 {
 public:
-    template<typename Derived>
-    QMailMessagePartContainerPrivate(Derived* p);
+    QMailMessagePartContainerPrivate();
+    virtual ~QMailMessagePartContainerPrivate();
+
+    virtual QMailMessagePartContainerPrivate *clone() const;
 
     void setLocation(const QMailMessageId& id, const QList<uint>& indices);
     int partNumber() const;
@@ -262,6 +264,8 @@ class QMailMessagePartPrivate : public QMailMessagePartContainerPrivate
 {
 public:
     QMailMessagePartPrivate();
+
+    QMailMessagePartContainerPrivate *clone() const override;
 
     QMailMessagePart::ReferenceType referenceType() const;
 
@@ -414,6 +418,8 @@ class QMailMessagePrivate : public QMailMessagePartContainerPrivate
 {
 public:
     QMailMessagePrivate();
+
+    QMailMessagePartContainerPrivate *clone() const override;
 
     void fromRfc2822(const LongString &ls);
 
