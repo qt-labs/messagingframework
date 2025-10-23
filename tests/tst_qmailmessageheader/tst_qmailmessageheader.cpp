@@ -109,27 +109,20 @@ private slots:
     void constructor1();
     void constructor2_data();
     void constructor2();
-    void id();
     void setId();
-    void content();
     void setContent();
-    void parameter();
     void setParameter();
-    void isParameterEncoded();
     void setParameterEncoded();
     void parameters();
-    void toString();
     void decodedContent_data();
     void decodedContent();
     void encodeWord_data();
     void encodeWord();
-    void decodeWord();
     void encodeParameter_data();
     void encodeParameter();
     void decodeParameter();
     void encodeContent_data();
     void encodeContent();
-    void decodeContent();
     void removeComments_data();
     void removeComments();
     void removeWhitespace_data();
@@ -149,11 +142,8 @@ public:
 private slots:
     void constructor_data();
     void constructor();
-    void type();
     void setType();
-    void subType();
     void setSubType();
-    void name();
     void setName();
 };
 
@@ -168,17 +158,11 @@ public:
 private slots:
     void constructor_data();
     void constructor();
-    void type();
     void setType();
-    void filename();
     void setFilename();
-    void creationDate();
     void setCreationDate();
-    void modificationDate();
     void setModificationDate();
-    void readDate();
     void setReadDate();
-    void size();
     void setSize();
 };
 
@@ -427,11 +411,6 @@ void tst_QMailMessageHeaderField::constructor2()
     QTEST( header.toString(), "to_string" );
 }
 
-void tst_QMailMessageHeaderField::id()
-{
-    // Tested-by: setId
-}
-
 void tst_QMailMessageHeaderField::setId()
 {
     QMailMessageHeaderField header1;
@@ -447,11 +426,6 @@ void tst_QMailMessageHeaderField::setId()
 
     header2.setId(id);
     QCOMPARE( header2.id(), id );
-}
-
-void tst_QMailMessageHeaderField::content()
-{
-    // Tested-by: setContent
 }
 
 void tst_QMailMessageHeaderField::setContent()
@@ -504,11 +478,6 @@ void tst_QMailMessageHeaderField::setContent()
 
     QCOMPARE( asRfc2822(header1), expected);
 
-}
-
-void tst_QMailMessageHeaderField::parameter()
-{
-    // Tested-by: setParameter
 }
 
 void tst_QMailMessageHeaderField::setParameter()
@@ -576,11 +545,6 @@ void tst_QMailMessageHeaderField::setParameter()
     header4.setParameter(name, parameter);
     QCOMPARE( header4.toString(), QByteArray("Content-Type: multipart/signed;"
                                              " protocol=\"application/pgp-signature\"") );
-}
-
-void tst_QMailMessageHeaderField::isParameterEncoded()
-{
-    // Tested-by: setParameterEncoded()
 }
 
 void tst_QMailMessageHeaderField::setParameterEncoded()
@@ -703,11 +667,6 @@ CRLF;
 
     QMailMessage msg = QMailMessage::fromRfc2822(input);
     QCOMPARE( msg.contentType().parameters(), result1 );
-}
-
-void tst_QMailMessageHeaderField::toString()
-{
-    // Tested by: constructor1, constructor2, setParameter
 }
 
 void tst_QMailMessageHeaderField::decodedContent_data()
@@ -864,11 +823,6 @@ void tst_QMailMessageHeaderField::encodeWord()
 
     QString decoded = QMailMessageHeaderField::decodeWord(encoded);
     QCOMPARE( decoded, text );
-}
-
-void tst_QMailMessageHeaderField::decodeWord()
-{
-    // Tested-by: encodeWord
 }
 
 void tst_QMailMessageHeaderField::encodeParameter_data()
@@ -1071,11 +1025,6 @@ void tst_QMailMessageHeaderField::encodeContent()
 
     QString decoded = QMailMessageHeaderField::decodeContent(encoded);
     QCOMPARE( decoded, text );
-}
-
-void tst_QMailMessageHeaderField::decodeContent()
-{
-    // Tested-by: encodeContent
 }
 
 void tst_QMailMessageHeaderField::removeComments_data()
@@ -1296,11 +1245,6 @@ void tst_QMailMessageContentType::constructor()
     QCOMPARE( ct.content(), content );
 }
 
-void tst_QMailMessageContentType::type()
-{
-    // Tested-by: constructor, setType
-}
-
 void tst_QMailMessageContentType::setType()
 {
     QMailMessageContentType type1;
@@ -1339,11 +1283,6 @@ void tst_QMailMessageContentType::setType()
     QCOMPARE( type3.type(), QByteArray("image") );
     QCOMPARE( type3.subType(), QByteArray("jpeg") );
     QVERIFY( type3.charset().isEmpty() );
-}
-
-void tst_QMailMessageContentType::subType()
-{
-    // Tested-by: constructor, setSubType
 }
 
 void tst_QMailMessageContentType::setSubType()
@@ -1388,11 +1327,6 @@ void tst_QMailMessageContentType::setSubType()
     QCOMPARE( type2.type(), QByteArray("text") );
     QCOMPARE( type2.subType(), QByteArray() );
     QCOMPARE( type2.toString(), QByteArray("Content-Type: text; charset=us-ascii") );
-}
-
-void tst_QMailMessageContentType::name()
-{
-    // Tested-by: setFilename
 }
 
 void tst_QMailMessageContentType::setName()
@@ -1503,11 +1437,6 @@ void tst_QMailMessageContentDisposition::constructor()
     QTEST( cd.size(), "size" );
 }
 
-void tst_QMailMessageContentDisposition::type()
-{
-    // Tested-by: setType
-}
-
 void tst_QMailMessageContentDisposition::setType()
 {
     QMailMessageContentDisposition disposition1;
@@ -1525,11 +1454,6 @@ void tst_QMailMessageContentDisposition::setType()
     disposition2.setType(type);
     QCOMPARE( disposition2.type(), type );
     QCOMPARE( disposition2.toString(), QByteArray("Content-Disposition: attachment") );
-}
-
-void tst_QMailMessageContentDisposition::filename()
-{
-    // Tested-by: setFilename
 }
 
 void tst_QMailMessageContentDisposition::setFilename()
@@ -1552,11 +1476,6 @@ void tst_QMailMessageContentDisposition::setFilename()
     QCOMPARE( disposition2.toString(), QByteArray("Content-Disposition: attachment; filename=att.tar.gz; size=12345") );
 }
 
-void tst_QMailMessageContentDisposition::creationDate()
-{
-    // Tested-by: setCreationDate
-}
-
 void tst_QMailMessageContentDisposition::setCreationDate()
 {
     QMailMessageContentDisposition disposition1;
@@ -1577,11 +1496,6 @@ void tst_QMailMessageContentDisposition::setCreationDate()
     QCOMPARE( disposition2.creationDate(), timeStamp );
     QCOMPARE( disposition2.toString(), QByteArray("Content-Disposition: attachment; filename=sample.txt; "
                                                   "creation-date=") + QMail::quoteString(timeStamp.toString()).toLatin1() );
-}
-
-void tst_QMailMessageContentDisposition::modificationDate()
-{
-    // Tested-by: setModificationDate
 }
 
 void tst_QMailMessageContentDisposition::setModificationDate()
@@ -1607,11 +1521,6 @@ void tst_QMailMessageContentDisposition::setModificationDate()
                                                   "modification-date=") + QMail::quoteString(timeStamp.toString()).toLatin1() );
 }
 
-void tst_QMailMessageContentDisposition::readDate()
-{
-    // Tested-by: setReadDate
-}
-
 void tst_QMailMessageContentDisposition::setReadDate()
 {
     QMailMessageContentDisposition disposition1;
@@ -1633,11 +1542,6 @@ void tst_QMailMessageContentDisposition::setReadDate()
     QCOMPARE( disposition2.readDate(), timeStamp );
     QCOMPARE( disposition2.toString(), QByteArray("Content-Disposition: attachment; filename=sample.txt; "
                                                   "read-date=") + QMail::quoteString(timeStamp.toString()).toLatin1() );
-}
-
-void tst_QMailMessageContentDisposition::size()
-{
-    // Tested-by: setSize
 }
 
 void tst_QMailMessageContentDisposition::setSize()

@@ -63,28 +63,17 @@ public:
     virtual ~tst_QMailMessagePart();
 
 private slots:
-    void contentID();
     void setContentID();
-    void contentLocation();
     void setContentLocation();
-    void contentDescription();
     void setContentDescription();
-    void contentDisposition();
     void setContentDisposition();
-    void contentLanguage();
     void setContentLanguage();
-
-    void headerField();
-    void headerFieldText();
-    void headerFields();
-    void headerFieldsText();
 
     void setHeaderField();
     void appendHeaderField();
     void removeHeaderField();
 
     void testBody();
-
     void testToRfc2822();
     void testSerialization();
 };
@@ -97,11 +86,6 @@ tst_QMailMessagePart::tst_QMailMessagePart()
 tst_QMailMessagePart::~tst_QMailMessagePart()
 {
     setQMailMessageBoundaryString(QByteArray());
-}
-
-void tst_QMailMessagePart::contentID()
-{
-    // Tested-by: setContentID
 }
 
 void tst_QMailMessagePart::setContentID()
@@ -120,11 +104,6 @@ void tst_QMailMessagePart::setContentID()
     QCOMPARE( part.contentID(), id2.mid(1, id2.length() - 2) );
 }
 
-void tst_QMailMessagePart::contentLocation()
-{
-    // Tested-by: setContentLocation
-}
-
 void tst_QMailMessagePart::setContentLocation()
 {
     QMailMessagePart part;
@@ -139,11 +118,6 @@ void tst_QMailMessagePart::setContentLocation()
 
     part.setContentLocation(location2);
     QCOMPARE( part.contentLocation(), location2 );
-}
-
-void tst_QMailMessagePart::contentDescription()
-{
-    // Tested-by: setContentDescription
 }
 
 void tst_QMailMessagePart::setContentDescription()
@@ -162,11 +136,6 @@ void tst_QMailMessagePart::setContentDescription()
     QCOMPARE( part.contentDescription(), description2 );
 }
 
-void tst_QMailMessagePart::contentDisposition()
-{
-    // Tested-by: setContentDisposition
-}
-
 void tst_QMailMessagePart::setContentDisposition()
 {
     QMailMessagePart part;
@@ -183,11 +152,6 @@ void tst_QMailMessagePart::setContentDisposition()
     QCOMPARE( part.contentDisposition().toString(), QMailMessageContentDisposition(disposition2).toString() );
 }
 
-void tst_QMailMessagePart::contentLanguage()
-{
-    // Tested-by: setContentLanguage
-}
-
 void tst_QMailMessagePart::setContentLanguage()
 {
     QMailMessagePart part;
@@ -202,26 +166,6 @@ void tst_QMailMessagePart::setContentLanguage()
 
     part.setContentLanguage(language2);
     QCOMPARE( part.contentLanguage(), language2 );
-}
-
-void tst_QMailMessagePart::headerField()
-{
-    // Tested by: setHeaderField
-}
-
-void tst_QMailMessagePart::headerFieldText()
-{
-    // Tested by: setHeaderField
-}
-
-void tst_QMailMessagePart::headerFields()
-{
-    // Tested by: appendHeaderField
-}
-
-void tst_QMailMessagePart::headerFieldsText()
-{
-    // Tested by: appendHeaderField
 }
 
 void tst_QMailMessagePart::setHeaderField()

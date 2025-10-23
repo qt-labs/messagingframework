@@ -76,41 +76,22 @@ private slots:
     void fromRfc2822_data();
     void fromRfc2822();
 
-    void id();
     void setId();
-
-    void parentFolderId();
     void setParentFolderId();
-
-    void messageType();
     void setMessageType_data();
     void setMessageType();
-
     void setFrom();
-    void from();
-
-    void subject();
     void setSubject();
-
-    void date();
     void setDate();
-
-    void to();
     void setTo_data();
     void setTo();
-    void cc();
     void setCc();
-    void bcc();
     void setBcc();
 
     void recipients_data();
     void recipients();
-    void hasRecipients();
 
-    void replyTo();
     void setReplyTo();
-
-    void inReplyTo();
     void setInReplyTo();
 
     void setReplyReferences();
@@ -121,7 +102,6 @@ private slots:
     void setStatus();
 */
 
-    void serverUid();
     void setServerUid();
 
 /*
@@ -963,11 +943,6 @@ void tst_QMailMessage::fromRfc2822()
     QCOMPARE( reconstituted.partCount(), m.partCount() );
 }
 
-void tst_QMailMessage::id()
-{
-    // Tested by: setId
-}
-
 void tst_QMailMessage::setId()
 {
     QMailMessageId id;
@@ -981,11 +956,6 @@ void tst_QMailMessage::setId()
     QCOMPARE( message.dataModified(), true );
 }
 
-void tst_QMailMessage::parentFolderId()
-{
-    // Tested by: setParentFolderId
-}
-
 void tst_QMailMessage::setParentFolderId()
 {
     QMailFolderId id;
@@ -997,11 +967,6 @@ void tst_QMailMessage::setParentFolderId()
     message.setParentFolderId(id);
     QCOMPARE( message.parentFolderId(), id );
     QCOMPARE( message.dataModified(), true );
-}
-
-void tst_QMailMessage::messageType()
-{
-    // Tested by: setMessageType
 }
 
 void tst_QMailMessage::setMessageType_data()
@@ -1027,31 +992,16 @@ void tst_QMailMessage::setMessageType()
     QCOMPARE( message.dataModified(), true );
 }
 
-void tst_QMailMessage::from()
-{
-    // Tested by: setFrom
-}
-
 void tst_QMailMessage::setFrom()
 {
     testAddressHeader("From", &QMailMessage::setFrom, &QMailMessage::from);
     testSingleHeader("FrOM");
 }
 
-void tst_QMailMessage::subject()
-{
-    // Tested by: setSubject
-}
-
 void tst_QMailMessage::setSubject()
 {
     testHeader("Subject", &QMailMessage::setSubject, &QMailMessage::subject);
     testSingleHeader(" SuBject:");
-}
-
-void tst_QMailMessage::date()
-{
-    // Tested by: setDate
 }
 
 void tst_QMailMessage::setDate()
@@ -1081,11 +1031,6 @@ void tst_QMailMessage::setDate()
     QCOMPARE(m.contentModified(), true);
 
     testSingleHeader("Date");
-}
-
-void tst_QMailMessage::to()
-{
-    // Tested by: setTo
 }
 
 void tst_QMailMessage::setTo_data()
@@ -1176,31 +1121,14 @@ void tst_QMailMessage::setTo()
     }
 }
 
-void tst_QMailMessage::cc()
-{
-    // Tested by: setTo
-}
-
 void tst_QMailMessage::setCc()
 {
-    // Tested by: setTo
     testSingleHeader("Cc");
-}
-
-void tst_QMailMessage::bcc()
-{
-    // Tested by: setTo
 }
 
 void tst_QMailMessage::setBcc()
 {
-    // Tested by: setTo
     testSingleHeader("Bcc");
-}
-
-void tst_QMailMessage::replyTo()
-{
-    // Tested by: setReplyTo
 }
 
 void tst_QMailMessage::recipients_data()
@@ -1262,20 +1190,10 @@ void tst_QMailMessage::recipients()
     QCOMPARE(metaData.recipients(), (to + cc + bcc));
 }
 
-void tst_QMailMessage::hasRecipients()
-{
-    // Tested by: recipients
-}
-
 void tst_QMailMessage::setReplyTo()
 {
     testAddressHeader("Reply-To", &QMailMessage::setReplyTo, &QMailMessage::replyTo);
     testSingleHeader("Reply-To");
-}
-
-void tst_QMailMessage::inReplyTo()
-{
-    // Tested by: setInReplyTo
 }
 
 void tst_QMailMessage::setInReplyTo()
@@ -1307,12 +1225,6 @@ void tst_QMailMessage::setReplyReferences()
     QCOMPARE(forward.inReplyTo(), id);
     QCOMPARE(forward.headerField(QLatin1String("References")).content(),
              QString::fromLatin1("%1 %2").arg(id2).arg(id).toUtf8());
-
-}
-
-void tst_QMailMessage::serverUid()
-{
-    // Tested by: setServerUid
 }
 
 void tst_QMailMessage::setServerUid()
@@ -1497,6 +1409,7 @@ void tst_QMailMessage::multiMultipart()
 
 Q_DECLARE_METATYPE(QMailMessageContentDisposition::DispositionType)
 typedef QPair<QByteArray, QMailMessageContentDisposition::DispositionType> PartDefinition;
+
 void tst_QMailMessage::attachments_data()
 {
     QTest::addColumn<QList<PartDefinition>>("structure");
@@ -1652,7 +1565,6 @@ void tst_QMailMessage::attachmentFlag()
     message.setBody(QMailMessageBody::fromData("another text", QMailMessageContentType("text/plain; charset=us-ascii"),
                                                QMailMessageBody::SevenBit, QMailMessageBody::RequiresEncoding));
     QVERIFY(!(message.status() & QMailMessage::HasAttachments));
-
 }
 
 void tst_QMailMessage::copyAndAssign()
