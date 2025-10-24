@@ -7925,14 +7925,6 @@ bool QMailMessagePrivate::hasRecipients() const
     return false;
 }
 
-uint QMailMessagePrivate::indicativeSize() const
-{
-    uint size = QMailMessagePartContainerPrivate::indicativeSize();
-
-    // Count the message header as one size unit
-    return (size + 1);
-}
-
 static QByteArray gBoundaryString;
 
 void QMF_EXPORT setQMailMessageBoundaryString(const QByteArray &boundary)

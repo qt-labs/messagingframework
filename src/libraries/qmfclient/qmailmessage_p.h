@@ -435,8 +435,6 @@ public:
 
     bool hasRecipients() const;
 
-    uint indicativeSize() const;
-
     bool contentModified() const;
     void setUnmodified();
 
