@@ -489,15 +489,17 @@ static QByteArray encodeWord(const QString &text, const QByteArray& cs, bool* en
     return to7BitAscii(text);
 }
 
-static void convertAndAppend(QString& str, const QByteArray& bytes, const QByteArray& charset)
+static QString convertToString(const QByteArray &bytes, const QByteArray &charset)
 {
-    if (!bytes.isEmpty()) {
-        QTextCodec* codec = QMailCodec::codecForName(charset);
-        if (!codec) {
-            codec = QTextCodec::codecForUtfText(bytes, QMailCodec::codecForName("UTF-8"));
-        }
-        str.append(codec->toUnicode(bytes));
+    if (bytes.isEmpty())
+        return QString();
+
+    QTextCodec *codec = QMailCodec::codecForName(charset);
+    if (!codec) {
+        codec = QTextCodec::codecForUtfText(bytes, QMailCodec::codecForName("UTF-8"));
     }
+
+    return codec->toUnicode(bytes);
 }
 
 static QString decodeWordSequence(const QByteArray& str)
@@ -514,6 +516,7 @@ static QString decodeWordSequence(const QByteArray& str)
     QRegularExpression encodedWord(QLatin1String("\"?=\\?[^\\s\\?]+\\?[^\\s\\?]+\\?[^\\s\\?]*\\?=\"?"));
     QRegularExpression whitespace(QLatin1String("^\\s+$"));
     QRegularExpressionMatchIterator it = encodedWord.globalMatch(latin1Str);
+
     while (it.hasNext()) {
         QRegularExpressionMatch match = it.next();
         pos = match.capturedStart();
@@ -529,7 +532,7 @@ static QString decodeWordSequence(const QByteArray& str)
             if ((lastCharset.isEmpty() || lastCharset == textAndCharset.second) && precedingWhitespaceOrEmpty) {
                 encodedBuf.append(textAndCharset.first);
             } else {
-                convertAndAppend(out, encodedBuf, textAndCharset.second);
+                out.append(convertToString(encodedBuf, textAndCharset.second));
                 if (!precedingWhitespaceOrEmpty) {
                     out.append(preceding);
                 }
@@ -543,7 +546,7 @@ static QString decodeWordSequence(const QByteArray& str)
     }
 
     // Copy anything left
-    convertAndAppend(out, encodedBuf, lastCharset);
+    out.append(convertToString(encodedBuf, lastCharset));
     out.append(QString::fromLatin1(str.mid(lastPos)));
     return out;
 }
