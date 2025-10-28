@@ -31,7 +31,6 @@ tst_qmailmessageheader
 tst_qmailmessagepart
 tst_qmailstore
 tst_qmailstorekeys
-tst_qprivateimplementation
 
 #Visual Studio files
 *.sln

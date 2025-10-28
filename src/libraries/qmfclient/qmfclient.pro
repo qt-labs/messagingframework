@@ -57,8 +57,6 @@ HEADERS += \
     qmailthreadkey.h \
     qmailthreadlistmodel.h \
     qmailthreadsortkey.h \
-    qprivateimplementation.h \
-    qprivateimplementationdef_p.h \
     support/qmailglobal.h \
     support/qmaillog.h \
     support/qmailnamespace.h \
@@ -125,7 +123,6 @@ SOURCES += \
            qmailthreadkey.cpp \
            qmailthreadlistmodel.cpp \
            qmailthreadsortkey.cpp \
-           qprivateimplementation.cpp \
            support/qmailnamespace.cpp \
            support/qmaillog.cpp \
            support/qmailpluginmanager.cpp

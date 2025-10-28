@@ -128,17 +128,6 @@
         <hardware>true</hardware>
       </environments>
     </set>
-    <set name="_usr_tests_qmf_tst_qprivateimplementation">
-      <description>libqmf-tests:tst_qprivateimplementation</description>
-      <case name="tst_qprivateimplementation-basicTest">
-        <description>libqmf-tests:tst_qprivateimplementation:basicTest</description>
-        <step>/usr/tests/qmf-qt5/tst_qprivateimplementation basicTest</step>
-      </case>
-      <environments>
-        <scratchbox>true</scratchbox>
-        <hardware>true</hardware>
-      </environments>
-    </set>
     <set name="_usr_tests_qmf_tst_qmailmessagepart">
       <description>libqmf-tests:tst_qmailmessagepart</description>
       <case name="tst_qmailmessagepart-contentID">

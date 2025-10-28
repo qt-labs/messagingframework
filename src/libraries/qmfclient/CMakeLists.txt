@@ -40,7 +40,6 @@ set(SRC
   qmailthreadkey.cpp
   qmailthreadlistmodel.cpp
   qmailthreadsortkey.cpp
-  qprivateimplementation.cpp
   support/qmailnamespace.cpp
   support/qmaillog.cpp
   support/qmailpluginmanager.cpp)
@@ -84,7 +83,6 @@ set(PUBLIC_HEADERS
   qmailthreadkey.h
   qmailthreadlistmodel.h
   qmailthreadsortkey.h
-  qprivateimplementation.h
   support/qmailglobal.h
   support/qmaillog.h
   support/qmailnamespace.h
@@ -92,7 +90,6 @@ set(PUBLIC_HEADERS
   support/qmailipc.h)
 
 set(PRIVATE_HEADERS
-  qprivateimplementationdef_p.h
   locks_p.h
   mailkeyimpl_p.h
   mailsortkeyimpl_p.h
