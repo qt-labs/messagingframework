@@ -136,7 +136,7 @@ private:
 
     // SendMap maps id -> (units) to be sent
     typedef QMap<QMailMessageId, uint> SendMap;
-    SendMap sendSize;
+    SendMap m_sendUnits;
     uint progressSendSize;
     uint totalSendSize;
     uint sentCount;

@@ -365,9 +365,18 @@ protected:
     int _messageCountIncremental;
     int _outstandingFetches;
 
-    // RetrievalMap maps uid -> ((units, bytes) to be retrieved, percentage retrieved)
-    typedef QMultiMap<QString, QPair< QPair<uint, uint>, uint> > RetrievalMap;
-    RetrievalMap _retrievalSize;
+    struct RetrievalState {
+        RetrievalState(uint units, uint bytes, uint percentage)
+            : units(units), bytes(bytes), percentage(percentage) {}
+
+        uint units;
+        uint bytes;
+        uint percentage;
+    };
+
+    // maps uid -> status
+    QMap<QString, RetrievalState> m_retrievalStates;
+
     uint _progressRetrievalSize;
     uint _totalRetrievalSize;
 };

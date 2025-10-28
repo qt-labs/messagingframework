@@ -170,9 +170,17 @@ private:
     uint progress;
     uint total;
 
-    // RetrievalMap maps uid -> ((units, bytes) to be retrieved, percentage retrieved)
-    typedef QMap<QString, QPair< QPair<uint, uint>, uint> > RetrievalMap;
-    RetrievalMap retrievalSize;
+    struct RetrievalState {
+        RetrievalState(uint units, uint bytes, uint percentage)
+            : units(units), bytes(bytes), percentage(percentage) {}
+
+        uint units;
+        uint bytes;
+        uint percentage;
+    };
+
+    // maps uid -> status
+    QMap<QString, RetrievalState> m_retrievalStates;
     uint progressRetrievalSize;
     uint totalRetrievalSize;
 

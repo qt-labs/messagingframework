@@ -1492,9 +1492,8 @@ void ImapFetchSelectedMessagesStrategy::clearSelection()
     ImapMessageListStrategy::clearSelection();
     _totalRetrievalSize = 0;
     _listSize = 0;
-    _retrievalSize.clear();
+    m_retrievalStates.clear();
 }
-
 
 void ImapFetchSelectedMessagesStrategy::metaDataAnalysis(ImapStrategyContextBase *context,
                                                    const QMailMessagePartContainer &partContainer,
@@ -1702,7 +1701,7 @@ void ImapFetchSelectedMessagesStrategy::selectedMailsAppend(const QMailMessageId
             uint size = metaData.indicativeSize();
             uint bytes = metaData.size();
 
-            _retrievalSize.insert(metaData.serverUid(), qMakePair(qMakePair(size, bytes), 0u));
+            m_retrievalStates.insert(metaData.serverUid(), RetrievalState(size, bytes, 0));
             _totalRetrievalSize += size;
         }
     }
@@ -1736,7 +1735,7 @@ void ImapFetchSelectedMessagesStrategy::selectedSectionsAppend(const QMailMessag
             if (size < 1)
                 size = bytes/1024;
 
-            _retrievalSize.insert(message.serverUid(), qMakePair(qMakePair(size, bytes), 0u));
+            m_retrievalStates.insert(message.serverUid(), RetrievalState(size, bytes, 0));
             _totalRetrievalSize += size;
         }
     }
@@ -1812,19 +1811,18 @@ void ImapFetchSelectedMessagesStrategy::messageListMessageAction(ImapStrategyCon
 void ImapFetchSelectedMessagesStrategy::downloadSize(ImapStrategyContextBase *context, const QString &uid, int length)
 {
     if (!uid.isEmpty()) {
-        RetrievalMap::iterator it = _retrievalSize.find(uid);
-        if (it != _retrievalSize.end()) {
-            QPair<QPair<uint, uint>, uint> &values = it.value();
+        auto it = m_retrievalStates.find(uid);
+        if (it != m_retrievalStates.end()) {
+            RetrievalState &state = it.value();
 
             // Calculate the percentage of the retrieval completed
-            uint totalBytes = values.first.second;
-            uint percentage = totalBytes ? qMin<uint>(length * 100 / totalBytes, 100) : 100;
+            uint percentage = state.bytes ? qMin<uint>(length * 100 / state.bytes, 100) : 100;
 
-            if (percentage > values.second) {
-                values.second = percentage;
+            if (percentage > state.percentage) {
+                state.percentage = percentage;
 
                 // Update the progress figure to count the retrieved portion of this message
-                uint partialSize = values.first.first * percentage / 100;
+                uint partialSize = state.units * percentage / 100;
                 context->progressChanged(_progressRetrievalSize + partialSize, _totalRetrievalSize);
             }
         }
@@ -1860,13 +1858,13 @@ void ImapFetchSelectedMessagesStrategy::dataFlushed(ImapStrategyContextBase *con
 
 void ImapFetchSelectedMessagesStrategy::itemFetched(ImapStrategyContextBase *context, const QString &uid)
 {
-    RetrievalMap::iterator it = _retrievalSize.find(uid);
-    if (it != _retrievalSize.end()) {
+    auto it = m_retrievalStates.find(uid);
+    if (it != m_retrievalStates.end()) {
         // Update the progress figure
-        _progressRetrievalSize += it.value().first.first;
+        _progressRetrievalSize += it.value().units;
         context->progressChanged(_progressRetrievalSize, _totalRetrievalSize);
 
-        it = _retrievalSize.erase(it);
+        it = m_retrievalStates.erase(it);
     }
 
     if (_listSize) {

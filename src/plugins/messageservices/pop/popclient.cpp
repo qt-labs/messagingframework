@@ -344,11 +344,11 @@ void PopClient::setDeleteOperation()
 void PopClient::setSelectedMails(const SelectionMap& data)
 {
     // We shouldn't have anything left in our retrieval list...
-    if (!retrievalSize.isEmpty()) {
-        foreach (const QString& uid, retrievalSize.keys())
+    if (!m_retrievalStates.isEmpty()) {
+        foreach (const QString& uid, m_retrievalStates.keys())
             qCWarning(lcPOP) << "Message" << uid << "still in retrieve map...";
 
-        retrievalSize.clear();
+        m_retrievalStates.clear();
     }
 
     selected = true;
@@ -357,14 +357,14 @@ void PopClient::setSelectedMails(const SelectionMap& data)
     completionList.clear();
     messageCount = 0;
 
-    if (deleting == false) {
+    if (!deleting) {
         totalRetrievalSize = 0;
         foreach (const QMailMessageId& id, selectionMap.values()) {
             QMailMessageMetaData message(id);
             uint size = message.indicativeSize();
             uint bytes = message.size();
 
-            retrievalSize.insert(message.serverUid(), qMakePair(qMakePair(size, bytes), 0u));
+            m_retrievalStates.insert(message.serverUid(), RetrievalState(size, bytes, 0));
             totalRetrievalSize += size;
         }
 
@@ -632,19 +632,19 @@ void PopClient::processResponse(const QString &response)
 
                 if (!retrieveUid.isEmpty() && !transport->canReadLine()) {
                     // There is no more data currently available, so report our progress
-                    RetrievalMap::iterator it = retrievalSize.find(retrieveUid);
-                    if (it != retrievalSize.end()) {
-                        QPair<QPair<uint, uint>, uint> &values = it.value();
+                    auto it = m_retrievalStates.find(retrieveUid);
+                    if (it != m_retrievalStates.end()) {
+                        RetrievalState &state = it.value();
 
                         // Calculate the percentage of the retrieval completed
-                        uint totalBytes = values.first.second;
-                        uint percentage = totalBytes ? qMin<uint>(dataStream->length() * 100 / totalBytes, 100) : 100;
+                        uint percentage = state.bytes ? qMin<uint>(dataStream->length() * 100 / state.bytes, 100)
+                                                      : 100;
 
-                        if (percentage > values.second) {
-                            values.second = percentage;
+                        if (percentage > state.percentage) {
+                            state.percentage = percentage;
 
                             // Update the progress figure to count the retrieved portion of this message
-                            uint partialSize = values.first.first * percentage / 100;
+                            uint partialSize = state.units * percentage / 100;
                             emit progressChanged(progressRetrievalSize + partialSize, totalRetrievalSize);
                         }
                     }
@@ -1297,13 +1297,13 @@ void PopClient::connectionInactive()
 
 void PopClient::messageProcessed(const QString &uid)
 {
-    RetrievalMap::iterator it = retrievalSize.find(uid);
-    if (it != retrievalSize.end()) {
+    auto it = m_retrievalStates.find(uid);
+    if (it != m_retrievalStates.end()) {
         // Update the progress figure
-        progressRetrievalSize += it.value().first.first;
+        progressRetrievalSize += it.value().units;
         emit progressChanged(progressRetrievalSize, totalRetrievalSize);
 
-        retrievalSize.erase(it);
+        m_retrievalStates.erase(it);
     }
 
     emit messageActionCompleted(uid);

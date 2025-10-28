@@ -223,7 +223,7 @@ void SmtpClient::newConnection()
 
     // Calculate the total indicative size of the messages we're sending
     totalSendSize = 0;
-    foreach (uint size, sendSize.values())
+    foreach (uint size, m_sendUnits.values())
         totalSendSize += size;
 
     progressSendSize = 0;
@@ -239,11 +239,11 @@ void SmtpClient::newConnection()
 QMailServiceAction::Status::ErrorCode SmtpClient::addMail(const QMailMessage& mail)
 {
     // We shouldn't have anything left in our send list...
-    if (sendList.isEmpty() && !sendSize.isEmpty()) {
-        foreach (const QMailMessageId& id, sendSize.keys())
+    if (sendList.isEmpty() && !m_sendUnits.isEmpty()) {
+        foreach (const QMailMessageId& id, m_sendUnits.keys())
             qCWarning(lcSMTP) << "Message" << id << "still in send map...";
 
-        sendSize.clear();
+        m_sendUnits.clear();
     }
 
     if (mail.status() & QMailMessage::HasUnresolvedReferences) {
@@ -273,7 +273,7 @@ QMailServiceAction::Status::ErrorCode SmtpClient::addMail(const QMailMessage& ma
     rawmail.mail = mail;
 
     sendList.append(rawmail);
-    sendSize.insert(mail.id(), mail.indicativeSize());
+    m_sendUnits.insert(mail.id(), mail.indicativeSize());
 
     return QMailServiceAction::Status::ErrNoError;
 }
@@ -314,8 +314,8 @@ void SmtpClient::transportError(int errorCode, QString msg)
 void SmtpClient::sent(qint64 size)
 {
     if (sendingId.isValid() && messageLength) {
-        SendMap::const_iterator it = sendSize.find(sendingId);
-        if (it != sendSize.end()) {
+        SendMap::const_iterator it = m_sendUnits.find(sendingId);
+        if (it != m_sendUnits.end()) {
             sentLength += size;
             uint percentage = qMin<uint>(sentLength * 100 / messageLength, 100);
 
@@ -936,13 +936,13 @@ void SmtpClient::cancelTransfer(QMailServiceAction::Status::ErrorCode code, cons
 
 void SmtpClient::messageProcessed(const QMailMessageId &id)
 {
-    SendMap::iterator it = sendSize.find(id);
-    if (it != sendSize.end()) {
+    SendMap::iterator it = m_sendUnits.find(id);
+    if (it != m_sendUnits.end()) {
         // Update the progress figure
         progressSendSize += *it;
         emit progressChanged(progressSendSize, totalSendSize);
 
-        sendSize.erase(it);
+        m_sendUnits.erase(it);
     }
 }
 
@@ -964,7 +964,7 @@ void SmtpClient::operationFailed(int code, const QString &text)
     } else {
         sendingId = QMailMessageId();
         sendList.clear();
-        sendSize.clear();
+        m_sendUnits.clear();
         emit errorOccurred(code, bufferedResponse + text);
     }
 }
@@ -996,7 +996,7 @@ void SmtpClient::operationFailed(QMailServiceAction::Status::ErrorCode code, con
 
         sendingId = QMailMessageId();
         sendList.clear();
-        sendSize.clear();
+        m_sendUnits.clear();
 
         QString msg;
         if (code == QMailServiceAction::Status::ErrUnknownResponse) {
