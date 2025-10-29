@@ -249,7 +249,7 @@ void SSOManager::onError(const SignOn::Error &code)
     m_errorMessage = QString::fromLatin1("SSO error %1: %2").arg(code.type()).arg(code.message());
     if (code.type() == SignOn::Error::InvalidCredentials
         || code.type() == SignOn::Error:: UserInteraction) {
-        invalidate(QStringLiteral("messageserver5"));
+        invalidate(QStringLiteral("messageserver"));
     }
     qCDebug(lcMessaging) << "SSO: got error response," << m_errorMessage;
 

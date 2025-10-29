@@ -526,7 +526,7 @@ void ImapClient::checkCommandResponse(ImapCommand command, OperationStatus statu
             break;
 
         case IMAP_Login:
-            _credentials->authFailureNotice(QStringLiteral("messageserver5"));
+            _credentials->authFailureNotice(QStringLiteral("messageserver"));
             if (_credentials->shouldRetryAuth()) {
                 _protocol.close();
                 newConnection();
@@ -563,7 +563,7 @@ void ImapClient::checkCommandResponse(ImapCommand command, OperationStatus statu
             operationFailed(QMailServiceAction::Status::ErrNoConnection, _protocol.lastError());
             break;
         case IMAP_Login:
-            _credentials->authSuccessNotice(QStringLiteral("messageserver5"));
+            _credentials->authSuccessNotice(QStringLiteral("messageserver"));
             break;
         default:
             break;

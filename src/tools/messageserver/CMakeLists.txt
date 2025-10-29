@@ -31,13 +31,13 @@ if (USE_HTML_PARSER)
   target_link_libraries(MessageServer PRIVATE Qt6::Gui)
 endif()
 
-add_executable(messageserver5 main.cpp)
-target_link_libraries(messageserver5
+add_executable(messageserver main.cpp)
+target_link_libraries(messageserver
   PRIVATE Qt6::Core MessageServer)
 
 if (TARGET Qt6::LinguistTools)
   qt_add_translations(messageserver)
 endif()
 
-install(TARGETS messageserver5
+install(TARGETS messageserver
   RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

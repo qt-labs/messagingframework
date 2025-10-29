@@ -519,7 +519,7 @@ void PopClient::processResponse(const QString &response)
     case Auth:
         if (response[0] != '+') {
             // Authentication failed
-            credentials->authFailureNotice(QStringLiteral("messageserver5"));
+            credentials->authFailureNotice(QStringLiteral("messageserver"));
             if (credentials->shouldRetryAuth()) {
                 newConnection();
                 return;
@@ -757,7 +757,7 @@ void PopClient::nextAction()
     }
     case Auth:
     {
-        credentials->authSuccessNotice(QStringLiteral("messageserver5"));
+        credentials->authSuccessNotice(QStringLiteral("messageserver"));
         if (testing) {
             nextStatus = Done;
         } else {

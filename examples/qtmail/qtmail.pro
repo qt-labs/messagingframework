@@ -1,5 +1,5 @@
 TEMPLATE = app
-TARGET = qtmail5
+TARGET = qtmail
 target.path += $$[QT_INSTALL_EXAMPLES]/qmf/qtmail
 QT += widgets qmfclient qmfmessageserver qmfwidgets
 

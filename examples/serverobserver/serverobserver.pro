@@ -1,5 +1,5 @@
 TEMPLATE = app
-TARGET = serverobserver5
+TARGET = serverobserver
 target.path += $$[QT_INSTALL_EXAMPLES]/qmf/serverobserver
 QT += widgets qmfclient qmfmessageserver
 

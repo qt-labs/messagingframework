@@ -1,6 +1,6 @@
 TEMPLATE = app
 target.path += $$[QT_INSTALL_EXAMPLES]/qmf/messagingaccounts
-TARGET = messagingaccounts5
+TARGET = messagingaccounts
 QT += widgets qmfclient qmfmessageserver qmfwidgets
 
 QTMAIL_EXAMPLE=../qtmail

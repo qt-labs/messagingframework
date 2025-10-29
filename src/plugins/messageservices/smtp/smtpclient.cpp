@@ -638,7 +638,7 @@ void SmtpClient::nextAction(const QString &response)
             }
         } else if (responseCode == 235) {
             // We are now authenticated
-            credentials->authSuccessNotice(QStringLiteral("messageserver5"));
+            credentials->authSuccessNotice(QStringLiteral("messageserver"));
             status = Authenticated;
             nextAction(QString());
         } else if (responseCode == 504) {
@@ -665,7 +665,7 @@ void SmtpClient::nextAction(const QString &response)
         } else if (responseCode == 530) {
             operationFailed(QMailServiceAction::Status::ErrConfiguration, response);
         } else if (responseCode == 535) {
-            credentials->authFailureNotice(QStringLiteral("messageserver5"));
+            credentials->authFailureNotice(QStringLiteral("messageserver"));
             if (credentials->shouldRetryAuth()) {
                 // Credentials may have changed, fetch them again.
                 if (credentials->init(SmtpConfiguration(config))) {
