@@ -1814,16 +1814,19 @@ void QMailMessageHeaderFieldPrivate::setParameter(const QByteArray& name, const 
 
     // Find all existing parts of this parameter, if present
     QList<QList<QMailMessageHeaderField::ParameterType>::iterator> matches;
-    QList<QMailMessageHeaderField::ParameterType>::iterator it = _parameters.begin(), end = _parameters.end();
-    for ( ; it != end; ++it) {
-        if (matchingParameter(param, (*it).first))
-            matches.prepend(it);
+    QList<QMailMessageHeaderField::ParameterType>::iterator paramIt = _parameters.begin();
+
+    for ( ; paramIt != _parameters.end(); ++paramIt) {
+        if (matchingParameter(param, (*paramIt).first))
+            matches.prepend(paramIt);
     }
 
     while (matches.count() > 1)
         _parameters.erase(matches.takeFirst());
-    if (matches.count() == 1)
-        it = matches.takeFirst();
+
+    if (matches.count() == 1) {
+        paramIt = matches.takeFirst();
+    }
 
     // If the value is too long to fit on one line, break it into manageable pieces
     const int maxInputLength = 78 - 9 - param.length();
@@ -1843,9 +1846,10 @@ void QMailMessageHeaderFieldPrivate::setParameter(const QByteArray& name, const 
             input = input.mid(splitPoint);
         } while (input.length());
 
-        if (it == end) {
+        if (paramIt == _parameters.end()) {
             // Append each piece at the end
             int n = 0;
+
             while (pieces.count() > 0) {
                 QByteArray id(param);
                 id.append('*').append(QByteArray::number(n));
@@ -1864,16 +1868,17 @@ void QMailMessageHeaderFieldPrivate::setParameter(const QByteArray& name, const 
             while (pieces.count() > 0) {
                 QByteArray id(param);
                 id.append('*').append(QByteArray::number(n));
+
                 if (encoded && (n == 0))
                     id.append('*');
 
                 QMailMessageHeaderField::ParameterType parameter = qMakePair(id, pieces.takeLast());
                 if (n == initial) {
                     // Put the last piece into the existing position
-                    (*it) = parameter;
+                    *paramIt = parameter;
                 } else {
                     // Insert before the previous piece, and record the new iterator
-                    it = _parameters.insert(it, parameter);
+                    paramIt = _parameters.insert(paramIt, parameter);
                 }
 
                 --n;
@@ -1886,10 +1891,10 @@ void QMailMessageHeaderFieldPrivate::setParameter(const QByteArray& name, const 
             id.append('*');
         QMailMessageHeaderField::ParameterType parameter = qMakePair(id, value);
 
-        if (it == end) {
+        if (paramIt == _parameters.end()) {
             _parameters.append(parameter);
         } else {
-            (*it) = parameter;
+            *paramIt = parameter;
         }
     }
 }
@@ -2819,7 +2824,6 @@ void QMailMessageContentDisposition::setModificationDate(const QMailTimeStamp& t
     setParameter("modification-date", to7BitAscii(timeStamp.toString()));
 }
 
-
 /*!
     Returns the value of the 'read-date' parameter, if present; otherwise returns an uninitialised time stamp.
 */
@@ -3047,16 +3051,14 @@ void QMailMessageHeaderPrivate::append(const QByteArray &id, const QByteArray &c
 
 void QMailMessageHeaderPrivate::remove(const QByteArray &id)
 {
-    QList<QList<QByteArray>::iterator> matches;
-
-    const QList<QByteArray>::iterator end = _headerFields.end();
-    for (QList<QByteArray>::iterator it = _headerFields.begin(); it != end; ++it) {
-        if ( matchingId(id, (*it)) )
-            matches.prepend(it);
+    QList<QByteArray>::iterator it = _headerFields.begin();
+    while (it != _headerFields.end()) {
+        if (matchingId(id, *it)) {
+            it = _headerFields.erase(it);
+        } else {
+            ++it;
+        }
     }
-
-    foreach (QList<QByteArray>::iterator it, matches)
-        _headerFields.erase(it);
 }
 
 QList<QMailMessageHeaderField> QMailMessageHeaderPrivate::fields(const QByteArray& id, int maximum) const
