@@ -3121,6 +3121,11 @@ QMailMessageHeader::QMailMessageHeader()
 {
 }
 
+QMailMessageHeader::QMailMessageHeader(const QMailMessageHeader &other)
+{
+    d = other.d;
+}
+
 QMailMessageHeader::QMailMessageHeader(const QByteArray& input)
     : d(new QMailMessageHeaderPrivate(input))
 {
@@ -8160,8 +8165,8 @@ QMailMessage::QMailMessage()
 
 QMailMessage::QMailMessage(const QMailMessage &other)
     : QMailMessageMetaData(other)
+    , QMailMessagePartContainer(other)
 {
-    QMailMessagePartContainer::d = other.QMailMessagePartContainer::d;
 }
 
 /*!
@@ -8187,6 +8192,15 @@ QMailMessage::QMailMessage(const QString& uid, const QMailAccountId& accountId)
 
 QMailMessage::~QMailMessage()
 {
+}
+
+QMailMessage& QMailMessage::operator=(const QMailMessage &other)
+{
+    if (this != &other) {
+        QMailMessageMetaData::operator=(other);
+        QMailMessagePartContainer::d = other.QMailMessagePartContainer::d;
+    }
+    return *this;
 }
 
 /*!

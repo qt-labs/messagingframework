@@ -204,6 +204,7 @@ class QMailMessageHeader
 {
 public:
     QMailMessageHeader();
+    QMailMessageHeader(const QMailMessageHeader &other);
     QMailMessageHeader(const QByteArray& input);
 
     QMailMessageHeader& operator=(const QMailMessageHeader &other);
@@ -862,6 +863,8 @@ public:
     QMailMessage(const QMailMessageId& id);
     QMailMessage(const QString& uid, const QMailAccountId& accountId);
     virtual ~QMailMessage();
+
+    QMailMessage& operator=(const QMailMessage &other);
 
     QByteArray toRfc2822(EncodingFormat format = TransmissionFormat) const;
     void toRfc2822(QDataStream& out, EncodingFormat format = TransmissionFormat) const;
