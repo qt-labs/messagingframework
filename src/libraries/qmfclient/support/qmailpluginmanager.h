@@ -45,7 +45,7 @@ class QMF_EXPORT QMailPluginManager : public QObject
     Q_OBJECT
 
 public:
-    explicit QMailPluginManager(const QString &identifier, QObject *parent = Q_NULLPTR);
+    explicit QMailPluginManager(const QString &subdir, QObject *parent = nullptr);
     ~QMailPluginManager();
 
     QStringList list() const;

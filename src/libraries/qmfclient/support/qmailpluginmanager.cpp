@@ -33,12 +33,12 @@
 
 #include "qmailpluginmanager.h"
 #include "qmaillog.h"
+#include <qmailnamespace.h>
+
 #include <QMap>
 #include <QPluginLoader>
 #include <QDir>
 #include <QCoreApplication>
-#include <qmailnamespace.h>
-
 
 /*!
   \class QMailPluginManager
@@ -53,11 +53,10 @@
   for the desired interface.
 */
 
-
 /*!
-  \fn QMailPluginManager::QMailPluginManager(const QString& dir, QObject* parent)
+  \fn QMailPluginManager::QMailPluginManager(const QString &subdir, QObject *parent)
 
-  Creates a QMailPluginManager for plugins located in the plugin subdirectory \a dir with the given
+  Creates a QMailPluginManager for plugins located in the plugin subdirectory \a subdir with the given
   \a parent.
 */
 
@@ -97,18 +96,12 @@ namespace {
 
 QStringList pluginFilePatterns()
 {
-#ifdef LOAD_DEBUG_VERSION
-    QString debugSuffix(QLatin1String("d"));
-#else
-    QString debugSuffix;
-#endif
-
 #if defined(Q_OS_WIN)
-    return QStringList() << QString::fromLatin1("*%1.dll").arg(debugSuffix) << QString::fromLatin1("*%1.DLL").arg(debugSuffix);
+    return QStringList() << QString::fromLatin1("*.dll") << QString::fromLatin1("*.DLL");
 #elif defined(Q_OS_MAC)
     return QStringList() << QLatin1String("*.dylib");
 #else
-    return QStringList() << QString::fromLatin1("*%1.so*").arg(debugSuffix);
+    return QStringList() << QString::fromLatin1("*.so*");
 #endif
 }
 
@@ -117,23 +110,21 @@ QStringList pluginFilePatterns()
 class QMailPluginManagerPrivate
 {
 public:
-    QMailPluginManagerPrivate(const QString& ident);
+    QMailPluginManagerPrivate(const QString &subdir);
     ~QMailPluginManagerPrivate();
 
 public:
     QMap<QString, QPluginLoader*> pluginMap;
 };
 
-QMailPluginManagerPrivate::QMailPluginManagerPrivate(const QString& path)
+QMailPluginManagerPrivate::QMailPluginManagerPrivate(const QString &subdir)
 {
-    QStringList libraryPaths;
-    QStringList coreLibraryPaths = QCoreApplication::libraryPaths();
-    libraryPaths.append(coreLibraryPaths);
+    QStringList libraryPaths = QCoreApplication::libraryPaths();
 
     foreach (QString libraryPath, libraryPaths) {
         QDir dir(libraryPath);
-        //Change into the sub directory, and make sure it's readable
-        if (!dir.cd(path) || !dir.isReadable())
+        // Change into the sub directory, and make sure it's readable
+        if (!dir.cd(subdir) || !dir.isReadable())
             continue;
 
         foreach (const QString &libname, dir.entryList(pluginFilePatterns(), QDir::Files)) {
@@ -151,15 +142,16 @@ QMailPluginManagerPrivate::~QMailPluginManagerPrivate()
     qDeleteAll(pluginMap.values());
 }
 
-QMailPluginManager::QMailPluginManager(const QString& dir, QObject* parent)
+QMailPluginManager::QMailPluginManager(const QString &subdir, QObject* parent)
     : QObject(parent)
-    , d(new QMailPluginManagerPrivate(dir))
+    , d(new QMailPluginManagerPrivate(subdir))
 {
 }
 
 QMailPluginManager::~QMailPluginManager()
 {
-    delete d; d = 0;
+    delete d;
+    d = nullptr;
 }
 
 QStringList QMailPluginManager::list() const
@@ -174,10 +166,10 @@ QObject* QMailPluginManager::instance(const QString& name)
             return d->pluginMap[name]->instance();
         } else {
             qCWarning(lcMessaging) << "Error loading" << name << "with errorString()" << d->pluginMap[name]->errorString();
-            return 0;
+            return nullptr;
         }
     } else {
         qCWarning(lcMessaging) << "Could not find" << name << "to load";
-        return 0;
+        return nullptr;
     }
 }

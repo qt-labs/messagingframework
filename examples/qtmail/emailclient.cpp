@@ -75,11 +75,6 @@
 #include <qmaildisconnected.h>
 
 static const unsigned int StatusBarHeight = 20;
-#ifdef LOAD_DEBUG_VERSION
-static const QString debugSuffix("d");
-#else
-static const QString debugSuffix;
-#endif
 
 class ActivityIcon : public QLabel
 {
