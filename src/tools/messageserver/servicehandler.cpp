@@ -764,6 +764,17 @@ QMailMessageSource *ServiceHandler::accountSource(const QMailAccountId &accountI
     return nullptr;
 }
 
+QMailMessageSource *ServiceHandler::accountSourceOrFailure(const QMailAccountId &accountId, quint64 action)
+{
+    QMailMessageSource *source = accountSource(accountId);
+    if (!source) {
+        reportFailure(action, QMailServiceAction::Status::ErrFrameworkFault,
+                      tr("Unable to locate source for account"), accountId);
+    }
+
+    return source;
+}
+
 void ServiceHandler::registerAccountSink(const QMailAccountId &accountId, QMailMessageSink *sink, QMailMessageService *service)
 {
     sinkMap.insert(accountId, sink);
@@ -1393,7 +1404,7 @@ bool ServiceHandler::dispatchPrepareMessages(Request *req)
 
     // Prepare any unresolved messages for transmission
     for (auto it = request->unresolvedLists.begin() ; it != request->unresolvedLists.end(); ++it) {
-        if (QMailMessageSource *source = accountSource(it.key())) {
+        if (QMailMessageSource *source = accountSourceOrFailure(it.key(), request->action)) {
             if (!source->prepareMessages(it.value())) {
                 qCWarning(lcMessaging) << "Unable to service request to prepare messages for account:" << it.key();
                 return false;
@@ -1402,8 +1413,6 @@ bool ServiceHandler::dispatchPrepareMessages(Request *req)
                 setTransmissionInProgress(it.key(), true);
             }
         } else {
-            reportFailure(request->action, QMailServiceAction::Status::ErrFrameworkFault,
-                          tr("Unable to locate source for account"), it.key());
             return false;
         }
     }
@@ -1512,7 +1521,7 @@ bool ServiceHandler::dispatchRetrieveFolderListAccount(Request *req)
 {
     RetrieveFolderListRequest *request = static_cast<RetrieveFolderListRequest*>(req);
 
-    if (QMailMessageSource *source = accountSource(request->accountId)) {
+    if (QMailMessageSource *source = accountSourceOrFailure(request->accountId, request->action)) {
         bool success(sourceService.value(source)->usesConcurrentActions()
                             ? source->retrieveFolderList(request->accountId, request->folderId, request->descending, request->action)
                             : source->retrieveFolderList(request->accountId, request->folderId, request->descending));
@@ -1525,8 +1534,6 @@ bool ServiceHandler::dispatchRetrieveFolderListAccount(Request *req)
             return false;
         }
     } else {
-        reportFailure(request->action, QMailServiceAction::Status::ErrFrameworkFault,
-                      tr("Unable to locate source for account"), request->accountId);
         return false;
     }
 
@@ -1567,7 +1574,7 @@ bool ServiceHandler::dispatchRetrieveMessageList(Request *req)
 {
     RetrieveMessageListRequest *request = static_cast<RetrieveMessageListRequest*>(req);
 
-    if (QMailMessageSource *source = accountSource(request->accountId)) {
+    if (QMailMessageSource *source = accountSourceOrFailure(request->accountId, request->action)) {
         bool success(sourceService.value(source)->usesConcurrentActions()
                             ? source->retrieveMessageList(request->accountId, request->folderId, request->minimum, request->sort, request->action)
                             : source->retrieveMessageList(request->accountId, request->folderId, request->minimum, request->sort));
@@ -1579,8 +1586,6 @@ bool ServiceHandler::dispatchRetrieveMessageList(Request *req)
             return false;
         }
     } else {
-        reportFailure(request->action, QMailServiceAction::Status::ErrFrameworkFault,
-                      tr("Unable to locate source for account"), request->accountId);
         return false;
     }
 
@@ -1622,7 +1627,7 @@ bool ServiceHandler::dispatchRetrieveMessageLists(Request *req)
 {
     RetrieveMessageListsRequest *request = static_cast<RetrieveMessageListsRequest*>(req);
 
-    if (QMailMessageSource *source = accountSource(request->accountId)) {
+    if (QMailMessageSource *source = accountSourceOrFailure(request->accountId, request->action)) {
         bool success(sourceService.value(source)->usesConcurrentActions()
                             ? source->retrieveMessageLists(request->accountId, request->folderIds, request->minimum, request->sort, request->action)
                             : source->retrieveMessageLists(request->accountId, request->folderIds, request->minimum, request->sort));
@@ -1634,8 +1639,6 @@ bool ServiceHandler::dispatchRetrieveMessageLists(Request *req)
             return false;
         }
     } else {
-        reportFailure(request->action, QMailServiceAction::Status::ErrFrameworkFault,
-                      tr("Unable to locate source for account"), request->accountId);
         return false;
     }
 
@@ -1670,7 +1673,7 @@ bool ServiceHandler::dispatchRetrieveNewMessages(Request *req)
 {
     RetrieveNewMessagesRequest *request = static_cast<RetrieveNewMessagesRequest*>(req);
 
-    if (QMailMessageSource *source = accountSource(request->accountId)) {
+    if (QMailMessageSource *source = accountSourceOrFailure(request->accountId, request->action)) {
         bool success(sourceService.value(source)->usesConcurrentActions()
                             ? source->retrieveNewMessages(request->accountId, request->folderIds, request->action)
                             : source->retrieveNewMessages(request->accountId, request->folderIds));
@@ -1682,8 +1685,6 @@ bool ServiceHandler::dispatchRetrieveNewMessages(Request *req)
             return false;
         }
     } else {
-        reportFailure(request->action, QMailServiceAction::Status::ErrFrameworkFault,
-                      tr("Unable to locate source for account"), request->accountId);
         return false;
     }
 
@@ -1716,7 +1717,7 @@ bool ServiceHandler::dispatchCreateStandardFolders(Request *req)
 {
     CreateStandardFoldersRequest *request = static_cast<CreateStandardFoldersRequest*>(req);
 
-    if (QMailMessageSource *source = accountSource(request->accountId)) {
+    if (QMailMessageSource *source = accountSourceOrFailure(request->accountId, request->action)) {
         bool success(sourceService.value(source)->usesConcurrentActions()
             ? source->createStandardFolders(request->accountId, request->action)
             : source->createStandardFolders(request->accountId));
@@ -1725,11 +1726,9 @@ bool ServiceHandler::dispatchCreateStandardFolders(Request *req)
         }
 
         return success;
-    } else {
-        reportFailure(request->action, QMailServiceAction::Status::ErrFrameworkFault,
-                      tr("Unable to locate source for account"), request->accountId);
-        return false;
     }
+
+    return false;
 }
 
 class RetrieveMessagesRequest : public Request
@@ -1765,7 +1764,7 @@ bool ServiceHandler::dispatchRetrieveMessages(Request *req)
     RetrieveMessagesRequest *request = static_cast<RetrieveMessagesRequest*>(req);
 
     for (auto it = request->messageLists.begin() ; it != request->messageLists.end(); ++it) {
-        if (QMailMessageSource *source = accountSource(it.key())) {
+        if (QMailMessageSource *source = accountSourceOrFailure(it.key(), request->action)) {
             bool success(sourceService.value(source)->usesConcurrentActions()
                                 ? source->retrieveMessages(it.value(), request->spec, request->action)
                                 : source->retrieveMessages(it.value(), request->spec));
@@ -1781,8 +1780,6 @@ bool ServiceHandler::dispatchRetrieveMessages(Request *req)
                 return false;
             }
         } else {
-            reportFailure(request->action, QMailServiceAction::Status::ErrFrameworkFault,
-                          tr("Unable to locate source for account"), it.key());
             return false;
         }
     }
@@ -1820,7 +1817,7 @@ bool ServiceHandler::dispatchRetrieveMessagePart(Request *req)
 {
     RetrieveMessagePartRequest *request = static_cast<RetrieveMessagePartRequest*>(req);
 
-    if (QMailMessageSource *source = accountSource(request->accountId)) {
+    if (QMailMessageSource *source = accountSourceOrFailure(request->accountId, request->action)) {
         bool success(sourceService.value(source)->usesConcurrentActions()
             ? source->retrieveMessagePart(request->partLocation, request->action)
             : source->retrieveMessagePart(request->partLocation));
@@ -1834,8 +1831,6 @@ bool ServiceHandler::dispatchRetrieveMessagePart(Request *req)
             return false;
         }
     } else {
-        reportFailure(request->action, QMailServiceAction::Status::ErrFrameworkFault,
-                      tr("Unable to locate source for account"), request->accountId);
         return false;
     }
 
@@ -1873,7 +1868,7 @@ bool ServiceHandler::dispatchRetrieveMessageRange(Request *req)
 {
     RetrieveMessageRangeRequest *request = static_cast<RetrieveMessageRangeRequest*>(req);
 
-    if (QMailMessageSource *source = accountSource(request->accountId)) {
+    if (QMailMessageSource *source = accountSourceOrFailure(request->accountId, request->action)) {
         bool success(sourceService.value(source)->usesConcurrentActions()
             ? source->retrieveMessageRange(request->messageId, request->minimum, request->action)
             : source->retrieveMessageRange(request->messageId, request->minimum));
@@ -1887,8 +1882,6 @@ bool ServiceHandler::dispatchRetrieveMessageRange(Request *req)
             return false;
         }
     } else {
-        reportFailure(request->action, QMailServiceAction::Status::ErrFrameworkFault,
-                      tr("Unable to locate source for account"), request->accountId);
         return false;
     }
 
@@ -1928,7 +1921,7 @@ bool ServiceHandler::dispatchRetrieveMessagePartRange(Request *req)
 {
     RetrieveMessagePartRangeRequest *request = static_cast<RetrieveMessagePartRangeRequest*>(req);
 
-    if (QMailMessageSource *source = accountSource(request->accountId)) {
+    if (QMailMessageSource *source = accountSourceOrFailure(request->accountId, request->action)) {
         bool success(sourceService.value(source)->usesConcurrentActions()
             ? source->retrieveMessagePartRange(request->partLocation, request->minimum, request->action)
             : source->retrieveMessagePartRange(request->partLocation, request->minimum));
@@ -1942,8 +1935,6 @@ bool ServiceHandler::dispatchRetrieveMessagePartRange(Request *req)
             return false;
         }
     } else {
-        reportFailure(request->action, QMailServiceAction::Status::ErrFrameworkFault,
-                      tr("Unable to locate source for account"), request->accountId);
         return false;
     }
 
@@ -1975,7 +1966,7 @@ bool ServiceHandler::dispatchExportUpdates(Request *req)
 {
     ExportUpdatesRequest *request = static_cast<ExportUpdatesRequest*>(req);
 
-    if (QMailMessageSource *source = accountSource(request->accountId)) {
+    if (QMailMessageSource *source = accountSourceOrFailure(request->accountId, request->action)) {
         bool success(sourceService.value(source)->usesConcurrentActions()
             ? source->exportUpdates(request->accountId, request->action)
             : source->exportUpdates(request->accountId));
@@ -1985,8 +1976,6 @@ bool ServiceHandler::dispatchExportUpdates(Request *req)
             return false;
         }
     } else {
-        reportFailure(request->action, QMailServiceAction::Status::ErrFrameworkFault,
-                      tr("Unable to locate source for account"), request->accountId);
         return false;
     }
 
@@ -2052,7 +2041,7 @@ bool ServiceHandler::dispatchOnlineDeleteMessages(Request *req)
     OnlineDeleteMessagesRequest *request = static_cast<OnlineDeleteMessagesRequest*>(req);
 
     for (auto it = request->messageLists.begin() ; it != request->messageLists.end(); ++it) {
-        if (QMailMessageSource *source = accountSource(it.key())) {
+        if (QMailMessageSource *source = accountSourceOrFailure(it.key(), request->action)) {
             bool success(sourceService.value(source)->usesConcurrentActions()
                 ? source->deleteMessages(it.value(), request->action)
                 : source->deleteMessages(it.value()));
@@ -2062,8 +2051,6 @@ bool ServiceHandler::dispatchOnlineDeleteMessages(Request *req)
                 return false;
             }
         } else {
-            reportFailure(request->action, QMailServiceAction::Status::ErrFrameworkFault,
-                          tr("Unable to locate source for account"), it.key());
             return false;
         }
     }
@@ -2135,7 +2122,7 @@ bool ServiceHandler::dispatchOnlineCopyMessages(Request *req)
     } else {
         QMailAccountId accountId(*accountIds.begin());
 
-        if (QMailMessageSource *source = accountSource(accountId)) {
+        if (QMailMessageSource *source = accountSourceOrFailure(accountId, request->action)) {
             bool success(sourceService.value(source)->usesConcurrentActions()
                 ? source->copyMessages(request->messageIds, request->destination, request->action)
                 : source->copyMessages(request->messageIds, request->destination));
@@ -2146,8 +2133,6 @@ bool ServiceHandler::dispatchOnlineCopyMessages(Request *req)
                 return false;
             }
         } else {
-            reportFailure(request->action, QMailServiceAction::Status::ErrFrameworkFault,
-                          tr("Unable to locate source for account"), accountId);
             return false;
         }
     }
@@ -2222,7 +2207,7 @@ bool ServiceHandler::dispatchOnlineMoveMessages(Request *req)
     OnlineMoveMessagesRequest *request = static_cast<OnlineMoveMessagesRequest*>(req);
 
     for (auto it = request->messageLists.begin() ; it != request->messageLists.end(); ++it) {
-        if (QMailMessageSource *source = accountSource(it.key())) {
+        if (QMailMessageSource *source = accountSourceOrFailure(it.key(), request->action)) {
             bool success(sourceService.value(source)->usesConcurrentActions()
                 ? source->moveMessages(it.value(), request->destination, request->action)
                 : source->moveMessages(it.value(), request->destination));
@@ -2233,8 +2218,6 @@ bool ServiceHandler::dispatchOnlineMoveMessages(Request *req)
                 return false;
             }
         } else {
-            reportFailure(request->action, QMailServiceAction::Status::ErrFrameworkFault,
-                          tr("Unable to locate source for account"), it.key());
             return false;
         }
     }
@@ -2284,8 +2267,7 @@ void ServiceHandler::addMessages(quint64 action, const QMailMessageMetaDataList 
         if (m.contentScheme() != scheme) {
             reportFailure(action,
                           QMailServiceAction::Status::ErrFrameworkFault,
-                          tr("Unable to async add messages, "
-                             "inconsistent contentscheme"));
+                          tr("Unable to async add messages, inconsistent contentscheme"));
         }
     }
     for (const QMailMessageMetaData &m : messages) {
@@ -2336,8 +2318,7 @@ void ServiceHandler::updateMessages(quint64 action, const QMailMessageMetaDataLi
         if (m.contentScheme() != scheme) {
             reportFailure(action,
                           QMailServiceAction::Status::ErrFrameworkFault,
-                          tr("Unable to async update messages, "
-                             "inconsistent contentscheme"));
+                          tr("Unable to async update messages, inconsistent contentscheme"));
         }
     }
     for (const QMailMessageMetaData &m : messages) {
@@ -2391,7 +2372,7 @@ bool ServiceHandler::dispatchOnlineFlagMessagesAndMoveToStandardFolder(Request *
     Q_ASSERT(!request->messageLists.empty());
 
     for (auto it = request->messageLists.begin() ; it != request->messageLists.end(); ++it) {
-        if (QMailMessageSource *source = accountSource(it.key())) {
+        if (QMailMessageSource *source = accountSourceOrFailure(it.key(), request->action)) {
             bool success(sourceService.value(source)->usesConcurrentActions()
                 ? source->flagMessages(it.value(), request->setMask, request->unsetMask, request->action)
                 : source->flagMessages(it.value(), request->setMask, request->unsetMask));
@@ -2401,8 +2382,6 @@ bool ServiceHandler::dispatchOnlineFlagMessagesAndMoveToStandardFolder(Request *
                 return false;
             }
         } else {
-            reportFailure(request->action, QMailServiceAction::Status::ErrFrameworkFault,
-                          tr("Unable to locate source for account"), it.key());
             return false;
         }
     }
@@ -2494,7 +2473,6 @@ public:
 void ServiceHandler::onlineCreateFolder(quint64 action, const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId)
 {
     if (accountId.isValid()) {
-
         QSet<QMailAccountId> accounts;
         if (parentId.isValid()) {
             accounts = folderAccount(parentId);
@@ -2515,7 +2493,7 @@ bool ServiceHandler::dispatchOnlineCreateFolder(Request *req)
 {
     OnlineCreateFolderRequest *request = static_cast<OnlineCreateFolderRequest*>(req);
 
-    if (QMailMessageSource *source = accountSource(request->accountId)) {
+    if (QMailMessageSource *source = accountSourceOrFailure(request->accountId, request->action)) {
         bool success(sourceService.value(source)->usesConcurrentActions()
             ? source->createFolder(request->name, request->accountId, request->parentId, request->action)
             : source->createFolder(request->name, request->accountId, request->parentId));
@@ -2525,8 +2503,6 @@ bool ServiceHandler::dispatchOnlineCreateFolder(Request *req)
 
         return success;
     } else {
-        reportFailure(request->action, QMailServiceAction::Status::ErrFrameworkFault,
-                      tr("Unable to locate source for account"), request->accountId);
         return false;
     }
 }
@@ -2560,7 +2536,8 @@ bool ServiceHandler::dispatchOnlineRenameFolder(Request *req)
 {
     OnlineRenameFolderRequest *request = static_cast<OnlineRenameFolderRequest*>(req);
 
-    if (QMailMessageSource *source = accountSource(QMailFolder(request->folderId).parentAccountId())) {
+    if (QMailMessageSource *source = accountSourceOrFailure(QMailFolder(request->folderId).parentAccountId(),
+                                                            request->action)) {
         bool success(sourceService.value(source)->usesConcurrentActions()
             ? source->renameFolder(request->folderId, request->newFolderName, request->action)
             : source->renameFolder(request->folderId, request->newFolderName));
@@ -2570,8 +2547,6 @@ bool ServiceHandler::dispatchOnlineRenameFolder(Request *req)
 
         return success;
     } else {
-        reportFailure(request->action, QMailServiceAction::Status::ErrFrameworkFault,
-                      tr("Unable to locate source for account"), QMailFolder(request->folderId).parentAccountId());
         return false;
     }
 }
@@ -2603,18 +2578,17 @@ bool ServiceHandler::dispatchOnlineDeleteFolder(Request *req)
 {
     OnlineDeleteFolderRequest *request = static_cast<OnlineDeleteFolderRequest*>(req);
 
-    if (QMailMessageSource *source = accountSource(QMailFolder(request->folderId).parentAccountId())) {
+    if (QMailMessageSource *source = accountSourceOrFailure(QMailFolder(request->folderId).parentAccountId(),
+                                                            request->action)) {
         bool success = source->deleteFolder(request->folderId);
         if (!success) {
             qCWarning(lcMessaging) << "Unable to service request to delete folder id:" << request->folderId;
         }
 
         return success;
-    } else {
-        reportFailure(request->action, QMailServiceAction::Status::ErrFrameworkFault,
-                      tr("Unable to locate source for account"), QMailFolder(request->folderId).parentAccountId());
-        return false;
     }
+
+    return false;
 }
 
 class OnlineMoveFolderRequest : public Request
@@ -2645,7 +2619,8 @@ bool ServiceHandler::dispatchOnlineMoveFolder(Request *req)
 {
     OnlineMoveFolderRequest *request = static_cast<OnlineMoveFolderRequest*>(req);
 
-    if (QMailMessageSource *source = accountSource(QMailFolder(request->folderId).parentAccountId())) {
+    if (QMailMessageSource *source = accountSourceOrFailure(QMailFolder(request->folderId).parentAccountId(),
+                                                            request->action)) {
         bool success(sourceService.value(source)->usesConcurrentActions()
                      ? source->moveFolder(request->folderId, request->newParentId, request->action)
                      : source->moveFolder(request->folderId, request->newParentId));
@@ -2655,11 +2630,9 @@ bool ServiceHandler::dispatchOnlineMoveFolder(Request *req)
         }
 
         return success;
-    } else {
-        reportFailure(request->action, QMailServiceAction::Status::ErrFrameworkFault,
-                      tr("Unable to locate source for account"), QMailFolder(request->folderId).parentAccountId());
-        return false;
     }
+
+    return false;
 }
 
 void ServiceHandler::searchMessages(quint64 action, const QMailMessageKey& filter, const QString& bodyText,
@@ -2736,7 +2709,7 @@ bool ServiceHandler::dispatchSearchMessages(Request *req)
     bool sentSearch = false;
 
     foreach (const QMailAccountId &accountId, request->accountIds) {
-        if (QMailMessageSource *source = accountSource(accountId)) {
+        if (QMailMessageSource *source = accountSourceOrFailure(accountId, request->action)) {
             bool success(false);
             bool concurrent(sourceService.value(source)->usesConcurrentActions());
 
@@ -2778,9 +2751,6 @@ bool ServiceHandler::dispatchSearchMessages(Request *req)
                                                request->bodyText));
                 QTimer::singleShot(0, this, SLOT(continueSearch()));
             }
-        } else {
-            reportFailure(request->action, QMailServiceAction::Status::ErrFrameworkFault,
-                          tr("Unable to locate source for account"), accountId);
         }
     }
 
@@ -3050,7 +3020,7 @@ bool ServiceHandler::dispatchProtocolRequest(Request *req)
 {
     ProtocolRequest *request = static_cast<ProtocolRequest*>(req);
 
-    if (QMailMessageSource *source = accountSource(request->accountId)) {
+    if (QMailMessageSource *source = accountSourceOrFailure(request->accountId, request->action)) {
         bool success(sourceService.value(source)->usesConcurrentActions()
                      ? source->protocolRequest(request->accountId, request->request, request->requestData, request->action)
                      : source->protocolRequest(request->accountId, request->request, request->requestData));
@@ -3059,8 +3029,6 @@ bool ServiceHandler::dispatchProtocolRequest(Request *req)
             return false;
         }
     } else {
-        reportFailure(request->action, QMailServiceAction::Status::ErrFrameworkFault,
-                      tr("Unable to locate source for account"), request->accountId);
         return false;
     }
 

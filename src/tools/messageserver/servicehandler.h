@@ -231,6 +231,7 @@ private:
 
     void registerAccountSource(const QMailAccountId &accountId, QMailMessageSource *source, QMailMessageService *service);
     QMailMessageSource *accountSource(const QMailAccountId &accountId) const;
+    QMailMessageSource *accountSourceOrFailure(const QMailAccountId &accountId, quint64 action);
 
     void registerAccountSink(const QMailAccountId &accountId, QMailMessageSink *sink, QMailMessageService *service);
     QMailMessageSink *accountSink(const QMailAccountId &accountId) const;
