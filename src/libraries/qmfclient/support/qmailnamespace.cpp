@@ -174,7 +174,7 @@ public:
 
     QString dbConnectionName()
     {
-        return QString::asprintf("qmailstore_sql_connection_%p", this);
+        return QString::asprintf("qmailstore_sql_connection_%p", static_cast<void*>(this));
     }
 
     bool init;

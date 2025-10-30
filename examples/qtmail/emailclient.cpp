@@ -146,7 +146,7 @@ enum ActivityType {
 
 static bool confirmDelete( QWidget *parent, const QString & caption, const QString & object ) {
     QString msg = "<qt>" + QObject::tr("Are you sure you want to delete: %1?").arg( object ) + "</qt>";
-    int r = QMessageBox::question( parent, caption, msg, QMessageBox::Yes, QMessageBox::No|QMessageBox::Default| QMessageBox::Escape, 0 );
+    QMessageBox::StandardButton r = QMessageBox::question(parent, caption, msg);
     return r == QMessageBox::Yes;
 }
 
@@ -1236,7 +1236,7 @@ bool EmailClient::verifyAccount(const QMailAccountId &accountId, bool outgoing)
         (!outgoing && ((account.status() & QMailAccount::CanRetrieve) == 0))) {
         QString caption(outgoing ? tr("Cannot transmit") : tr("Cannot retrieve"));
         QString text(tr("Account configuration is incomplete."));
-        QMessageBox box(caption, text, QMessageBox::Warning, QMessageBox::Ok | QMessageBox::Default, QMessageBox::NoButton, QMessageBox::NoButton);
+        QMessageBox box(QMessageBox::Warning, caption, text, QMessageBox::Ok);
         box.exec();
         return false;
     }
@@ -1306,7 +1306,7 @@ void EmailClient::getAllNewMail()
 {
     if (isRetrieving()) {
         QString msg(tr("Cannot synchronize accounts because a synchronize operation is currently in progress"));
-        QMessageBox::warning(0, tr("Synchronize in progress"), msg, tr("OK") );
+        QMessageBox::warning(0, tr("Synchronize in progress"), msg);
         return;
     }
 
@@ -1324,7 +1324,7 @@ void EmailClient::getAccountMail()
 {
     if (isRetrieving()) {
         QString msg(tr("Cannot synchronize account because a synchronize operation is currently in progress"));
-        QMessageBox::warning(0, tr("Synchronize in progress"), msg, tr("OK") );
+        QMessageBox::warning(0, tr("Synchronize in progress"), msg);
         return;
     }
 
@@ -1341,7 +1341,7 @@ void EmailClient::getSingleMail(const QMailMessageMetaData& message)
 {
     if (isRetrieving()) {
         QString msg(tr("Cannot retrieve message because a retrieval operation is currently in progress"));
-        QMessageBox::warning(0, tr("Retrieval in progress"), msg, tr("OK") );
+        QMessageBox::warning(0, tr("Retrieval in progress"), msg);
         return;
     }
 
@@ -1355,7 +1355,7 @@ void EmailClient::retrieveMessagePortion(const QMailMessageMetaData& message, ui
 {
     if (isRetrieving()) {
         QString msg(tr("Cannot retrieve message portion because a retrieval operation is currently in progress"));
-        QMessageBox::warning(0, tr("Retrieval in progress"), msg, tr("OK") );
+        QMessageBox::warning(0, tr("Retrieval in progress"), msg);
         return;
     }
 
@@ -1370,13 +1370,13 @@ void EmailClient::retrieveMessagePart(const QMailMessagePart::Location &partLoca
 {
     if (isRetrieving()) {
         QString msg(tr("Cannot retrieve message part because a retrieval operation is currently in progress"));
-        QMessageBox::warning(0, tr("Retrieval in progress"), msg, tr("OK") );
+        QMessageBox::warning(0, tr("Retrieval in progress"), msg);
         return;
     }
 
     if (!partLocation.isValid(true)) {
         QString msg(tr("Cannot retrieve message part without a valid message ID"));
-        QMessageBox::warning(0, tr("Invalid part location"), msg, tr("OK") );
+        QMessageBox::warning(0, tr("Invalid part location"), msg);
     } else {
         QMailMessageMetaData metaData(partLocation.containingMessageId());
 
@@ -1391,13 +1391,13 @@ void EmailClient::retrieveMessagePartPortion(const QMailMessagePart::Location &p
 {
     if (isRetrieving()) {
         QString msg(tr("Cannot retrieve message part portion because a retrieval operation is currently in progress"));
-        QMessageBox::warning(0, tr("Retrieval in progress"), msg, tr("OK") );
+        QMessageBox::warning(0, tr("Retrieval in progress"), msg);
         return;
     }
 
     if (!partLocation.isValid(true)) {
         QString msg(tr("Cannot retrieve message part without a valid message ID"));
-        QMessageBox::warning(0, tr("Invalid part location"), msg, tr("OK") );
+        QMessageBox::warning(0, tr("Invalid part location"), msg);
     } else {
         QMailMessage messsage(partLocation.containingMessageId());
 
@@ -1480,7 +1480,7 @@ void EmailClient::transferFailure(const QMailAccountId& accountId, const QString
         qCDebug(lcMessaging) << "transferFailure:" << caption << '-' << action;
         if (code != QMailServiceAction::Status::ErrCancel) {
             clearStatusText();
-            QMessageBox::warning(0, caption, action, QMessageBox::Ok);
+            QMessageBox::warning(0, caption, action);
         } else {
             emit updateStatus(tr("Transfer cancelled"));
         }
@@ -1506,7 +1506,7 @@ void EmailClient::storageActionFailure(const QMailAccountId& accountId, const QS
     }
 
     clearStatusText();
-    QMessageBox::warning(0, caption, action.arg(text), QMessageBox::Ok);
+    QMessageBox::warning(0, caption, action.arg(text));
 }
 
 QString EmailClient::mailType(QMailMessage::MessageType type)
@@ -1878,7 +1878,7 @@ void EmailClient::detachThread()
         QString caption(tr("Detach"));
         QString msg(tr("Are you sure you want to detach this message from its current thread?"));
 
-        if (QMessageBox::question(this, caption, msg, QMessageBox::Yes, QMessageBox::No|QMessageBox::Default|QMessageBox::Escape, 0) == QMessageBox::Yes) {
+        if (QMessageBox::question(this, caption, msg) == QMessageBox::Yes) {
             QMailMessageMetaData metaData(ids.first());
             metaData.setInResponseTo(QMailMessageId());
 
@@ -2108,29 +2108,6 @@ void EmailClient::externalEdit(const QString &mailbox)
     emit updateStatus(msg);
 }
 
-bool EmailClient::checkMailConflict(const QString& msg1, const QString& msg2)
-{
-    if ( writeMailWidget()->isVisible()) {
-        QString message = tr("<qt>You are currently editing a message:<br>%1</qt>").arg(msg1);
-        switch ( QMessageBox::warning( 0, tr("Messages conflict"), message,
-                                      tr("Yes"), tr("No"), 0, 0, 1 ) ) {
-
-            case 0:
-            {
-                if ( !writeMailWidget()->saveChangesOnRequest() ) {
-                    QMessageBox::warning(0,
-                                        tr("Autosave failed"),
-                                        tr("<qt>Autosave failed:<br>%1</qt>").arg(msg2));
-                    return true;
-                }
-                break;
-            }
-            case 1: break;
-        }
-    }
-    return false;
-}
-
 void EmailClient::replyClicked()
 {
     QMailMessageId currentId = readMailWidget()->displayedMessage();
@@ -2207,8 +2184,7 @@ void EmailClient::modify(const QMailMessage& message)
     } else {
         QMessageBox::warning(0,
                              tr("Error"),
-                             tr("Cannot edit a message of this type."),
-                             tr("OK"));
+                             tr("Cannot edit a message of this type."));
     }
 }
 
@@ -2612,8 +2588,7 @@ void EmailClient::messagesUpdated(const QMailMessageIdList& ids)
                 // This message has been removed
                 QMessageBox::warning(0,
                                     tr("Message deleted"),
-                                    tr("Message cannot be downloaded, because it has been deleted from the server."),
-                                    QMessageBox::Ok);
+                                    tr("Message cannot be downloaded, because it has been deleted from the server."));
             }
         }
     }
@@ -2688,8 +2663,8 @@ void EmailClient::noSendAccount(QMailMessage::MessageType type)
 
     QMessageBox::warning(0,
                          tr("Send Error"),
-                         tr("%1 cannot be sent, because no account has been configured to send with.","%1=MMS/Email/TextMessage").arg(name),
-                         QMessageBox::Ok);
+                         tr("%1 cannot be sent, because no account has been configured to send with.",
+                            "%1=MMS/Email/TextMessage").arg(name));
 }
 
 void EmailClient::setActionVisible(QAction* action, bool visible)

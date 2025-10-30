@@ -622,7 +622,7 @@ bool QMailMessageThreadedModelPrivate::updateMessages(const QMailMessageIdList &
                     reinsert = true;
                 }
             }
-            if (row < (container.size() - 1)) {
+            if (row < (static_cast<int>(container.size()) - 1)) {
                 // Ensure that we still sort before our immediate successor
                 if (newIds.indexOf(std::next(container.begin(), row + 1)->_id) < messagePos) {
                     reinsert = true;
@@ -757,7 +757,7 @@ void QMailMessageThreadedModelPrivate::removeItemAt(int row, const QModelIndex &
 
     std::list<QMailMessageThreadedModelItem> &container(parent->_children);
 
-    if (container.size() > row) {
+    if (static_cast<int>(container.size()) > row) {
         QMailMessageThreadedModelItem *item = &(*(std::next(container.begin(), row)));
 
         // Find all the descendants of this item that no longer exist
@@ -801,7 +801,7 @@ QModelIndex QMailMessageThreadedModelPrivate::index(int row, int column, const Q
 
         // Allow excessive row values (although these indices won't be dereferencable)
         void *item = 0;
-        if (parent && (parent->_children.size() > row)) {
+        if (parent && (static_cast<int>(parent->_children.size()) > row)) {
             item = static_cast<void*>(const_cast<QMailMessageThreadedModelItem*>(&(*(std::next(parent->_children.begin(), row)))));
         }
 

@@ -169,7 +169,7 @@ void TestMallocPrivate::init()
         When using other malloc and when running under valgrind, we might get called after
         some heap allocation.
     */
-    struct mallinfo info = mallinfo();
+    struct mallinfo2 info = mallinfo2();
     static TestMallocPrivate testmalloc;
     testmalloc.now_usable.storeRelaxed(info.uordblks);
     testmalloc.now_overhead.storeRelaxed(0); /* cannot get this figure, but should be close to 0. */
@@ -334,22 +334,22 @@ void* operator new(size_t size)
     return ::malloc(size);
 }
 
-void operator delete[](void* p)
+void operator delete[](void* p) noexcept
 {
     ::free(p);
 }
 
-void operator delete[](void* p, size_t /*size*/)
+void operator delete[](void* p, size_t /*size*/) noexcept
 {
     ::free(p);
 }
 
-void operator delete(void* p)
+void operator delete(void* p) noexcept
 {
     ::free(p);
 }
 
-void operator delete(void* p, size_t /*size*/)
+void operator delete(void* p, size_t /*size*/) noexcept
 {
     ::free(p);
 }

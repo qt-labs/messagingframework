@@ -298,7 +298,6 @@ private:
     bool isSending();
     bool isRetrieving();
 
-    bool checkMailConflict(const QString& msg1, const QString& msg2);
     void setNewMessageCount(QMailMessage::MessageType type, uint);
 
     void readSettings();
