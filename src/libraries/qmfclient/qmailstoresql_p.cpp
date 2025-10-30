@@ -2653,7 +2653,6 @@ bool QMailStoreSql::initStore(const QString &localFolderName)
                                             << tableInfo(QLatin1String("obsoletefiles"), 100))) {
             return false;
         }
-        /*static_*/Q_ASSERT(Success == 0);
 
         bool res = attemptRegisterStatusBit(QLatin1String("SynchronizationEnabled"), QLatin1String("accountstatus"),
                                             63, true, const_cast<quint64 *>(&QMailAccount::SynchronizationEnabled), t, false)
@@ -2803,7 +2802,8 @@ bool QMailStoreSql::initStore(const QString &localFolderName)
                 qCWarning(lcMailStore) << Q_FUNC_INFO << "Full thread's table update is not completed.";
         }
 
-        if (!setupFolders(QList<FolderInfo>() << FolderInfo(QMailFolderId::LocalStorageFolderId, localFolderName, QMailFolder::MessagesPermitted))) {
+        if (!setupFolders(QList<FolderInfo>()
+                          << FolderInfo(QMailFolderId::LocalStorageFolderId, localFolderName, QMailFolder::MessagesPermitted))) {
             qCWarning(lcMailStore) << "Error setting up folders";
             return false;
         }

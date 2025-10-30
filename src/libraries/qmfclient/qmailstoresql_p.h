@@ -125,7 +125,7 @@ public:
 
     bool hasAccountTables() const;
 
-    bool initStore(const QString &localFolderName = QStringLiteral("Local Storage"));
+    bool initStore(const QString &localFolderName = QLatin1String("Local Storage"));
 
     void clearContent();
 

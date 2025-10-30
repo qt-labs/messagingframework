@@ -90,7 +90,7 @@ void QMailStorePrivate::onExternalAccountUpdated(QMailAccountId id)
 
 bool QMailStorePrivate::initStore()
 {
-    if (!QMailStoreSql::initStore(tr("Local Storage"))) {
+    if (!QMailStoreSql::initStore()) {
         q_ptr->emitErrorNotification(lastError());
         return false;
     }

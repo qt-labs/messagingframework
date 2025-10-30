@@ -48,7 +48,7 @@ QMailStoreImplementation::~QMailStoreImplementation()
 
 void QMailStoreImplementation::initialize()
 {
-    initState = (initStore() ? QMailStore::Initialized : QMailStore::InitializationFailed);
+    initState = initStore() ? QMailStore::Initialized : QMailStore::InitializationFailed;
 }
 
 QMailStore::InitializationState QMailStoreImplementation::initializationState()
