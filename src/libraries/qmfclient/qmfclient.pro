@@ -137,19 +137,8 @@ DBUS_ADAPTORS += mailstore
 RESOURCES += qmf.qrc \
              qmf_qt.qrc
 
-TRANSLATIONS += libqtopiamail-ar.ts \
-                libqtopiamail-de.ts \
-                libqtopiamail-en_GB.ts \
-                libqtopiamail-en_SU.ts \
-                libqtopiamail-en_US.ts \
-                libqtopiamail-es.ts \
-                libqtopiamail-fr.ts \
-                libqtopiamail-it.ts \
-                libqtopiamail-ja.ts \
-                libqtopiamail-ko.ts \
-                libqtopiamail-pt_BR.ts \
-                libqtopiamail-zh_CN.ts \
-                libqtopiamail-zh_TW.ts
+TRANSLATIONS += libqmfclient-de.ts \
+                libqmfclient-en_US.ts
 
 packagesExist(icu-uc) {
     LIBS_PRIVATE += -licui18n -licuuc -licudata

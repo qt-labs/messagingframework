@@ -172,5 +172,5 @@ install(TARGETS QmfClient
   PRIVATE_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/qt5/QmfClient/private)
 
 if (TARGET Qt6::LinguistTools)
-  qt_add_translations(libqtopiamail)
+  qt_add_translations(libqmfclient)
 endif()

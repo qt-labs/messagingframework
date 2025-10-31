@@ -42,8 +42,10 @@ endif()
 add_subdirectory(benchmarks)
 add_subdirectory(examples)
 
+# TODO: translation support is missing quite a bit. Defining here just some basic ones
+# in case someone feels like getting them working some day
 if (TARGET Qt6::LinguistTools)
-  qt_standard_project_setup(I18N_TRANSLATED_LANGUAGES ar de en_GB en_SU en_US es fr it ja ko pt_BR zh_CN zh_TW)
+  qt_standard_project_setup(I18N_TRANSLATED_LANGUAGES de en_US)
 endif()
 
 feature_summary(WHAT ALL FATAL_ON_MISSING_REQUIRED_PACKAGES)

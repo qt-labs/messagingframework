@@ -35,6 +35,7 @@ add_executable(messageserver main.cpp)
 target_link_libraries(messageserver
   PRIVATE Qt6::Core MessageServer)
 
+# TODO: include also the plugin translations here?
 if (TARGET Qt6::LinguistTools)
   qt_add_translations(messageserver)
 endif()

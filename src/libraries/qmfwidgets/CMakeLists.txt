@@ -34,6 +34,6 @@ install(TARGETS QmfWidgets
   PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/qt5/QmfWidgets)
 
 if (TARGET Qt6::LinguistTools)
-  qt_add_translations(libqmfutil)
+  qt_add_translations(libqmfwidgets)
 endif()
 

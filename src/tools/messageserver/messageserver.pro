@@ -28,18 +28,7 @@ DBUS_ADAPTORS += mailservice
 
 SOURCES += main.cpp
 
-TRANSLATIONS += messageserver-ar.ts \
-                messageserver-de.ts \
-                messageserver-en_GB.ts \
-                messageserver-en_SU.ts \
-                messageserver-en_US.ts \
-                messageserver-es.ts \
-                messageserver-fr.ts \
-                messageserver-it.ts \
-                messageserver-ja.ts \
-                messageserver-ko.ts \
-                messageserver-pt_BR.ts \
-                messageserver-zh_CN.ts \
-                messageserver-zh_TW.ts
+TRANSLATIONS += messageserver-de.ts \
+                messageserver-en_US.ts
 
 INSTALLS += target

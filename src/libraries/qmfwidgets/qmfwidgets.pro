@@ -25,19 +25,8 @@ SOURCES += emailfoldermodel.cpp \
            selectfolder.cpp \
            qtmailnamespace.cpp
 
-TRANSLATIONS += libqmfutil-ar.ts \
-                libqmfutil-de.ts \
-                libqmfutil-en_GB.ts \
-                libqmfutil-en_SU.ts \
-                libqmfutil-en_US.ts \
-                libqmfutil-es.ts \
-                libqmfutil-fr.ts \
-                libqmfutil-it.ts \
-                libqmfutil-ja.ts \
-                libqmfutil-ko.ts \
-                libqmfutil-pt_BR.ts \
-                libqmfutil-zh_CN.ts \
-                libqmfutil-zh_TW.ts
+TRANSLATIONS += libqmfwidgets-de.ts \
+                libqmfwidgets-en_US.ts
 
 RESOURCES += qmfutil.qrc
 
