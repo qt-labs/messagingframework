@@ -119,7 +119,10 @@ public:
 
 QMailPluginManagerPrivate::QMailPluginManagerPrivate(const QString &subdir)
 {
-    QStringList libraryPaths = QCoreApplication::libraryPaths();
+    QStringList libraryPaths;
+    for (const QString &path : QCoreApplication::libraryPaths()) {
+        libraryPaths.append(path + "/messagingframework");
+    }
 
     foreach (QString libraryPath, libraryPaths) {
         QDir dir(libraryPath);

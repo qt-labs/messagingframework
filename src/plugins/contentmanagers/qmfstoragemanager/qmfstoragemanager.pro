@@ -1,6 +1,6 @@
 TEMPLATE = lib 
 TARGET = qmfstoragemanager
-PLUGIN_TYPE = contentmanagers
+PLUGIN_TYPE = messagingframework/contentmanagers
 PLUGIN_CLASS_NAME = QmfStorageManagerPlugin
 load(qt_plugin)
 QT = core qmfclient

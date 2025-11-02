@@ -1,6 +1,6 @@
 TEMPLATE = lib
 TARGET = gpgme
-PLUGIN_TYPE = crypto
+PLUGIN_TYPE = messagingframework/crypto
 PLUGIN_CLASS_NAME = QMailCryptoGpgmePlugin
 load(qt_plugin)
 QT = core qmfclient

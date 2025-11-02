@@ -1,6 +1,6 @@
 TEMPLATE = lib 
 TARGET = smtp 
-PLUGIN_TYPE = messageservices
+PLUGIN_TYPE = messagingframework/messageservices
 PLUGIN_CLASS_NAME = QmfSmtpPlugin
 load(qt_plugin)
 

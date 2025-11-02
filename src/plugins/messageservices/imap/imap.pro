@@ -1,6 +1,6 @@
 TEMPLATE = lib
 TARGET = imap
-PLUGIN_TYPE = messageservices
+PLUGIN_TYPE = messagingframework/messageservices
 PLUGIN_CLASS_NAME = QmfImapPlugin
 load(qt_plugin)
 

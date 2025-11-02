@@ -1,6 +1,6 @@
 TEMPLATE = lib
 TARGET = pop
-PLUGIN_TYPE = messageservices
+PLUGIN_TYPE = messagingframework/messageservices
 PLUGIN_CLASS_NAME = QmfPopPlugin
 load(qt_plugin)
 

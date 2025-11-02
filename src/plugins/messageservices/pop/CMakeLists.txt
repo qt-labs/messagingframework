@@ -33,7 +33,7 @@ else()
 endif()
 
 install(TARGETS pop
-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/qt5/plugins/messageservices)
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/qt6/plugins/messagingframework/messageservices)
 
 if(BUILD_TESTING)
   add_custom_target(link_pop ALL

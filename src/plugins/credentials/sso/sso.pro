@@ -1,6 +1,6 @@
 TEMPLATE = lib
 TARGET = sso
-PLUGIN_TYPE = messagecredentials
+PLUGIN_TYPE = messagingframework/messagecredentials
 load(qt_plugin)
 QT = core qmfclient qmfmessageserver
 

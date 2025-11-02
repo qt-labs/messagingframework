@@ -31,7 +31,7 @@ set_target_properties(QmfWidgets PROPERTIES
 
 install(TARGETS QmfWidgets
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-  PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/qt5/QmfWidgets)
+  PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/qt6/QmfWidgets)
 
 if (TARGET Qt6::LinguistTools)
   qt_add_translations(libqmfwidgets)

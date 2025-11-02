@@ -3,8 +3,8 @@ QT         = core dbus sql network core5compat
 CONFIG    += warn_on
 
 MODULE_PLUGIN_TYPES = \
-    contentmanagers \
-    crypto
+    messagingframework/contentmanagers \
+    messagingframework/crypto
 
 load(qt_module)
 CONFIG -= create_cmake

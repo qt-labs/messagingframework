@@ -5,7 +5,7 @@ target_link_libraries(qmfstoragemanager
   PRIVATE Qt6::Core QmfClient)
 
 install(TARGETS qmfstoragemanager
-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/qt5/plugins/contentmanagers)
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/qt6/plugins/messagingframework/contentmanagers)
 
 if(BUILD_TESTING)
   add_custom_target(link_qmfstoragemanager ALL

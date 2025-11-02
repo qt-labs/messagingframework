@@ -3,8 +3,8 @@ QT         = core network qmfclient qmfclient-private
 CONFIG    += warn_on
 
 MODULE_PLUGIN_TYPES = \
-    messageservices \
-    messagecredentials
+    messagingframework/messageservices \
+    messagingframework/messagecredentials
 
 contains(DEFINES,MESSAGESERVER_PLUGINS) {
     MODULE_PLUGIN_TYPES += messageserverplugins

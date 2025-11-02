@@ -7,7 +7,7 @@ target_link_libraries(smime
   PRIVATE Qt6::Core QmfClient ${GPGME_LIBS})
 
 install(TARGETS smime
-  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/qt5/plugins/crypto)
+  LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/qt6/plugins/messagingframework/crypto)
 
 if(BUILD_TESTING)
   add_custom_target(link_smime ALL
