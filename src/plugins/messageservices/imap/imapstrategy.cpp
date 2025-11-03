@@ -746,6 +746,8 @@ void ImapCreateFolderStrategy::process(ImapStrategyContextBase *context)
 
 void ImapCreateFolderStrategy::folderCreated(ImapStrategyContextBase *context, const QString &folder, bool success)
 {
+    Q_UNUSED(folder)
+
     if (_inProgress > 0) {
         _inProgress--;
     }
@@ -761,7 +763,6 @@ void ImapCreateFolderStrategy::folderCreated(ImapStrategyContextBase *context, c
         }
         context->operationCompleted();
     }
-    Q_UNUSED(folder)
 }
 
 

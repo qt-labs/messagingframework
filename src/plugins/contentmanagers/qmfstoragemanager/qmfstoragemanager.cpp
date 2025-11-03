@@ -36,6 +36,7 @@
 #include "qmailstore.h"
 #include "qmailnamespace.h"
 #include "qmaillog.h"
+
 #include <QCoreApplication>
 #include <QDateTime>
 #include <QDir>
@@ -43,6 +44,7 @@
 #include <QtPlugin>
 #include <QUrl>
 #include <QRandomGenerator>
+
 #if defined(Q_OS_WIN)
 #include <windows.h>
 #include <io.h>

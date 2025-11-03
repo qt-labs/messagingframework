@@ -806,12 +806,13 @@ QMailMessageSink *ServiceHandler::accountSink(const QMailAccountId &accountId) c
 QMailMessageService *ServiceHandler::createService(const QString &name, const QMailAccountId &accountId)
 {
     QMailMessageService *service = QMailMessageServiceFactory::createService(name, accountId);
-    connect(service, &QMailMessageService::connectivityChanged,
-            this, &ServiceHandler::onConnectivityChanged);
-    connect(service, &QMailMessageService::availabilityChanged,
-            this, &ServiceHandler::onAvailabilityChanged);
 
     if (service) {
+        connect(service, &QMailMessageService::connectivityChanged,
+                this, &ServiceHandler::onConnectivityChanged);
+        connect(service, &QMailMessageService::availabilityChanged,
+                this, &ServiceHandler::onAvailabilityChanged);
+
         // if (service->usesConcurrentActions()) { // this can be uncommented to be stricter
         connect(service, SIGNAL(activityChanged(QMailServiceAction::Activity, quint64)),
                 this, SLOT(emitActivityChanged(QMailServiceAction::Activity, quint64)));

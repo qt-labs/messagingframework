@@ -382,7 +382,7 @@ QStringList QMail::messageIdentifiers(const QString& aStr)
     return result;
 }
 
-QMap<QByteArray, QStringList> standardFolderTranslations()
+static QMap<QByteArray, QStringList> standardFolderTranslations()
 {
     QMap<QByteArray, QStringList> folderTranslations;
 
@@ -419,7 +419,7 @@ QMap<QByteArray, QStringList> standardFolderTranslations()
     return folderTranslations;
 }
 
-QList<StandardFolderInfo> standardFolders()
+static QList<StandardFolderInfo> standardFolders()
 {
     QList<StandardFolderInfo> standardFoldersList;
 
@@ -435,7 +435,7 @@ QList<StandardFolderInfo> standardFolders()
     return standardFoldersList;
 }
 
-bool detectStandardFolder(const QMailAccountId &accountId, StandardFolderInfo standardFolderInfo)
+static bool detectStandardFolder(const QMailAccountId &accountId, StandardFolderInfo standardFolderInfo)
 {
     QMailFolderId folderId;
     QMailAccount account = QMailAccount(accountId);
@@ -469,7 +469,8 @@ bool detectStandardFolder(const QMailAccountId &accountId, StandardFolderInfo st
             folder.setStatus(flag, true);
             account.setStandardFolder(standardFolder, folderId);
             if (!QMailStore::instance()->updateAccount(&account)) {
-                qCWarning(lcMailStore) << "Unable to update account" << account.id() << "to set standard folder" << QMailFolder(folderId).displayName();
+                qCWarning(lcMailStore) << "Unable to update account" << account.id()
+                                       << "to set standard folder" << QMailFolder(folderId).displayName();
             }
             QMailMessageKey folderKey(QMailMessageKey::parentFolderId(folderId));
             if (!QMailStore::instance()->updateMessagesMetaData(folderKey, messageFlag, true)) {
