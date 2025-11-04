@@ -45,7 +45,8 @@ target_link_libraries(QmfMessageServer
 set_target_properties(QmfMessageServer PROPERTIES
   SOVERSION ${PROJECT_VERSION_MAJOR}
   VERSION ${PROJECT_VERSION}
-  PUBLIC_HEADER "${HEADERS}")
+  PUBLIC_HEADER "${HEADERS}"
+  CXX_VISIBILITY_PRESET hidden)
 
 install(TARGETS QmfMessageServer
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
