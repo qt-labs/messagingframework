@@ -1181,15 +1181,6 @@ void ImapMessageListStrategy::selectedMailsAppend(const QMailMessageIdList& ids)
     }
 }
 
-void ImapMessageListStrategy::selectedSectionsAppend(const QMailMessagePart::Location &location)
-{
-    QMailMessageMetaData metaData(location.containingMessageId());
-    if (metaData.id().isValid()) {
-        uint serverUid(stripFolderPrefix(metaData.serverUid()).toUInt());
-        _selectionMap[QMailDisconnected::sourceFolderId(metaData)].append(MessageSelector(serverUid, metaData.id(), SectionProperties(location)));
-    }
-}
-
 void ImapMessageListStrategy::newConnection(ImapStrategyContextBase *context)
 {
     setCurrentMailbox(QMailFolderId());

@@ -468,7 +468,7 @@ EmailClient::EmailClient(QWidget *parent, Qt::WindowFlags f)
     setObjectName( "EmailClient" );
 
     //start messageserver if it's not running
-    if (!QMail::isMessageServerRunning && !startMessageServer())
+    if (!QMail::isMessageServerRunning() && !startMessageServer())
         qFatal("Unable to start messageserver!");
 
     //run account setup if we don't have any defined yet

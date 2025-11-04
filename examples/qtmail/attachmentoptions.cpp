@@ -607,11 +607,8 @@ void AttachmentOptions::saveAttachment()
         _document->setVisible(true);
         _save->setVisible(false);
     } else {
-        QMessageBox mb(tr("Unable to save attachment"),
-                       tr("Please ensure that there is space available for Documents"),
-                       QMessageBox::Warning,
-                       QMessageBox::Ok | QMessageBox::Default, QMessageBox::NoButton, QMessageBox::NoButton);
-        mb.exec();
+        QMessageBox::warning(nullptr, tr("Unable to save attachment"),
+                             tr("Please ensure that there is space available for Documents"));
     }
 }
 

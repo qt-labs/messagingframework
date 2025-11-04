@@ -273,7 +273,6 @@ public:
 
     virtual void clearSelection();
     virtual void selectedMailsAppend(const QMailMessageIdList &ids);
-    virtual void selectedSectionsAppend(const QMailMessagePart::Location &location);
     void newConnection(ImapStrategyContextBase *context) override;
     void transition(ImapStrategyContextBase*, const ImapCommand, const OperationStatus) override;
 

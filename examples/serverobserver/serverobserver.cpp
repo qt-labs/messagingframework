@@ -99,8 +99,7 @@ RowWidget::RowWidget(QSharedPointer<QMailActionInfo> action, QWidget *parent)
 
 QString RowWidget::requestTypeToString(QMailServerRequestType t)
 {
-    switch (t)
-    {
+    switch (t) {
     case AcknowledgeNewMessagesRequestType:
         return tr("Acknowledging new messages");
     case TransmitMessagesRequestType:
@@ -147,12 +146,10 @@ QString RowWidget::requestTypeToString(QMailServerRequestType t)
         return tr("Listing actions");
     case ProtocolRequestRequestType:
         return tr("Direct protocol request");
-        // No default, to get warning when requests added
+    default:
+        qWarning() << "Did not handle:" << t;
+        return tr("Unknown/handled request.");
     }
-
-    qWarning() << "Did not handle:" << t;
-    Q_ASSERT(false);
-    return tr("Unknown/handled request.");
 }
 
 void RowWidget::sendCancel()

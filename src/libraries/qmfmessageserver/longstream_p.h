@@ -58,6 +58,8 @@ QT_END_NAMESPACE
 class MESSAGESERVER_EXPORT LongStream
 {
 public:
+    enum Status { Ok, OutOfSpace };
+
     LongStream();
     virtual ~LongStream();
 
@@ -68,7 +70,6 @@ public:
     QString fileName();
     QString readAll();
 
-    enum Status { Ok, OutOfSpace };
     Status status();
     void resetStatus();
     void setStatus( Status );
@@ -82,12 +83,9 @@ public:
 private:
     QTemporaryFile *tmpFile;
     QDataStream *ts;
-    QChar c;
     int len;
     uint appendedBytes;
     Status mStatus;
-
-    static const unsigned long long minFree = 1024*100;
-    static const uint minCheck = 1024*10;
 };
+
 #endif

@@ -116,11 +116,6 @@ public slots:
                              uint minimum, const QMailMessageSortKey &sort) override;
     bool retrieveNewMessages(const QMailAccountId &accountId,
                              const QMailFolderIdList &_folderIds) override;
-    virtual bool retrieveMessageLists(const QMailAccountId &accountId,
-                                      const QMailFolderIdList &_folderIds,
-                                      uint minimum,
-                                      const QMailMessageSortKey &sort,
-                                      bool accountCheck);
 
     bool retrieveMessages(const QMailMessageIdList &messageIds,
                           QMailRetrievalAction::RetrievalSpecification spec) override;
@@ -147,8 +142,6 @@ public slots:
                         const QMailMessageSortKey &sort) override;
     bool searchMessages(const QMailMessageKey &searchCriteria, const QString &bodyText,
                         quint64 limit, const QMailMessageSortKey &sort) override;
-    virtual bool searchMessages(const QMailMessageKey &searchCriteria, const QString &bodyText,
-                                quint64 limit, const QMailMessageSortKey &sort, bool count);
     bool countMessages(const QMailMessageKey &searchCriteria, const QString &bodyText) override;
     bool cancelSearch() override;
 
@@ -167,7 +160,16 @@ public slots:
     void emitActionSuccessfullyCompleted();
 
 private:
+    bool doRetrieveMessageLists(const QMailAccountId &accountId,
+                                const QMailFolderIdList &_folderIds,
+                                uint minimum,
+                                const QMailMessageSortKey &sort,
+                                bool accountCheck);
+
     bool doDelete(const QMailMessageIdList & ids);
+    bool doSearchMessages(const QMailMessageKey &searchCriteria, const QString &bodyText,
+                          quint64 limit, const QMailMessageSortKey &sort, bool count);
+
 
     virtual bool setStrategy(ImapStrategy *strategy, const char *signal = Q_NULLPTR);
 
@@ -233,17 +235,17 @@ bool ImapService::Source::retrieveMessageLists(const QMailAccountId &accountId, 
         return true;
     }
 
-    return retrieveMessageLists(accountId, ids, minimum, sort, true /* accountCheck */);
+    return doRetrieveMessageLists(accountId, ids, minimum, sort, true /* accountCheck */);
 }
 
 bool ImapService::Source::retrieveMessageList(const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort)
 {
     Q_ASSERT(!_unavailable);
     if (folderId.isValid()) {
-        return retrieveMessageLists(accountId, QMailFolderIdList() << folderId, minimum, sort, true /* Full check */);
+        return doRetrieveMessageLists(accountId, QMailFolderIdList() << folderId, minimum, sort, true /* Full check */);
     }
 
-    return retrieveMessageLists(accountId, QMailFolderIdList(), minimum, sort, true /* Full check */);
+    return doRetrieveMessageLists(accountId, QMailFolderIdList(), minimum, sort, true /* Full check */);
 }
 
 bool ImapService::Source::retrieveNewMessages(const QMailAccountId &accountId, const QMailFolderIdList &folderIds)
@@ -264,11 +266,12 @@ bool ImapService::Source::retrieveNewMessages(const QMailAccountId &accountId, c
     // Use defaultMinimum so that for a freshly created push enabled account
     // defaultMinimum messages are retrieved. But this means when new push
     // emails arrive, flags will be checked, but for only defaultMinimum messages.
-    return retrieveMessageLists(accountId, ids, QMailRetrievalAction::defaultMinimum(), QMailMessageSortKey(),
-                                false /* not accountCheck, don't detect flag changes and removed messages */);
+    return doRetrieveMessageLists(accountId, ids, QMailRetrievalAction::defaultMinimum(), QMailMessageSortKey(),
+                                  false /* not accountCheck, don't detect flag changes and removed messages */);
 }
 
-bool ImapService::Source::retrieveMessageLists(const QMailAccountId &accountId, const QMailFolderIdList &_folderIds, uint minimum, const QMailMessageSortKey &sort, bool accountCheck)
+bool ImapService::Source::doRetrieveMessageLists(const QMailAccountId &accountId, const QMailFolderIdList &_folderIds,
+                                                 uint minimum, const QMailMessageSortKey &sort, bool accountCheck)
 {
     Q_ASSERT(!_unavailable);
     if (!_service->_client) {
@@ -1073,24 +1076,24 @@ bool ImapService::Source::searchMessages(const QMailMessageKey &searchCriteria, 
 {
     QMailAccountConfiguration accountCfg(_service->accountId());
     ImapConfiguration imapCfg(accountCfg);
-    return searchMessages(searchCriteria, bodyText, imapCfg.searchLimit(), sort, false);
+    return doSearchMessages(searchCriteria, bodyText, imapCfg.searchLimit(), sort, false);
 }
 
 bool ImapService::Source::searchMessages(const QMailMessageKey &searchCriteria, const QString &bodyText, quint64 limit, const QMailMessageSortKey &sort)
 {
     QMailAccountConfiguration accountCfg(_service->accountId());
     ImapConfiguration imapCfg(accountCfg);
-    return searchMessages(searchCriteria, bodyText, limit, sort, false);
+    return doSearchMessages(searchCriteria, bodyText, limit, sort, false);
 }
 
 bool ImapService::Source::countMessages(const QMailMessageKey &searchCriteria, const QString &bodyText)
 {
     QMailAccountConfiguration accountCfg(_service->accountId());
     ImapConfiguration imapCfg(accountCfg);
-    return searchMessages(searchCriteria, bodyText, 0, QMailMessageSortKey(), true);
+    return doSearchMessages(searchCriteria, bodyText, 0, QMailMessageSortKey(), true);
 }
 
-bool ImapService::Source::searchMessages(const QMailMessageKey &searchCriteria, const QString &bodyText, quint64 limit, const QMailMessageSortKey &sort, bool count)
+bool ImapService::Source::doSearchMessages(const QMailMessageKey &searchCriteria, const QString &bodyText, quint64 limit, const QMailMessageSortKey &sort, bool count)
 {
     Q_ASSERT(!_unavailable);
     if (!_service->_client) {

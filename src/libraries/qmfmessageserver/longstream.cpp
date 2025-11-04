@@ -42,14 +42,17 @@
 #include <QDir>
 #include <QStorageInfo>
 
-/*  Helper class to reduce memory usage while downloading large mails */
+static const unsigned long long MinFree = 1024*100;
+static const uint MinCheck = 1024*10;
+
+/* Helper class to reduce memory usage while downloading large mails */
 LongStream::LongStream()
     : mStatus(Ok)
 {
     QString tmpName(QMail::tempPath() + QLatin1String("longstream"));
 
     len = 0;
-    appendedBytes = minCheck;
+    appendedBytes = MinCheck;
 
     tmpFile = new QTemporaryFile( tmpName + QLatin1String( ".XXXXXX" ));
     if (tmpFile->open()) {
@@ -57,7 +60,7 @@ LongStream::LongStream()
         ts = new QDataStream( tmpFile );
     } else {
         qCWarning(lcMessaging) << "Unable to open temporary file:" << tmpFile->fileName();
-        ts = 0;
+        ts = nullptr;
         setStatus(OutOfSpace);
     }
 }
@@ -72,17 +75,21 @@ LongStream::~LongStream()
 void LongStream::reset()
 {
     delete ts;
+    ts = nullptr;
 
-    tmpFile->resize( 0 );
-    tmpFile->close();
-    tmpFile->open();
-
-    ts = new QDataStream( tmpFile );
     len = 0;
-    appendedBytes = minCheck;
+    appendedBytes = MinCheck;
 
-    c = QChar::Null;
-    resetStatus();
+    tmpFile->resize(0);
+    tmpFile->close();
+
+    if (!tmpFile->open()) {
+        qCWarning(lcMessaging) << "Unable to open temporary file:" << tmpFile->fileName();
+        setStatus(OutOfSpace);
+    } else {
+        ts = new QDataStream( tmpFile );
+        resetStatus();
+    }
 }
 
 QString LongStream::detach()
@@ -90,23 +97,26 @@ QString LongStream::detach()
     QString detachedName = fileName();
 
     delete ts;
+    ts = nullptr;
 
     tmpFile->setAutoRemove(false);
     tmpFile->close();
     delete tmpFile;
 
+    len = 0;
+    appendedBytes = MinCheck;
+
     QString tmpName(QMail::tempPath() + QLatin1String("longstream"));
 
     tmpFile = new QTemporaryFile( tmpName + QLatin1String( ".XXXXXX" ));
-    tmpFile->open();
-    tmpFile->setPermissions(QFile::ReadOwner | QFile::WriteOwner);
-
-    ts = new QDataStream( tmpFile );
-    len = 0;
-    appendedBytes = minCheck;
-
-    c = QChar::Null;
-    resetStatus();
+    if (!tmpFile->open()) {
+        qCWarning(lcMessaging) << "Unable to open temporary file:" << tmpFile->fileName();
+        setStatus(OutOfSpace);
+    } else {
+        tmpFile->setPermissions(QFile::ReadOwner | QFile::WriteOwner);
+        ts = new QDataStream( tmpFile );
+        resetStatus();
+    }
 
     return detachedName;
 }
@@ -118,7 +128,7 @@ void LongStream::append(QString str)
 
         len += str.length();
         appendedBytes += str.length();
-        if (appendedBytes >= minCheck) {
+        if (appendedBytes >= MinCheck) {
             appendedBytes = 0;
             updateStatus();
         }
@@ -177,7 +187,7 @@ void LongStream::setStatus( Status status )
 
 bool LongStream::freeSpace( const QString &path, int min)
 {
-    long long boundary = minFree;
+    long long boundary = MinFree;
     if (min >= 0)
         boundary = min;
 

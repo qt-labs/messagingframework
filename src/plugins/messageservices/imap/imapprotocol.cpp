@@ -2500,8 +2500,7 @@ bool UidFetchState::appendLiteralData(ImapContext *c, const QString &preceding)
         }
 
         QRegularExpressionMatch match;
-        preceding.lastIndexOf(pattern, -1, &match);
-        int index = match.capturedStart(0);
+        int index = preceding.lastIndexOf(pattern, -1, &match);
         if (index != -1) {
             if ((index + match.captured(0).length()) == preceding.length()) {
                 // Detach the retrieved data to a file we have ownership of

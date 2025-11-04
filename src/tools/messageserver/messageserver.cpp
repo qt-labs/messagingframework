@@ -542,7 +542,9 @@ void MessageServer::readLogSettings() const
             logFile.setFileName(fileName);
         }
         if (!logFile.isOpen()) {
-            logFile.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Unbuffered);
+            if (!logFile.open(QIODevice::WriteOnly | QIODevice::Append | QIODevice::Unbuffered)) {
+                qWarning() << "Unable to open log file" << fileName;
+            }
         }
     } else {
         logFile.close();
