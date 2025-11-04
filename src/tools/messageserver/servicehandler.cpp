@@ -49,6 +49,7 @@
 #include <QDir>
 #include <QDateTime>
 #include <QTimer>
+#include <QStandardPaths>
 
 namespace {
 QSet<QMailAccountId> messageAccounts(const QMailMessageIdList &ids)
@@ -296,7 +297,9 @@ bool messageBodyContainsText(const QMailMessage &message, const QString& text)
 
 QString requestsFileName()
 {
-    return QMail::tempPath() + "/qmf-messageserver-requests";
+    QString path = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
+    QDir().mkpath(path);
+    return path + "/qmf-messageserver-requests";
 }
 
 QList<QString> obsoleteContentIdentifiers(QList<QMailMessageMetaData*> list)

@@ -65,22 +65,21 @@ public:
 
     void reset();
     QString detach();
-    void append(QString str);
+    void append(const QString &str);
     int length();
     QString fileName();
     QString readAll();
 
     Status status();
     void resetStatus();
-    void setStatus( Status );
-    void updateStatus();
+    void setStatus(Status);
+    void checkSpace();
 
-    static bool freeSpace(const QString &path = QString(), int min = -1);
-
-    static QString outOfSpaceMessage();
     static void cleanupTempFiles();
 
 private:
+    void init();
+
     QTemporaryFile *tmpFile;
     QDataStream *ts;
     int len;

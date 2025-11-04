@@ -625,7 +625,7 @@ void PopClient::processResponse(const QString &response)
 
             if (dataStream->status() == LongStream::OutOfSpace) {
                 operationFailed(QMailServiceAction::Status::ErrFileSystemFull,
-                                LongStream::outOfSpaceMessage());
+                                QObject::tr("Storage for messages is full. Some new messages could not be retrieved."));
             } else {
                 // More message data remains
                 waitForInput = true;

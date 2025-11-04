@@ -38,6 +38,7 @@
 
 #include <QCoreApplication>
 #include <QDir>
+#include <QStandardPaths>
 #include <QDBusConnection>
 #include <QDBusConnectionInterface>
 #include <QRegularExpression>
@@ -96,8 +97,23 @@ QString QMail::dataPath()
     static QString dataEnv(QString::fromUtf8(qgetenv(QMF_DATA_ENV)));
     if (!dataEnv.isEmpty())
         return dataEnv + QChar::fromLatin1('/');
-    //default to ~/.qmf if not env set
-    return QDir::homePath() + QLatin1String("/.qmf/");
+
+    static QString cached;
+    if (!cached.isEmpty()) {
+        return cached;
+    }
+
+    QString path = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation) + "/qmf/";
+
+    if (QDir(path).exists()) {
+        cached = path;
+    } else {
+        // for backwards compatibility return the older data path if it exists and the new doesn't
+        QString oldPath = QDir::homePath() + QLatin1String("/.qmf/");
+        cached = QDir(oldPath).exists() ? oldPath : path;
+    }
+
+    return cached;
 }
 
 /*!
@@ -128,26 +144,6 @@ QDateTime QMail::lastDbUpdated()
     }
 
     return info.lastModified();
-}
-
-/*!
-    Returns the path to where the Messaging framework will store its temporary files.
-*/
-QString QMail::tempPath()
-{
-    static bool pathChecked = false;
-    QString path = dataPath() + QLatin1String("tmp/");
-    if (!pathChecked) {
-        QDir dir;
-        if (!dir.exists(path)) {
-            if (!dir.mkpath(path)) {
-                qCritical() << "Cannot create temp path";
-            }
-        }
-        pathChecked = true;
-    }
-
-    return path;
 }
 
 /*!

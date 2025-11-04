@@ -50,7 +50,6 @@ namespace QMail
 {
     QMF_EXPORT QString dataPath();
     QMF_EXPORT QDateTime lastDbUpdated();
-    QMF_EXPORT QString tempPath();
 
     void closeDatabase();
     QMF_EXPORT QSqlDatabase createDatabase();

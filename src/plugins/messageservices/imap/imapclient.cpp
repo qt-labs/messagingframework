@@ -1051,7 +1051,7 @@ class TemporaryFile
     QString _fileName;
 
 public:
-    TemporaryFile(const QString &fileName) : _fileName(QMail::tempPath() + fileName) {}
+    TemporaryFile(const QString &fileName) : _fileName(QDir::tempPath() + '/' + fileName) {}
 
     QString fileName() const { return _fileName; }
 
@@ -1185,8 +1185,6 @@ public:
 
 void ImapClient::dataFetched(const QString &uid, const QString &section, const QString &fileName, int size)
 {
-    static const QString tempDir = QMail::tempPath();
-
     QMailMessage *mail;
     bool inBuffer = false;
 
@@ -1340,8 +1338,6 @@ void ImapClient::dataFetched(const QString &uid, const QString &section, const Q
 
 void ImapClient::partHeaderFetched(const QString &uid, const QString &section, const QString &fileName, int /* size */)
 {
-    static const QString tempDir = QMail::tempPath();
-
     QMailMessage *mail;
     bool inBuffer = false;
 

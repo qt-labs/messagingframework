@@ -106,8 +106,8 @@ SmtpClient::SmtpClient(const QMailAccountId &id, QObject* parent)
     , config(QMailAccountConfiguration(id))
     , messageLength(0)
     , fetchingCapabilities(false)
-    , transport(0)
-    , temporaryFile(0)
+    , transport(nullptr)
+    , temporaryFile(nullptr)
     , waitingForBytes(0)
     , notUsingAuth(false)
     , authReset(false)
@@ -800,20 +800,21 @@ void SmtpClient::nextAction(const QString &response)
             email.mail.setHeaderField("Message-ID", messageId(domainName, addressComponent));
 
             // Buffer the message to a temporary file.
-            QString tempPath = QMail::tempPath();
-            QDir dir;
-            if (!dir.exists(tempPath))
-                dir.mkpath(tempPath);
-            temporaryFile = new QTemporaryFile(tempPath + QLatin1String("smtptmp.XXXXXX"));
-            bool ok = temporaryFile->open();
-            Q_ASSERT(ok);
-            {
+            temporaryFile = new QTemporaryFile(QDir::tempPath() + QLatin1String("/smtptmp.XXXXXX"));
+
+            if (temporaryFile->open()) {
                 // Note that there is no progress update while the message is streamed to the file.
                 // This isn't optimal but it's how the original code worked and fixing it requires
                 // putting this call onto a separate thread because it blocks until done.
                 QDataStream dataStream(temporaryFile);
                 email.mail.toRfc2822(dataStream, QMailMessage::TransmissionFormat);
+            } else {
+                qCWarning(lcSMTP) << "Unable to create a temporary file" << temporaryFile->errorString();
+                operationFailed(QMailServiceAction::Status::ErrSystemError,
+                                tr("Failed to create a temporary file"));
+                break;
             }
+
             messageLength = temporaryFile->size();
             //qCDebug(lcSMTP) << "Body: queued" << messageLength << "bytes to" << temporaryFile->fileName();
 
@@ -1072,7 +1073,7 @@ void SmtpClient::stopTransferring()
         else
             disconnect(transport, SIGNAL(bytesWritten(qint64)), this, SLOT(sendMoreData(qint64)));
         delete temporaryFile;
-        temporaryFile = 0;
+        temporaryFile = nullptr;
         status = Sent;
     }
 }

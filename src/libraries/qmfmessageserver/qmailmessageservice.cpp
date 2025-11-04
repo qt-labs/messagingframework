@@ -344,7 +344,7 @@ void decorate(QString* message, int code, const ErrorSet& errorSet)
     bool handledByHandler = true;
     if (code == QMailServiceAction::Status::ErrFileSystemFull) {
         message->append(QChar::fromLatin1(' ')
-                        + (QCoreApplication::tr("Storage for messages is full. Some new messages could not be retrieved.")));
+                        + (QObject::tr("Storage for messages is full. Some new messages could not be retrieved.")));
     } else if (code == QMailServiceAction::Status::ErrEnqueueFailed) {
         message->append(QString::fromLatin1("\n").append(qApp->translate("QMailServiceAction", "Unable to send; message moved to Drafts folder")));
     } else if (code == QMailServiceAction::Status::ErrUnknownResponse) {
@@ -1127,11 +1127,15 @@ void QMailMessageSource::copyMessages()
 
     unsigned int size = QMailStore::instance()->sizeOfMessages(QMailMessageKey::id(d->_ids));
 
-    QStorageInfo storageInfo(QMail::tempPath());
+    QStorageInfo storageInfo(QMail::dataPath());
 
     if (storageInfo.bytesAvailable() < (size + 1024*10)) {
-        qCWarning(lcMailStore) << "Insufficient space to copy messages to folder:" << d->_destinationId << "bytes required:" << size;
-        emit d->_service->statusChanged(QMailServiceAction::Status(QMailServiceAction::Status::ErrFileSystemFull, tr("Insufficient space to copy messages to folder"), QMailAccountId(), d->_destinationId, QMailMessageId()));
+        qCWarning(lcMailStore) << "Insufficient space to copy messages to folder:"
+                               << d->_destinationId << "bytes required:" << size;
+        emit d->_service->statusChanged(
+            QMailServiceAction::Status(QMailServiceAction::Status::ErrFileSystemFull,
+                                       tr("Insufficient space to copy messages to folder"),
+                                       QMailAccountId(), d->_destinationId, QMailMessageId()));
         successful = false;
     }
 

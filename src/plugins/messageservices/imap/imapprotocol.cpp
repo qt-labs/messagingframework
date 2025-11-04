@@ -3565,7 +3565,8 @@ void ImapProtocol::setPrecedingLiteral(const QString &line)
 bool ImapProtocol::checkSpace()
 {
     if (_stream.status() == LongStream::OutOfSpace) {
-        _lastError += QChar('\n') + LongStream::outOfSpaceMessage();
+        _lastError += QChar('\n')
+                      + QObject::tr("Storage for messages is full. Some new messages could not be retrieved.");
         clearResponse();
         return false;
     }

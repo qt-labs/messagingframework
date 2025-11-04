@@ -35,6 +35,7 @@
 #include <QTest>
 #include <QDir>
 #include <QRegularExpression>
+#include <QStandardPaths>
 
 #include <qmailnamespace.h>
 #include <longstream_p.h>
@@ -53,7 +54,6 @@ public:
 private slots:
     void test_new_stream();
     void test_status();
-    void test_errorMessage();
     void test_temp_files();
 };
 
@@ -117,16 +117,8 @@ void tst_LongStream::test_status()
     ls.resetStatus();
     QCOMPARE(ls.status(), LongStream::Ok);
 
-    ls.updateStatus();
+    ls.checkSpace();
     QCOMPARE(ls.status(), LongStream::Ok);
-}
-
-void tst_LongStream::test_errorMessage()
-{
-    LongStream ls;
-
-    QString err = ls.outOfSpaceMessage();
-    QCOMPARE(err.isEmpty(), false);
 }
 
 void tst_LongStream::test_temp_files()
@@ -140,7 +132,7 @@ void tst_LongStream::test_temp_files()
 
     LongStream::cleanupTempFiles();
 
-    QDir dir(QMail::tempPath(), "longstream.*");
+    QDir dir(QStandardPaths::writableLocation(QStandardPaths::CacheLocation), "longstream.*");
     QCOMPARE(dir.exists(), true);
     QVERIFY2(dir.entryList().isEmpty(), qPrintable(dir.entryList().join(" ")));
 }

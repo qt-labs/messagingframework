@@ -977,7 +977,7 @@ void EmailComposerInterface::create(const QMailMessage& sourceMail)
                 } else {
                     if (!localFile) {
                         // We need to create a temporary copy of this part's data to link to
-                        QString fileName(part.writeBodyTo(QMail::tempPath()));
+                        QString fileName(part.writeBodyTo(QDir::tempPath()));
                         if (fileName.isEmpty()) {
                             qWarning() << "Unable to save part to temporary file!";
                             continue;

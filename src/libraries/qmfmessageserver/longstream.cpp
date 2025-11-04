@@ -33,36 +33,43 @@
 
 #include "longstream_p.h"
 #include "qmaillog.h"
-#include "qmailnamespace.h"
 
-#include <QCoreApplication>
-#include <QIODevice>
-#include <QTextStream>
+#include <QFile>
+#include <QDataStream>
 #include <QTemporaryFile>
 #include <QDir>
 #include <QStorageInfo>
+#include <QStandardPaths>
 
-static const unsigned long long MinFree = 1024*100;
+static const long long MinFree = 1024*100;
 static const uint MinCheck = 1024*10;
+
+static QString fileLocation()
+{
+    static bool checked = false;
+
+    QString path = QStandardPaths::writableLocation(QStandardPaths::CacheLocation);
+
+    if (!checked) {
+        checked = true;
+        QDir().mkpath(path);
+    }
+
+    return path;
+}
+
+static bool freeSpace()
+{
+    QStorageInfo storageInfo(fileLocation());
+    return storageInfo.bytesAvailable() > MinFree;
+}
 
 /* Helper class to reduce memory usage while downloading large mails */
 LongStream::LongStream()
-    : mStatus(Ok)
+    : ts(nullptr)
+    , mStatus(Ok)
 {
-    QString tmpName(QMail::tempPath() + QLatin1String("longstream"));
-
-    len = 0;
-    appendedBytes = MinCheck;
-
-    tmpFile = new QTemporaryFile( tmpName + QLatin1String( ".XXXXXX" ));
-    if (tmpFile->open()) {
-        tmpFile->setPermissions(QFile::ReadOwner | QFile::WriteOwner);
-        ts = new QDataStream( tmpFile );
-    } else {
-        qCWarning(lcMessaging) << "Unable to open temporary file:" << tmpFile->fileName();
-        ts = nullptr;
-        setStatus(OutOfSpace);
-    }
+    init();
 }
 
 LongStream::~LongStream()
@@ -70,6 +77,23 @@ LongStream::~LongStream()
     tmpFile->close();
     delete ts;
     delete tmpFile;
+}
+
+void LongStream::init()
+{
+    len = 0;
+    appendedBytes = MinCheck;
+
+    tmpFile = new QTemporaryFile(fileLocation() + QLatin1String("/longstream.XXXXXX"));
+
+    if (!tmpFile->open()) {
+        qCWarning(lcMessaging) << "Unable to open temporary file:" << tmpFile->fileName();
+        setStatus(OutOfSpace);
+    } else {
+        tmpFile->setPermissions(QFile::ReadOwner | QFile::WriteOwner);
+        ts = new QDataStream(tmpFile);
+        setStatus(Ok);
+    }
 }
 
 void LongStream::reset()
@@ -87,7 +111,7 @@ void LongStream::reset()
         qCWarning(lcMessaging) << "Unable to open temporary file:" << tmpFile->fileName();
         setStatus(OutOfSpace);
     } else {
-        ts = new QDataStream( tmpFile );
+        ts = new QDataStream(tmpFile);
         resetStatus();
     }
 }
@@ -102,26 +126,14 @@ QString LongStream::detach()
     tmpFile->setAutoRemove(false);
     tmpFile->close();
     delete tmpFile;
+    tmpFile = nullptr;
 
-    len = 0;
-    appendedBytes = MinCheck;
-
-    QString tmpName(QMail::tempPath() + QLatin1String("longstream"));
-
-    tmpFile = new QTemporaryFile( tmpName + QLatin1String( ".XXXXXX" ));
-    if (!tmpFile->open()) {
-        qCWarning(lcMessaging) << "Unable to open temporary file:" << tmpFile->fileName();
-        setStatus(OutOfSpace);
-    } else {
-        tmpFile->setPermissions(QFile::ReadOwner | QFile::WriteOwner);
-        ts = new QDataStream( tmpFile );
-        resetStatus();
-    }
+    init();
 
     return detachedName;
 }
 
-void LongStream::append(QString str)
+void LongStream::append(const QString &str)
 {
     if (ts) {
         ts->writeRawData(str.toLatin1().constData(), str.length());
@@ -130,7 +142,7 @@ void LongStream::append(QString str)
         appendedBytes += str.length();
         if (appendedBytes >= MinCheck) {
             appendedBytes = 0;
-            updateStatus();
+            checkSpace();
         }
     }
 }
@@ -174,40 +186,23 @@ void LongStream::resetStatus()
     mStatus = Ok;
 }
 
-void LongStream::updateStatus()
+void LongStream::checkSpace()
 {
     if (!freeSpace())
-        setStatus( LongStream::OutOfSpace );
+        setStatus(LongStream::OutOfSpace);
 }
 
-void LongStream::setStatus( Status status )
+void LongStream::setStatus(Status status)
 {
     mStatus = status;
 }
 
-bool LongStream::freeSpace( const QString &path, int min)
-{
-    long long boundary = MinFree;
-    if (min >= 0)
-        boundary = min;
-
-    QString partitionPath = path.isEmpty() ? QMail::tempPath() : path;
-
-    QStorageInfo storageInfo(partitionPath);
-    return storageInfo.bytesAvailable() > boundary;
-}
-
-QString LongStream::outOfSpaceMessage()
-{
-    return QCoreApplication::tr("Storage for messages is full. Some new messages could not be retrieved.");
-}
-
 void LongStream::cleanupTempFiles()
 {
-    QDir dir(QMail::tempPath(), QLatin1String("longstream.*"));
-    QStringList list = dir.entryList();
-    for (int i = 0; i < list.size(); ++i) {
-        QFile file(QMail::tempPath() + list.at(i));
+    QDir dir(fileLocation(), QLatin1String("longstream.*"));
+
+    for (const QString &filename : dir.entryList()) {
+        QFile file(dir.absoluteFilePath(filename));
         if (file.exists())
             file.remove();
     }
