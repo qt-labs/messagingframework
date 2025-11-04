@@ -35,6 +35,9 @@ if(BUILD_TESTING)
 endif()
 pkg_check_modules(ICU icu-i18n IMPORTED_TARGET)
 
+# there's probably some better compiler agnostic way to enable more warnings, but this is a start
+add_compile_options(-Wall -Wextra -Wpedantic)
+
 add_subdirectory(src)
 if(BUILD_TESTING)
   add_subdirectory(tests)
