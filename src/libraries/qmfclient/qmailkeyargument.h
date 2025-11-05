@@ -189,7 +189,7 @@ public:
         : property(p),
           op(c)
     {
-          valueList.append(v);
+        valueList.append(v);
     }
 
     template<typename ListType>

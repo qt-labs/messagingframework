@@ -70,7 +70,6 @@ public:
 
     typedef QMailSortKeyArgument<Property> ArgumentType;
 
-public:
     QMailMessageSortKey();
     QMailMessageSortKey(const QMailMessageSortKey& other);
     virtual ~QMailMessageSortKey();

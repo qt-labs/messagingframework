@@ -1094,7 +1094,9 @@ void QMailMessageSource::deleteMessages()
         return;
     }
 
-    emit d->_service->statusChanged(QMailServiceAction::Status(QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to delete messages"), QMailAccountId(), QMailFolderId(), QMailMessageId()));
+    emit d->_service->statusChanged(QMailServiceAction::Status(
+        QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to delete messages"),
+        QMailAccountId(), QMailFolderId(), QMailMessageId()));
     emit d->_service->activityChanged(QMailServiceAction::Failed);
     emit d->_service->actionCompleted(false);
 }
@@ -1135,7 +1137,10 @@ void QMailMessageSource::copyMessages()
             if (!QMailStore::instance()->addMessage(&message)) {
                 qCWarning(lcMailStore) << "Unable to copy messages to folder:" << d->_destinationId << "for account:" << message.parentAccountId();
 
-                emit d->_service->statusChanged(QMailServiceAction::Status(QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to copy messages for account"), message.parentAccountId(), d->_destinationId, QMailMessageId()));
+                emit d->_service->statusChanged(
+                    QMailServiceAction::Status(QMailServiceAction::Status::ErrFrameworkFault,
+                                               tr("Unable to copy messages for account"),
+                                               message.parentAccountId(), d->_destinationId, QMailMessageId()));
                 successful = false;
                 break;
             } else {
@@ -1169,7 +1174,10 @@ void QMailMessageSource::moveMessages()
         return;
     }
 
-    emit d->_service->statusChanged(QMailServiceAction::Status(QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to move messages to folder"), QMailAccountId(), QMailFolderId(), QMailMessageId()));
+    emit d->_service->statusChanged(
+        QMailServiceAction::Status(QMailServiceAction::Status::ErrFrameworkFault,
+                                   tr("Unable to move messages to folder"),
+                                   QMailAccountId(), QMailFolderId(), QMailMessageId()));
     emit d->_service->activityChanged(QMailServiceAction::Failed);
     emit d->_service->actionCompleted(false);
 }
@@ -1186,7 +1194,9 @@ void QMailMessageSource::flagMessages()
         return;
     }
 
-    emit d->_service->statusChanged(QMailServiceAction::Status(QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to flag messages"), QMailAccountId(), QMailFolderId(), QMailMessageId()));
+    emit d->_service->statusChanged(
+        QMailServiceAction::Status(QMailServiceAction::Status::ErrFrameworkFault,
+                                   tr("Unable to flag messages"), QMailAccountId(), QMailFolderId(), QMailMessageId()));
     emit d->_service->activityChanged(QMailServiceAction::Failed);
     emit d->_service->actionCompleted(false);
 }
@@ -1468,7 +1478,9 @@ QMailMessageSink &QMailMessageService::sink() const
 
     If possible, a standardized error message is determined from \a code, and prepended to the error message.
 */
-void QMailMessageService::updateStatus(QMailServiceAction::Status::ErrorCode code, const QString &text, const QMailAccountId &accountId, const QMailFolderId &folderId, const QMailMessageId &messageId, quint64 action)
+void QMailMessageService::updateStatus(QMailServiceAction::Status::ErrorCode code, const QString &text,
+                                       const QMailAccountId &accountId, const QMailFolderId &folderId,
+                                       const QMailMessageId &messageId, quint64 action)
 {
     if (code == QMailServiceAction::Status::ErrNoError) {
         if (action) {
@@ -1496,7 +1508,8 @@ void QMailMessageService::updateStatus(QMailServiceAction::Status::ErrorCode cod
 
     If possible, a standardized error message is determined from \a code, and prepended to the error message.
 */
-void QMailMessageService::updateStatus(int code, const QString &text, const QMailAccountId &accountId, const QMailFolderId &folderId, const QMailMessageId &messageId, quint64 action)
+void QMailMessageService::updateStatus(int code, const QString &text, const QMailAccountId &accountId,
+                                       const QMailFolderId &folderId, const QMailMessageId &messageId, quint64 action)
 {
     if (code == QMailServiceAction::Status::ErrNoError) {
         if (action) {
@@ -1547,7 +1560,8 @@ bool QMailMessageSource::retrieveFolderList(const QMailAccountId &accountId, con
 
     The request has the identifier \a action.
 */
-bool QMailMessageSource::retrieveMessageList(const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort, quint64 action)
+bool QMailMessageSource::retrieveMessageList(const QMailAccountId &accountId, const QMailFolderId &folderId,
+                                             uint minimum, const QMailMessageSortKey &sort, quint64 action)
 {
     Q_UNUSED(accountId)
     Q_UNUSED(folderId)
@@ -1566,7 +1580,8 @@ bool QMailMessageSource::retrieveMessageList(const QMailAccountId &accountId, co
 
     The request has the identifier \a action.
 */
-bool QMailMessageSource::retrieveMessageLists(const QMailAccountId &accountId, const QMailFolderIdList &folderIds, uint minimum, const QMailMessageSortKey &sort, quint64 action)
+bool QMailMessageSource::retrieveMessageLists(const QMailAccountId &accountId, const QMailFolderIdList &folderIds,
+                                              uint minimum, const QMailMessageSortKey &sort, quint64 action)
 {
     Q_UNUSED(accountId)
     Q_UNUSED(folderIds)

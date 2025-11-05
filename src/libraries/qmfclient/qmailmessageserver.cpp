@@ -499,7 +499,9 @@ void QMailMessageServer::retrieveFolderList(quint64 action, const QMailAccountId
 
     \sa retrievalCompleted()
 */
-void QMailMessageServer::retrieveMessageList(quint64 action, const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort)
+void QMailMessageServer::retrieveMessageList(quint64 action, const QMailAccountId &accountId,
+                                             const QMailFolderId &folderId, uint minimum,
+                                             const QMailMessageSortKey &sort)
 {
     d->retrieveMessageList(action, accountId, folderId, minimum, sort);
 }
@@ -523,7 +525,9 @@ void QMailMessageServer::retrieveMessageList(quint64 action, const QMailAccountI
 
     \sa retrievalCompleted()
 */
-void QMailMessageServer::retrieveMessageLists(quint64 action, const QMailAccountId &accountId, const QMailFolderIdList &folderIds, uint minimum, const QMailMessageSortKey &sort)
+void QMailMessageServer::retrieveMessageLists(quint64 action, const QMailAccountId &accountId,
+                                              const QMailFolderIdList &folderIds, uint minimum,
+                                              const QMailMessageSortKey &sort)
 {
     d->retrieveMessageLists(action, accountId, folderIds, minimum, sort);
 }
@@ -595,7 +599,8 @@ void QMailMessageServer::createStandardFolders(quint64 action, const QMailAccoun
 
     \sa retrievalCompleted()
 */
-void QMailMessageServer::retrieveMessages(quint64 action, const QMailMessageIdList &messageIds, QMailRetrievalAction::RetrievalSpecification spec)
+void QMailMessageServer::retrieveMessages(quint64 action, const QMailMessageIdList &messageIds,
+                                          QMailRetrievalAction::RetrievalSpecification spec)
 {
     d->retrieveMessages(action, messageIds, spec);
 }
@@ -642,7 +647,9 @@ void QMailMessageServer::retrieveMessageRange(quint64 action, const QMailMessage
 
     \sa retrievalCompleted()
 */
-void QMailMessageServer::retrieveMessagePartRange(quint64 action, const QMailMessagePart::Location &partLocation, uint minimum)
+void QMailMessageServer::retrieveMessagePartRange(quint64 action,
+                                                  const QMailMessagePart::Location &partLocation,
+                                                  uint minimum)
 {
     d->retrieveMessagePartRange(action, partLocation, minimum);
 }
@@ -675,7 +682,8 @@ void QMailMessageServer::exportUpdates(quint64 action, const QMailAccountId &acc
     This function requires the device to be online, it may initiate communication
     with external servers.
 */
-void QMailMessageServer::onlineCopyMessages(quint64 action, const QMailMessageIdList& mailList, const QMailFolderId &destinationId)
+void QMailMessageServer::onlineCopyMessages(quint64 action, const QMailMessageIdList& mailList,
+                                            const QMailFolderId &destinationId)
 {
     d->onlineCopyMessages(action, mailList, destinationId);
 }
@@ -689,7 +697,8 @@ void QMailMessageServer::onlineCopyMessages(quint64 action, const QMailMessageId
     This function requires the device to be online, it may initiate communication
     with external servers.
 */
-void QMailMessageServer::onlineMoveMessages(quint64 action, const QMailMessageIdList& mailList, const QMailFolderId &destinationId)
+void QMailMessageServer::onlineMoveMessages(quint64 action, const QMailMessageIdList& mailList,
+                                            const QMailFolderId &destinationId)
 {
     d->onlineMoveMessages(action, mailList, destinationId);
 }
@@ -708,7 +717,8 @@ void QMailMessageServer::onlineMoveMessages(quint64 action, const QMailMessageId
     This function requires the device to be online, it may initiate communication
     with external servers.
 */
-void QMailMessageServer::onlineFlagMessagesAndMoveToStandardFolder(quint64 action, const QMailMessageIdList& mailList, quint64 setMask, quint64 unsetMask)
+void QMailMessageServer::onlineFlagMessagesAndMoveToStandardFolder(quint64 action, const QMailMessageIdList& mailList,
+                                                                   quint64 setMask, quint64 unsetMask)
 {
     d->onlineFlagMessagesAndMoveToStandardFolder(action, mailList, setMask, unsetMask);
 }
@@ -735,8 +745,6 @@ void QMailMessageServer::updateMessages(quint64 action, const QMailMessageMetaDa
     d->updateMessages(action, messages);
 }
 
-
-
 /*!
     Requests that the MessageServer create a new folder named \a name, created in the
     account identified by \a accountId.
@@ -751,7 +759,8 @@ void QMailMessageServer::updateMessages(quint64 action, const QMailMessageMetaDa
 
     \sa onlineDeleteFolder()
 */
-void QMailMessageServer::onlineCreateFolder(quint64 action, const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId)
+void QMailMessageServer::onlineCreateFolder(quint64 action, const QString &name, const QMailAccountId &accountId,
+                                            const QMailFolderId &parentId)
 {
     d->onlineCreateFolder(action, name, accountId, parentId);
 }
@@ -829,7 +838,8 @@ void QMailMessageServer::cancelTransfer(quint64 action)
 
     \sa QMailStore::removeMessage()
 */
-void QMailMessageServer::onlineDeleteMessages(quint64 action, const QMailMessageIdList& mailList, QMailStore::MessageRemovalOption option)
+void QMailMessageServer::onlineDeleteMessages(quint64 action, const QMailMessageIdList& mailList,
+                                              QMailStore::MessageRemovalOption option)
 {
     d->onlineDeleteMessages(action, mailList, option);
 }
@@ -956,7 +966,8 @@ void QMailMessageServer::restoreToPreviousFolder(quint64 action, const QMailMess
 
     \sa matchingMessageIds(), messagesCount(), remainingMessagesCount()
 */
-void QMailMessageServer::searchMessages(quint64 action, const QMailMessageKey& filter, const QString& bodyText, QMailSearchAction::SearchSpecification spec, const QMailMessageSortKey &sort)
+void QMailMessageServer::searchMessages(quint64 action, const QMailMessageKey& filter, const QString& bodyText,
+                                        QMailSearchAction::SearchSpecification spec, const QMailMessageSortKey &sort)
 {
     d->searchMessages(action, filter, bodyText, spec, sort);
 }
@@ -982,7 +993,9 @@ void QMailMessageServer::searchMessages(quint64 action, const QMailMessageKey& f
 
     \sa matchingMessageIds(), messagesCount(), remainingMessagesCount()
 */
-void QMailMessageServer::searchMessages(quint64 action, const QMailMessageKey& filter, const QString& bodyText, QMailSearchAction::SearchSpecification spec, quint64 limit, const QMailMessageSortKey &sort)
+void QMailMessageServer::searchMessages(quint64 action, const QMailMessageKey& filter, const QString& bodyText,
+                                        QMailSearchAction::SearchSpecification spec, quint64 limit,
+                                        const QMailMessageSortKey &sort)
 {
     d->searchMessages(action, filter, bodyText, spec, limit, sort);
 }

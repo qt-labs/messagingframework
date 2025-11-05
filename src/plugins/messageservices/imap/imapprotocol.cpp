@@ -303,45 +303,173 @@ class ImapState;
 class ImapContext
 {
 public:
-    ImapContext(ImapProtocol *protocol) { mProtocol = protocol; }
-    virtual ~ImapContext() {}
+    ImapContext(ImapProtocol *protocol)
+    {
+        mProtocol = protocol;
+    }
 
-    void continuation(ImapCommand c, const QString &s) { mProtocol->continuation(c, s); }
-    void operationCompleted(ImapCommand c, OperationStatus s) { mProtocol->operationCompleted(c, s); }
+    virtual ~ImapContext()
+    {
+    }
 
-    virtual QString sendCommand(const QString &cmd) { return mProtocol->sendCommand(cmd); }
-    virtual QString sendCommandLiteral(const QString &cmd, uint length) { return mProtocol->sendCommandLiteral(cmd, length); }
-    virtual void sendData(const QString &data, bool maskDebug = false) { mProtocol->sendData(data, maskDebug); }
-    virtual void sendDataLiteral(const QString &data, uint length) { mProtocol->sendDataLiteral(data, length); }
+    void continuation(ImapCommand c, const QString &s)
+    {
+        mProtocol->continuation(c, s);
+    }
 
-    ImapProtocol *protocol() { return mProtocol; }
-    const ImapMailboxProperties &mailbox() { return mProtocol->mailbox(); }
+    void operationCompleted(ImapCommand c, OperationStatus s)
+    {
+        mProtocol->operationCompleted(c, s);
+    }
 
-    LongStream &buffer() { return mProtocol->_stream; }
-    void switchToEncrypted() { mProtocol->_transport->switchToEncrypted(); mProtocol->clearResponse(); }
-    bool literalResponseCompleted() { return (mProtocol->literalDataRemaining() == 0); }
+    virtual QString sendCommand(const QString &cmd)
+    {
+        return mProtocol->sendCommand(cmd);
+    }
+
+    virtual QString sendCommandLiteral(const QString &cmd, uint length)
+    {
+        return mProtocol->sendCommandLiteral(cmd, length);
+    }
+
+    virtual void sendData(const QString &data, bool maskDebug = false)
+    {
+        mProtocol->sendData(data, maskDebug);
+    }
+
+    virtual void sendDataLiteral(const QString &data, uint length)
+    {
+        mProtocol->sendDataLiteral(data, length);
+    }
+
+    ImapProtocol *protocol()
+    {
+        return mProtocol;
+    }
+
+    const ImapMailboxProperties &mailbox()
+    {
+        return mProtocol->mailbox();
+    }
+
+    LongStream &buffer()
+    {
+        return mProtocol->_stream;
+    }
+
+    void switchToEncrypted()
+    {
+        mProtocol->_transport->switchToEncrypted();
+        mProtocol->clearResponse();
+    }
+
+    bool literalResponseCompleted()
+    {
+        return (mProtocol->literalDataRemaining() == 0);
+    }
 
     // Update the protocol's mailbox properties
-    void setMailbox(const QMailFolder &mailbox) { mProtocol->_mailbox = ImapMailboxProperties(mailbox); }
-    void setExists(quint32 n) { mProtocol->_mailbox.exists = n; emit mProtocol->exists(n); }
-    quint32 exists() { return mProtocol->_mailbox.exists; }
-    void setRecent(quint32 n) { mProtocol->_mailbox.recent = n; emit mProtocol->recent(n); }
-    void setUnseen(quint32 n) { mProtocol->_mailbox.unseen = n; }
-    void setUidValidity(const QString &validity) { mProtocol->_mailbox.uidValidity = validity; emit mProtocol->uidValidity(validity); }
-    void setUidNext(quint32 n) { mProtocol->_mailbox.uidNext = n; }
-    void setFlags(const QString &flags) { mProtocol->_mailbox.flags = flags; emit mProtocol->flags(flags); }
-    void setUidList(const QStringList &uidList) { mProtocol->_mailbox.uidList = uidList; }
-    void setSearchCount(uint count) { mProtocol->_mailbox.searchCount = count; }
-    void setMsnList(const QList<uint> &msnList) { mProtocol->_mailbox.msnList = msnList; }
-    void setHighestModSeq(const QString &seq) { mProtocol->_mailbox.highestModSeq = seq; mProtocol->_mailbox.noModSeq = false; emit mProtocol->highestModSeq(seq); }
-    void setNoModSeq() { mProtocol->_mailbox.noModSeq = true; emit mProtocol->noModSeq(); }
-    void setPermanentFlags(const QStringList &flags) { mProtocol->_mailbox.permanentFlags = flags; }
-    void setVanished(const QString &vanished) { mProtocol->_mailbox.vanished = vanished; }
-    void setChanges(const QList<FlagChange> &changes) { mProtocol->_mailbox.flagChanges = changes; }
+    void setMailbox(const QMailFolder &mailbox)
+    {
+        mProtocol->_mailbox = ImapMailboxProperties(mailbox);
+    }
 
-    void createMail(const QString& uid, const QDateTime &timeStamp, int size, uint flags, const QString &file, const QStringList& structure) { mProtocol->createMail(uid, timeStamp, size, flags, file, structure); }
-    void createPart(const QString& uid, const QString &section, const QString &file, int size) { mProtocol->createPart(uid, section, file, size); }
-    void createPartHeader(const QString& uid, const QString &section, const QString &file, int size) { mProtocol->createPartHeader(uid, section, file, size); }
+    void setExists(quint32 n)
+    {
+        mProtocol->_mailbox.exists = n;
+        emit mProtocol->exists(n);
+    }
+
+    quint32 exists()
+    {
+        return mProtocol->_mailbox.exists;
+    }
+
+    void setRecent(quint32 n)
+    {
+        mProtocol->_mailbox.recent = n;
+        emit mProtocol->recent(n);
+    }
+
+    void setUnseen(quint32 n)
+    {
+        mProtocol->_mailbox.unseen = n;
+    }
+
+    void setUidValidity(const QString &validity)
+    {
+        mProtocol->_mailbox.uidValidity = validity;
+        emit mProtocol->uidValidity(validity);
+    }
+
+    void setUidNext(quint32 n)
+    {
+        mProtocol->_mailbox.uidNext = n;
+    }
+
+    void setFlags(const QString &flags)
+    {
+        mProtocol->_mailbox.flags = flags;
+        emit mProtocol->flags(flags);
+    }
+
+    void setUidList(const QStringList &uidList)
+    {
+        mProtocol->_mailbox.uidList = uidList;
+    }
+
+    void setSearchCount(uint count)
+    {
+        mProtocol->_mailbox.searchCount = count;
+    }
+
+    void setMsnList(const QList<uint> &msnList)
+    {
+        mProtocol->_mailbox.msnList = msnList;
+    }
+
+    void setHighestModSeq(const QString &seq)
+    {
+        mProtocol->_mailbox.highestModSeq = seq;
+        mProtocol->_mailbox.noModSeq = false;
+        emit mProtocol->highestModSeq(seq);
+    }
+
+    void setNoModSeq()
+    {
+        mProtocol->_mailbox.noModSeq = true;
+        emit mProtocol->noModSeq();
+    }
+
+    void setPermanentFlags(const QStringList &flags)
+    {
+        mProtocol->_mailbox.permanentFlags = flags;
+    }
+
+    void setVanished(const QString &vanished) {
+        mProtocol->_mailbox.vanished = vanished;
+    }
+
+    void setChanges(const QList<FlagChange> &changes)
+    {
+        mProtocol->_mailbox.flagChanges = changes;
+    }
+
+    void createMail(const QString& uid, const QDateTime &timeStamp, int size, uint flags, const QString &file,
+                    const QStringList& structure)
+    {
+        mProtocol->createMail(uid, timeStamp, size, flags, file, structure);
+    }
+
+    void createPart(const QString& uid, const QString &section, const QString &file, int size)
+    {
+        mProtocol->createPart(uid, section, file, size);
+    }
+
+    void createPartHeader(const QString& uid, const QString &section, const QString &file, int size)
+    {
+        mProtocol->createPartHeader(uid, section, file, size);
+    }
 
 private:
     ImapProtocol *mProtocol;
@@ -469,8 +597,16 @@ class UnconnectedState : public ImapState
     Q_OBJECT
 
 public:
-    UnconnectedState() : ImapState(IMAP_Unconnected, "Unconnected") { setStatus(OpOk); }
-    void init() override { ImapState::init(); setStatus(OpOk); }
+    UnconnectedState()
+        : ImapState(IMAP_Unconnected, "Unconnected")
+    {
+        setStatus(OpOk);
+    }
+
+    void init() override
+    {
+        ImapState::init(); setStatus(OpOk);
+    }
 };
 
 
@@ -479,7 +615,10 @@ class InitState : public ImapState
     Q_OBJECT
 
 public:
-    InitState() : ImapState(IMAP_Init, "Init") {}
+    InitState()
+        : ImapState(IMAP_Init, "Init")
+    {
+    }
 
     void untaggedResponse(ImapContext *c, const QString &line) override;
 };
@@ -499,7 +638,10 @@ class CapabilityState : public ImapState
     Q_OBJECT
 
 public:
-    CapabilityState() : ImapState(IMAP_Capability, "Capability") {}
+    CapabilityState()
+        : ImapState(IMAP_Capability, "Capability")
+    {
+    }
 
     QString transmit(ImapContext *c) override;
     void untaggedResponse(ImapContext *c, const QString &line) override;
@@ -527,7 +669,10 @@ class StartTlsState : public ImapState
     Q_OBJECT
 
 public:
-    StartTlsState() : ImapState(IMAP_StartTLS, "StartTLS") {}
+    StartTlsState()
+        : ImapState(IMAP_StartTLS, "StartTLS")
+    {
+    }
 
     QString transmit(ImapContext *c) override;
     void taggedResponse(ImapContext *c, const QString &line) override;
@@ -550,9 +695,14 @@ class LoginState : public ImapState
     Q_OBJECT
 
 public:
-    LoginState() : ImapState(IMAP_Login, "Login") { LoginState::init(); }
+    LoginState()
+        : ImapState(IMAP_Login, "Login")
+    {
+        LoginState::init();
+    }
 
-    void setConfiguration(const QMailAccountConfiguration &config, const QStringList &capabilities, const QMailCredentialsInterface *credentials);
+    void setConfiguration(const QMailAccountConfiguration &config, const QStringList &capabilities,
+                          const QMailCredentialsInterface *credentials);
 
     void init() override;
     QString transmit(ImapContext *c) override;
@@ -565,7 +715,8 @@ private:
     const QMailCredentialsInterface *_credentials;
 };
 
-void LoginState::setConfiguration(const QMailAccountConfiguration &config, const QStringList &capabilities, const QMailCredentialsInterface *credentials)
+void LoginState::setConfiguration(const QMailAccountConfiguration &config, const QStringList &capabilities,
+                                  const QMailCredentialsInterface *credentials)
 {
     _config = config;
     _credentials = credentials;
@@ -654,7 +805,10 @@ class LogoutState : public ImapState
     Q_OBJECT
 
 public:
-    LogoutState() : ImapState(IMAP_Logout, "Logout") {}
+    LogoutState()
+        : ImapState(IMAP_Logout, "Logout")
+    {
+    }
 
     QString transmit(ImapContext *c) override;
     void taggedResponse(ImapContext *c, const QString &line) override;
@@ -771,7 +925,10 @@ class DeleteState : public ImapState
     Q_OBJECT
 
 public:
-    DeleteState() : ImapState(IMAP_Delete, "Delete") {}
+    DeleteState()
+        : ImapState(IMAP_Delete, "Delete")
+    {
+    }
 
     void setMailbox(QMailFolder mailbox);
 
@@ -781,6 +938,7 @@ public:
     void leave(ImapContext *c) override;
     void taggedResponse(ImapContext *c, const QString &line) override;
     QString error(const QString &line) override;
+
 signals:
     void folderDeleted(const QMailFolder &name, bool success);
 
@@ -829,7 +987,10 @@ class RenameState : public ImapState
     Q_OBJECT
 
 public:
-    RenameState() : ImapState(IMAP_Rename, "Rename") {}
+    RenameState()
+        : ImapState(IMAP_Rename, "Rename")
+    {
+    }
 
     void setNewMailboxName(const QMailFolder &mailbox, const QString &name);
 
@@ -839,6 +1000,7 @@ public:
     void leave(ImapContext *c) override;
     void taggedResponse(ImapContext *c, const QString &line) override;
     QString error(const QString &line) override;
+
 signals:
     void folderRenamed(const QMailFolder &folder, const QString &newPath, bool success);
 
@@ -916,7 +1078,10 @@ class MoveState : public ImapState
     Q_OBJECT
 
 public:
-    MoveState() : ImapState(IMAP_Move, "Move") {}
+    MoveState()
+        : ImapState(IMAP_Move, "Move")
+    {
+    }
 
     void setNewMailboxParent(const QMailFolder &mailbox, const QMailFolderId &newParentId);
 
@@ -926,6 +1091,7 @@ public:
     void leave(ImapContext *c) override;
     void taggedResponse(ImapContext *c, const QString &line) override;
     QString error(const QString &line) override;
+
 signals:
     void folderMoved(const QMailFolder &folder, const QString &newPath,
                      const QMailFolderId &newParentId, bool success);
@@ -998,7 +1164,11 @@ class ListState : public ImapState
     Q_OBJECT
 
 public:
-    ListState() : ImapState(IMAP_List, "List") { ListState::init(); }
+    ListState()
+        : ImapState(IMAP_List, "List")
+    {
+        ListState::init();
+    }
 
     void setParameters(const QString &reference, const QString &mailbox, bool xlist = false);
     void setDiscoverDelimiter();
@@ -1147,7 +1317,10 @@ class GenUrlAuthState : public ImapState
     Q_OBJECT
 
 public:
-    GenUrlAuthState() : ImapState(IMAP_GenUrlAuth, "GenUrlAuth") {}
+    GenUrlAuthState()
+        : ImapState(IMAP_GenUrlAuth, "GenUrlAuth")
+    {
+    }
 
     void setUrl(const QString &url, const QString &mechanism);
 
@@ -1204,7 +1377,10 @@ class AppendState : public ImapState
     Q_OBJECT
 
 public:
-    AppendState() : ImapState(IMAP_Append, "Append") {}
+    AppendState()
+        : ImapState(IMAP_Append, "Append")
+    {
+    }
 
     void setParameters(const QMailFolder &folder, const QMailMessageId &messageId);
 
@@ -1296,7 +1472,6 @@ QString AppendState::transmit(ImapContext *c)
     cmdString += "\"";
     cmd = cmdString.toLatin1();
 
-
     uint length = 0;
 
     if (c->protocol()->capabilities().contains("CATENATE")) {
@@ -1377,7 +1552,10 @@ class SelectedState : public ImapState
     Q_OBJECT
 
 public:
-    SelectedState(ImapCommand c, const QString &name) : ImapState(c, name) {}
+    SelectedState(ImapCommand c, const QString &name)
+        : ImapState(c, name)
+    {
+    }
 
     void untaggedResponse(ImapContext *c, const QString &line) override;
 };
@@ -1453,7 +1631,11 @@ class SelectState : public SelectedState
     Q_OBJECT
 
 public:
-    SelectState() : SelectedState(IMAP_Select, "Select") { SelectState::init(); }
+    SelectState()
+        : SelectedState(IMAP_Select, "Select")
+    {
+        SelectState::init();
+    }
 
     void setMailbox(const QMailFolder &mailbox);
 
@@ -1509,7 +1691,11 @@ class QResyncState : public SelectState
     Q_OBJECT
 
 public:
-    QResyncState() : SelectState(IMAP_QResync, "QResync") { init(); }
+    QResyncState()
+        : SelectState(IMAP_QResync, "QResync")
+    {
+        init();
+    }
 
     QString transmit(ImapContext *c) override;
     void untaggedResponse(ImapContext *c, const QString &line) override;
@@ -1590,7 +1776,11 @@ class FetchFlagsState : public SelectedState
     Q_OBJECT
 
 public:
-    FetchFlagsState() : SelectedState(IMAP_FetchFlags, "FetchFlags") { FetchFlagsState::init(); }
+    FetchFlagsState()
+        : SelectedState(IMAP_FetchFlags, "FetchFlags")
+    {
+        FetchFlagsState::init();
+    }
 
     void setProperties(const QString &range, const QString &prefix);
 
@@ -1691,14 +1881,20 @@ void ExamineState::enter(ImapContext *c)
 class SearchMessageState : public SelectedState
 {
     Q_OBJECT
+
 public:
-    SearchMessageState() : SelectedState(IMAP_Search_Message, "Search_Message"), _utf8(false) { }
+    SearchMessageState()
+        : SelectedState(IMAP_Search_Message, "Search_Message"), _utf8(false)
+    {
+    }
+
     bool permitsPipelining() const override { return true; }
     void setParameters(const QMailMessageKey &key, const QString &body, const QMailMessageSortKey &sort, bool count);
     QString transmit(ImapContext *c) override;
     void leave(ImapContext *c) override;
     bool continuationResponse(ImapContext *c, const QString &line) override;
     void untaggedResponse(ImapContext *c, const QString &line) override;
+
 protected:
     bool isPrintable(const QString &s) const;
     QStringList convertValue(const QVariant &value, const QMailMessageKey::Property &property, const QMailKey::Comparator &comparer);
@@ -1790,7 +1986,6 @@ bool SearchMessageState::isPrintable(const QString &s) const
 QStringList SearchMessageState::convertValue(const QVariant &value, const QMailMessageKey::Property &property,
                                              const QMailKey::Comparator &comparer)
 {
-
     switch (property) {
     case QMailMessageKey::Id:
         break;
@@ -1901,6 +2096,7 @@ QStringList SearchMessageState::convertValue(const QVariant &value, const QMailM
     default:
         qCWarning(lcIMAP) << "Property " << property << " still not handled for search.";
     }
+
     return QStringList();
 }
 
@@ -2040,7 +2236,11 @@ class SearchState : public SelectedState
     Q_OBJECT
 
 public:
-    SearchState() : SelectedState(IMAP_Search, "Search") { SearchState::init(); }
+    SearchState()
+        : SelectedState(IMAP_Search, "Search")
+    {
+        SearchState::init();
+    }
 
     void setParameters(MessageFlags flags, const QString &range);
 
@@ -2122,7 +2322,11 @@ class UidSearchState : public SelectedState
     Q_OBJECT
 
 public:
-    UidSearchState() : SelectedState(IMAP_UIDSearch, "UIDSearch") { UidSearchState::init(); }
+    UidSearchState()
+        : SelectedState(IMAP_UIDSearch, "UIDSearch")
+    {
+        UidSearchState::init();
+    }
 
     void setParameters(MessageFlags flags, const QString &range);
 
@@ -2205,7 +2409,11 @@ class UidFetchState : public SelectedState
     Q_OBJECT
 
 public:
-    UidFetchState() : SelectedState(IMAP_UIDFetch, "UIDFetch") { UidFetchState::init(); }
+    UidFetchState()
+        : SelectedState(IMAP_UIDFetch, "UIDFetch")
+    {
+        UidFetchState::init();
+    }
 
     void setUidList(const QString &uidList, FetchItemFlags flags);
     void setSection(const QString &uid, const QString &section, int start, int end, FetchItemFlags flags);
@@ -2544,7 +2752,11 @@ class UidStoreState : public SelectedState
     Q_OBJECT
 
 public:
-    UidStoreState() : SelectedState(IMAP_UIDStore, "UIDStore") { UidStoreState::init(); }
+    UidStoreState()
+        : SelectedState(IMAP_UIDStore, "UIDStore")
+    {
+        UidStoreState::init();
+    }
 
     void setParameters(MessageFlags flags, bool set, const QString &range);
 
@@ -2606,7 +2818,11 @@ class UidCopyState : public SelectedState
     Q_OBJECT
 
 public:
-    UidCopyState() : SelectedState(IMAP_UIDCopy, "UIDCopy") { UidCopyState::init(); }
+    UidCopyState()
+        : SelectedState(IMAP_UIDCopy, "UIDCopy")
+    {
+        UidCopyState::init();
+    }
 
     void setParameters(const QString &range, const QMailFolder &destination);
 
@@ -2690,7 +2906,10 @@ class ExpungeState : public SelectedState
     Q_OBJECT
 
 public:
-    ExpungeState() : SelectedState(IMAP_Expunge, "Expunge") {}
+    ExpungeState()
+        : SelectedState(IMAP_Expunge, "Expunge")
+    {
+    }
 
     bool permitsPipelining() const override { return true; }
     QString transmit(ImapContext *c) override;
@@ -2734,7 +2953,10 @@ class EnableState : public ImapState
     Q_OBJECT
 
 public:
-    EnableState() : ImapState(IMAP_Enable, "Enable") {}
+    EnableState()
+        : ImapState(IMAP_Enable, "Enable")
+    {
+    }
 
     void setExtensions(const QString &extensions);
 
@@ -2807,7 +3029,10 @@ class IdleState : public SelectedState
     Q_OBJECT
 
 public:
-    IdleState() : SelectedState(IMAP_Idle, "Idle") {}
+    IdleState()
+        : SelectedState(IMAP_Idle, "Idle")
+    {
+    }
 
     void done(ImapContext *c);
 
@@ -2856,7 +3081,10 @@ class CompressState : public ImapState
     Q_OBJECT
 
 public:
-    CompressState() : ImapState(IMAP_Compress, "Compress") {}
+    CompressState()
+        : ImapState(IMAP_Compress, "Compress")
+    {
+    }
 
     QString transmit(ImapContext *c) override;
     void taggedResponse(ImapContext *c, const QString &line) override;

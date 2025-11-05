@@ -104,14 +104,18 @@ public Q_SLOTS:
     void transmitMessages(quint64, const QMailAccountId &accountId);
     void transmitMessage(quint64, const QMailMessageId &messageId);
 
-    void retrieveFolderList(quint64, const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending);
-    void retrieveMessageList(quint64, const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort);
-    void retrieveMessageLists(quint64, const QMailAccountId &accountId, const QMailFolderIdList &folderIds, uint minimum, const QMailMessageSortKey &sort);
+    void retrieveFolderList(quint64, const QMailAccountId &accountId, const QMailFolderId &folderId,
+                            bool descending);
+    void retrieveMessageList(quint64, const QMailAccountId &accountId, const QMailFolderId &folderId,
+                             uint minimum, const QMailMessageSortKey &sort);
+    void retrieveMessageLists(quint64, const QMailAccountId &accountId, const QMailFolderIdList &folderIds,
+                              uint minimum, const QMailMessageSortKey &sort);
     void retrieveNewMessages(quint64, const QMailAccountId &accountId, const QMailFolderIdList &folderIds);
 
     void createStandardFolders(quint64, const QMailAccountId &accountId);
 
-    void retrieveMessages(quint64, const QMailMessageIdList &messageIds, QMailRetrievalAction::RetrievalSpecification spec);
+    void retrieveMessages(quint64, const QMailMessageIdList &messageIds,
+                          QMailRetrievalAction::RetrievalSpecification spec);
     void retrieveMessagePart(quint64, const QMailMessagePart::Location &partLocation);
 
     void retrieveMessageRange(quint64, const QMailMessageId &messageId, uint minimum);
@@ -121,11 +125,13 @@ public Q_SLOTS:
 
     void onlineCopyMessages(quint64, const QMailMessageIdList& mailList, const QMailFolderId &destinationId);
     void onlineMoveMessages(quint64, const QMailMessageIdList& mailList, const QMailFolderId &destinationId);
-    void onlineFlagMessagesAndMoveToStandardFolder(quint64, const QMailMessageIdList& mailList, quint64 setMask, quint64 unsetMask);
+    void onlineFlagMessagesAndMoveToStandardFolder(quint64, const QMailMessageIdList& mailList,
+                                                   quint64 setMask, quint64 unsetMask);
     void addMessages(quint64, const QMailMessageMetaDataList &messages);
     void updateMessages(quint64, const QMailMessageMetaDataList &messages);
 
-    void onlineCreateFolder(quint64, const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId);
+    void onlineCreateFolder(quint64, const QString &name, const QMailAccountId &accountId,
+                            const QMailFolderId &parentId);
     void onlineRenameFolder(quint64, const QMailFolderId &folderId, const QString &name);
     void onlineDeleteFolder(quint64, const QMailFolderId &folderId);
     void onlineMoveFolder(quint64, const QMailFolderId &folderId, const QMailFolderId &newParentId);
@@ -140,8 +146,10 @@ public Q_SLOTS:
 
     void onlineDeleteMessages(quint64, const QMailMessageIdList& mailList, QMailStore::MessageRemovalOption);
 
-    void searchMessages(quint64, const QMailMessageKey& filter, const QString& bodyText, QMailSearchAction::SearchSpecification spec, const QMailMessageSortKey &sort);
-    void searchMessages(quint64, const QMailMessageKey& filter, const QString& bodyText, QMailSearchAction::SearchSpecification spec, quint64 limit, const QMailMessageSortKey &sort);
+    void searchMessages(quint64, const QMailMessageKey& filter, const QString& bodyText,
+                        QMailSearchAction::SearchSpecification spec, const QMailMessageSortKey &sort);
+    void searchMessages(quint64, const QMailMessageKey& filter, const QString& bodyText,
+                        QMailSearchAction::SearchSpecification spec, quint64 limit, const QMailMessageSortKey &sort);
     void countMessages(quint64, const QMailMessageKey& filter, const QString& bodyText);
     void cancelSearch(quint64);
 

@@ -368,7 +368,8 @@ private:
     bool execute(QSqlQuery& q, bool batch = false);
     int queryError() const;
 
-    QSqlQuery performQuery(const QString& statement, bool batch, const QVariantList& bindValues, const QList<Key>& keys, const QPair<uint, uint> &constraint, const QString& descriptor);
+    QSqlQuery performQuery(const QString& statement, bool batch, const QVariantList& bindValues,
+                           const QList<Key>& keys, const QPair<uint, uint> &constraint, const QString& descriptor);
 
     bool executeFile(QFile &file);
 
@@ -376,13 +377,18 @@ private:
     QSqlQuery simpleQuery(const QString& statement, const QVariantList& bindValues, const QString& descriptor);
 
     QSqlQuery simpleQuery(const QString& statement, const Key& key, const QString& descriptor);
-    QSqlQuery simpleQuery(const QString& statement, const QVariantList& bindValues, const Key& key, const QString& descriptor);
-    QSqlQuery simpleQuery(const QString& statement, const QVariantList& bindValues, const QList<Key>& keys, const QString& descriptor);
-    QSqlQuery simpleQuery(const QString& statement, const QVariantList& bindValues, const QList<Key>& keys, const QPair<uint, uint> &constraint, const QString& descriptor);
+    QSqlQuery simpleQuery(const QString& statement, const QVariantList& bindValues, const Key& key,
+                          const QString& descriptor);
+    QSqlQuery simpleQuery(const QString& statement, const QVariantList& bindValues, const QList<Key>& keys,
+                          const QString& descriptor);
+    QSqlQuery simpleQuery(const QString& statement, const QVariantList& bindValues, const QList<Key>& keys,
+                          const QPair<uint, uint> &constraint, const QString& descriptor);
 
     QSqlQuery batchQuery(const QString& statement, const QVariantList& bindValues, const QString& descriptor);
-    QSqlQuery batchQuery(const QString& statement, const QVariantList& bindValues, const Key& key, const QString& descriptor);
-    QSqlQuery batchQuery(const QString& statement, const QVariantList& bindValues, const QList<Key>& keys, const QString& descriptor);
+    QSqlQuery batchQuery(const QString& statement, const QVariantList& bindValues, const Key& key,
+                         const QString& descriptor);
+    QSqlQuery batchQuery(const QString& statement, const QVariantList& bindValues, const QList<Key>& keys,
+                         const QString& descriptor);
 
     bool idValueExists(quint64 id, const QString& table);
     bool idExists(const QMailAccountId& id);
@@ -443,7 +449,8 @@ private:
 
     void removeExpiredData(const QStringList& contentUris);
 
-    AttemptResult findPotentialPredecessorsBySubject(QMailMessageMetaData *metaData, const QString& baseSubject, bool* missingAncestor, QList<quint64>& potentialPredecessors);
+    AttemptResult findPotentialPredecessorsBySubject(QMailMessageMetaData *metaData, const QString& baseSubject,
+                                                     bool* missingAncestor, QList<quint64>& potentialPredecessors);
 
     bool obsoleteContent(const QString& identifier);
 
@@ -472,7 +479,6 @@ private:
 
     AttemptResult attemptAddThread(QMailThread *thread, QMailThreadIdList *addedThreadIds, Transaction &t, bool commitOnSuccess);
 
-
     // hack to get around tr1's bind arg limit
     struct AttemptAddMessageOut {
         AttemptAddMessageOut( QMailMessageIdList * addedMessages
@@ -500,13 +506,13 @@ private:
         QMailAccountIdList *modifiedAccountIds;
     };
 
-
-    AttemptResult attemptAddMessage(QMailMessage *message, const QString &identifier, const QStringList &references, AttemptAddMessageOut *out,
+    AttemptResult attemptAddMessage(QMailMessage *message, const QString &identifier, const QStringList &references,
+                                    AttemptAddMessageOut *out,
                                     Transaction &t, bool commitOnSuccess);
 
-    AttemptResult attemptAddMessage(QMailMessageMetaData *metaData, const QString &identifier, const QStringList &references, AttemptAddMessageOut *out,
+    AttemptResult attemptAddMessage(QMailMessageMetaData *metaData, const QString &identifier, const QStringList &references,
+                                    AttemptAddMessageOut *out,
                                     Transaction &t, bool commitOnSuccess);
-
 
     struct AttemptRemoveAccountOut {
         AttemptRemoveAccountOut( QMailAccountIdList *deletedAccounts
@@ -570,11 +576,9 @@ private:
         QMailAccountIdList *modifiedAccountIds;
     };
 
-
     AttemptResult attemptRemoveFolders(const QMailFolderKey &key, QMailStore::MessageRemovalOption option,
                                        AttemptRemoveFoldersOut *out,
                                        Transaction &t, bool commitOnSuccess);
-
 
     // hack to get around bind max arg limitation
     struct AttemptRemoveThreadsOut {
@@ -605,7 +609,9 @@ private:
                                        Transaction &t, bool commitOnSuccess);
 
     AttemptResult attemptRemoveMessages(const QMailMessageKey &key, QMailStore::MessageRemovalOption option,
-                                        QMailMessageIdList *deletedMessages, QMailThreadIdList* deletedThreadIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailThreadIdList *modifiedThreadIds, QMailAccountIdList *modifiedAccountIds,
+                                        QMailMessageIdList *deletedMessages, QMailThreadIdList* deletedThreadIds,
+                                        QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds,
+                                        QMailThreadIdList *modifiedThreadIds, QMailAccountIdList *modifiedAccountIds,
                                         Transaction &t, bool commitOnSuccess);
 
     AttemptResult attemptUpdateAccount(QMailAccount *account, QMailAccountConfiguration *config,
@@ -625,15 +631,22 @@ private:
                                       Transaction &t, bool commitOnSuccess);
 
     AttemptResult attemptUpdateMessage(QMailMessageMetaData *metaData, QMailMessage *mail,
-                                       QMailMessageIdList *updatedMessageIds, QMailThreadIdList *modifiedThreads, QMailMessageIdList *modifiedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds, QMap<QString, QStringList> *deleteLaterContent,
+                                       QMailMessageIdList *updatedMessageIds, QMailThreadIdList *modifiedThreads,
+                                       QMailMessageIdList *modifiedMessageIds, QMailFolderIdList *modifiedFolderIds,
+                                       QMailAccountIdList *modifiedAccountIds,
+                                       QMap<QString, QStringList> *deleteLaterContent,
                                        Transaction &t, bool commitOnSuccess);
 
-    AttemptResult attemptUpdateMessagesMetaData(const QMailMessageKey &key, const QMailMessageKey::Properties &props, const QMailMessageMetaData &data,
-                                                QMailMessageIdList *updatedMessageIds, QMailThreadIdList* deletedThreadIds, QMailThreadIdList *modifiedThreads, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds,
+    AttemptResult attemptUpdateMessagesMetaData(const QMailMessageKey &key, const QMailMessageKey::Properties &props,
+                                                const QMailMessageMetaData &data,
+                                                QMailMessageIdList *updatedMessageIds, QMailThreadIdList* deletedThreadIds,
+                                                QMailThreadIdList *modifiedThreads, QMailFolderIdList *modifiedFolderIds,
+                                                QMailAccountIdList *modifiedAccountIds,
                                                 Transaction &t, bool commitOnSuccess);
 
     AttemptResult attemptUpdateMessagesStatus(const QMailMessageKey &key, quint64 status, bool set,
-                                              QMailMessageIdList *updatedMessageIds, QMailThreadIdList *modifiedThreads, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds,
+                                              QMailMessageIdList *updatedMessageIds, QMailThreadIdList *modifiedThreads,
+                                              QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds,
                                               Transaction &t, bool commitOnSuccess);
 
     AttemptResult attemptPurgeMessageRemovalRecords(const QMailAccountId &accountId, const QStringList &serverUids,
@@ -747,31 +760,43 @@ private:
                                    quint64 *result,
                                    ReadLock &);
 
-    AttemptResult affectedByMessageIds(const QMailMessageIdList &messages, QMailFolderIdList *folderIds, QMailAccountIdList *accountIds) const;
+    AttemptResult affectedByMessageIds(const QMailMessageIdList &messages, QMailFolderIdList *folderIds,
+                                       QMailAccountIdList *accountIds) const;
 
-    AttemptResult affectedByFolderIds(const QMailFolderIdList &folders, QMailFolderIdList *folderIds, QMailAccountIdList *accountIds) const;
+    AttemptResult affectedByFolderIds(const QMailFolderIdList &folders, QMailFolderIdList *folderIds,
+                                      QMailAccountIdList *accountIds) const;
 
-    AttemptResult messagePredecessor(QMailMessageMetaData *metaData, const QStringList &references, const QString &baseSubject, bool sameSubject, QStringList *missingReferences, bool *missingAncestor);
+    AttemptResult messagePredecessor(QMailMessageMetaData *metaData, const QStringList &references,
+                                     const QString &baseSubject, bool sameSubject, QStringList *missingReferences,
+                                     bool *missingAncestor);
 
-    AttemptResult identifyAncestors(const QMailMessageId &predecessorId, const QMailMessageIdList &childIds, QMailMessageIdList *ancestorIds);
+    AttemptResult identifyAncestors(const QMailMessageId &predecessorId, const QMailMessageIdList &childIds,
+                                    QMailMessageIdList *ancestorIds);
 
-    AttemptResult resolveMissingMessages(const QString &identifier, const QMailMessageId &predecessorId, const QString &baseSubject, const QMailMessageMetaData &message, QMailMessageIdList *updatedMessageIds);
+    AttemptResult resolveMissingMessages(const QString &identifier, const QMailMessageId &predecessorId,
+                                         const QString &baseSubject, const QMailMessageMetaData &message,
+                                         QMailMessageIdList *updatedMessageIds);
 
-    AttemptResult registerSubject(const QString &baseSubject, quint64 messageId, const QMailMessageId &predecessorId, bool missingAncestor);
+    AttemptResult registerSubject(const QString &baseSubject, quint64 messageId, const QMailMessageId &predecessorId,
+                                  bool missingAncestor);
 
     QMailAccount extractAccount(const QSqlRecord& r);
     QMailThread extractThread(const QSqlRecord &r);
     QMailFolder extractFolder(const QSqlRecord& r);
-    QMailMessageMetaData extractMessageMetaData(const QSqlRecord& r, QMailMessageKey::Properties recordProperties, const QMailMessageKey::Properties& properties = allMessageProperties());
-    QMailMessageMetaData extractMessageMetaData(const QSqlRecord& r, const QMap<QString, QString> &customFields, const QMailMessageKey::Properties& properties = allMessageProperties());
-    QMailMessage extractMessage(const QSqlRecord& r, const QMap<QString, QString> &customFields, const QMailMessageKey::Properties& properties = allMessageProperties());
+    QMailMessageMetaData extractMessageMetaData(const QSqlRecord& r, QMailMessageKey::Properties recordProperties,
+                                                const QMailMessageKey::Properties& properties = allMessageProperties());
+    QMailMessageMetaData extractMessageMetaData(const QSqlRecord& r, const QMap<QString, QString> &customFields,
+                                                const QMailMessageKey::Properties& properties = allMessageProperties());
+    QMailMessage extractMessage(const QSqlRecord& r, const QMap<QString, QString> &customFields,
+                                const QMailMessageKey::Properties& properties = allMessageProperties());
     QMailMessageRemovalRecord extractMessageRemovalRecord(const QSqlRecord& r);
 
     static QString parseSql(QTextStream& ts);
 
     static QVariantList messageValues(const QMailMessageKey::Properties& properties, const QMailMessageMetaData& data);
     static QVariantList threadValues(const QMailThreadKey::Properties& properties, const QMailThread& thread);
-    static void updateMessageValues(const QMailMessageKey::Properties& properties, const QVariantList& values, const QMap<QString, QString>& customFields, QMailMessageMetaData& metaData);
+    static void updateMessageValues(const QMailMessageKey::Properties& properties, const QVariantList& values,
+                                    const QMap<QString, QString>& customFields, QMailMessageMetaData& metaData);
     AttemptResult updateThreadsValues(const QMailThreadIdList& threadsToDelete,
                                       const QMailThreadIdList& modifiedThreadsIds = QMailThreadIdList(),
                                       const ThreadUpdateData& updateData = ThreadUpdateData());
@@ -780,7 +805,8 @@ private:
     static const QString &messagesBodyPath();
     static QString messageFilePath(const QString &fileName);
 
-    static void extractMessageMetaData(const QSqlRecord& r, QMailMessageKey::Properties recordProperties, const QMailMessageKey::Properties& properties, QMailMessageMetaData* metaData);
+    static void extractMessageMetaData(const QSqlRecord& r, QMailMessageKey::Properties recordProperties,
+                                       const QMailMessageKey::Properties& properties, QMailMessageMetaData* metaData);
 
 private:
     QSqlDatabase *database() const;
