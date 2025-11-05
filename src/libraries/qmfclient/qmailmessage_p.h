@@ -259,6 +259,12 @@ public:
     bool _previewDirty;
 };
 
+class QMailMessagePartContainer::LocationPrivate
+{
+public:
+    QMailMessageId _messageId;
+    QList<uint> _indices;
+};
 
 class QMailMessagePartPrivate : public QMailMessagePartContainerPrivate
 {

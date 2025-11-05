@@ -392,4 +392,8 @@ QMailMessageSortKey QMailMessageSortKey::status(quint64 mask, Qt::SortOrder orde
     return QMailMessageSortKey(Status, order, mask);
 }
 
+// create implementations for QDataStream
+template void QMF_EXPORT QMailMessageSortKey::serialize<QDataStream>(QDataStream& stream) const;
+template void QMF_EXPORT QMailMessageSortKey::deserialize<QDataStream>(QDataStream& stream);
+
 Q_IMPLEMENT_USER_METATYPE(QMailMessageSortKey)

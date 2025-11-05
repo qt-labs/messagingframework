@@ -3933,14 +3933,6 @@ void QMailMessageBody::deserialize(Stream &stream)
 }
 
 
-class QMailMessagePartContainer::LocationPrivate
-{
-public:
-    QMailMessageId _messageId;
-    QList<uint> _indices;
-};
-
-
 /* QMailMessagePartContainer */
 
 QMailMessagePartContainerPrivate::QMailMessagePartContainerPrivate()
@@ -5928,7 +5920,6 @@ void QMailMessagePartContainer::Location::serialize(Stream &stream) const
 }
 
 template void QMailMessagePartContainer::Location::serialize(QDataStream &) const;
-template void QMailMessagePartContainer::Location::serialize(QDBusArgument &) const;
 
 /*!
     \fn QMailMessagePartContainer::Location::deserialize(Stream&)
@@ -5942,7 +5933,6 @@ void QMailMessagePartContainer::Location::deserialize(Stream &stream)
 }
 
 template void QMailMessagePartContainer::Location::deserialize(QDataStream &);
-template void QMailMessagePartContainer::Location::deserialize(const QDBusArgument &);
 
 /*!
     Constructs an empty message part object.
@@ -6499,7 +6489,6 @@ void QMailMessagePart::serialize(Stream &stream) const
 }
 
 template void QMailMessagePart::serialize(QDataStream &) const;
-template void QMailMessagePart::serialize(QDBusArgument &) const;
 
 /*!
     \fn QMailMessagePart::deserialize(Stream&)
@@ -6512,7 +6501,6 @@ void QMailMessagePart::deserialize(Stream &stream)
 }
 
 template void QMailMessagePart::deserialize(QDataStream &);
-template void QMailMessagePart::deserialize(const QDBusArgument &);
 
 /*! \internal */
 bool QMailMessagePart::contentModified() const
@@ -7850,7 +7838,6 @@ void QMailMessageMetaData::setCustomFieldsModified(bool set)
     d->_customFieldsModified = set;
 }
 
-
 /*!
     \fn QMailMessageMetaData::serialize(Stream&) const
     \internal
@@ -7862,7 +7849,6 @@ void QMailMessageMetaData::serialize(Stream &stream) const
 }
 
 template void QMailMessageMetaData::serialize(QDataStream &) const;
-template void QMailMessageMetaData::serialize(QDBusArgument &) const;
 
 /*!
     \fn QMailMessageMetaData::deserialize(Stream&)
@@ -7875,7 +7861,6 @@ void QMailMessageMetaData::deserialize(Stream &stream)
 }
 
 template void QMailMessageMetaData::deserialize(QDataStream &);
-template void QMailMessageMetaData::deserialize(const QDBusArgument &);
 
 
 /*  QMailMessage */
@@ -9189,7 +9174,6 @@ void QMailMessage::serialize(Stream &stream) const
 }
 
 template void QMailMessage::serialize(QDataStream &) const;
-template void QMailMessage::serialize(QDBusArgument &) const;
 
 /*!
     \fn QMailMessage::deserialize(Stream&)
@@ -9203,7 +9187,6 @@ void QMailMessage::deserialize(Stream &stream)
 }
 
 template void QMailMessage::deserialize(QDataStream &);
-template void QMailMessage::deserialize(const QDBusArgument &);
 
 QDebug operator<<(QDebug dbg, const QMailMessagePart &part)
 {

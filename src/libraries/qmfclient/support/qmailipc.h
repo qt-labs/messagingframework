@@ -36,7 +36,13 @@
 
 #include <QDataStream>
 #include <QVariant>
-#include <QDBusArgument>
+
+#include "qmailglobal.h"
+
+namespace QMailIpc
+{
+    QMF_EXPORT bool init();
+}
 
 template <typename T>
 struct QMetaTypeRegister
@@ -69,9 +75,7 @@ struct QMetaTypeRegister
 #define Q_DECLARE_USER_METATYPE(TYPE) \
     Q_DECLARE_USER_METATYPE_NO_OPERATORS(TYPE) \
     QMF_EXPORT QDataStream &operator<<(QDataStream &stream, const TYPE &var); \
-    QMF_EXPORT QDataStream &operator>>( QDataStream &stream, TYPE &var ); \
-    QMF_EXPORT QDBusArgument &operator<<(QDBusArgument &stream, const TYPE &var); \
-    QMF_EXPORT const QDBusArgument &operator>>(const QDBusArgument &stream, TYPE &var );
+    QMF_EXPORT QDataStream &operator>>( QDataStream &stream, TYPE &var );
 
 #define Q_DECLARE_USER_METATYPE_TYPEDEF(TAG,TYPE)       \
     template <typename T> \
@@ -107,20 +111,6 @@ struct QMetaTypeRegister
         var.deserialize(stream); \
         return stream; \
     } \
-    QDBusArgument &operator<<(QDBusArgument &argument, const TYPE &var) \
-    { \
-        argument.beginStructure(); \
-        var.serialize(argument); \
-        argument.endStructure(); \
-        return argument; \
-    } \
-    const QDBusArgument &operator>>(const QDBusArgument &argument, TYPE& var) \
-    { \
-        argument.beginStructure(); \
-        var.deserialize(argument); \
-        argument.endStructure(); \
-        return argument; \
-    } \
     Q_IMPLEMENT_USER_METATYPE_NO_OPERATORS(TYPE)
 
 #define Q_IMPLEMENT_USER_METATYPE_TYPEDEF(TAG,TYPE)     \
@@ -139,22 +129,6 @@ struct QMetaTypeRegister
         stream >> _v; \
         v = static_cast<TYPE>(_v); \
         return stream; \
-    } \
-    QDBusArgument &operator<<(QDBusArgument &argument, const TYPE &var) \
-    { \
-        argument.beginStructure(); \
-        argument << static_cast<qint32>(var); \
-        argument.endStructure(); \
-        return argument; \
-    } \
-    const QDBusArgument &operator>>(const QDBusArgument &argument, TYPE& var) \
-    { \
-        qint32 val; \
-        argument.beginStructure(); \
-        argument >> val; \
-        argument.endStructure(); \
-        var = static_cast<TYPE>(val); \
-        return argument; \
     } \
     Q_IMPLEMENT_USER_METATYPE_NO_OPERATORS(TYPE)
 

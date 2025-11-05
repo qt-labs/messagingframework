@@ -85,9 +85,6 @@ public:
     template <typename Stream> void serialize(Stream &stream) const;
     template <typename Stream> void deserialize(Stream &stream);
 
-    void serialize(QDBusArgument &stream) const;
-    void deserialize(const QDBusArgument &stream);
-
     QMailKey::Combiner combiner;
     bool negated;
     QList<Argument> arguments;
@@ -309,24 +306,6 @@ void MailKeyImpl<Key>::deserialize(Stream &stream)
         subKey.deserialize(stream);
         subKeys.append(subKey);
     }
-}
-
-template<typename Key>
-void MailKeyImpl<Key>::serialize(QDBusArgument& stream) const
-{
-    QByteArray data;
-    QDataStream buffer(&data, QIODevice::WriteOnly);
-    serialize(buffer);
-    stream << data;
-}
-
-template<typename Key>
-void MailKeyImpl<Key>::deserialize(const QDBusArgument& stream)
-{
-    QByteArray data;
-    stream >> data;
-    QDataStream buffer(data);
-    deserialize(buffer);
 }
 
 #endif

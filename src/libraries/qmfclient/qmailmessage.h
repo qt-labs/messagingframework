@@ -53,6 +53,7 @@ QT_BEGIN_NAMESPACE
 
 class QDataStream;
 class QTextStream;
+class QDBusArgument;
 
 QT_END_NAMESPACE
 
@@ -364,6 +365,9 @@ public:
     private:
         friend class QMailMessagePartContainerPrivate;
         friend class QMailMessagePart;
+
+        friend const QDBusArgument &operator<<(QDBusArgument &, const QMailMessagePartContainer::Location &);
+        friend const QDBusArgument &operator>>(const QDBusArgument &, QMailMessagePartContainer::Location &);
 
         Location(const QMailMessagePart& part);
 
@@ -801,6 +805,9 @@ private:
     friend class QMailStore;
     friend class QMailStorePrivate;
     friend class QMailStoreSql;
+
+    friend const QDBusArgument &operator<<(QDBusArgument &, const QMailMessageMetaData &);
+    friend const QDBusArgument &operator>>(const QDBusArgument &, QMailMessageMetaData &);
 
     virtual void setUnmodified();
 

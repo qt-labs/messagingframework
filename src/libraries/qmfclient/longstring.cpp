@@ -38,7 +38,6 @@
 #include <QFile>
 #include <QFileInfo>
 #include <QTextStream>
-#include <QDBusArgument>
 
 #ifndef USE_FANCY_MATCH_ALGORITHM
 #include <ctype.h>
@@ -655,5 +654,3 @@ void LongString::deserialize(Stream &stream)
 // We need to instantiate serialization functions for QDataStream
 template void LongString::serialize<QDataStream>(QDataStream&) const;
 template void LongString::deserialize<QDataStream>(QDataStream&);
-template void LongString::serialize(QDBusArgument&) const;
-template void LongString::deserialize(const QDBusArgument&);

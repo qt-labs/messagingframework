@@ -499,7 +499,6 @@ void QMailServiceAction::Status::serialize(Stream &stream) const
 }
 
 template void QMailServiceAction::Status::serialize(QDataStream &) const;
-template void QMailServiceAction::Status::serialize(QDBusArgument &) const;
 
 /*!
     \fn QMailServiceAction::Status::deserialize(Stream&)
@@ -516,7 +515,6 @@ void QMailServiceAction::Status::deserialize(Stream &stream)
 }
 
 template void QMailServiceAction::Status::deserialize(QDataStream &);
-template void QMailServiceAction::Status::deserialize(const QDBusArgument &);
 
 /*!
     \class QMailServiceAction

@@ -42,7 +42,8 @@ set(SRC
   qmailthreadsortkey.cpp
   support/qmailnamespace.cpp
   support/qmaillog.cpp
-  support/qmailpluginmanager.cpp)
+  support/qmailpluginmanager.cpp
+  support/qmailipc.cpp)
 
 set(PUBLIC_HEADERS
   qmailaccount.h

@@ -27,14 +27,14 @@
     </signal>
     <signal name="messageMetaDataChanged">
       <arg name="changeType" type="(i)" direction="out"/>
-      <arg name="data" type="a((i)t(i)(t)su(t)(t)(t)ssssss(t)ssss(t)(i)a{ss}bbs(t))" direction="out"/>
+      <arg name="data" type="a(iti(t)su(t)(t)(t)ssssss(t)ssss(t)is(t)a{ss}bb)" direction="out"/>
       <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QMailStore::ChangeType"/>
       <annotation name="org.qtproject.QtDBus.QtTypeName.Out1" value="QMailMessageMetaDataList"/>
     </signal>
     <signal name="messagePropertiesChanged">
       <arg name="ids" type="a(t)" direction="out"/>
       <arg name="properties" type="(i)" direction="out"/>
-      <arg name="data" type="((i)t(i)(t)su(t)(t)(t)ssssss(t)ssss(t)(i)a{ss}bbs(t))" direction="out"/>
+      <arg name="data" type="(iti(t)su(t)(t)(t)ssssss(t)ssss(t)is(t)a{ss}bb)" direction="out"/>
       <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QMailMessageIdList"/>
       <annotation name="org.qtproject.QtDBus.QtTypeName.Out1" value="QMailMessageKey::Properties"/>
       <annotation name="org.qtproject.QtDBus.QtTypeName.Out2" value="QMailMessageMetaData"/>

@@ -125,7 +125,8 @@ SOURCES += \
            qmailthreadsortkey.cpp \
            support/qmailnamespace.cpp \
            support/qmaillog.cpp \
-           support/qmailpluginmanager.cpp
+           support/qmailpluginmanager.cpp \
+           support/qmailipc.cpp
 
 mailservice.files = qmailservice.xml
 mailservice.header_flags = -i qmailid.h -i qmailaction.h -i qmailserviceaction.h -i qmailstore.h

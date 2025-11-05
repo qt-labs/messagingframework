@@ -56,8 +56,6 @@ public:
     QMailMessageServer(QObject* parent = Q_NULLPTR);
     ~QMailMessageServer();
 
-    static void registerTypes();
-
 private:
     // Disallow copying
     QMailMessageServer(const QMailMessageServer&);

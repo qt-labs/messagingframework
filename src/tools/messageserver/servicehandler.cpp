@@ -33,8 +33,10 @@
 
 
 #include "servicehandler.h"
+
 #include <longstream_p.h>
 #include <qmailmessageserver.h>
+#include <qmailipc.h>
 #include <qmailserviceconfiguration.h>
 #include <qmailstore.h>
 #include <qmaildisconnected.h>
@@ -426,7 +428,7 @@ ServiceHandler::ServiceHandler(QObject* parent)
 {
     LongStream::cleanupTempFiles();
 
-    QMailMessageServer::registerTypes();
+    QMailIpc::init();
 
     if (QMailStore *store = QMailStore::instance()) {
         connect(store, &QMailStore::accountsAdded,

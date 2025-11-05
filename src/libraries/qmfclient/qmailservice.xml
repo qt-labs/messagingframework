@@ -2,12 +2,12 @@
 <node>
   <interface name="org.qt.messageserver">
     <signal name="actionStarted">
-      <arg type="((t)(i)uu((i)s(t)(t)(t)))" direction="out"/>
+      <arg type="(tiuuis(t)(t)(t))" direction="out"/>
       <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QMailActionData"/>
     </signal>
     <signal name="statusChanged">
       <arg name="action" type="t" direction="out"/>
-      <arg name="status" type="((i)s(t)(t)(t))" direction="out"/>
+      <arg name="status" type="(is(t)(t)(t))" direction="out"/>
       <annotation name="org.qtproject.QtDBus.QtTypeName.Out1" value="QMailServiceAction::Status"/>
     </signal>
     <signal name="activityChanged">
@@ -116,7 +116,7 @@
       <arg name="action" type="t" direction="out"/>
     </signal>
     <signal name="actionsListed">
-      <arg name="actions" type="a((t)(i)uu((i)s(t)(t)(t)))" direction="out"/>
+      <arg name="actions" type="a((t)iuuis(t)(t)(t))" direction="out"/>
       <annotation name="org.qtproject.QtDBus.QtTypeName.Out0" value="QMailActionDataList"/>
     </signal>
     <signal name="protocolResponse">
@@ -156,7 +156,7 @@
       <arg name="accountId" type="(t)" direction="in"/>
       <arg name="folderId" type="(t)" direction="in"/>
       <arg name="minimum" type="u" direction="in"/>
-      <arg name="sort" type="(iai)" direction="in"/>
+      <arg name="sort" type="(ay)" direction="in"/>
       <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
       <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="QMailAccountId"/>
       <annotation name="org.qtproject.QtDBus.QtTypeName.In2" value="QMailFolderId"/>
@@ -167,7 +167,7 @@
       <arg name="accountId" type="(t)" direction="in"/>
       <arg name="folderIds" type="a(t)" direction="in"/>
       <arg name="minimum" type="u" direction="in"/>
-      <arg name="sort" type="(iai)" direction="in"/>
+      <arg name="sort" type="(ay)" direction="in"/>
       <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
       <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="QMailAccountId"/>
       <annotation name="org.qtproject.QtDBus.QtTypeName.In2" value="QMailFolderIdList"/>
@@ -255,13 +255,13 @@
     </method>
     <method name="addMessages">
       <arg name="actionId" type="t" direction="in"/>
-      <arg name="messages" type="a((i)t(i)(t)su(t)(t)(t)ssssss(t)ssss(t)(i)a{ss}bbs(t))" direction="in"/>
+      <arg name="messages" type="a(iti(t)su(t)(t)(t)ssssss(t)ssss(t)is(t)a{ss}bb)" direction="in"/>
       <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
       <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="QMailMessageMetaDataList"/>
     </method>
     <method name="updateMessages">
       <arg name="actionId" type="t" direction="in"/>
-      <arg name="messages" type="a((i)t(i)(t)su(t)(t)(t)ssssss(t)ssss(t)(i)a{ss}bbs(t))" direction="in"/>
+      <arg name="messages" type="a(iti(t)su(t)(t)(t)ssssss(t)ssss(t)is(t)a{ss}bb)" direction="in"/>
       <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
       <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="QMailMessageMetaDataList"/>
     </method>
@@ -302,7 +302,7 @@
     </method>
     <method name="restoreToPreviousFolder">
       <arg name="actionId" type="t" direction="in"/>
-      <arg name="key" type="(iba(iiav))" direction="in"/>
+      <arg name="key" type="(ay)" direction="in"/>
       <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
       <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="QMailMessageKey"/>
     </method>
@@ -351,10 +351,10 @@
     </method>
     <method name="searchMessages">
       <arg name="actionId" type="t" direction="in"/>
-      <arg name="filter" type="(iiaiiav)" direction="in"/>
+      <arg name="filter" type="(ay)" direction="in"/>
       <arg name="bodyText" type="s" direction="in"/>
       <arg name="spec" type="(i)" direction="in"/>
-      <arg name="sortKey" type="(iai)" direction="in"/>
+      <arg name="sortKey" type="(ay)" direction="in"/>
       <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
       <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="QMailMessageKey"/>
       <annotation name="org.qtproject.QtDBus.QtTypeName.In3" value="QMailSearchAction::SearchSpecification"/>
@@ -362,11 +362,11 @@
     </method>
     <method name="searchMessages">
       <arg name="actionId" type="t" direction="in"/>
-      <arg name="filter" type="(iiaiiav)" direction="in"/>
+      <arg name="filter" type="(ay)" direction="in"/>
       <arg name="bodyText" type="s" direction="in"/>
       <arg name="spec" type="(i)" direction="in"/>
       <arg name="limit" type="t" direction="in"/>
-      <arg name="sortKey" type="(iai)" direction="in"/>
+      <arg name="sortKey" type="(ay)" direction="in"/>
       <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
       <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="QMailMessageKey"/>
       <annotation name="org.qtproject.QtDBus.QtTypeName.In3" value="QMailSearchAction::SearchSpecification"/>
@@ -374,7 +374,7 @@
     </method>
     <method name="countMessages">
       <arg name="actionId" type="t" direction="in"/>
-      <arg name="filter" type="(iiaiiav)" direction="in"/>
+      <arg name="filter" type="(ay)" direction="in"/>
       <arg name="bodyText" type="s" direction="in"/>
       <annotation name="org.freedesktop.DBus.Method.NoReply" value="true"/>
       <annotation name="org.qtproject.QtDBus.QtTypeName.In1" value="QMailMessageKey"/>

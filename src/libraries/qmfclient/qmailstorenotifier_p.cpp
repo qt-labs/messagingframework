@@ -134,35 +134,7 @@ QMailStoreNotifier::QMailStoreNotifier(QObject* parent)
         qCritical() << "Failed to register to D-Bus, notifications to other clients will not work.";
     }
 
-    static bool registrationDone = false;
-    if (!registrationDone) {
-        qRegisterMetaType<QMailStore::ChangeType>("QMailStore::ChangeType");
-        qDBusRegisterMetaType<QMailStore::ChangeType>();
-        qRegisterMetaType<QMailAccountId>("QMailAccountId");
-        qDBusRegisterMetaType<QMailAccountId>();
-        qRegisterMetaType<QMailAccountIdList>("QMailAccountIdList");
-        qDBusRegisterMetaType<QMailAccountIdList>();
-        qRegisterMetaType<QMailFolderId>("QMailFolderId");
-        qDBusRegisterMetaType<QMailFolderId>();
-        qRegisterMetaType<QMailFolderIdList>("QMailFolderIdList");
-        qDBusRegisterMetaType<QMailFolderIdList>();
-        qRegisterMetaType<QMailThreadId>("QMailThreadId");
-        qDBusRegisterMetaType<QMailThreadId>();
-        qRegisterMetaType<QMailThreadIdList>("QMailThreadIdList");
-        qDBusRegisterMetaType<QMailThreadIdList>();
-        qRegisterMetaType<QMailMessageId>("QMailMessageId");
-        qDBusRegisterMetaType<QMailMessageId>();
-        qRegisterMetaType<QMailMessageIdList>("QMailMessageIdList");
-        qDBusRegisterMetaType<QMailMessageIdList>();
-        qRegisterMetaType<QMailMessageMetaDataList>("QMailMessageMetaDataList");
-        qDBusRegisterMetaType<QMailMessageMetaDataList>();
-        qRegisterMetaType<QMailMessageKey::Properties>("QMailMessageKey::Properties");
-        qDBusRegisterMetaType<QMailMessageKey::Properties>();
-        qRegisterMetaType<QMailMessageMetaData>("QMailMessageMetaData");
-        qDBusRegisterMetaType<QMailMessageMetaData>();
-        registrationDone = true;
-    }
-
+    QMailIpc::init();
     reconnectIpc();
 
     // Events occurring within this period after a previous event begin batching

@@ -375,7 +375,7 @@ QMailMessageServer::QMailMessageServer(QObject* parent)
     : QObject(parent),
       d(new QMailMessageServerPrivate(this))
 {
-    registerTypes();
+    QMailIpc::init();
 }
 
 /*!
@@ -383,56 +383,6 @@ QMailMessageServer::QMailMessageServer(QObject* parent)
 */
 QMailMessageServer::~QMailMessageServer()
 {
-}
-
-/*!
-    Register types for IPC.
-*/
-void QMailMessageServer::registerTypes()
-{
-    static bool registrationDone = false;
-
-    if (!registrationDone) {
-        qRegisterMetaType<QMailAccountId>("QMailAccountId");
-        qDBusRegisterMetaType<QMailAccountId>();
-        qRegisterMetaType<QMailFolderId>("QMailFolderId");
-        qDBusRegisterMetaType<QMailFolderId>();
-        qRegisterMetaType<QMailFolderIdList>("QMailFolderIdList");
-        qDBusRegisterMetaType<QMailFolderIdList>();
-        qRegisterMetaType<QMailMessageId>("QMailMessageId");
-        qDBusRegisterMetaType<QMailMessageId>();
-        qRegisterMetaType<QMailMessageIdList>("QMailMessageIdList");
-        qDBusRegisterMetaType<QMailMessageIdList>();
-        qRegisterMetaType<QMailServiceAction::Status::ErrorCode>("QMailServiceAction::Status::ErrorCode");
-        qDBusRegisterMetaType<QMailServiceAction::Status::ErrorCode>();
-        qRegisterMetaType<QMailServiceAction::Status>("QMailServiceAction::Status");
-        qDBusRegisterMetaType<QMailServiceAction::Status>();
-        qRegisterMetaType<QMailServiceAction::Activity>("QMailServiceAction::Activity");
-        qDBusRegisterMetaType<QMailServiceAction::Activity>();
-        qRegisterMetaType<QMailServiceAction::Connectivity>("QMailServiceAction::Connectivity");
-        qDBusRegisterMetaType<QMailServiceAction::Connectivity>();
-        qRegisterMetaType<QMailRetrievalAction::RetrievalSpecification>("QMailRetrievalAction::RetrievalSpecification");
-        qDBusRegisterMetaType<QMailRetrievalAction::RetrievalSpecification>();
-        qRegisterMetaType<QMailSearchAction::SearchSpecification>("QMailSearchAction::SearchSpecification");
-        qDBusRegisterMetaType<QMailSearchAction::SearchSpecification>();
-        qRegisterMetaType<QMailActionData>("QMailActionData");
-        qDBusRegisterMetaType<QMailActionData>();
-        qRegisterMetaType<QMailActionDataList>("QMailActionDataList");
-        qDBusRegisterMetaType<QMailActionDataList>();
-        qRegisterMetaType<QMailMessageSortKey>("QMailMessageSortKey");
-        qDBusRegisterMetaType<QMailMessageSortKey>();
-        qRegisterMetaType<QMailMessagePartContainer::Location>("QMailMessagePartContainer::Location");
-        qDBusRegisterMetaType<QMailMessagePartContainer::Location>();
-        qRegisterMetaType<QMailStore::MessageRemovalOption>("QMailStore::MessageRemovalOption");
-        qDBusRegisterMetaType<QMailStore::MessageRemovalOption>();
-        qRegisterMetaType<QMailMessageMetaData>("QMailMessageMetaData");
-        qDBusRegisterMetaType<QMailMessageMetaData>();
-        qRegisterMetaType<QMailMessageMetaDataList>("QMailMessageMetaDataList");
-        qDBusRegisterMetaType<QMailMessageMetaDataList>();
-        qRegisterMetaType<QMailMessageKey>("QMailMessageKey");
-        qDBusRegisterMetaType<QMailMessageKey>();
-        registrationDone = true;
-    }
 }
 
 /*!
