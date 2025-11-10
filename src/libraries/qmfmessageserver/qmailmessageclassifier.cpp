@@ -33,8 +33,6 @@
 
 #include "qmailmessageclassifier.h"
 #include <qmailmessage.h>
-#include <QSettings>
-
 
 /*!
     \class QMailMessageClassifier
@@ -46,12 +44,6 @@
 
     QMailMessageClassifier inspects a message to determine what type of content it contains,
     according to the classification of \l{QMailMessageMetaData::ContentType}{QMailMessage::ContentType}.
-
-    Messages of type \l{QMailMessageMetaData::Email}{QMailMessage::Email} may be classified as having
-    \l{QMailMessageMetaData::VoicemailContent}{QMailMessage::VoicemailContent} or
-    \l{QMailMessageMetaData::VideomailContent}{QMailMessage::VideomailContent} content if their
-    \l{QMailMessage::from()} address matches any of those configured in the
-    \c{QtProject/messageserver.conf} file.
 */
 
 /*!
@@ -59,25 +51,6 @@
 */
 QMailMessageClassifier::QMailMessageClassifier()
 {
-    QSettings settings(QLatin1String("QtProject"), QLatin1String("messageserver"));
-
-    settings.beginGroup(QLatin1String("global"));
-
-    int count = settings.beginReadArray(QLatin1String("voicemail"));
-    for (int i = 0; i < count; ++i) {
-        settings.setArrayIndex(i);
-        voiceMailAddresses.append(settings.value(QLatin1String("address")).toString());
-    }
-    settings.endArray();
-
-    count = settings.beginReadArray(QLatin1String("videomail"));
-    for (int i = 0; i < count; ++i) {
-        settings.setArrayIndex(i);
-        videoMailAddresses.append(settings.value(QLatin1String("address")).toString());
-    }
-    settings.endArray();
-
-    settings.endGroup();
 }
 
 /*! \internal */
@@ -106,41 +79,6 @@ static QMailMessage::ContentType fromContentType(const QMailMessageContentType& 
     }
 
     return content;
-}
-
-/*!
-    Attempts to determine the type of content held within the message described by \a metaData,
-    if it is currently set to \l{QMailMessageMetaData::UnknownContent}{QMailMessageMetaData::UnknownContent}.
-    If the content type is determined, the message metadata record is updated and true is returned.
-
-    \sa QMailMessageMetaData::setContent()
-*/
-bool QMailMessageClassifier::classifyMessage(QMailMessageMetaData *metaData)
-{
-    if (metaData && metaData->content() == QMailMessage::UnknownContent) {
-        QMailMessage::ContentType content = QMailMessage::UnknownContent;
-
-        switch (metaData->messageType()) {
-        case QMailMessage::Email:
-            // Handle voicemail emails, from pre-configured addresses
-            if (voiceMailAddresses.contains(metaData->from().address())) {
-                content = QMailMessage::VoicemailContent;
-            } else if (videoMailAddresses.contains(metaData->from().address())) {
-                content = QMailMessage::VideomailContent;
-            }
-            break;
-
-        default:
-            break;
-        }
-
-        if ((content != metaData->content()) && (content != QMailMessage::UnknownContent)) {
-            metaData->setContent(content);
-            return true;
-        }
-    }
-
-    return false;
 }
 
 /*!

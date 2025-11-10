@@ -69,8 +69,7 @@ int MessageServer::sigintFd[2];
 
 MessageServer::MessageServer(QObject *parent)
     : QObject(parent),
-      handler(nullptr),
-      completionAttempted(false)
+      handler(nullptr)
 {
     readLogSettings();
 }
@@ -138,13 +137,6 @@ bool MessageServer::init()
         qCWarning(lcMessaging) << "Messaging DB Invalid: Messaging cannot operate due to database incompatibilty!";
         // Do not close, however, or QPE will start another instance.
         return false;
-    } else {
-        connect(store, SIGNAL(messagesAdded(QMailMessageIdList)),
-                this, SLOT(messagesAdded(QMailMessageIdList)));
-        connect(store, SIGNAL(messagesUpdated(QMailMessageIdList)),
-                this, SLOT(messagesUpdated(QMailMessageIdList)));
-        connect(store, SIGNAL(messagesRemoved(QMailMessageIdList)),
-                this, SLOT(messagesRemoved(QMailMessageIdList)));
     }
 
     // Register our object on the session bus and expose interface to others.
@@ -186,18 +178,6 @@ void MessageServer::retrievalCompleted(quint64 action)
     // Ensure the client receives any resulting events before a notification
     QMailStore::instance()->flushIpcNotifications();
 
-    if (!completionList.isEmpty()) {
-        if (!completionAttempted) {
-            // Complete the messages that we selected for immediate completion
-            completionAttempted = true;
-            handler->retrieveMessages(action, completionList.values(), QMailRetrievalAction::Content);
-            return;
-        } else {
-            completionList.clear();
-        }
-    }
-
-    completionAttempted = false;
     emit handler->retrievalCompleted(action);
 }
 
@@ -207,52 +187,6 @@ void MessageServer::transmissionCompleted(quint64 action)
     QMailStore::instance()->flushIpcNotifications();
 
     emit handler->transmissionCompleted(action);
-}
-
-void MessageServer::messagesAdded(const QMailMessageIdList &ids)
-{
-    if (!QMailStore::instance()->asynchronousEmission()) {
-        // Added in our process - from retrieval
-        foreach (const QMailMessageId &id, ids) {
-            QMailMessageMetaData message(id);
-
-            bool complete(false);
-            if (!(message.status() & QMailMessage::ContentAvailable)) {
-                // Automatically download voicemail messages
-                if (message.content() == QMailMessage::VoicemailContent
-                    || message.content() == QMailMessage::VideomailContent) {
-                    complete = true;
-                }
-            }
-
-            if (complete)
-                completionList.insert(message.id());
-        }
-    }
-}
-
-void MessageServer::messagesUpdated(const QMailMessageIdList &ids)
-{
-    if (!QMailStore::instance()->asynchronousEmission()) {
-        // If we're updating, check whether the messages have been marked as Removed
-        foreach (const QMailMessageId &id, ids) {
-            if (completionList.contains(id)) {
-                QMailMessageMetaData message(id);
-                if ((message.status() & QMailMessage::ContentAvailable) || (message.status() & QMailMessage::Removed)) {
-                    // This message has been completed (or removed)
-                    completionList.remove(id);
-                }
-            }
-        }
-    }
-}
-
-void MessageServer::messagesRemoved(const QMailMessageIdList &ids)
-{
-    foreach (const QMailMessageId &id, ids) {
-        // No need to complete deleted messages
-        completionList.remove(id);
-    }
 }
 
 void MessageServer::cleanupTemporaryMessages()
