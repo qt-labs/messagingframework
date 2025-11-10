@@ -1,12 +1,10 @@
 set(SRC
   messageserver.cpp
-  newcountnotifier.cpp
   servicehandler.cpp)
 
 set(HEADERS
   messageserver.h
-  servicehandler.h
-  newcountnotifier.h)
+  servicehandler.h)
 
 qt_add_dbus_adaptor(GENERATED_SOURCES ../../libraries/qmfclient/qmailservice.xml servicehandler.h ServiceHandler qmailservice_adaptor)
 

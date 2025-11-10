@@ -24,8 +24,7 @@ HEADERS += benchmarkcontext.h \
            $$IMAP_PLUGIN/imaplog.h \
            $$MESSAGE_SERVER/mailmessageclient.h \
            $$MESSAGE_SERVER/messageserver.h \
-           $$MESSAGE_SERVER/servicehandler.h \
-           $$MESSAGE_SERVER/newcountnotifier.h
+           $$MESSAGE_SERVER/servicehandler.h
 
 SOURCES += benchmarkcontext.cpp \
            qscopedconnection.cpp \
@@ -36,8 +35,7 @@ SOURCES += benchmarkcontext.cpp \
            $$MESSAGE_SERVER/mailmessageclient.cpp \
            $$MESSAGE_SERVER/messageserver.cpp \
            $$MESSAGE_SERVER/prepareaccounts.cpp \
-           $$MESSAGE_SERVER/servicehandler.cpp \
-           $$MESSAGE_SERVER/newcountnotifier.cpp
+           $$MESSAGE_SERVER/servicehandler.cpp
 
 linux {
 	HEADERS += testmalloc.h 3rdparty/cycle_p.h

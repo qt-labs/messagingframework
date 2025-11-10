@@ -15,11 +15,9 @@ CONFIG -= app_bundle
 target.path += $$QMF_INSTALL_ROOT/bin
 
 HEADERS += messageserver.h \
-           servicehandler.h \
-           newcountnotifier.h
+           servicehandler.h
 
 SOURCES += messageserver.cpp \
-           newcountnotifier.cpp \
            servicehandler.cpp
 
 mailservice.files = ../../libraries/qmfclient/qmailservice.xml

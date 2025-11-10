@@ -46,7 +46,6 @@
 
 #include <qmaillog.h>
 #include <qmailipc.h>
-#include <newcountnotifier.h>
 #include <qmailmessageserverplugin.h>
 
 #define LC_MESSAGING "org.qt.messageserver"
@@ -70,8 +69,7 @@ int MessageServer::sigintFd[2];
 
 MessageServer::MessageServer(QObject *parent)
     : QObject(parent),
-      handler(0),
-      newMessageTotal(0),
+      handler(nullptr),
       completionAttempted(false)
 {
     readLogSettings();
@@ -166,13 +164,7 @@ bool MessageServer::init()
     connect(handler, &ServiceHandler::retrievalReady,
             this, &MessageServer::retrievalCompleted);
 
-    connect(handler, SIGNAL(newMessagesAvailable()),
-            this, SLOT(reportNewCounts()));
-
-    connect(this, &MessageServer::messageCountUpdated,
-            handler, &ServiceHandler::messageCountUpdated);
-
-    //clean up any temporary messages that were not cleaned up by clients
+    // clean up any temporary messages that were not cleaned up by clients
     QTimer::singleShot(0, this, SLOT(cleanupTemporaryMessages()));
 
     emit handler->actionsListed(QMailActionDataList());
@@ -209,132 +201,6 @@ void MessageServer::retrievalCompleted(quint64 action)
     emit handler->retrievalCompleted(action);
 }
 
-QMap<QMailMessage::MessageType, QString> typeSignatureInit()
-{
-    QMap<QMailMessage::MessageType, QString> map;
-
-    map.insert(QMailMessage::Sms, "newSmsCount(int)");
-    map.insert(QMailMessage::Mms, "newMmsCount(int)");
-    map.insert(QMailMessage::Email, "newEmailCount(int)");
-    map.insert(QMailMessage::Instant, "newInstantCount(int)");
-    map.insert(QMailMessage::System, "newSystemCount(int)");
-
-    return map;
-}
-
-static QMap<QMailMessage::MessageType, QString> typeServiceInit()
-{
-    QMap<QMailMessage::MessageType, QString> map;
-
-    map.insert(QMailMessage::Sms, "NewSmsArrival");
-    map.insert(QMailMessage::Mms, "NewMmsArrival");
-    map.insert(QMailMessage::Email, "NewEmailArrival");
-    map.insert(QMailMessage::Instant, "NewInstantMessageArrival");
-    map.insert(QMailMessage::System, "NewSystemMessageArrival");
-
-    return map;
-}
-
-QString serviceForType(QMailMessage::MessageType type)
-{
-    static QMap<QMailMessage::MessageType, QString> typeService(typeServiceInit());
-    return typeService[type];
-}
-
-int MessageServer::newMessageCount(QMailMessage::MessageType type) const
-{
-    QMailMessageKey newMessageKey(QMailMessageKey::status(QMailMessage::New, QMailDataComparator::Includes));
-    if (type != QMailMessage::AnyType) {
-        newMessageKey &= QMailMessageKey::messageType(type);
-    }
-
-    return QMailStore::instance()->countMessages(newMessageKey);
-}
-
-void MessageServer::reportNewCounts()
-{
-    static QMap<QMailMessage::MessageType, QString> typeSignature(typeSignatureInit());
-
-    MessageCountMap newCounts;
-    foreach (const QMailMessage::MessageType &type, typeSignature.keys()) {
-        newCounts[type] = newMessageCount(type);
-    }
-
-    newMessageTotal = newMessageCount(QMailMessage::AnyType);
-
-    if (newMessageTotal) {
-        // Inform QPE of changes to the new message counts
-        foreach (const QMailMessage::MessageType &type, typeSignature.keys()) {
-            if ((newCounts[type] > 0) && (newCounts[type] != messageCounts[type]))
-               NewCountNotifier::notify(type, newCounts[type]);
-        }
-
-        // Request handling of the new message events
-        MessageCountMap::const_iterator it = newCounts.begin(), end = newCounts.end();
-
-        for ( ; it != end; ++it) {
-            QMailMessage::MessageType type(it.key());
-            if (it.value() != messageCounts[type]) {
-                // This type's count has changed since last reported
-
-                if ( NewCountNotifier* action = new NewCountNotifier(type, it.value())) {
-                    actionType[action] = type;
-
-                    connect(action, SIGNAL(response(bool)), this, SLOT(response(bool)));
-                    connect(action, SIGNAL(error(QString)), this, SLOT(error(QString)));
-
-                    // Ensure the client receives any generated events before the arrival notification
-                    QMailStore::instance()->flushIpcNotifications();
-                    if (!action->notify())
-                        qCWarning(lcMessaging) << "Unable to invoke service:" << serviceForType(type);
-                }
-            }
-        }
-    }
-
-    messageCounts = newCounts;
-}
-
-void MessageServer::response(bool handled)
-{
-    if (NewCountNotifier* action = static_cast<NewCountNotifier*>(sender())) {
-        if (handled) {
-            QMailMessage::MessageType type(actionType[action]);
-            // No messages of this type are new any longer
-            QMailMessageKey newMessages(QMailMessageKey::messageType(type));
-            newMessages &= QMailMessageKey(QMailMessageKey::status(QMailMessage::New, QMailDataComparator::Includes));
-            QMailStore::instance()->updateMessagesMetaData(newMessages, QMailMessage::New, false);
-
-            if (messageCounts[type] != 0) {
-                newMessageTotal -= messageCounts[type];
-
-                messageCounts[type] = 0;
-                NewCountNotifier::notify(type, 0);
-            }
-        }
-        actionType.remove(action);
-        action->deleteLater();
-        if (actionType.isEmpty()) {
-            // All outstanding handler events have been processed
-            emit messageCountUpdated();
-        }
-    }
-}
-
-void MessageServer::error(const QString &message)
-{
-    if (NewCountNotifier* action = static_cast<NewCountNotifier*>(sender())) {
-        qCWarning(lcMessaging) << "Unable to complete service:" << serviceForType(actionType[action]) << "-" << message;
-        actionType.remove(action);
-        action->deleteLater();
-    }
-
-    if (actionType.isEmpty()) {
-        // No outstanding handler events remain
-        emit messageCountUpdated();
-    }
-}
-
 void MessageServer::transmissionCompleted(quint64 action)
 {
     // Ensure the client receives any resulting events before the completion notification
@@ -367,10 +233,7 @@ void MessageServer::messagesAdded(const QMailMessageIdList &ids)
 
 void MessageServer::messagesUpdated(const QMailMessageIdList &ids)
 {
-    if (QMailStore::instance()->asynchronousEmission()) {
-        // Only need to check message counts if the update occurred in another process
-        updateNewMessageCounts();
-    } else {
+    if (!QMailStore::instance()->asynchronousEmission()) {
         // If we're updating, check whether the messages have been marked as Removed
         foreach (const QMailMessageId &id, ids) {
             if (completionList.contains(id)) {
@@ -389,28 +252,6 @@ void MessageServer::messagesRemoved(const QMailMessageIdList &ids)
     foreach (const QMailMessageId &id, ids) {
         // No need to complete deleted messages
         completionList.remove(id);
-    }
-
-    updateNewMessageCounts();
-}
-
-void MessageServer::updateNewMessageCounts()
-{
-    int newTotal = newMessageCount(QMailMessage::AnyType);
-    if (newTotal != newMessageTotal) {
-        // The number of messages marked as new has changed, but not via a message arrival event
-        static QMap<QMailMessage::MessageType, QString> typeSignature(typeSignatureInit());
-
-        // Update the individual counts
-        foreach (const QMailMessage::MessageType &type, typeSignature.keys()) {
-            int count(newMessageCount(type));
-            if (count != messageCounts[type]) {
-                messageCounts[type] = count;
-                NewCountNotifier::notify(type, count);
-            }
-        }
-
-        emit messageCountUpdated();
     }
 }
 

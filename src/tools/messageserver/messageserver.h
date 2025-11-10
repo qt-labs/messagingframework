@@ -35,14 +35,13 @@
 #define MESSAGESERVER_H
 
 #include <qmailmessageserver.h>
+
 #include <QObject>
 #include <QSet>
 #include <QSocketNotifier>
 #include <QList>
 
 class ServiceHandler;
-class StoreHandler;
-class NewCountNotifier;
 class QMailMessageServerService;
 
 typedef QMap<QMailMessage::MessageType, int> MessageCountMap;
@@ -77,29 +76,16 @@ private slots:
 
     void transmissionCompleted(quint64 action);
 
-    void response(bool handled);
-    void error(const QString &message);
-
     void messagesAdded(const QMailMessageIdList &ids);
     void messagesUpdated(const QMailMessageIdList &ids);
     void messagesRemoved(const QMailMessageIdList &ids);
-    void reportNewCounts();
 
     void cleanupTemporaryMessages();
 
 private:
-    int newMessageCount(QMailMessage::MessageType type) const;
-
-    void updateNewMessageCounts();
-
     void readLogSettings() const;
 
     ServiceHandler *handler;
-    StoreHandler *storeHandler;
-    MessageCountMap messageCounts;
-
-    QMap<NewCountNotifier*, QMailMessage::MessageType> actionType;
-    int newMessageTotal;
 
     QSet<QMailMessageId> completionList;
     bool completionAttempted;
