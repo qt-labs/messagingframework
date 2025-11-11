@@ -724,7 +724,7 @@ void QMailMessageServer::onlineFlagMessagesAndMoveToStandardFolder(quint64 actio
 }
 
 /*!
-    Requests that the MessageServer update the list of \a messages
+    Requests that the MessageServer add the list of \a messages
     in the message store, and ensure the durability of the content of \a messages.
 
     The request has the identifier \a action.
@@ -735,7 +735,7 @@ void QMailMessageServer::addMessages(quint64 action, const QMailMessageMetaDataL
 }
 
 /*!
-    Requests that the MessageServer add the list of \a messages
+    Requests that the MessageServer update the list of \a messages
     to the message store, and ensure the durability of the content of \a messages.
 
     The request has the identifier \a action.

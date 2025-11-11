@@ -88,9 +88,9 @@ class QMailStoreSql::Key
     };
 
     Type m_type;
-    const void* m_key;
-    const QString* m_alias;
-    const QString* m_field;
+    const void* m_key = nullptr;
+    const QString* m_alias = nullptr;
+    const QString* m_field = nullptr;
 
     static QString s_null;
 
@@ -118,24 +118,36 @@ class QMailStoreSql::Key
     const QString &key(QString*) const { return *m_alias; }
 
 public:
-    explicit Key(const QMailAccountKey &key, const QString &alias = QString()) : m_type(Account), m_key(&key), m_alias(&alias), m_field(0) {}
-    Key(const QString &field, const QMailAccountKey &key, const QString &alias = QString()) : m_type(Account), m_key(&key), m_alias(&alias), m_field(&field) {}
-    explicit Key(const QMailAccountSortKey &key, const QString &alias = QString()) : m_type(AccountSort), m_key(&key), m_alias(&alias), m_field(0) {}
+    Key(const QString &field, const QMailAccountKey &key, const QString &alias = QString())
+        : m_type(Account), m_key(&key), m_alias(&alias), m_field(&field) {}
+    explicit Key(const QMailAccountKey &key, const QString &alias = QString())
+        : m_type(Account), m_key(&key), m_alias(&alias) {}
+    explicit Key(const QMailAccountSortKey &key, const QString &alias = QString())
+        : m_type(AccountSort), m_key(&key), m_alias(&alias) {}
 
-    explicit Key(const QMailFolderKey &key, const QString &alias = QString()) : m_type(Folder), m_key(&key), m_alias(&alias), m_field(0) {}
-    Key(const QString &field, const QMailFolderKey &key, const QString &alias = QString()) : m_type(Folder), m_key(&key), m_alias(&alias), m_field(&field) {}
-    explicit Key(const QMailFolderSortKey &key, const QString &alias = QString()) : m_type(FolderSort), m_key(&key), m_alias(&alias), m_field(0) {}
+    Key(const QString &field, const QMailFolderKey &key, const QString &alias = QString())
+        : m_type(Folder), m_key(&key), m_alias(&alias), m_field(&field) {}
+    explicit Key(const QMailFolderKey &key, const QString &alias = QString())
+        : m_type(Folder), m_key(&key), m_alias(&alias) {}
+    explicit Key(const QMailFolderSortKey &key, const QString &alias = QString())
+        : m_type(FolderSort), m_key(&key), m_alias(&alias) {}
 
-    explicit Key(const QMailThreadKey &key, const QString &alias = QString()) : m_type(Thread), m_key(&key), m_alias(&alias), m_field(0) {}
-    Key(const QString &field, const QMailThreadKey &key, const QString &alias = QString()) : m_type(Thread), m_key(&key), m_alias(&alias), m_field(&field) {}
-    explicit Key(const QMailThreadSortKey &key, const QString &alias = QString()) : m_type(ThreadSort), m_key(&key), m_alias(&alias), m_field(0) {}
+    Key(const QString &field, const QMailThreadKey &key, const QString &alias = QString())
+        : m_type(Thread), m_key(&key), m_alias(&alias), m_field(&field) {}
+    explicit Key(const QMailThreadKey &key, const QString &alias = QString())
+        : m_type(Thread), m_key(&key), m_alias(&alias) {}
+    explicit Key(const QMailThreadSortKey &key, const QString &alias = QString())
+        : m_type(ThreadSort), m_key(&key), m_alias(&alias) {}
 
+    Key(const QString &field, const QMailMessageKey &key, const QString &alias = QString())
+        : m_type(Message), m_key(&key), m_alias(&alias), m_field(&field) {}
+    explicit Key(const QMailMessageKey &key, const QString &alias = QString())
+        : m_type(Message), m_key(&key), m_alias(&alias) {}
+    explicit Key(const QMailMessageSortKey &key, const QString &alias = QString())
+        : m_type(MessageSort), m_key(&key), m_alias(&alias) {}
 
-    explicit Key(const QMailMessageKey &key, const QString &alias = QString()) : m_type(Message), m_key(&key), m_alias(&alias), m_field(0) {}
-    Key(const QString &field, const QMailMessageKey &key, const QString &alias = QString()) : m_type(Message), m_key(&key), m_alias(&alias), m_field(&field) {}
-    explicit Key(const QMailMessageSortKey &key, const QString &alias = QString()) : m_type(MessageSort), m_key(&key), m_alias(&alias), m_field(0) {}
-
-    explicit Key(const QString &text) : m_type(Text), m_key(0), m_alias(&text), m_field(0) {}
+    explicit Key(const QString &text)
+        : m_type(Text), m_alias(&text) {}
 
     template<typename KeyType>
     bool isType() const { return isType(reinterpret_cast<KeyType*>(0)); }
