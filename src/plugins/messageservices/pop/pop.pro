@@ -17,16 +17,3 @@ SOURCES += popclient.cpp \
            poplog.cpp \
            popservice.cpp \
            popauthenticator.cpp
-
-!contains(DEFINES,QMF_NO_WIDGETS) {
-    QT += gui widgets
-
-    HEADERS += \
-           popsettings.h
-
-    FORMS += popsettings.ui
-
-    SOURCES += \
-           popsettings.cpp \
-}
-

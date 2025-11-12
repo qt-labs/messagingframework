@@ -52,11 +52,7 @@ objects that it wishes to make available. */
 
 
 class QMailAccount;
-class QMailAccountConfiguration;
-
 class QMailMessageService;
-class QMailMessageServiceConfigurator;
-
 
 class MESSAGESERVER_EXPORT QMailMessageServiceFactory
 {
@@ -69,7 +65,6 @@ public:
     static bool supports(const QString &key, QMailMessage::MessageType messageType);
 
     static QMailMessageService *createService(const QString &key, const QMailAccountId &id);
-    static QMailMessageServiceConfigurator *createServiceConfigurator(const QString &key);
 };
 
 
@@ -80,7 +75,6 @@ struct MESSAGESERVER_EXPORT QMailMessageServicePluginInterface : public QFactory
     virtual bool supports(QMailMessage::MessageType messageType) const = 0;
 
     virtual QMailMessageService *createService(const QMailAccountId &id) = 0;
-    virtual QMailMessageServiceConfigurator *createServiceConfigurator();
 };
 
 
@@ -332,37 +326,6 @@ private:
 
     QMailMessageService(const QMailMessageService &other);
     const QMailMessageService &operator=(const QMailMessageService &other);
-};
-
-#ifndef QMF_NO_WIDGETS
-#include <QWidget>
-class MESSAGESERVER_EXPORT QMailMessageServiceEditor : public QWidget
-{
-    Q_OBJECT
-
-public:
-    QMailMessageServiceEditor();
-    virtual ~QMailMessageServiceEditor();
-
-    virtual void displayConfiguration(const QMailAccount &account, const QMailAccountConfiguration &config) = 0;
-    virtual bool updateAccount(QMailAccount *account, QMailAccountConfiguration *config) = 0;
-};
-#endif
-
-class MESSAGESERVER_EXPORT QMailMessageServiceConfigurator
-{
-public:
-    QMailMessageServiceConfigurator();
-    virtual ~QMailMessageServiceConfigurator();
-
-    virtual QString service() const = 0;
-    virtual QString displayName() const = 0;
-
-    virtual QStringList serviceConstraints(QMailMessageServiceFactory::ServiceType type) const;
-
-#ifndef QMF_NO_WIDGETS
-    virtual QMailMessageServiceEditor *createEditor(QMailMessageServiceFactory::ServiceType type) = 0;
-#endif
 };
 
 #endif

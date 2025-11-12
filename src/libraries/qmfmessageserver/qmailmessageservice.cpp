@@ -161,18 +161,6 @@ QMailMessageService *QMailMessageServiceFactory::createService(const QString &ke
 }
 
 /*!
-    Returns a new instance of the configurator class for the service identified by \a key.
-*/
-QMailMessageServiceConfigurator *QMailMessageServiceFactory::createServiceConfigurator(const QString &key)
-{
-    if (QMailMessageServicePlugin* plugin = mapping(key))
-        return plugin->createServiceConfigurator();
-
-    return 0;
-}
-
-
-/*!
     \class QMailMessageServicePluginInterface
     \ingroup libmessageserver
 
@@ -207,15 +195,6 @@ QMailMessageServiceConfigurator *QMailMessageServiceFactory::createServiceConfig
 
     Creates an instance of the QMailMessageService class provided by the plugin, associated with the account \a accountId.
 */
-
-/*!
-    Creates an instance of the configurator for the QMailMessageService class provided by the plugin.
-*/
-QMailMessageServiceConfigurator *QMailMessageServicePluginInterface::createServiceConfigurator()
-{
-    return 0;
-}
-
 
 /*!
     \class QMailMessageServicePlugin
@@ -1542,92 +1521,6 @@ void QMailMessageService::updateStatus(int code, const QString &text, const QMai
         }
     }
 }
-
-#ifndef QMF_NO_WIDGETS
-/*!
-    \class QMailMessageServiceEditor
-    \ingroup libmessageserver
-
-    \preliminary
-    \brief The QMailMessageServiceEditor class provides an interface that allows a service to be edited graphically.
-
-    QMailMessageServiceEditor provides the base class for a GUI component that can edit the configuration for a messaging service.
-*/
-
-/*! \internal */
-QMailMessageServiceEditor::QMailMessageServiceEditor()
-{
-}
-
-/*! \internal */
-QMailMessageServiceEditor::~QMailMessageServiceEditor()
-{
-}
-
-/*!
-    \fn void QMailMessageServiceEditor::displayConfiguration(const QMailAccount &account, const QMailAccountConfiguration &config);
-
-    Invoked to set the editor with the details of the account \a account, described by \a config.
-*/
-
-/*!
-    \fn bool QMailMessageServiceEditor::updateAccount(QMailAccount *account, QMailAccountConfiguration *config);
-
-    Invoked to update the account \a account and configuration \a config with the details currently displayed by the editor.
-    Return true if the account and configuration are appropriately updated, and any necessary data storage external to the mail store has been performed.
-*/
-#endif
-
-/*!
-    \class QMailMessageServiceConfigurator
-    \ingroup libmessageserver
-
-    \preliminary
-    \brief The QMailMessageServiceConfigurator class provides an interface that allows a service to be configured.
-
-    QMailMessageServiceConfigurator provides the interface that a messaging service must provide to allow
-    its configuration to be editted by a generic GUI editor framework.
-*/
-
-/*! \internal */
-QMailMessageServiceConfigurator::QMailMessageServiceConfigurator()
-{
-}
-
-/*! \internal */
-QMailMessageServiceConfigurator::~QMailMessageServiceConfigurator()
-{
-}
-
-/*!
-    \fn QString QMailMessageServiceConfigurator::service() const;
-
-    Returns the identifier of the service configured by this class.
-*/
-
-/*!
-    \fn QString QMailMessageServiceConfigurator::displayName() const;
-
-    Returns the name of the service configured by this class, in a form suitable for display.
-*/
-
-/*!
-    Returns a list of services of the type \a type that are compatible with this service.
-    If the service does not constrain the possible list of compatible services, an empty list should be returned.
-*/
-QStringList QMailMessageServiceConfigurator::serviceConstraints(QMailMessageServiceFactory::ServiceType) const
-{
-    return QStringList();
-}
-
-#ifndef QMF_NO_WIDGETS
-/*!
-    \fn QMailMessageServiceEditor *QMailMessageServiceConfigurator::createEditor(QMailMessageServiceFactory::ServiceType type);
-
-    Creates an instance of the editor class for the service of type \a type.
-*/
-#endif
-
 
 /*!
     \overload retrieveFolderList()

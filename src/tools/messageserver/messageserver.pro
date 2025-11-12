@@ -7,10 +7,6 @@ contains(DEFINES, USE_HTML_PARSER) {
     QT += gui
 }
 
-!contains(DEFINES,QMF_NO_WIDGETS) {
-    QT += gui widgets
-}
-
 CONFIG -= app_bundle
 target.path += $$QMF_INSTALL_ROOT/bin
 

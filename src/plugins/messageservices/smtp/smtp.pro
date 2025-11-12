@@ -15,16 +15,3 @@ SOURCES += smtpauthenticator.cpp \
            smtpclient.cpp \
            smtpconfiguration.cpp \
            smtpservice.cpp
-
-!contains(DEFINES,QMF_NO_WIDGETS) {
-    QT += gui widgets qmfwidgets
-
-    HEADERS += \
-           smtpsettings.h
-
-    FORMS += smtpsettings.ui
-
-    SOURCES += \
-           smtpsettings.cpp
-}
-

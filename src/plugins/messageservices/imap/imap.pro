@@ -33,20 +33,6 @@ SOURCES += imapclient.cpp \
            serviceactionqueue.cpp \
            idlenetworksession.cpp
 
-!contains(DEFINES,QMF_NO_WIDGETS) {
-    QT += qmfwidgets
-
-    HEADERS += \
-           imapsettings.h
-
-    FORMS += imapsettings.ui
-
-    SOURCES += \
-           imapsettings.cpp
-
-    RESOURCES += imap.qrc
-}
-
 qtConfig(system-zlib) {
     QMAKE_USE_PRIVATE += zlib
 } else {

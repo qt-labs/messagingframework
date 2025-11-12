@@ -10,12 +10,6 @@ qt_add_dbus_adaptor(GENERATED_SOURCES ../../libraries/qmfclient/qmailservice.xml
 
 add_library(MessageServer ${SRC} ${GENERATED_SOURCES} ${HEADERS})
 
-if (BUILD_WIDGETS)
-  target_link_libraries(MessageServer
-    PRIVATE Qt6::Widgets)
-else()
-  target_compile_definitions(MessageServer PRIVATE QMF_NO_WIDGETS)
-endif()
 target_include_directories(MessageServer PUBLIC
   ../../libraries/qmfmessageserver
   ../../libraries/qmfclient

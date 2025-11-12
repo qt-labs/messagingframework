@@ -27,26 +27,12 @@ set(HEADERS
   serviceactionqueue.h
   idlenetworksession.h)
 
-if (BUILD_WIDGETS)
-  set(SRC ${SRC} imapsettings.cpp)
-  set(HEADERS ${HEADERS} imapsettings.h)
-  qt_add_resources(SRC imap.qrc)
-  qt_wrap_ui(SRC imapsettings.ui)
-endif()
-
 add_library(imap MODULE ${SRC} ${HEADERS})
 
 target_include_directories(imap
   PRIVATE ../../../libraries/qmfclient ../../../libraries/qmfclient/support ../../../libraries/qmfmessageserver)
 target_link_libraries(imap
   PRIVATE Qt6::Core Qt6::Network QmfClient QmfMessageServer)
-if (BUILD_WIDGETS)
-  target_link_libraries(imap PUBLIC QmfWidgets)
-  target_include_directories(imap
-  PRIVATE ../../../libraries/qmfwidgets)
-else()
-  target_compile_definitions(imap PRIVATE QMF_NO_WIDGETS)
-endif()
 
 install(TARGETS imap
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}/qt6/plugins/messagingframework/messageservices)

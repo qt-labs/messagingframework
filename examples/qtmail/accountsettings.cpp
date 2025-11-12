@@ -32,7 +32,7 @@
 ****************************************************************************/
 
 #include "accountsettings.h"
-#include "editaccount.h"
+//#include "editaccount.h"
 #include "statusbar.h"
 #include <qmailaccountlistmodel.h>
 #include <qmaillog.h>
@@ -275,17 +275,21 @@ void AccountSettings::editAccount(QMailAccount *account)
         account->setStatus(QMailAccount::UserRemovable, true);
     }
 
-    QDialog *editAccountView;
+    int ret = QDialog::Rejected;
     bool wasPreferred(account->status() & QMailAccount::PreferredSender);
+
+#if 0 // editor support removed from qmfmessageserver. need to reimplement config on app side
+    QDialog *editAccountView;
 
     EditAccount *e = new EditAccount(this, "EditAccount");
     e->setAccount(account, &config);
     editAccountView = e;
 
     editAccountView->setMinimumSize(QSize(400,400));
-    int ret = editAccountView->exec();
+    ret = editAccountView->exec();
 
     delete editAccountView;
+#endif
 
     if (ret == QDialog::Accepted) {
         QMailAccountId previousPreferredId;

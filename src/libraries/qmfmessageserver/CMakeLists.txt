@@ -31,12 +31,6 @@ endif()
 
 add_library(QmfMessageServer SHARED ${SRC} ${HEADERS})
 
-if (BUILD_WIDGETS)
-  target_link_libraries(QmfMessageServer PUBLIC Qt6::Widgets)
-else()
-  target_compile_definitions(QmfMessageServer PRIVATE QMF_NO_WIDGETS)
-endif()
-
 target_compile_definitions(QmfMessageServer PRIVATE MESSAGESERVER_INTERNAL)
 target_include_directories(QmfMessageServer PRIVATE ../qmfclient ../qmfclient/support)
 target_link_libraries(QmfMessageServer

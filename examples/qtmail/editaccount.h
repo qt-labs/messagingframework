@@ -49,6 +49,8 @@ QT_END_NAMESPACE
 class QMailAccountConfiguration;
 class QMailAccount;
 
+// FIXME the class here depends on qmfmessageserver editor support which got removed.
+// The account configuration needs to be reimplemented on the app side
 class EditAccount : public QDialog
 {
     Q_OBJECT

@@ -33,9 +33,7 @@
 
 #include "popservice.h"
 #include "popconfiguration.h"
-#ifndef QMF_NO_WIDGETS
-#include "popsettings.h"
-#endif
+
 #include <QTimer>
 #include <QtPlugin>
 #include <QtGlobal>
@@ -399,48 +397,6 @@ void PopService::accountsUpdated(const QMailAccountIdList &ids)
 }
 
 
-class PopConfigurator : public QMailMessageServiceConfigurator
-{
-public:
-    PopConfigurator();
-    ~PopConfigurator();
-
-    QString service() const override;
-    QString displayName() const override;
-
-#ifndef QMF_NO_WIDGETS
-    QMailMessageServiceEditor *createEditor(QMailMessageServiceFactory::ServiceType type) override;
-#endif
-};
-
-PopConfigurator::PopConfigurator()
-{
-}
-
-PopConfigurator::~PopConfigurator()
-{
-}
-
-QString PopConfigurator::service() const
-{
-    return serviceKey;
-}
-
-QString PopConfigurator::displayName() const
-{
-    return QCoreApplication::instance()->translate("QMailMessageService", "POP");
-}
-
-#ifndef QMF_NO_WIDGETS
-QMailMessageServiceEditor *PopConfigurator::createEditor(QMailMessageServiceFactory::ServiceType type)
-{
-    if (type == QMailMessageServiceFactory::Source)
-        return new PopSettings;
-
-    return 0;
-}
-#endif
-
 PopServicePlugin::PopServicePlugin()
     : QMailMessageServicePlugin()
 {
@@ -464,11 +420,6 @@ bool PopServicePlugin::supports(QMailMessage::MessageType type) const
 QMailMessageService *PopServicePlugin::createService(const QMailAccountId &id)
 {
     return new PopService(id);
-}
-
-QMailMessageServiceConfigurator *PopServicePlugin::createServiceConfigurator()
-{
-    return new PopConfigurator();
 }
 
 #include "popservice.moc"

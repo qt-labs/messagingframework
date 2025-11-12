@@ -32,9 +32,7 @@
 ****************************************************************************/
 
 #include "smtpservice.h"
-#ifndef QMF_NO_WIDGETS
-#include "smtpsettings.h"
-#endif
+
 #include <QtPlugin>
 #include <QTimer>
 #include <QCoreApplication>
@@ -214,48 +212,6 @@ void SmtpService::updateStatus(const QString &text)
 }
 
 
-class SmtpConfigurator : public QMailMessageServiceConfigurator
-{
-public:
-    SmtpConfigurator();
-    ~SmtpConfigurator();
-
-    QString service() const override;
-    QString displayName() const override;
-
-#ifndef QMF_NO_WIDGETS
-    QMailMessageServiceEditor *createEditor(QMailMessageServiceFactory::ServiceType type) override;
-#endif
-};
-
-SmtpConfigurator::SmtpConfigurator()
-{
-}
-
-SmtpConfigurator::~SmtpConfigurator()
-{
-}
-
-QString SmtpConfigurator::service() const
-{
-    return serviceKey;
-}
-
-QString SmtpConfigurator::displayName() const
-{
-    return QCoreApplication::instance()->translate("QMailMessageService", "SMTP");
-}
-
-#ifndef QMF_NO_WIDGETS
-QMailMessageServiceEditor *SmtpConfigurator::createEditor(QMailMessageServiceFactory::ServiceType type)
-{
-    if (type == QMailMessageServiceFactory::Sink)
-        return new SmtpSettings;
-
-    return 0;
-}
-#endif
-
 SmtpServicePlugin::SmtpServicePlugin()
     : QMailMessageServicePlugin()
 {
@@ -279,11 +235,6 @@ bool SmtpServicePlugin::supports(QMailMessage::MessageType type) const
 QMailMessageService *SmtpServicePlugin::createService(const QMailAccountId &id)
 {
     return new SmtpService(id);
-}
-
-QMailMessageServiceConfigurator *SmtpServicePlugin::createServiceConfigurator()
-{
-    return new SmtpConfigurator();
 }
 
 #include "smtpservice.moc"

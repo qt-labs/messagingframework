@@ -32,13 +32,11 @@
 ****************************************************************************/
 
 #include "imapservice.h"
-#ifndef QMF_NO_WIDGETS
-#include "imapsettings.h"
-#endif
 #include "imapconfiguration.h"
 #include "imapstrategy.h"
 #include "serviceactionqueue.h"
 #include "imaplog.h"
+
 #include <QtPlugin>
 #include <QTimer>
 #include <qmailmessage.h>
@@ -1788,47 +1786,6 @@ void ImapService::setPersistentConnectionStatus(bool status)
     _idling = status;
 }
 
-class ImapConfigurator : public QMailMessageServiceConfigurator
-{
-public:
-    ImapConfigurator();
-    ~ImapConfigurator();
-
-    QString service() const override;
-    QString displayName() const override;
-
-#ifndef QMF_NO_WIDGETS
-    QMailMessageServiceEditor *createEditor(QMailMessageServiceFactory::ServiceType type) override;
-#endif
-};
-
-ImapConfigurator::ImapConfigurator()
-{
-}
-
-ImapConfigurator::~ImapConfigurator()
-{
-}
-
-QString ImapConfigurator::service() const
-{
-    return serviceKey;
-}
-
-QString ImapConfigurator::displayName() const
-{
-    return QCoreApplication::instance()->translate("QMailMessageService", "IMAP");
-}
-
-#ifndef QMF_NO_WIDGETS
-QMailMessageServiceEditor *ImapConfigurator::createEditor(QMailMessageServiceFactory::ServiceType type)
-{
-    if (type == QMailMessageServiceFactory::Source)
-        return new ImapSettings;
-
-    return 0;
-}
-#endif
 
 ImapServicePlugin::ImapServicePlugin()
     : QMailMessageServicePlugin()
@@ -1853,11 +1810,6 @@ bool ImapServicePlugin::supports(QMailMessage::MessageType type) const
 QMailMessageService *ImapServicePlugin::createService(const QMailAccountId &id)
 {
     return new ImapService(id);
-}
-
-QMailMessageServiceConfigurator *ImapServicePlugin::createServiceConfigurator()
-{
-    return new ImapConfigurator();
 }
 
 #include "imapservice.moc"

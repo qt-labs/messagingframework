@@ -86,7 +86,6 @@ public:
     bool supports(QMailMessage::MessageType type) const override;
 
     QMailMessageService *createService(const QMailAccountId &id) override;
-    QMailMessageServiceConfigurator *createServiceConfigurator() override;
 };
 
 #endif

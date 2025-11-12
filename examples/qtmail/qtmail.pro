@@ -16,7 +16,7 @@ HEADERS += emailclient.h \
            readmail.h \
            writemail.h \
            accountsettings.h \
-           editaccount.h \
+           #editaccount.h \
            statusmonitorwidget.h \
            statusbar.h \
            statusmonitor.h \
@@ -37,7 +37,7 @@ SOURCES += emailclient.cpp \
            readmail.cpp \
            writemail.cpp \
            accountsettings.cpp \
-           editaccount.cpp \
+           #editaccount.cpp \
            statusmonitorwidget.cpp \
            statusbar.cpp \
            statusmonitor.cpp \
