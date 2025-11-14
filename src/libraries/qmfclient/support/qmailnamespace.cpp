@@ -105,12 +105,13 @@ QString QMail::dataPath()
 
     QString path = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation) + "/qmf/";
 
-    if (QDir(path).exists()) {
+    // path checks made with db subdirectory to check it's actually in use
+    if (QDir(path + QLatin1String("database")).exists()) {
         cached = path;
     } else {
         // for backwards compatibility return the older data path if it exists and the new doesn't
         QString oldPath = QDir::homePath() + QLatin1String("/.qmf/");
-        cached = QDir(oldPath).exists() ? oldPath : path;
+        cached = QDir(oldPath + QLatin1String("database")).exists() ? oldPath : path;
     }
 
     return cached;
