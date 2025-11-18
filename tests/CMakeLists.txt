@@ -1,10 +1,10 @@
 # hack a directory that can act like plugin root with the common prefix
 execute_process(COMMAND ln -s ${CMAKE_BINARY_DIR}/src/plugins ${CMAKE_BINARY_DIR}/src/plugins/messagingframework)
 
-add_subdirectory(tst_locks)
 add_subdirectory(tst_longstream)
 add_subdirectory(tst_longstring)
 add_subdirectory(tst_python_email)
+add_subdirectory(tst_qmailaccountkey)
 add_subdirectory(tst_qmail_listmodels)
 add_subdirectory(tst_qmail_sortkeys)
 add_subdirectory(tst_qmailaccountconfiguration)

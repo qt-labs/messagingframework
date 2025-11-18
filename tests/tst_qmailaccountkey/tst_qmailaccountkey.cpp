@@ -33,53 +33,30 @@
 
 #include <QObject>
 #include <QTest>
-#include <qmailaddress.h>
-#include <locks_p.h>
-#include "qmailaccountkey.h"
-#include <ctype.h>
 
-class tst_locks : public QObject
+#include "qmailaccountkey.h"
+
+class tst_qmailaccountkey : public QObject
 {
     Q_OBJECT
 
 public:
-    tst_locks();
-    virtual ~tst_locks();
+    tst_qmailaccountkey();
+    virtual ~tst_qmailaccountkey();
 
 private slots:
-    virtual void initTestCase();
-    virtual void cleanupTestCase();
-    virtual void init();
-    virtual void cleanup();
-
     void testQMailAccountKey();
 };
 
-tst_locks::tst_locks()
+tst_qmailaccountkey::tst_qmailaccountkey()
 {
 }
 
-tst_locks::~tst_locks()
+tst_qmailaccountkey::~tst_qmailaccountkey()
 {
 }
 
-void tst_locks::initTestCase()
-{
-}
-
-void tst_locks::cleanupTestCase()
-{
-}
-
-void tst_locks::init()
-{
-}
-
-void tst_locks::cleanup()
-{
-}
-
-void tst_locks::testQMailAccountKey()
+void tst_qmailaccountkey::testQMailAccountKey()
 {
     QMailAccountKey firstKey(QMailAccountKey::id(QMailAccountId(0)));
     QMailAccountKey secondKey(QMailAccountKey::id(QMailAccountId(1)));
@@ -92,5 +69,6 @@ void tst_locks::testQMailAccountKey()
     QVERIFY((testKey | firstKey) == secondKey);
 }
 
-QTEST_MAIN(tst_locks)
-#include "tst_locks.moc"
+QTEST_MAIN(tst_qmailaccountkey)
+
+#include "tst_qmailaccountkey.moc"

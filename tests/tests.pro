@@ -19,7 +19,7 @@ SUBDIRS = \
       tst_qmail_listmodels \
       tst_storagemanager \
       tst_qmaildisconnected \
-      tst_locks \
+      tst_qmailaccountkey \
       tst_qmailthread \
       tst_pop \
       tst_imap \

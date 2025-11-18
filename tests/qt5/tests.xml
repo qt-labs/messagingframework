@@ -1003,15 +1003,11 @@
         <hardware>true</hardware>
       </environments>
     </set>
-    <set name="_usr_tests_qmf_tst_locks">
-      <description>libqmf-tests:tst_locks</description>
-      <case name="tst_locks-testLock">
-        <description>libqmf-tests:tst_locks:testLock</description>
-        <step>/usr/tests/qmf-qt5/tst_locks testLock</step>
-      </case>
-      <case name="tst_locks-testQMailAccountKey">
-        <description>libqmf-tests:tst_locks:testQMailAccountKey</description>
-        <step>/usr/tests/qmf-qt5/tst_locks testQMailAccountKey</step>
+    <set name="_usr_tests_qmf_tst_qmailaccountkey">
+      <description>libqmf-tests:tst_qmailaccountkey</description>
+      <case name="tst_qmailaccountkey-testQMailAccountKey">
+        <description>libqmf-tests:tst_qmailaccountkey:testQMailAccountKey</description>
+        <step>/usr/tests/qmf-qt5/tst_qmailaccountkey testQMailAccountKey</step>
       </case>
       <environments>
         <scratchbox>true</scratchbox>
