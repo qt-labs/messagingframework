@@ -184,7 +184,7 @@ QMailMessage tst_python_email::fromFile(const QString& filename)
 
 QByteArray tst_python_email::fileData(const QString& filename)
 {
-    LongString ls(QFINDTESTDATA(filename));
+    LongString ls = LongString::fromFile(QFINDTESTDATA(filename));
     QByteArray ba(ls.toQByteArray());
     return QByteArray(ba.constData(), ba.length());
 }

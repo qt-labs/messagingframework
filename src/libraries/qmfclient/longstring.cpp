@@ -561,6 +561,11 @@ LongString::~LongString()
     delete d;
 }
 
+LongString LongString::fromFile(const QString &fileName)
+{
+    return LongString(fileName);
+}
+
 LongString &LongString::operator=(const LongString &other)
 {
     if (&other != this) {

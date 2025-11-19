@@ -64,9 +64,10 @@ class QMF_EXPORT LongString
 public:
     LongString();
     LongString(const LongString &other);
-    LongString(const QByteArray &ba);
-    LongString(const QString &fileName);
+    explicit LongString(const QByteArray &ba);
     virtual ~LongString();
+
+    static LongString fromFile(const QString &fileName);
 
     LongString &operator=(const LongString &);
 
@@ -92,6 +93,8 @@ public:
     template <typename Stream> void deserialize(Stream &stream);
 
 private:
+    explicit LongString(const QString &fileName);
+
     LongStringPrivate* d;
 };
 

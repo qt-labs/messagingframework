@@ -3277,7 +3277,7 @@ void QMailMessageBodyPrivate::fromFile(const QString& file, const QMailMessageCo
     _type = content;
     _encoded = (status == QMailMessageBody::AlreadyEncoded);
     _filename = file;
-    _bodyData = LongString(file);
+    _bodyData = LongString::fromFile(file);
 
     ensureCharsetExist();
 }
@@ -8221,7 +8221,7 @@ QMailMessage QMailMessage::fromRfc2822(const QByteArray &byteArray)
 */
 QMailMessage QMailMessage::fromRfc2822File(const QString& fileName)
 {
-    LongString ls(fileName);
+    LongString ls = LongString::fromFile(fileName);
     QMailMessage mail = fromRfc2822(ls);
     mail.extractUndecodedData(ls);
     return mail;
@@ -8234,7 +8234,7 @@ QMailMessage QMailMessage::fromRfc2822File(const QString& fileName)
 */
 QMailMessage QMailMessage::fromSkeletonRfc2822File(const QString& fileName)
 {
-    LongString ls(fileName);
+    LongString ls = LongString::fromFile(fileName);
     return fromRfc2822(ls);
 }
 
