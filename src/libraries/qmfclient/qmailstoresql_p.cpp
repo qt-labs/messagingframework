@@ -191,22 +191,21 @@ const int Sqlite3ConstraintErrorNumber = 19;
 
 const uint pid = static_cast<uint>(QCoreApplication::applicationPid() & 0xffffffff);
 
-// Helper class for automatic unlocking
-template<typename Mutex>
-class Guard
+// Helper class for automatic locking
+class MutexGuard
 {
-    Mutex &mutex;
+    ProcessMutex &mutex;
     bool locked;
 
 public:
-
-    Guard(Mutex& m)
+    MutexGuard(ProcessMutex& m)
         : mutex(m),
           locked(false)
     {
+        lock();
     }
 
-    ~Guard()
+    ~MutexGuard()
     {
         unlock();
     }
@@ -227,8 +226,6 @@ public:
         }
     }
 };
-
-typedef Guard<ProcessMutex> MutexGuard;
 
 QString escape(const QString &original, const QChar &escapee, const QChar &escaper = QChar::fromLatin1('\\'))
 {
@@ -1224,7 +1221,7 @@ public:
 
     QVariantList parentFolderId() const { return idValues<QMailFolderKey>(); }
 
-    QVariantList ancestorFolderIds() const {  return idValues<QMailFolderKey>(); }
+    QVariantList ancestorFolderIds() const { return idValues<QMailFolderKey>(); }
 
     QVariantList sender() const { return stringValues(); }
 
@@ -1594,7 +1591,7 @@ public:
 
     QVariantList parentFolderId() const { return idValues<QMailFolderKey>(); }
 
-    QVariantList ancestorFolderIds() const {  return idValues<QMailFolderKey>(); }
+    QVariantList ancestorFolderIds() const { return idValues<QMailFolderKey>(); }
 
     QVariantList parentAccountId() const { return idValues<QMailAccountKey>(); }
 
@@ -2695,7 +2692,6 @@ QMailStoreSql::QMailStoreSql(bool withAccountTables)
 {
     ProcessMutex creationMutex(QDir::rootPath());
     MutexGuard guard(creationMutex);
-    guard.lock();
 
     mutex = new ProcessMutex(databaseIdentifier(), 1);
     if (contentMutex == 0) {
@@ -2728,7 +2724,6 @@ bool QMailStoreSql::initStore(const QString &localFolderName)
 {
     ProcessMutex creationMutex(QDir::rootPath());
     MutexGuard guard(creationMutex);
-    guard.lock();
 
     // Enforce the error code to be this if we can't init:
     errorCode = QMailStore::StorageInaccessible;
@@ -3575,7 +3570,6 @@ QMailMessage QMailStoreSql::extractMessage(const QSqlRecord& r, const QMap<QStri
         QPair<QString, QString> elements(extractUriElements(contentUri));
 
         MutexGuard lock(contentManagerMutex());
-        lock.lock();
 
         QMailContentManager *contentManager = QMailContentManagerFactory::create(elements.first);
         if (contentManager) {
@@ -5391,7 +5385,6 @@ void QMailStoreSql::removeExpiredData(const QStringList& contentUris)
 {
     {
         MutexGuard lock(contentManagerMutex());
-        lock.lock();
 
         QMap<QString, QStringList> uriElements;
 
@@ -5951,7 +5944,6 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptAddMessage(QMailMessage *mess
     }
 
     MutexGuard lock(contentManagerMutex());
-    lock.lock();
 
     ReferenceStorer refStorer(message);
     const_cast<const QMailMessage*>(message)->foreachPart<ReferenceStorer&>(refStorer);
@@ -6815,7 +6807,6 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptUpdateMessage(QMailMessageMet
             }
 
             MutexGuard lock(contentManagerMutex());
-            lock.lock();
 
             QStringList schemes(QStringList() << QMailContentManagerFactory::defaultFilterScheme()
                                               << metaData->contentScheme()
