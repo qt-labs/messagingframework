@@ -4,6 +4,7 @@ set(SRC
   qmailcredentials.cpp
   qmailmessagebuffer.cpp
   qmailmessageclassifier.cpp
+  qmailmessageserverplugin.cpp
   qmailmessageservice.cpp
   qmailserviceconfiguration.cpp
   qmailstoreaccountfilter.cpp
@@ -16,18 +17,12 @@ set(HEADERS
   qmailcredentials.h
   qmailmessagebuffer.h
   qmailmessageclassifier.h
+  qmailmessageserverplugin.h
   qmailmessageservice.h
   qmailserviceconfiguration.h
   qmailstoreaccountfilter.h
   qmailtransport.h
   qmailheartbeattimer.h)
-
-if (BUILD_MESSAGESERVER_PLUGINS)
-  set(SRC ${SRC}
-    qmailmessageserverplugin.cpp)
-  set(HEADERS ${HEADERS}
-    qmailmessageserverplugin.h)
-endif()
 
 add_library(QmfMessageServer SHARED ${SRC} ${HEADERS})
 

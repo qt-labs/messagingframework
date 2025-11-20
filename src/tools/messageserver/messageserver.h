@@ -44,8 +44,6 @@
 class ServiceHandler;
 class QMailMessageServerService;
 
-typedef QMap<QMailMessage::MessageType, int> MessageCountMap;
-
 class MessageServer : public QObject
 {
     Q_OBJECT
@@ -64,6 +62,7 @@ public:
 
 signals:
     void messageCountUpdated();
+
 #if defined(Q_OS_UNIX)
 public slots:
     void handleSigHup(); // Qt signal handler for UNIX SIGHUP signal.
@@ -82,10 +81,7 @@ private:
     void readLogSettings() const;
 
     ServiceHandler *handler;
-
-#ifdef MESSAGESERVER_PLUGINS
     QList<QMailMessageServerService*> m_plugins;
-#endif
 
 #if defined(Q_OS_UNIX)
     static int sighupFd[2];

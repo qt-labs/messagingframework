@@ -10,7 +10,6 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 set(CMAKE_CXX_STANDARD 11)
 
 option(BUILD_WIDGETS "Build widgets" OFF)
-option(BUILD_MESSAGESERVER_PLUGINS "Build plugins for the message server" ON)
 option(USE_HTML_PARSER "Use HTML parser to handle rich text" OFF)
 option(USE_ACCOUNTS_QT "Use libaccounts-qt to handle mail account" OFF)
 

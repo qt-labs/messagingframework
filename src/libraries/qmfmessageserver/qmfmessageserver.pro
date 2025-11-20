@@ -4,13 +4,8 @@ CONFIG    += warn_on
 
 MODULE_PLUGIN_TYPES = \
     messagingframework/messageservices \
-    messagingframework/messagecredentials
-
-contains(DEFINES,MESSAGESERVER_PLUGINS) {
-    MODULE_PLUGIN_TYPES += messageserverplugins
-    HEADERS += qmailmessageserverplugin.h
-    SOURCES += qmailmessageserverplugin.cpp
-}
+    messagingframework/messagecredentials \
+    messagingframework/messageserverplugins
 
 load(qt_module)
 CONFIG -= create_cmake
@@ -23,6 +18,7 @@ HEADERS += \
     qmailcredentials.h \
     qmailmessagebuffer.h \
     qmailmessageclassifier.h \
+    qmailmessageserverplugin.h \
     qmailmessageservice.h \
     qmailserviceconfiguration.h \
     qmailstoreaccountfilter.h \
@@ -35,6 +31,7 @@ SOURCES += \
            qmailcredentials.cpp \
            qmailmessagebuffer.cpp \
            qmailmessageclassifier.cpp \
+           qmailmessageserverplugin.cpp \
            qmailmessageservice.cpp \
            qmailserviceconfiguration.cpp \
            qmailstoreaccountfilter.cpp \

@@ -85,9 +85,7 @@ MessageServer::~MessageServer()
         qCDebug(lcMessaging) << "Unregistered messageserver from D-Bus";
     }
 
-#ifdef MESSAGESERVER_PLUGINS
     qDeleteAll(m_plugins);
-#endif
 }
 
 bool MessageServer::init()
@@ -161,14 +159,12 @@ bool MessageServer::init()
 
     emit handler->actionsListed(QMailActionDataList());
 
-#ifdef MESSAGESERVER_PLUGINS
     qCDebug(lcMessaging) << "Initiating messageserver plugins.";
     for (const QString &plugin : QMailMessageServerPluginFactory::keys()) {
         QMailMessageServerService *service = QMailMessageServerPluginFactory::createService(plugin);
         qCDebug(lcMessaging) << "service from" << plugin << "created.";
         m_plugins.append(service);
     }
-#endif
 
     return true;
 }
