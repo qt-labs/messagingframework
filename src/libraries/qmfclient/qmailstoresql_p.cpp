@@ -3028,8 +3028,13 @@ static QString queryText(const QString &query, const QList<QVariant> &values)
     int index = result.indexOf(marker);
     while ((index != -1) && (it != end)) {
         QString substitute((*it).toString());
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+        if ((*it).type() == QVariant::String)
+            substitute.prepend(quote).append(quote);
+#else
         if ((*it).metaType() == QMetaType::fromType<QString>())
             substitute.prepend(quote).append(quote);
+#endif
 
         result.replace(index, 1, substitute);
 
@@ -3043,7 +3048,11 @@ static QString queryText(const QString &query, const QList<QVariant> &values)
 static QString queryText(const QSqlQuery &query)
 {
     // Note: we currently only handle positional parameters
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    return queryText(query.lastQuery().simplified(), query.boundValues().values());
+#else
     return queryText(query.lastQuery().simplified(), query.boundValues());
+#endif
 }
 
 QSqlQuery QMailStoreSql::prepare(const QString& sql)

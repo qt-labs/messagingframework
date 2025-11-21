@@ -10,6 +10,9 @@ contains(DEFINES, USE_HTML_PARSER) {
 CONFIG -= app_bundle
 target.path += $$QMF_INSTALL_ROOT/bin
 
+# hack longstream work without the private/ on include
+INCLUDEPATH += $$PWD/../../libraries/qmfmessageserver/
+
 HEADERS += messageserver.h \
            servicehandler.h
 

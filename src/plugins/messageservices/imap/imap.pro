@@ -39,3 +39,5 @@ qtConfig(system-zlib) {
     QT_PRIVATE += zlib-private
 }
 
+# hack longstream work without the private/ on include
+INCLUDEPATH += $$PWD/../../../libraries/qmfmessageserver/

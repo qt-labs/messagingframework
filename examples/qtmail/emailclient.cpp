@@ -68,6 +68,8 @@
 #include <QToolBar>
 #include <QMovie>
 #include <QStatusBar>
+#include <QScreen>
+
 #include "statusmonitorwidget.h"
 #include "statusbar.h"
 #include "statusmonitor.h"

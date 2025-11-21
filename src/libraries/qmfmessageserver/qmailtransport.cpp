@@ -189,13 +189,21 @@ void QMailTransport::createSocket(EncryptType encryptType)
     mSocket = new Socket(this);
     encryption = encryptType;
     connect(mSocket, &QSslSocket::encrypted, this, &QMailTransport::encryptionEstablished);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    connect(mSocket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(connectionFailed(QList<QSslError>)));
+#else
     connect(mSocket, &QSslSocket::sslErrors, this, &QMailTransport::connectionFailed);
+#endif
 
     const int bufferLimit = 101*1024; // Limit memory used when downloading
     mSocket->setReadBufferSize( bufferLimit );
     mSocket->setObjectName(QString::fromUtf8(mName) + QString::fromLatin1("-socket"));
     connect(mSocket, &QAbstractSocket::connected, this, &QMailTransport::connectionEstablished);
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+    connect(mSocket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(socketError(QAbstractSocket::SocketError)));
+#else
     connect(mSocket, &QAbstractSocket::errorOccurred, this, &QMailTransport::socketError);
+#endif
     connect(mSocket, &QAbstractSocket::readyRead, this, &QMailTransport::readyRead);
     connect(mSocket, &QAbstractSocket::bytesWritten, this, &QMailTransport::bytesWritten);
 

@@ -461,7 +461,7 @@ void AttachmentListWidget::addAttachments(const QStringList& attachments)
         m_model->setAttachments(m_attachments);
         setVisible(!m_model->isEmpty());
 
-        emit attachmentsAdded(newAttachments.toList());
+        emit attachmentsAdded(newAttachments);
     }
 }
 

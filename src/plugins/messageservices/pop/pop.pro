@@ -17,3 +17,6 @@ SOURCES += popclient.cpp \
            poplog.cpp \
            popservice.cpp \
            popauthenticator.cpp
+
+# hack longstream work without the private/ on include
+INCLUDEPATH += $$PWD/../../../libraries/qmfmessageserver/

@@ -49,6 +49,7 @@
 #include <qmailaccount.h>
 #include <QApplication>
 #include <QGuiApplication>
+#include <QScreen>
 
 static const QString placeholder("(no subject)");
 

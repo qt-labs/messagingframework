@@ -1,5 +1,5 @@
 TARGET     = QmfClient
-QT         = core dbus sql network core5compat
+QT         = core dbus sql network
 CONFIG    += warn_on
 
 MODULE_PLUGIN_TYPES = \

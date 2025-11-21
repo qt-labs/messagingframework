@@ -9,11 +9,11 @@ INCLUDEPATH += \
                  $$QTMAIL_EXAMPLE
 
 HEADERS += $$QTMAIL_EXAMPLE/accountsettings.h \
-           $$QTMAIL_EXAMPLE/editaccount.h \
+           #$$QTMAIL_EXAMPLE/editaccount.h \
            $$QTMAIL_EXAMPLE/statusbar.h
 
 SOURCES += $$QTMAIL_EXAMPLE/accountsettings.cpp \
-           $$QTMAIL_EXAMPLE/editaccount.cpp \
+           #$$QTMAIL_EXAMPLE/editaccount.cpp \
            $$QTMAIL_EXAMPLE/statusbar.cpp \
            main_messagingaccounts.cpp
 
