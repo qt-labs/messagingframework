@@ -261,7 +261,7 @@ QTextStream& operator<< (QTextStream& s, const QMailAccountId &id)
     return s;
 }
 
-Q_IMPLEMENT_USER_METATYPE_TYPEDEF(QMailAccountIdList, QMailAccountIdList)
+Q_IMPLEMENT_USER_METATYPE_NO_OPERATORS(QMailAccountIdList)
 
 
 /*!
@@ -400,7 +400,7 @@ QTextStream& operator<< (QTextStream& s, const QMailThreadId &id)
     return s;
 }
 
-Q_IMPLEMENT_USER_METATYPE_TYPEDEF(QMailThreadIdList, QMailThreadIdList)
+Q_IMPLEMENT_USER_METATYPE_NO_OPERATORS(QMailThreadIdList)
 
 
 /*!
@@ -555,7 +555,7 @@ QTextStream& operator<< (QTextStream& s, const QMailFolderId &id)
     return s;
 }
 
-Q_IMPLEMENT_USER_METATYPE_TYPEDEF(QMailFolderIdList, QMailFolderIdList)
+Q_IMPLEMENT_USER_METATYPE_NO_OPERATORS(QMailFolderIdList)
 
 
 /*!
@@ -694,7 +694,7 @@ QTextStream& operator<<(QTextStream& s, const QMailMessageId &id)
     return s;
 }
 
-Q_IMPLEMENT_USER_METATYPE_TYPEDEF(QMailMessageIdList, QMailMessageIdList)
+Q_IMPLEMENT_USER_METATYPE_NO_OPERATORS(QMailMessageIdList)
 
 /*! \internal */
 uint qHash(const QMailAccountId &id)

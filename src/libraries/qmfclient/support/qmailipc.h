@@ -45,59 +45,48 @@ namespace QMailIpc
 }
 
 template <typename T>
-struct QMetaTypeRegister
+struct QmfMetaTypeRegister
 {
     static int registerType() { return 1; }
 };
 
-#ifdef Q_CC_GNU
-# define _QATOMIC_ONCE() do {} while(0)
+#if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
+#define QMF_REGISTER_STREAMABLE_TYPE(TYPE) \
+    qRegisterMetaType<TYPE>( #TYPE ); \
+    qRegisterMetaTypeStreamOperators<TYPE>( #TYPE );
 #else
-# define _QATOMIC_ONCE()                \
-    static QAtomicInt once;             \
-    if ( once.fetchAndStoreOrdered(1) ) \
-        return 1
+#define QMF_REGISTER_STREAMABLE_TYPE(TYPE) \
+    qRegisterMetaType<TYPE>( #TYPE );
 #endif
 
-#define Q_DECLARE_USER_METATYPE_NO_OPERATORS(TYPE) \
-    Q_DECLARE_METATYPE(TYPE) \
-    template<> \
-    struct QMetaTypeRegister< TYPE > \
-    { \
-        static int registerType() { \
-            _QATOMIC_ONCE(); \
-            qRegisterMetaType<TYPE>( #TYPE ); \
-            return 1; \
-        } \
-        static int __init_variable__; \
-    };
-
 #define Q_DECLARE_USER_METATYPE(TYPE) \
-    Q_DECLARE_USER_METATYPE_NO_OPERATORS(TYPE) \
+    Q_DECLARE_METATYPE(TYPE) \
     QMF_EXPORT QDataStream &operator<<(QDataStream &stream, const TYPE &var); \
-    QMF_EXPORT QDataStream &operator>>( QDataStream &stream, TYPE &var );
-
-#define Q_DECLARE_USER_METATYPE_TYPEDEF(TAG,TYPE)       \
-    template <typename T> \
-    struct QMetaTypeRegister##TAG \
-    { \
-        static int registerType() { return 1; } \
-    }; \
-    template<> struct QMetaTypeRegister##TAG< TYPE > { \
-        static int registerType() { \
-            _QATOMIC_ONCE(); \
-            qRegisterMetaType< TYPE >( #TYPE ); \
-            return 1; \
-        } \
-        static int __init_variable__; \
-    };
-
-#define Q_DECLARE_USER_METATYPE_ENUM(TYPE)      \
-    Q_DECLARE_USER_METATYPE(TYPE)
+    QMF_EXPORT QDataStream &operator>>(QDataStream &stream, TYPE &var);
 
 #define Q_IMPLEMENT_USER_METATYPE_NO_OPERATORS(TYPE) \
-    int QMetaTypeRegister< TYPE >::__init_variable__ = \
-        QMetaTypeRegister< TYPE >::registerType();
+    template<> \
+    struct QmfMetaTypeRegister< TYPE > \
+    { \
+        static int registerType() { \
+            qRegisterMetaType<TYPE>(#TYPE); \
+            return 1; \
+        } \
+        static int __init_variable__; \
+    }; \
+    int QmfMetaTypeRegister< TYPE >::__init_variable__ = QmfMetaTypeRegister< TYPE >::registerType();
+
+#define Q_IMPLEMENT_USER_METATYPE_WITH_OPERATORS(TYPE) \
+    template<> \
+    struct QmfMetaTypeRegister< TYPE > \
+    { \
+        static int registerType() { \
+            QMF_REGISTER_STREAMABLE_TYPE(TYPE) \
+            return 1; \
+        } \
+        static int __init_variable__; \
+    }; \
+    int QmfMetaTypeRegister< TYPE >::__init_variable__ = QmfMetaTypeRegister< TYPE >::registerType();
 
 #define Q_IMPLEMENT_USER_METATYPE(TYPE) \
     QDataStream &operator<<(QDataStream &stream, const TYPE &var) \
@@ -105,31 +94,26 @@ struct QMetaTypeRegister
         var.serialize(stream); \
         return stream; \
     } \
-    \
-    QDataStream &operator>>( QDataStream &stream, TYPE &var ) \
+    QDataStream &operator>>(QDataStream &stream, TYPE &var) \
     { \
         var.deserialize(stream); \
         return stream; \
     } \
-    Q_IMPLEMENT_USER_METATYPE_NO_OPERATORS(TYPE)
+    Q_IMPLEMENT_USER_METATYPE_WITH_OPERATORS(TYPE)
 
-#define Q_IMPLEMENT_USER_METATYPE_TYPEDEF(TAG,TYPE)     \
-    int QMetaTypeRegister##TAG< TYPE >::__init_variable__ = \
-        QMetaTypeRegister##TAG< TYPE >::registerType();
-
-#define Q_IMPLEMENT_USER_METATYPE_ENUM(TYPE)    \
-    QDataStream& operator<<( QDataStream& stream, const TYPE &v ) \
+#define Q_IMPLEMENT_USER_METATYPE_ENUM(TYPE) \
+    QDataStream& operator<<(QDataStream& stream, const TYPE &v) \
     { \
         stream << static_cast<qint32>(v); \
         return stream; \
     } \
-    QDataStream& operator>>( QDataStream& stream, TYPE& v ) \
+    QDataStream& operator>>(QDataStream& stream, TYPE& v) \
     { \
         qint32 _v; \
         stream >> _v; \
         v = static_cast<TYPE>(_v); \
         return stream; \
     } \
-    Q_IMPLEMENT_USER_METATYPE_NO_OPERATORS(TYPE)
+    Q_IMPLEMENT_USER_METATYPE_WITH_OPERATORS(TYPE)
 
 #endif //QMAILIPC_H

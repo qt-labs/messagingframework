@@ -94,6 +94,5 @@ Q_DECLARE_USER_METATYPE(QMailAddress)
 typedef QList<QMailAddress> QMailAddressList;
 
 Q_DECLARE_METATYPE(QMailAddressList)
-Q_DECLARE_USER_METATYPE_TYPEDEF(QMailAddressList, QMailAddressList)
 
 #endif

@@ -370,12 +370,12 @@ private:
 
 Q_DECLARE_USER_METATYPE(QMailServiceAction::Status)
 
-Q_DECLARE_USER_METATYPE_ENUM(QMailServiceAction::Connectivity)
-Q_DECLARE_USER_METATYPE_ENUM(QMailServiceAction::Activity)
-Q_DECLARE_USER_METATYPE_ENUM(QMailServiceAction::Status::ErrorCode)
+Q_DECLARE_USER_METATYPE(QMailServiceAction::Connectivity)
+Q_DECLARE_USER_METATYPE(QMailServiceAction::Activity)
+Q_DECLARE_USER_METATYPE(QMailServiceAction::Status::ErrorCode)
 
-Q_DECLARE_USER_METATYPE_ENUM(QMailRetrievalAction::RetrievalSpecification)
+Q_DECLARE_USER_METATYPE(QMailRetrievalAction::RetrievalSpecification)
 
-Q_DECLARE_USER_METATYPE_ENUM(QMailSearchAction::SearchSpecification)
+Q_DECLARE_USER_METATYPE(QMailSearchAction::SearchSpecification)
 
 #endif

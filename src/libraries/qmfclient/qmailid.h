@@ -179,11 +179,6 @@ Q_DECLARE_METATYPE(QMailFolderIdList)
 Q_DECLARE_METATYPE(QMailMessageIdList)
 Q_DECLARE_METATYPE(QMailThreadIdList)
 
-Q_DECLARE_USER_METATYPE_TYPEDEF(QMailAccountIdList, QMailAccountIdList)
-Q_DECLARE_USER_METATYPE_TYPEDEF(QMailFolderIdList, QMailFolderIdList)
-Q_DECLARE_USER_METATYPE_TYPEDEF(QMailMessageIdList, QMailMessageIdList)
-Q_DECLARE_USER_METATYPE_TYPEDEF(QMailThreadIdList, QMailThreadIdList)
-
 uint QMF_EXPORT qHash(const QMailAccountId &id);
 uint QMF_EXPORT qHash(const QMailFolderId &id);
 uint QMF_EXPORT qHash(const QMailMessageId &id);

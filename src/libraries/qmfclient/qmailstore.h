@@ -272,7 +272,7 @@ private:
     QMailStoreImplementation* d;
 };
 
-Q_DECLARE_USER_METATYPE_ENUM(QMailStore::MessageRemovalOption)
-Q_DECLARE_USER_METATYPE_ENUM(QMailStore::ChangeType)
+Q_DECLARE_USER_METATYPE(QMailStore::MessageRemovalOption)
+Q_DECLARE_USER_METATYPE(QMailStore::ChangeType)
 
 #endif

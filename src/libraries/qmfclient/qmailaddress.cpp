@@ -1143,6 +1143,4 @@ void QMailAddress::deserialize(Stream &stream)
 
 Q_IMPLEMENT_USER_METATYPE(QMailAddress)
 
-Q_IMPLEMENT_USER_METATYPE_TYPEDEF(QMailAddressList, QMailAddressList)
-
-//Q_IMPLEMENT_USER_METATYPE_NO_OPERATORS(QList<QMailAddress>)
+Q_IMPLEMENT_USER_METATYPE_NO_OPERATORS(QMailAddressList)

@@ -278,4 +278,4 @@ void QMailActionData::deserialize(Stream &stream)
 
 Q_IMPLEMENT_USER_METATYPE_ENUM(QMailServerRequestType)
 Q_IMPLEMENT_USER_METATYPE(QMailActionData)
-Q_IMPLEMENT_USER_METATYPE_TYPEDEF(QMailActionDataList, QMailActionDataList)
+Q_IMPLEMENT_USER_METATYPE_NO_OPERATORS(QMailActionDataList)

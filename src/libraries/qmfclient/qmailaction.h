@@ -114,9 +114,8 @@ private:
 
 typedef QList<QMailActionData> QMailActionDataList;
 
-Q_DECLARE_USER_METATYPE_ENUM(QMailServerRequestType)
+Q_DECLARE_USER_METATYPE(QMailServerRequestType)
 Q_DECLARE_USER_METATYPE(QMailActionData)
 Q_DECLARE_METATYPE(QMailActionDataList)
-Q_DECLARE_USER_METATYPE_TYPEDEF(QMailActionDataList, QMailActionDataList)
 
 #endif

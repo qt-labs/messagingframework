@@ -985,12 +985,12 @@ typedef QList<QMailMessage> QMailMessageList;
 typedef QList<QMailMessageMetaData> QMailMessageMetaDataList;
 typedef QList<QMailMessage::MessageType> QMailMessageTypeList;
 
-Q_DECLARE_USER_METATYPE_ENUM(QMailMessageBody::TransferEncoding)
-Q_DECLARE_USER_METATYPE_ENUM(QMailMessagePartContainer::MultipartType)
-Q_DECLARE_USER_METATYPE_ENUM(QMailMessage::MessageType)
-Q_DECLARE_USER_METATYPE_ENUM(QMailMessage::ContentType)
-Q_DECLARE_USER_METATYPE_ENUM(QMailMessage::ResponseType)
-Q_DECLARE_USER_METATYPE_ENUM(QMailMessage::AttachmentsAction)
+Q_DECLARE_USER_METATYPE(QMailMessageBody::TransferEncoding)
+Q_DECLARE_USER_METATYPE(QMailMessagePartContainer::MultipartType)
+Q_DECLARE_USER_METATYPE(QMailMessage::MessageType)
+Q_DECLARE_USER_METATYPE(QMailMessage::ContentType)
+Q_DECLARE_USER_METATYPE(QMailMessage::ResponseType)
+Q_DECLARE_USER_METATYPE(QMailMessage::AttachmentsAction)
 
 Q_DECLARE_USER_METATYPE(QMailMessage)
 Q_DECLARE_USER_METATYPE(QMailMessageMetaData)
@@ -1000,9 +1000,5 @@ Q_DECLARE_USER_METATYPE(QMailMessagePart::Location)
 Q_DECLARE_METATYPE(QMailMessageList)
 Q_DECLARE_METATYPE(QMailMessageMetaDataList)
 Q_DECLARE_METATYPE(QMailMessageTypeList)
-
-Q_DECLARE_USER_METATYPE_TYPEDEF(QMailMessageList, QMailMessageList)
-Q_DECLARE_USER_METATYPE_TYPEDEF(QMailMessageMetaDataList, QMailMessageMetaDataList)
-Q_DECLARE_USER_METATYPE_TYPEDEF(QMailMessageTypeList, QMailMessageTypeList)
 
 #endif
