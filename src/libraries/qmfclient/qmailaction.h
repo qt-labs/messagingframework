@@ -105,17 +105,14 @@ public:
 
     const QMailActionData& operator=(const QMailActionData& other);
 
-    template <typename Stream> void serialize(Stream &stream) const;
-    template <typename Stream> void deserialize(Stream &stream);
-
 private:
     QSharedDataPointer<QMailActionDataPrivate> d;
 };
 
 typedef QList<QMailActionData> QMailActionDataList;
 
-Q_DECLARE_USER_METATYPE(QMailServerRequestType)
-Q_DECLARE_USER_METATYPE(QMailActionData)
+Q_DECLARE_METATYPE(QMailServerRequestType)
+Q_DECLARE_METATYPE(QMailActionData)
 Q_DECLARE_METATYPE(QMailActionDataList)
 
 #endif

@@ -44,12 +44,6 @@ public:
 
     bool operator==(const QMailActionDataPrivate& other) const;
 
-    template <typename Stream>
-    void serialize(Stream &stream) const;
-
-    template <typename Stream>
-    void deserialize(Stream &stream);
-
     QMailActionId _id;
     QMailServerRequestType _requestType;
     uint _current;
@@ -101,18 +95,6 @@ bool QMailActionDataPrivate::operator==(const QMailActionDataPrivate& other) con
             && _status.accountId == other._status.accountId
             && _status.folderId == other._status.folderId
             && _status.messageId == other._status.messageId);
-}
-
-template <typename Stream>
-void QMailActionDataPrivate::serialize(Stream &stream) const
-{
-    stream << _id << _requestType << _current << _total << _status;
-}
-
-template <typename Stream>
-void QMailActionDataPrivate::deserialize(Stream &stream)
-{
-    stream >> _id >> _requestType >> _current >> _total >> _status;
 }
 
 /*!
@@ -255,26 +237,6 @@ bool QMailActionData::operator!= (const QMailActionData& other) const
     return !(d->operator==(*other.d));
 }
 
-/*!
-    \fn QMailActionData::serialize(Stream&) const
-    \internal
-*/
-template <typename Stream>
-void QMailActionData::serialize(Stream &stream) const
-{
-    d->serialize(stream);
-}
-
-/*!
-    \fn QMailActionData::deserialize(Stream&)
-    \internal
-*/
-template <typename Stream>
-void QMailActionData::deserialize(Stream &stream)
-{
-    d->deserialize(stream);
-}
-
-Q_IMPLEMENT_USER_METATYPE_ENUM(QMailServerRequestType)
-Q_IMPLEMENT_USER_METATYPE(QMailActionData)
+Q_IMPLEMENT_USER_METATYPE_NO_OPERATORS(QMailServerRequestType)
+Q_IMPLEMENT_USER_METATYPE_NO_OPERATORS(QMailActionData)
 Q_IMPLEMENT_USER_METATYPE_NO_OPERATORS(QMailActionDataList)

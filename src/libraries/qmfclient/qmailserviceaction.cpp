@@ -485,38 +485,6 @@ QMailServiceAction::Status& QMailServiceAction::Status::operator=(const QMailSer
 }
 
 /*!
-    \fn QMailServiceAction::Status::serialize(Stream&) const
-    \internal
-*/
-template <typename Stream>
-void QMailServiceAction::Status::serialize(Stream &stream) const
-{
-    stream << errorCode;
-    stream << text;
-    stream << accountId;
-    stream << folderId;
-    stream << messageId;
-}
-
-template void QMailServiceAction::Status::serialize(QDataStream &) const;
-
-/*!
-    \fn QMailServiceAction::Status::deserialize(Stream&)
-    \internal
-*/
-template <typename Stream>
-void QMailServiceAction::Status::deserialize(Stream &stream)
-{
-    stream >> errorCode;
-    stream >> text;
-    stream >> accountId;
-    stream >> folderId;
-    stream >> messageId;
-}
-
-template void QMailServiceAction::Status::deserialize(QDataStream &);
-
-/*!
     \class QMailServiceAction
     \inmodule QmfClient
 

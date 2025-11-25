@@ -105,9 +105,6 @@ public:
         Status(const Status &other);
         Status& operator=(const Status& other);
 
-        template <typename Stream> void serialize(Stream &stream) const;
-        template <typename Stream> void deserialize(Stream &stream);
-
         ErrorCode errorCode;
         QString text;
 
@@ -366,14 +363,14 @@ private:
 };
 
 
-Q_DECLARE_USER_METATYPE(QMailServiceAction::Status)
+Q_DECLARE_METATYPE(QMailServiceAction::Status)
 
-Q_DECLARE_USER_METATYPE(QMailServiceAction::Connectivity)
-Q_DECLARE_USER_METATYPE(QMailServiceAction::Activity)
-Q_DECLARE_USER_METATYPE(QMailServiceAction::Status::ErrorCode)
+Q_DECLARE_METATYPE(QMailServiceAction::Connectivity)
+Q_DECLARE_METATYPE(QMailServiceAction::Activity)
+Q_DECLARE_METATYPE(QMailServiceAction::Status::ErrorCode)
 
-Q_DECLARE_USER_METATYPE(QMailRetrievalAction::RetrievalSpecification)
+Q_DECLARE_METATYPE(QMailRetrievalAction::RetrievalSpecification)
 
-Q_DECLARE_USER_METATYPE(QMailSearchAction::SearchSpecification)
+Q_DECLARE_METATYPE(QMailSearchAction::SearchSpecification)
 
 #endif
