@@ -211,7 +211,7 @@ public:
     void updateDefaultContentType(const QMailMessagePartContainerPrivate* parent);
 
     template <typename F>
-    void outputParts(QDataStream **out, bool addMimePreamble, bool includeAttachments, bool excludeInternalFields, F *func) const;
+    void outputParts(QDataStream *out, bool addMimePreamble, bool includeAttachments, bool excludeInternalFields, F *func) const;
 
     void outputBody(QDataStream& out, bool includeAttachments) const;
 
@@ -289,7 +289,7 @@ public:
     void appendUndecodedData(const QByteArray &data);
 
     template <typename F>
-    void output(QDataStream **out, bool addMimePreamble, bool includeAttachments, bool excludeInternalFields, F *func) const;
+    void output(QDataStream *out, bool addMimePreamble, bool includeAttachments, bool excludeInternalFields, F *func) const;
 
     bool contentModified() const;
     void setUnmodified();
@@ -430,7 +430,7 @@ public:
     void fromRfc2822(const LongString &ls);
 
     template <typename F>
-    void toRfc2822(QDataStream **out, QMailMessage::EncodingFormat format, quint64 messageStatus, F *func) const;
+    void toRfc2822(QDataStream *out, QMailMessage::EncodingFormat format, quint64 messageStatus, F *func) const;
 
     void setMessageType(QMailMessage::MessageType type);
 
