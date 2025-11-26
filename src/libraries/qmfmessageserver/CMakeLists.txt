@@ -40,3 +40,12 @@ set_target_properties(QmfMessageServer PROPERTIES
 install(TARGETS QmfMessageServer
   LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
   PUBLIC_HEADER DESTINATION ${CMAKE_INSTALL_INCLUDEDIR}/qt6/QmfMessageServer)
+
+if (ECM_FOUND)
+  ecm_generate_pkgconfig_file(
+        BASE_NAME QmfMessageServer
+        INCLUDE_INSTALL_DIR ${CMAKE_INSTALL_INCLUDEDIR}/qt6/QmfMessageServer
+        DEPS Qt6Core QmfClient PRIVATE Qt6Network
+        URL "https://codereview.qt-project.org/gitweb?p=qt-labs%2Fmessagingframework.git"
+        INSTALL)
+endif()

@@ -176,3 +176,12 @@ install(TARGETS QmfClient
 if (TARGET Qt6::LinguistTools)
   qt_add_translations(libqmfclient)
 endif()
+
+if (ECM_FOUND)
+  ecm_generate_pkgconfig_file(
+        BASE_NAME QmfClient
+        INCLUDE_INSTALL_DIR ${CMAKE_INSTALL_INCLUDEDIR}/qt6/QmfClient
+        DEPS Qt6Core PRIVATE Qt6Core5Compat PRIVATE Qt6DBus PRIVATE Qt6Sql PRIVATE Qt6Network
+        URL "https://codereview.qt-project.org/gitweb?p=qt-labs%2Fmessagingframework.git"
+        INSTALL)
+endif()

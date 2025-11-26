@@ -37,3 +37,11 @@ if (TARGET Qt6::LinguistTools)
   qt_add_translations(libqmfwidgets)
 endif()
 
+if (ECM_FOUND)
+  ecm_generate_pkgconfig_file(
+        BASE_NAME QmfWidgets
+        INCLUDE_INSTALL_DIR ${CMAKE_INSTALL_INCLUDEDIR}/qt6/QmfWidgets
+        DEPS Qt6Core Qt6Widgets QmfClient
+        URL "https://codereview.qt-project.org/gitweb?p=qt-labs%2Fmessagingframework.git"
+        INSTALL)
+endif()

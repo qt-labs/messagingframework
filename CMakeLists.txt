@@ -34,6 +34,16 @@ if(BUILD_TESTING)
 endif()
 pkg_check_modules(ICU icu-i18n IMPORTED_TARGET)
 
+# it might be possible to get this functionality from Qt cmake content but those seem buried there
+# inside bigger modules
+find_package(ECM NO_MODULE)
+if (ECM_FOUND)
+  set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH})
+  include(ECMGeneratePkgConfigFile)
+else()
+  message("Extra-cmake-modules (ecm) not found, pkgconfig files won't be generated")
+endif()
+
 # there's probably some better compiler agnostic way to enable more warnings, but this is a start
 add_compile_options(-Wall -Wextra -Wpedantic)
 
