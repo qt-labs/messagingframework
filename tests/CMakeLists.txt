@@ -1,5 +1,5 @@
 # hack a directory that can act like plugin root with the common prefix
-execute_process(COMMAND ln -s ${CMAKE_BINARY_DIR}/src/plugins ${CMAKE_BINARY_DIR}/src/plugins/messagingframework)
+execute_process(COMMAND ln -sf ${CMAKE_BINARY_DIR}/src/plugins ${CMAKE_BINARY_DIR}/src/plugins/messagingframework)
 
 add_subdirectory(tst_longstream)
 add_subdirectory(tst_longstring)
