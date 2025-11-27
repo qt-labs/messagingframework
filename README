@@ -5,38 +5,31 @@ generally software that interacts with email and mail servers.
 Building and Compiling
 ======================
 
-To build the Messaging Framework, ensure qt4, zlib and libicu development
-packages are installed, and run qmake on the top level messagingframework.pro
-file as follows:
+To build the Messaging Framework, ensure Qt5/Qt6 development packages
+are installed. Preferably also zlib and libicu. The Qt6 build is done
+with cmake and Qt5 with qmake.
 
-    qmake "QMF_INSTALL_ROOT=<image directory path>" messagingframework.pro
-
-Where <image directory path> is the location that make install will put the
-resultant binary files. It is optional but desirable to set this variable
-as it is not possible to run the applications from within their build directories
-due to dependencies. The debug configuration parameter is also optional.
-
-Following this simply run:
-
+For basic buid on Qt6 one can do:
+    mkdir build
+    cd build
+    cmake ..
     make
     make install
 
-It is also recommended to build in a separate path to the source tree.
-This is just a matter of running the above commands from within a separate
-build directory.
+On Qt5:
+    mkdir build
+    cd build
+    qmake .. QMF_INSTALL_ROOT=/usr # or qmake-qt5 depending on the environment
+    make
+    make install
 
-Note: If there are build errors referring to valgrind (tst_messageserver),
-please ensure that valgrind development headers are installed, or optionally
-remove unwanted tests from the messagingframework.pro.
+Note: On Qt5 the QmfWidgets module, which depends on QtWidgets, will be built by default.
+To remove this dependency use the define QMF_NO_WIDGETS, e.g. on qmake run
 
-Note: By default the QmfWidgets module will be built, which depends on QtWidgets.
-To remove this dependency use the define QMF_NO_WIDGETS, e.g.
+    qmake .. DEFINES+=QMF_NO_WIDGETS
 
-    qmake -r messagingframework.pro DEFINES+=QMF_NO_WIDGETS
-
-In addition there is support for protocol plugins (e.g. IMAP/SMTP/POP)
-to provide GUI account editors, which are by default and will be disabled
-with above QMF_NO_WIDGETS.
+For other qmake options DEFINES+=USE_HTML_PARSER enables HTML preview parsing via QtGui
+which might be a good idea.
 
 Note: By default QMF operations on the message store are atomic and durable, so
 long as the underlying OS supports durable writes, e.g. on Linux based systems
@@ -45,36 +38,23 @@ as a delete/update/add take effect or none of it does. Durable means once an
 operation is reported to have succeeded it will survive permanently even in
 the event of a system crash. Ensuring these properties has a considerable
 performance cost. To increase performance both durability and atomicity can
-be disabled using the define QMF_NO_DURABILITY e.g.:
-
-    qmake -r messagingframework.pro DEFINES+=QMF_NO_DURABILITY
+be disabled using the define QMF_NO_DURABILITY e.g.: DEFINES+=QMF_NO_DURABILITY
 
 Running Messaging Framework
 ===========================
 
-After make install has run, the following layout should exist:
+After make install has run the messageserver binary should be located in
+the bin directory.
 
-    bin
-    include
-    lib
-    tests
-
-The binary files messageserver and qtmail and messagingaccounts should be
-located in the bin directory.
-
-Set the following evironment variables prior to running these files:
+For custom paths some environment variables can be set prior to launching
+qmf related apps:
 
     PATH=<imagedir/bin>:$PATH
     LD_LIBRARY_PATH=<imagedir/lib>:$LD_LIBRARY_PATH
-    QT_PLUGIN_PATH=<imagedir/lib/qt5/plugins>
+    QT_PLUGIN_PATH=<imagedir/lib/qt6/plugins>
 
 Optionally set QMF_DATA to the location where you want the framework data
-files stored. If this is not set, the default of $HOME/.qmf will be used.
-
-Note: When running the example client application qtmail, if the messageserver
-is not already running it will be started as a child process of the application,
-whose output is not visible.  If you prefer to see the output of the messageserver
-daemon, ensure it is running separately before running qtmail.
+files stored. If this is not set, the default of $HOME/.local/share/qmf will be used.
 
 Testing the Messaging Framework
 ===============================
@@ -83,29 +63,20 @@ The messaging framework includes a series of unit tests designed to ensure
 that it is functioning correctly  in an operating environment.  Unit tests
 are located in the tests top-level directory.
 
-To run the tests:
-
-    cd tests
-    make test
-
-Normal make options control the operation of the testing - -j controls the
-number of concurrent tests invoked, -k instructs make to keep running in
-the event of a failure.
+To run the tests execute 'make test' with cmake or 'make check' with qmake.
 
 Note: some tests alter or remove data from the mailstore they operate against.
 It is prudent to use a different value for the QMF_DATA environment variable
-when running tests than when operating normally.
 
-To run a single test, perform make test within the subdirectory of the relevant
-test program.  For example, to run just the tst_QMailCodec test:
+Code status
+===========
 
-    make -C tests/tst_qmailcodec test
+The QtWidgets side hasn't had much attention for years and should be considered
+unstable API. Likely any real life usage is better anyway to create their
+own widgets and UI.
 
-To run a single test suite, provide the name of the test suite in the ARGS variable:
+Qt5 has been used for years. Qt6 less so and might have issues.
+Fixes and enhancements are welcome.
 
-    make -C test/tst_qmailcodec ARGS="encode" test
-
-To run a single test case, provide the name of the test case in the ARGS variable:
-
-    make -C test/tst_qmailcodec ARGS="encode:'one padding byte'" test
-
+At the moment only Linux is really supported with D-Bus as IPC. Other platforms would
+need some other mechanism for IPC implemented.
