@@ -137,8 +137,8 @@ add_library(QmfClient SHARED ${SRC} ${GENERATED_SOURCES} ${PUBLIC_HEADERS} ${PRI
 target_compile_definitions(QmfClient PRIVATE QMF_INTERNAL)
 target_include_directories(QmfClient PRIVATE support)
 target_link_libraries(QmfClient
-  PRIVATE Qt6::Sql Qt6::Network Qt6::Core5Compat
-  PUBLIC Qt6::Core Qt6::DBus)
+  PRIVATE Qt6::Sql Qt6::Network Qt6::Core5Compat Qt6::DBus
+  PUBLIC Qt6::Core)
 set_target_properties(QmfClient PROPERTIES
   SOVERSION ${PROJECT_VERSION_MAJOR}
   VERSION ${PROJECT_VERSION}

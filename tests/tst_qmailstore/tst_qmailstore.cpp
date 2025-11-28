@@ -38,7 +38,6 @@
 #include <qmailaccount.h>
 #include <qmailstore.h>
 #include <qmailnamespace.h>
-#include <qmailstoreimplementation_p.h>
 
 /*
     Unit test for QMailStore class.
@@ -74,7 +73,6 @@ private slots:
     void remove1000Messages();
     void removeMessageWithInResponse();
     void message();
-    void implementationbase();
 };
 
 #define CRLF "\015\012"
@@ -1791,39 +1789,6 @@ void tst_QMailStore::message()
     QCOMPARE(msg2.partCount(), 2u);
 
     QCOMPARE(QMailStore::instance()->message(msg2.id()).partCount(), 2u);
-}
-
-void tst_QMailStore::implementationbase()
-{
-    QMailAccount account1;
-    account1.setName("Account 10");
-    account1.setFromAddress(QMailAddress("Account 10", "account10@example.org"));
-    account1.setStatus(QMailAccount::SynchronizationEnabled, true);
-    account1.setStatus(QMailAccount::Synchronized, false);
-    account1.setStandardFolder(QMailFolder::SentFolder, QMailFolderId(333));
-    account1.setStandardFolder(QMailFolder::TrashFolder, QMailFolderId(666));
-    account1.setCustomField("question", "What is your dog's name?");
-    account1.setCustomField("answer", "Fido");
-
-    QMailAccountConfiguration config1;
-    config1.addServiceConfiguration("imap4");
-    if (QMailAccountConfiguration::ServiceConfiguration *svcCfg = &config1.serviceConfiguration("imap4")) {
-        svcCfg->setValue("server", "mail.example.org");
-        svcCfg->setValue("username", "account10");
-    }
-    config1.addServiceConfiguration("smtp");
-    if (QMailAccountConfiguration::ServiceConfiguration *svcCfg = &config1.serviceConfiguration("smtp")) {
-        svcCfg->setValue("server", "mail.example.org");
-        svcCfg->setValue("username", "account10");
-    }
-    QVERIFY(QMailStore::instance()->addAccount(&account1, &config1));
-
-    QMailStoreNullImplementation impl(QMailStore::instance());
-    QVERIFY(!impl.asynchronousEmission());
-    impl.flushIpcNotifications();
-
-    impl.setRetrievalInProgress(QMailAccountIdList()<<account1.id());
-    impl.notifyRetrievalInProgress(QMailAccountIdList()<<account1.id());
 }
 
 QTEST_MAIN(tst_QMailStore)
