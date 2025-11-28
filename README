@@ -64,6 +64,8 @@ that it is functioning correctly  in an operating environment.  Unit tests
 are located in the tests top-level directory.
 
 To run the tests execute 'make test' with cmake or 'make check' with qmake.
+With qmake building the tests needs to be also enabled with QT_BUILD_PARTS+=tests
+on the qmake execution.
 
 Note: some tests alter or remove data from the mailstore they operate against.
 It is prudent to use a different value for the QMF_DATA environment variable
