@@ -268,37 +268,6 @@
         <hardware>true</hardware>
       </environments>
     </set>
-    <set name="_usr_tests_qmf_tst_qlogsystem">
-      <description>libqmf-tests:tst_qlogsystem</description>
-      <case name="tst_qlogsystem-loggerConstruction">
-        <description>libqmf-tests:tst_qlogsystem:loggerConstruction</description>
-        <step>/usr/tests/qmf/tst_qlogsystem loggerConstruction</step>
-      </case>
-      <case name="tst_qlogsystem-minLogLvl">
-        <description>libqmf-tests:tst_qlogsystem:minLogLvl</description>
-        <step>/usr/tests/qmf/tst_qlogsystem minLogLvl</step>
-      </case>
-      <case name="tst_qlogsystem-loggerOutput">
-        <description>libqmf-tests:tst_qlogsystem:loggerOutput</description>
-        <step>/usr/tests/qmf/tst_qlogsystem loggerOutput</step>
-      </case>
-      <case name="tst_qlogsystem-qDebugOutput">
-        <description>libqmf-tests:tst_qlogsystem:qDebugOutput</description>
-        <step>/usr/tests/qmf/tst_qlogsystem qDebugOutput</step>
-      </case>
-      <case name="tst_qlogsystem-qWarningOutput">
-        <description>libqmf-tests:tst_qlogsystem:qWarningOutput</description>
-        <step>/usr/tests/qmf/tst_qlogsystem qWarningOutput</step>
-      </case>
-      <case name="tst_qlogsystem-sysLoggerOutput">
-        <description>libqmf-tests:tst_qlogsystem:sysLoggerOutput</description>
-        <step>/usr/tests/qmf/tst_qlogsystem sysLoggerOutput</step>
-      </case>
-      <environments>
-        <scratchbox>true</scratchbox>
-        <hardware>true</hardware>
-      </environments>
-    </set>
     <set name="_usr_tests_qmf_tst_qmailstore">
       <description>libqmf-tests:tst_qmailstore</description>
       <case name="tst_qmailstore-addAccount">
@@ -1008,52 +977,6 @@
       <case name="tst_qmailaccountkey-testQMailAccountKey">
         <description>libqmf-tests:tst_qmailaccountkey:testQMailAccountKey</description>
         <step>/usr/tests/qmf/tst_qmailaccountkey testQMailAccountKey</step>
-      </case>
-      <environments>
-        <scratchbox>true</scratchbox>
-        <hardware>true</hardware>
-      </environments>
-    </set>
-    <set name="_usr_tests_qmf_tst_qcop">
-      <description>libqmf-tests:tst_qcop</description>
-      <case name="tst_qcop-test_qcopchannel">
-        <description>libqmf-tests:tst_qcop:test_qcopchannel</description>
-        <step>/usr/tests/qmf/tst_qcop test_qcopchannel</step>
-      </case>
-      <case name="tst_qcop-test_qcopserver">
-        <description>libqmf-tests:tst_qcop:test_qcopserver</description>
-        <step>/usr/tests/qmf/tst_qcop test_qcopserver</step>
-      </case>
-      <case name="tst_qcop-test_qcopclient">
-        <description>libqmf-tests:tst_qcop:test_qcopclient</description>
-        <step>/usr/tests/qmf/tst_qcop test_qcopclient</step>
-      </case>
-      <case name="tst_qcop-test_qcopadaptor">
-        <description>libqmf-tests:tst_qcop:test_qcopadaptor</description>
-        <step>/usr/tests/qmf/tst_qcop test_qcopadaptor</step>
-      </case>
-      <case name="tst_qcop-test_secondqcopserver">
-        <description>libqmf-tests:tst_qcop:test_secondqcopserver</description>
-        <step>/usr/tests/qmf/tst_qcop test_secondqcopserver</step>
-      </case>
-      <environments>
-        <scratchbox>true</scratchbox>
-        <hardware>true</hardware>
-      </environments>
-    </set>
-    <set name="_usr_tests_qmf_tst_qmaillog">
-      <description>libqmf-tests:tst_qmaillog</description>
-      <case name="tst_qmaillog-test_qmaillog">
-        <description>libqmf-tests:tst_qmaillog:test_qmaillog</description>
-        <step>/usr/tests/qmf/tst_qmaillog test_qmaillog</step>
-      </case>
-      <case name="tst_qmaillog-test_logsystem">
-        <description>libqmf-tests:tst_qmaillog:test_logsystem</description>
-        <step>/usr/tests/qmf/tst_qmaillog test_logsystem</step>
-      </case>
-      <case name="tst_qmaillog-test_loggers">
-        <description>libqmf-tests:tst_qmaillog:test_loggers</description>
-        <step>/usr/tests/qmf/tst_qmaillog test_loggers</step>
       </case>
       <environments>
         <scratchbox>true</scratchbox>
