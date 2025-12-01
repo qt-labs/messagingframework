@@ -2378,7 +2378,7 @@ QMailMessageId QMailActionInfoPrivate::statusMessageId() const
     \preliminary
     \ingroup messaginglibrary
 
-    \brief The QMailActionInfo class provides the interface for tracking individual actions
+    \brief The QMailActionInfo class provides the interface for tracking individual actions.
 
     QMailActionInfo provides the mechanism for messaging clients to track an action that is
     or has run on the server. QMailActionInfo objects can only be created by QMailActionObserver
@@ -2612,7 +2612,7 @@ void QMailActionObserverPrivate::onActivityChanged(quint64 id, QMailServiceActio
    \preliminary
    \ingroup messaginglibrary
 
-   \brief The QMailActionObserver class provides an interface for monitoring currently running actions
+   \brief The QMailActionObserver class provides an interface for monitoring currently running actions.
 
     QMailActionObserver provides a mechanism for messaging clients to observe what actions
     the messageserver is currently running. A list of currently running actions can be retrieved

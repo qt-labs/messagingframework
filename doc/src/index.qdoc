@@ -33,24 +33,24 @@
 
 \table 100%
 
-\header 
-\o Reference Documentation
-\o Using Messaging Framework 
-\o
+\header
+\li Reference Documentation
+\li Using Messaging Framework
+\li
 \row
-\o 
+\li
 \list
-   \o \l {Class Index}{Classes }
-   \o \l {Grouped Classes}{Grouped Classes}
-   \o \l {Messaging Framework Namespaces}{Namespace List}
-   \o \l {Messaging Framework Class Inheritance Hierarchy}{Class Hierarchy}
-   \o \l {Annotated Class List}{Annotated Classes }
+   \li \l {Class Index}{Classes }
+   \li \l {Grouped Classes}{Grouped Classes}
+   \li \l {Messaging Framework Namespaces}{Namespace List}
+   \li \l {Messaging Framework Class Inheritance Hierarchy}{Class Hierarchy}
+   \li \l {Annotated Class List}{Annotated Classes }
 \endlist
-\o
+\li
 \list
-   \o \l {Messaging}{Introduction}
-   \o \l {Changes Between Messaging Framework Versions}
-   \o \l {Messaging Framework Client Library#Examples}{Examples}
+   \li \l {Messaging}{Introduction}
+   \li \l {Changes Between Messaging Framework Versions}
+   \li \l {Messaging Framework Client Library#Examples}{Examples}
 \endlist
  
 \endtable 

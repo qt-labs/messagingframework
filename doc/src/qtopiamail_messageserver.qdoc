@@ -43,9 +43,9 @@ For detailed class information refer to: \l{Message Server Support Classes}.
 The Message Server Support Library provides classes for storing information about messaging accounts both outgoing and incoming.
 
 \table
-\header \o Class \o Description
-\row \o QMailServiceConfiguration \o Provides an interface to the configuration details for a service within an account.
-\row \o QMailStoreAccountFilter \o Forward the signals of QMailStore, filtering for those that affect a single account.
+\header \li Class \li Description
+\row \li QMailServiceConfiguration \li Provides an interface to the configuration details for a service within an account.
+\row \li QMailStoreAccountFilter \li Forward the signals of QMailStore, filtering for those that affect a single account.
 \endtable
 
 \section1 Message Services
@@ -53,13 +53,13 @@ The Message Server Support Library provides classes for storing information abou
 The library provides classes that assist with the development of services that can be loaded into the {MessageServer Daemon}{Message Server} daemon via plugins.
 
 \table
-\header \o Class \o Description
-\row \o QMailMessageService \o The interface between the message server and components loaded from plugin libraries.
-\row \o QMailMessageSink \o The interface to objects that provide message external transmission services to the messageserver.
-\row \o QMailMessageSource \o The interface to objects that provide access to externally sourced messages to the messageserver.
-\row \o QMailMessageServiceEditor \o Interface that allows a service to be edited graphically.
-\row \o QMailMessageServiceConfigurator \o Interface that allows a service to be configured.
-\row \o QMailMessageServiceFactory \o Creates objects implementing the QMailMessageService interface.
+\header \li Class \li Description
+\row \li QMailMessageService \li The interface between the message server and components loaded from plugin libraries.
+\row \li QMailMessageSink \li The interface to objects that provide message external transmission services to the messageserver.
+\row \li QMailMessageSource \li The interface to objects that provide access to externally sourced messages to the messageserver.
+\row \li QMailMessageServiceEditor \li Interface that allows a service to be edited graphically.
+\row \li QMailMessageServiceConfigurator \li Interface that allows a service to be configured.
+\row \li QMailMessageServiceFactory \li Creates objects implementing the QMailMessageService interface.
 \endtable
 
 \section1 Utility Classes
@@ -67,9 +67,9 @@ The library provides classes that assist with the development of services that c
 The library also provides some utility classes that are used by service components within the Message Server daemon.
 
 \table
-\header \o Class \o Description
-\row \o QMailTransport \o A class that provides an encrypted line-oriented communications channel.
-\row \o QMailMessageClassifier \o A class that classifies message content by inspection.
+\header \li Class \li Description
+\row \li QMailTransport \li A class that provides an encrypted line-oriented communications channel.
+\row \li QMailMessageClassifier \li A class that classifies message content by inspection.
 \endtable
 
 \section1 Changes Between Versions

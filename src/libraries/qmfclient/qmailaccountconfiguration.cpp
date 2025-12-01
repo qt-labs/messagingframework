@@ -129,10 +129,10 @@ private:
     retrieval protocols should behave similarly.
 
     \table
-    \header \o Desired retrieval behavior \o Required key/value pair settings
-    \row \o Headers only \o "downloadAttachments" = "0", "autoDownload" = "0", "maxSize" = "0"
-    \row \o Entire message including attachments \o "downloadAttachments" = "1", "autoDownload" = "1", "maxSize" = "0"
-    \row \o Message headers, body and when available structure, no attachments \o "downloadAttachments" = "0", "autoDownload" = "1", "maxSize" = "0"
+    \header \li Desired retrieval behavior \li Required key/value pair settings
+    \row \li Headers only \li "downloadAttachments" = "0", "autoDownload" = "0", "maxSize" = "0"
+    \row \li Entire message including attachments \li "downloadAttachments" = "1", "autoDownload" = "1", "maxSize" = "0"
+    \row \li Message headers, body and when available structure, no attachments \li "downloadAttachments" = "0", "autoDownload" = "1", "maxSize" = "0"
     \endtable
 
     Structure refers to MIME body structure information.

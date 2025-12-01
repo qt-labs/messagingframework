@@ -38,12 +38,12 @@
 
     \table 100%
     \header
-    \o Group
-    \o Description
+    \li Group
+    \li Description
 
     \row
-    \o \l{Messaging Client Utility Classes}
-    \o Classes that provide GUI elements that assist with the development of messaging client applications.
+    \li \l{Messaging Client Utility Classes}
+    \li Classes that provide GUI elements that assist with the development of messaging client applications.
 
     \endtable
 
@@ -53,16 +53,16 @@
 
     \table 100%
     \header
-    \o Group
-    \o Description
+    \li Group
+    \li Description
 
     \row
-    \o \l{Messaging Classes}
-    \o Classes that provide support for manipulating messages.
+    \li \l{Messaging Classes}
+    \li Classes that provide support for manipulating messages.
 
     \row
-    \o \l{Message Server Support Classes}
-    \o Classes that assist with building components that provide services for the message server.
+    \li \l{Message Server Support Classes}
+    \li Classes that assist with building components that provide services for the message server.
 
     \endtable
 

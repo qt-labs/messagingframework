@@ -276,7 +276,7 @@ QMailCryptographicServiceConfiguration::~QMailCryptographicServiceConfiguration(
     Returns the keys to be used when creating a cryptographic
     signature for an e-mail of this account.
 
-    \sa QMailCryptographicService::sign().
+    \sa QMailCryptographicService::sign()
 */
 QStringList QMailCryptographicServiceConfiguration::signatureKeys() const
 {
@@ -287,7 +287,7 @@ QStringList QMailCryptographicServiceConfiguration::signatureKeys() const
     Stores the \a keys to be used when creating a cryptographic
     signature for an e-mail of this account.
 
-    \sa QMailCryptographicService::sign().
+    \sa QMailCryptographicService::sign()
 */
 void QMailCryptographicServiceConfiguration::setSignatureKeys(const QStringList &keys)
 {
@@ -302,7 +302,7 @@ void QMailCryptographicServiceConfiguration::setSignatureKeys(const QStringList 
     Returns the method to be used when creating a cryptographic
     signature for an e-mail of this account.
 
-    \sa QMailCryptographicService::sign().
+    \sa QMailCryptographicService::sign()
 */
 QString QMailCryptographicServiceConfiguration::signatureType() const
 {
@@ -313,7 +313,7 @@ QString QMailCryptographicServiceConfiguration::signatureType() const
     Sets up the \a method to be used when creating a cryptographic
     signature for an e-mail of this account.
 
-    \sa QMailCryptographicService::sign().
+    \sa QMailCryptographicService::sign()
 */
 void QMailCryptographicServiceConfiguration::setSignatureType(const QString &method)
 {

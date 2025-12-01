@@ -437,7 +437,7 @@ QMailFolderId QMailFolder::parentFolderId() const
 }
 
 /*!
- Sets the parent folder ID to \a id. \bold{Warning}: it is the responsibility of the
+ Sets the parent folder ID to \a id. \b{Warning}: it is the responsibility of the
  application to make sure that no circular folder refernces are created.
 */
 void QMailFolder::setParentFolderId(const QMailFolderId& id)

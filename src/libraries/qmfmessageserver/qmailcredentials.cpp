@@ -218,7 +218,7 @@ QMailCredentialsPlugin::~QMailCredentialsPlugin()
     \preliminary
     \ingroup libmessageserver
 
-    \brief The QMailCredentialsInterface describes how authentication credentials can be retrieved
+    \brief The QMailCredentialsInterface describes how authentication credentials can be retrieved.
 
     This interface has to be implemented by mechanisms that can retrieve and
     expose authentication credentials. For instance, credentials can be stored

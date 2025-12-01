@@ -44,8 +44,8 @@ For detailed class information refer to: \l{Messaging Classes}.
 The library is augmented by two related, more specific libraries: 
 
 \list
-\o the \l{Messaging Client Utility Library}{Client utility} library provides classes that assist with building GUI messaging client applications, and
-\o the \l{Message Server Support Library}{Server support} library provides classes that assist with creating plugin components for the \l{MessageServer Daemon}{Message Server} daemon.
+\li the \l{Messaging Client Utility Library}{Client utility} library provides classes that assist with building GUI messaging client applications, and
+\li the \l{Message Server Support Library}{Server support} library provides classes that assist with creating plugin components for the \l{MessageServer Daemon}{Message Server} daemon.
 \endlist
 
 \section1 Composition and Manipulation of Messages
@@ -57,19 +57,19 @@ Messages can be composed of multiple parts and constructed hierarchically. The C
 Classes to assist with composition and manipulation of messages:
 
 \table
-\header \o Class \o Description
-\row \o QMailMessageId \o Represents the mail store identifiers for message records.
-\row \o QMailMessageMetaData \o Represents a message stored by the Messaging Framework.
-\row \o QMailMessage \o Convenient interface for working with messages.
-\row \o QMailMessagePart \o Convenient interface for working with message attachments.
-\row \o QMailMessagePartContainer \o Access to a collection of message parts.
-\row \o QMailMessageBody \o The body element of a message or message part.
-\row \o QMailMessageHeaderField \o Encapsulates the parsing of message header fields.
-\row \o QMailMessageContentDisposition \o Encapsulates the parsing of the RFC 2822 'Content-Disposition' header field.
-\row \o QMailMessageContentType \o Encapsulates the parsing of the RFC 2822 'Content-Type' header field.
-\row \o QMailAddress \o Interface for manipulating message address strings.
-\row \o QMailTimeStamp \o Manages message time stamps.
-\row \o QMailCodec \o Base class for classes implementing codecs used in message composition.
+\header \li Class \li Description
+\row \li QMailMessageId \li Represents the mail store identifiers for message records.
+\row \li QMailMessageMetaData \li Represents a message stored by the Messaging Framework.
+\row \li QMailMessage \li Convenient interface for working with messages.
+\row \li QMailMessagePart \li Convenient interface for working with message attachments.
+\row \li QMailMessagePartContainer \li Access to a collection of message parts.
+\row \li QMailMessageBody \li The body element of a message or message part.
+\row \li QMailMessageHeaderField \li Encapsulates the parsing of message header fields.
+\row \li QMailMessageContentDisposition \li Encapsulates the parsing of the RFC 2822 'Content-Disposition' header field.
+\row \li QMailMessageContentType \li Encapsulates the parsing of the RFC 2822 'Content-Type' header field.
+\row \li QMailAddress \li Interface for manipulating message address strings.
+\row \li QMailTimeStamp \li Manages message time stamps.
+\row \li QMailCodec \li Base class for classes implementing codecs used in message composition.
 \endtable
 
 \section1 Message Accounts
@@ -80,13 +80,13 @@ messaging accounts both outgoing and incoming.
 Classes relating to messaging accounts:
 
 \table
-\header \o Class \o Description
-\row \o QMailAccountId \o Represents the mail store identifiers for account records.
-\row \o QMailAccount \o Stores attributes for a messaging account.
-\row \o QMailFolderId \o Represents the mail store identifiers for folder records.
-\row \o QMailFolder \o Represents a folder for messages on the mail store.
-\row \o QMailMessageRemovalRecord \o Represents a message deleted from the local mail store.
-\row \o QMailAccountConfiguration \o Contains the configuration details for an account.
+\header \li Class \li Description
+\row \li QMailAccountId \li Represents the mail store identifiers for account records.
+\row \li QMailAccount \li Stores attributes for a messaging account.
+\row \li QMailFolderId \li Represents the mail store identifiers for folder records.
+\row \li QMailFolder \li Represents a folder for messages on the mail store.
+\row \li QMailMessageRemovalRecord \li Represents a message deleted from the local mail store.
+\row \li QMailAccountConfiguration \li Contains the configuration details for an account.
 \endtable
 
 \section1 Message threads
@@ -97,9 +97,9 @@ message threads (a.k.a. conversations).
 Classes relating to message threads:
 
 \table
-\header \o Class \o Description
-\row \o QMailThreadId \o Represents the mail store identifiers for thread records.
-\row \o QMailThread \o Stores attributes for a message thread.
+\header \li Class \li Description
+\row \li QMailThreadId \li Represents the mail store identifiers for thread records.
+\row \li QMailThread \li Stores attributes for a message thread.
 \endtable
 
 \section1 Message Listing
@@ -110,9 +110,9 @@ display lists of messages and accounts with minimal effort, and with minimal res
 Classes to assist with listing messages:
 
 \table
-\header \o Class \o Description
-\row \o QMailAccountListModel \o Provides a model representing the accounts stored by the Messaging Framework.
-\row \o QMailMessageListModel \o Provides a model representing the messages stored by the Messaging Framework.
+\header \li Class \li Description
+\row \li QMailAccountListModel \li Provides a model representing the accounts stored by the Messaging Framework.
+\row \li QMailMessageListModel \li Provides a model representing the messages stored by the Messaging Framework.
 \endtable
 
 \section1 Message Navigation
@@ -124,12 +124,12 @@ taxonomy of message data, using standard or arbitrary categorization criteria.
 Classes to assist with navigating messages:
 
 \table
-\header \o Class \o Description
-\row \o QMailMessageSet \o Provides a representation for a subset of the store's messages, suitable for display in a tree view.
-\row \o QMailAccountMessageSet \o Provides a message set implementation grouping messages by their parent account ID.
-\row \o QMailFolderMessageSet \o Provides a message set implementation grouping messages by their parent folder ID.
-\row \o QMailFilterMessageSet \o Provides a message set implementation grouping messages by arbitrary criteria.
-\row \o QMailMessageSetModel \o Provides a model representing arbitrary message sets in a tree arrangement.
+\header \li Class \li Description
+\row \li QMailMessageSet \li Provides a representation for a subset of the store's messages, suitable for display in a tree view.
+\row \li QMailAccountMessageSet \li Provides a message set implementation grouping messages by their parent account ID.
+\row \li QMailFolderMessageSet \li Provides a message set implementation grouping messages by their parent folder ID.
+\row \li QMailFilterMessageSet \li Provides a message set implementation grouping messages by arbitrary criteria.
+\row \li QMailMessageSetModel \li Provides a model representing arbitrary message sets in a tree arrangement.
 \endtable
 
 \section1 Sorting and Searching Functionality
@@ -145,16 +145,16 @@ Search conditions can be combined to produce searches of arbitrary complexity.
 Classes to assist with sorting and searching messages:
 
 \table
-\header \o Class \o Description
-\row \o QMailStore \o Represents the main interface for storage and retrieval of messages and folders on the mail store.
-\row \o QMailAccountKey \o Defines the parameters used for querying a subset of all available accounts from the mail store.
-\row \o QMailAccountSortKey \o Defines the parameters used for sorting accounts queried from the mail store.
-\row \o QMailFolderKey \o Defines the parameters used for querying a subset of all available mail folders from the mail store.
-\row \o QMailFolderSortKey \o Defines the parameters used for sorting mail folders queried from the mail store.
-\row \o QMailThreadKey \o Defines the parameters used for querying a subset of all available threads from the mail store.
-\row \o QMailThreadSortKey \o Defines the parameters used for sorting threads queried from the mail store.
-\row \o QMailMessageKey \o Defines the parameters used for querying a subset of all available mail messages from the mail store.
-\row \o QMailMessageSortKey \o Defines the parameters used for sorting messages queried from the mail store.
+\header \li Class \li Description
+\row \li QMailStore \li Represents the main interface for storage and retrieval of messages and folders on the mail store.
+\row \li QMailAccountKey \li Defines the parameters used for querying a subset of all available accounts from the mail store.
+\row \li QMailAccountSortKey \li Defines the parameters used for sorting accounts queried from the mail store.
+\row \li QMailFolderKey \li Defines the parameters used for querying a subset of all available mail folders from the mail store.
+\row \li QMailFolderSortKey \li Defines the parameters used for sorting mail folders queried from the mail store.
+\row \li QMailThreadKey \li Defines the parameters used for querying a subset of all available threads from the mail store.
+\row \li QMailThreadSortKey \li Defines the parameters used for sorting threads queried from the mail store.
+\row \li QMailMessageKey \li Defines the parameters used for querying a subset of all available mail messages from the mail store.
+\row \li QMailMessageSortKey \li Defines the parameters used for sorting messages queried from the mail store.
 \endtable
 
 \section1 Message Content Management Plugins
@@ -165,11 +165,11 @@ Message content can be stored externally to the QMailStore that contains the mes
 Classes supporting the use of plugins for message content management:
 
 \table
-\header \o Class \o Description
-\row \o QMailContentManager \o Defines the interface to objects that provide a message content management service
-\row \o QMailContentManagerFactory \o Creates objects implementing the QMailContentManager interface
-\row \o QMailContentManagerPlugin \o Defines a base class for implementing message content management plug-ins
-\row \o QMailContentManagerPluginInterface \o Defines the interface to plug-ins that provide message content managers
+\header \li Class \li Description
+\row \li QMailContentManager \li Defines the interface to objects that provide a message content management service
+\row \li QMailContentManagerFactory \li Creates objects implementing the QMailContentManager interface
+\row \li QMailContentManagerPlugin \li Defines a base class for implementing message content management plug-ins
+\row \li QMailContentManagerPluginInterface \li Defines the interface to plug-ins that provide message content managers
 \endtable
 
 \section1 Message Transport Service
@@ -206,10 +206,10 @@ The Client library requires SQL support either through the included SQLite or th
 The QMF package contains some example programs that demonstrate how to use the library's functionality.
 
 \table
-\header \o Name \o Description
-\row \o qtmail \o Demonstrates how to build a mail client application.
-\row \o messagingaccounts \o Demonstrates how to build a stand alone accounts configuration application.
-\row \o serverobserver \o Demonstrates how to build a stand alone application that observes actions being performed by the messageserver process.
+\header \li Name \li Description
+\row \li qtmail \li Demonstrates how to build a mail client application.
+\row \li messagingaccounts \li Demonstrates how to build a stand alone accounts configuration application.
+\row \li serverobserver \li Demonstrates how to build a stand alone application that observes actions being performed by the messageserver process.
 \endtable
 
 \section1 Changes Between Versions

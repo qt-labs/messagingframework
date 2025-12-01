@@ -118,8 +118,7 @@ void QMailActionDataPrivate::deserialize(Stream &stream)
 /*!
     \class QMailActionData
 
-    \brief The QMailActionData class provides an interface for accessing service action
-    data
+    \brief The QMailActionData class provides an interface for accessing service action data.
     \ingroup messaginglibrary
 
     \sa QMailActionInfo

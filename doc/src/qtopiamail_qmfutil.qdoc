@@ -45,8 +45,8 @@ Together with the model classes provided by the \l{Messaging Framework Client Li
 display lists of messages and accounts with minimal effort, and with minimal resource consumption.
 
 \table
-\header \o Class \o Description
-\row \o QMailMessageDelegate \o Provides a standard visual representation of a message in a list view.
+\header \li Class \li Description
+\row \li QMailMessageDelegate \li Provides a standard visual representation of a message in a list view.
 \endtable
 
 \section1 New Message Arrival Service
@@ -59,8 +59,8 @@ can be instantiated to permit a client application to respond to the arrival of 
 \section1 Examples
 
 \table
-\header \o Name \o Description
-\row \o \l{MessageViewer Example}{MessageViewer} \o Demonstrates the use of QMailMessageMetaData and QMailMessageKey in finding and viewing messages.
+\header \li Name \li Description
+\row \li \l{MessageViewer Example}{MessageViewer} \li Demonstrates the use of QMailMessageMetaData and QMailMessageKey in finding and viewing messages.
 \endtable
 
 */

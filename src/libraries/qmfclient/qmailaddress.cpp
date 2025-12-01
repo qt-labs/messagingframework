@@ -869,7 +869,7 @@ void QMailAddressPrivate::deserialize(Stream &stream)
     QMailMessage class.
 
     Address strings are expected to use the format "name_part '<'address_part'>'", where
-    \i name_part describes a message sender or recipient and \i address_part defines the address
+    \e name_part describes a message sender or recipient and \e address_part defines the address
     at which they can be contacted.  The address component is not validated, so it can contain an
     email address, phone number, or any other type of textual address representation.
 
