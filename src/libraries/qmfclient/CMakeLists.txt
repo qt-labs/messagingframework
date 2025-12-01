@@ -184,4 +184,11 @@ if (ECM_FOUND)
         DEPS Qt6Core PRIVATE Qt6Core5Compat PRIVATE Qt6DBus PRIVATE Qt6Sql PRIVATE Qt6Network
         URL "https://codereview.qt-project.org/gitweb?p=qt-labs%2Fmessagingframework.git"
         INSTALL)
+  if (BUILD_DOCS)
+    # TODO: this is now just a crude way to get the documentation at least somehow building
+    SET(KDE_INSTALL_QTQCHDIR docs)
+    ecm_generate_qdoc(QmfClient ../../../doc/src/qmf.qdocconf)
+  endif()
+elseif(BUILD_DOCS)
+  message("Documentation requires ECM which wasn't found")
 endif()
