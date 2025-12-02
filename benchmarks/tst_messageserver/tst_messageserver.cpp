@@ -318,12 +318,6 @@ void tst_MessageServer::runInChildProcess(TestFunction fn)
         return;
     }
 
-    /* We get these messages from not using a QtopiaApplication */
-    for (int i = 0; i < 2; ++i) {
-        QTest::ignoreMessage(QtWarningMsg, "Object::connect: No such signal QApplication::appMessage(QString,QByteArray)");
-        QTest::ignoreMessage(QtWarningMsg, "Object::connect:  (sender name:   'tst_messageserver')");
-    }
-
     (this->*fn)();
 
     int exitcode = 0;

@@ -1162,10 +1162,10 @@ void tst_QMailMessageHeaderField::output_data()
 
     QTest::newRow("Unbreakable token after breakable whitespace")
         << QByteArray("Content-Disposition")
-        << QByteArray("attachment; filename=/home/a_user_with_a_long_username/qtopia/home/Documents/channell1.jpg")
+        << QByteArray("attachment; filename=/home/a_user_with_a_long_username/qmf/home/Documents/channell1.jpg")
         << QByteArray(
 "Content-Disposition: attachment;" CRLF
-" filename=/home/a_user_with_a_long_username/qtopia/home/Documents/channell1.jpg" CRLF
+" filename=/home/a_user_with_a_long_username/qmf/home/Documents/channell1.jpg" CRLF
 " " CRLF);
 }
 
