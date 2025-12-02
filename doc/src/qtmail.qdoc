@@ -231,11 +231,4 @@ The following message sending- related features are available:
 \li Diverse \li it is possible to send a single message with both SMS and email addresses.
 \endtable
 
-\section1 Dependencies
-Messages has the following dependencies:
-\list
-\li the \l{Messaging Framework Client Library}
-\li the \l{Messaging Client Utility Library}
-\endlist
-
 */

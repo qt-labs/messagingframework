@@ -26,7 +26,7 @@
 ****************************************************************************/
 
 /*!
-\page qtextendedmail.html
+\page qmf-client.html
 \title Messaging Framework Client Library
 
 \tableofcontents
@@ -35,24 +35,25 @@
 
 The Messaging Framework Client library provides a set of APIs for accessing messaging data.
 Interfaces are provided to create, modify, store, and retrieve messages.
-The library does not directly support sending or retrieving messages; these actions are currently supported via a service request mechanism.
+The library does not directly support sending or retrieving messages; these actions are currently supported
+via a service request mechanism.
 
-The Client library provides unified access to the messaging data on a device including concurrent access to messaging data by multiple applications, and independence from the mechanism used to store the messaging data on the device.
+The Client library provides unified access to the messaging data on a device including concurrent access
+to messaging data by multiple applications, and independence from the mechanism used to store the messaging
+data on the device.
 
 For detailed class information refer to: \l{Messaging Classes}.
 
-The library is augmented by two related, more specific libraries:
-
-\list
-\li the \l{Messaging Client Utility Library}{Client utility} library provides classes that assist with building GUI messaging client applications, and
-\li the \l{Message Server Support Library}{Server support} library provides classes that assist with creating plugin components for the \l{MessageServer Daemon}{Message Server} daemon.
-\endlist
+The library is augmented by the \l{Message Server Support Library}{Server support} library which provides
+classes that assist with creating plugin components for the \l{MessageServer Daemon}{Message Server} daemon.
 
 \section1 Composition and Manipulation of Messages
 
 The Client library provides a number of classes to assist with the composition and manipulation of message data.
-Messages of all supported types are represented uniformly, although not all transport mechanisms are able to deliver more complex message formulations.
-Messages can be composed of multiple parts and constructed hierarchically. The Client library supports composition of multipart messages from individual part objects.
+Messages of all supported types are represented uniformly, although not all transport mechanisms are able to
+deliver more complex message formulations.
+Messages can be composed of multiple parts and constructed hierarchically. The Client library supports composition
+of multipart messages from individual part objects.
 
 Classes to assist with composition and manipulation of messages:
 
@@ -134,12 +135,15 @@ Classes to assist with navigating messages:
 
 \section1 Sorting and Searching Functionality
 
-The Client library provides a number of sort and search functions to aid in selecting data most useful to the view requested.
-This reduces the burden on the application for managing the messaging data, as well as allowing better use of the underlying storage mechanism.
+The Client library provides a number of sort and search functions to aid in selecting data most useful
+to the view requested.
+This reduces the burden on the application for managing the messaging data, as well as allowing better
+use of the underlying storage mechanism.
 
 Sorting is accomplished by providing a sorting key, specifying the sort order, and the message property upon which to sort.
 
-Searching is accomplished by providing a search condition, specifying a value, the message property to match, and the desired relation between the value and the message property.
+Searching is accomplished by providing a search condition, specifying a value, the message property to match,
+and the desired relation between the value and the message property.
 Search conditions can be combined to produce searches of arbitrary complexity.
 
 Classes to assist with sorting and searching messages:
@@ -160,7 +164,8 @@ Classes to assist with sorting and searching messages:
 \section1 Message Content Management Plugins
 
 The Client library uses a plugin system to register components that provide message content management services.
-Message content can be stored externally to the QMailStore that contains the message meta data; plugins can be implemented to provide the Message Library with access to this content.
+Message content can be stored externally to the QMailStore that contains the message meta data; plugins can be
+implemented to provide the Message Library with access to this content.
 
 Classes supporting the use of plugins for message content management:
 
@@ -174,17 +179,23 @@ Classes supporting the use of plugins for message content management:
 
 \section1 Message Transport Service
 
-The Client library provides the QMailMessageServer class, which provides an interface for a messaging client application to communicate with the system's messaging server.
-The messaging server provides services relating to the transmission and retrieval of messages from various sources defined by QMailAccount objects.
-Using QMailMessageServer, clients can communicate with the messaging server via local-process signals and slots, without having any direct contact with the server process.
+The Client library provides the QMailMessageServer class, which provides an interface for a messaging
+client application to communicate with the system's messaging server.
+The messaging server provides services relating to the transmission and retrieval of messages from
+various sources defined by QMailAccount objects.
+Using QMailMessageServer, clients can communicate with the messaging server via local-process signals and slots,
+without having any direct contact with the server process.
 
-The QMailServiceAction class provides a convenient abstraction above the QMailMessageServer interface, allowing clients to handle only events relating to a specific action requested from the messaging server.
-QMailRetrievalAction, QMailTransmitAction, QMailStorageAction, QMailSearchAction and QMailProtocolAction specialize QMailServiceAction to implement specific exchanges between a client application and the messaging server.
+The QMailServiceAction class provides a convenient abstraction above the QMailMessageServer interface,
+allowing clients to handle only events relating to a specific action requested from the messaging server.
+QMailRetrievalAction, QMailTransmitAction, QMailStorageAction, QMailSearchAction and QMailProtocolAction
+specialize QMailServiceAction to implement specific exchanges between a client application and the messaging server.
 
 \section1 Concurrent Access to Messaging Data
 
 The Client library provides a level of concurrent access to messaging data by multiple applications.
-The concurrent access does guarantee that data won't be corrupted by concurrent access, however does not give any guarantees as to performance of messaging data access if accessed concurrently by multiple applications.
+The concurrent access does guarantee that data won't be corrupted by concurrent access, however does
+not give any guarantees as to performance of messaging data access if accessed concurrently by multiple applications.
 
 \section1 Abstraction of Messaging Data Storage Mechanism
 
@@ -193,13 +204,10 @@ On a device the Client library will only read and write the primary storage mech
 
 \section1 Performance Characteristics
 
-The performance of the Client library is tested using the reference \c{messageserver} implementation included with the Messaging Framework.
-Various tasks are performed using different amounts and sizes of message to determine the effect these parameters have on the library's performance.
+The performance of the Client library is tested using the reference \c{messageserver} implementation
+included with the Messaging Framework. Various tasks are performed using different amounts and sizes
+of message to determine the effect these parameters have on the library's performance.
 Placeholder: The results of these tests would be available <here>, if those results were currently exported.
-
-\section1 Assumptions and Dependencies
-
-The Client library requires SQL support either through the included SQLite or through some other SQL engine.
 
 \section1 Examples
 
@@ -209,11 +217,8 @@ The QMF package contains some example programs that demonstrate how to use the l
 \header \li Name \li Description
 \row \li qtmail \li Demonstrates how to build a mail client application.
 \row \li messagingaccounts \li Demonstrates how to build a stand alone accounts configuration application.
-\row \li serverobserver \li Demonstrates how to build a stand alone application that observes actions being performed by the messageserver process.
+\row \li serverobserver \li Demonstrates how to build a stand alone application that observes actions being
+performed by the messageserver process.
 \endtable
-
-\section1 Changes Between Versions
-
-Historical changes in the Client library API are listed in \l{changes-qtopiamail.html}{CHANGES.qdoc}.
 
 */

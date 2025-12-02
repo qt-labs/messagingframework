@@ -26,21 +26,24 @@
 ****************************************************************************/
 
 /*!
-\page qtextendedmail-messageserver.html
+\page qmf-messageserver.html
 \title Message Server Support Library
 
 \tableofcontents
 
 \section1 Overview
 
-The Messaging Framework Message Server Support Library provides classes that assist with the development of components that operate as plugins within the \l{MessageServer Daemon}{Message Server} daemon.
-The client utility library depends on the \l{Messaging Framework Client Library} to provide data access and manipulation classes.
+The Messaging Framework Message Server Support Library provides classes that assist with the development
+of components that operate as plugins within the \l{MessageServer Daemon}{Message Server} daemon.
+The client utility library depends on the \l{Messaging Framework Client Library} to provide data access
+and manipulation classes.
 
 For detailed class information refer to: \l{Message Server Support Classes}.
 
 \section1 Message Accounts
 
-The Message Server Support Library provides classes for storing information about messaging accounts both outgoing and incoming.
+The Message Server Support Library provides classes for storing information about messaging accounts
+both outgoing and incoming.
 
 \table
 \header \li Class \li Description
@@ -50,7 +53,8 @@ The Message Server Support Library provides classes for storing information abou
 
 \section1 Message Services
 
-The library provides classes that assist with the development of services that can be loaded into the {MessageServer Daemon}{Message Server} daemon via plugins.
+The library provides classes that assist with the development of services that can be loaded into
+the {MessageServer Daemon}{Message Server} daemon via plugins.
 
 \table
 \header \li Class \li Description
@@ -71,9 +75,5 @@ The library also provides some utility classes that are used by service componen
 \row \li QMailTransport \li A class that provides an encrypted line-oriented communications channel.
 \row \li QMailMessageClassifier \li A class that classifies message content by inspection.
 \endtable
-
-\section1 Changes Between Versions
-
-Historical changes in the Message Server Support Library API are listed in \l{changes-messageserver.html}{CHANGES.qdoc}.
 
 */

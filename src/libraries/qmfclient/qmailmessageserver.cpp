@@ -1010,22 +1010,6 @@ void QMailMessageServer::protocolRequest(quint64 action, const QMailAccountId &a
 }
 
 /*!
-    \fn bool QMailMessageServer::connectionDown()
-
-    Signal that is emitted when the connection to the messageserver has been destroyed.
-
-    \sa reconnectionTimeout()
-*/
-
-/*!
-    \fn bool QMailMessageServer::reconnectionTimeout()
-
-    Signal that is emitted when the connection to the messageserver has been lost.
-
-    \sa connectionDown()
-*/
-
-/*!
     \fn void QMailMessageServer::messagesAdded(quint64 action, const QMailMessageIdList& ids);
 
     Signal that is emitted when messages have been asynchronously added to the message store.

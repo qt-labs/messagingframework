@@ -147,10 +147,6 @@ QDateTime QMail::lastDbUpdated()
     return info.lastModified();
 }
 
-/*!
-    Returns the database where the Messaging framework will store its message metadata.
-    If the database does not exist, it is created.
-*/
 #ifdef Q_OS_UNIX
 // for mkdir
 #include <sys/types.h>
