@@ -45,7 +45,7 @@ table.indextable {
 	border-width: 1px 1px 1px 1px;
 	border-collapse: collapse;
 	background-color: #f0f0f0;
-    border-color:#555;    
+    border-color:#555;
 }
 
 
@@ -120,7 +120,7 @@ table.generic, table.annotated
 {
   border-width: 1px;
   border-color:#bbb;
-  border-style:solid;  
+  border-style:solid;
   border-collapse:collapse;
 }
 

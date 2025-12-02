@@ -40,7 +40,7 @@ For detailed class information refer to: \l{Messaging Client Utility Classes}.
 
 \section1 Message Listing
 
-The Messaging Client Utility library provides classes to assist with displaying lists of message data.  
+The Messaging Client Utility library provides classes to assist with displaying lists of message data.
 Together with the model classes provided by the \l{Messaging Framework Client Library}, these classes allow clients to
 display lists of messages and accounts with minimal effort, and with minimal resource consumption.
 
@@ -53,7 +53,7 @@ display lists of messages and accounts with minimal effort, and with minimal res
 
 The Messaging Client Utility library provides services permitting client applications to handle the event of new message arrival.
 
-Each of QMailNewSmsHandler, QMailNewMmsHandler, QMailNewEmailHandler, QMailNewInstantMessageHandler and QMailNewSystemMessageHandler 
+Each of QMailNewSmsHandler, QMailNewMmsHandler, QMailNewEmailHandler, QMailNewInstantMessageHandler and QMailNewSystemMessageHandler
 can be instantiated to permit a client application to respond to the arrival of new messages of the relevant type.
 
 \section1 Examples

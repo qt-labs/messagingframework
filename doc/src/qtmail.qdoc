@@ -36,8 +36,8 @@
 
 The \e Messages example client application enables the user to receive emails from multiple mail servers, using any of the protocols supported by the \l{MessageServer Daemon}{MessageServer}.
 It also provides the ability to send messages to multiple recipients, with or without attachments.
- 
-\section1 Features 
+
+\section1 Features
 
 Messages provides the following features:
 
@@ -64,16 +64,16 @@ Messages provides the following features:
 \row
 \li Multiple mail servers
 \li View emails sent to multiple mail servers.
- 
-For example view messages sent to both a work email address and a personal email address. 
+
+For example view messages sent to both a work email address and a personal email address.
 \row
 \li  Save attachments
 \li Receive a message with an attachment save it in their documents for later viewing.
 \endtable
- 
-\section1  Accounts 
- 
-The following account features are available: 
+
+\section1  Accounts
+
+The following account features are available:
 \table
 \header \li Feature \li Description
 \row
@@ -89,10 +89,10 @@ The following account features are available:
 \row
 \li Delete \li  Allows a delay of server deletion of email until removed locally from trash.
 \endtable
- 
-\section1  Folders 
- 
-The following folder features are available: 
+
+\section1  Folders
+
+The following folder features are available:
 \table
 \header \li Feature \li Description
 \row
@@ -105,10 +105,10 @@ The following folder features are available:
 \li Mail Account  \li each mail account is automatically assigned a virtual folder
 \row
 \endtable
- 
-\section2 Mail List (per folder) 
- 
-The following mail list features are available: 
+
+\section2 Mail List (per folder)
+
+The following mail list features are available:
 \table
 \header \li Feature \li Description
 \row
@@ -121,9 +121,9 @@ The following mail list features are available:
 \li Transfer  \li it is possible to select messages and to copy or move them to another folder.
 \endtable
 
-\section2 Virtual Folder Queries and Search 
- 
-The following virtual folder features are available: 
+\section2 Virtual Folder Queries and Search
+
+The following virtual folder features are available:
 \table
 \header \li Feature \li Description
 \row
@@ -134,9 +134,9 @@ The following virtual folder features are available:
 \li Virtual properties \li the same mail logically appears in several folders.
 \endtable
 
-\section1  Message Properties 
+\section1  Message Properties
 
-The following message properties can be handled: 
+The following message properties can be handled:
 \table
 \header \li  Property \li Description
 \row
@@ -147,9 +147,9 @@ The following message properties can be handled:
 \li Usability \li support exists for most messages conforming to RFC2822 and RFC2045-RFC2049
 \endtable
 
-\section1 Viewing mail 
- 
-The following features are available: 
+\section1 Viewing mail
+
+The following features are available:
 \table
 \header \li Feature \li Description
 \row
@@ -172,9 +172,9 @@ The following features are available:
 \li Delete \li it is possible to delete the currently viewed message
 \endtable
 
-\section1 Writing Messages 
- 
-The following features are available: 
+\section1 Writing Messages
+
+The following features are available:
 \table
 \header \li Feature \li Description
 \row
@@ -186,10 +186,10 @@ The following features are available:
 \row
 \li Store \li draft mails are stored in the Drafts folder and mails ready to send are stored in the \c Outbox folder
 \endtable
- 
-\section1  Retrieving messages 
- 
-The following message retrieval related features are available: 
+
+\section1  Retrieving messages
+
+The following message retrieval related features are available:
 \table
 \header \li Feature \li Description
 \row
@@ -207,10 +207,10 @@ The following message retrieval related features are available:
 \row
 \li Safe \li in case of a crash while downloading the client reverts to the state prior to the crash
 \endtable
- 
-\section1  Sending messages 
- 
-The following message sending- related features are available: 
+
+\section1  Sending messages
+
+The following message sending- related features are available:
 \table
 \header \li Feature \li Description
 \row
@@ -231,7 +231,7 @@ The following message sending- related features are available:
 \li Diverse \li it is possible to send a single message with both SMS and email addresses.
 \endtable
 
-\section1 Dependencies 
+\section1 Dependencies
 Messages has the following dependencies:
 \list
 \li the \l{Messaging Framework Client Library}

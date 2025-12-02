@@ -33,61 +33,61 @@
     which displays messages stored by the Messaging Framework. The
     example application allows the user to browse for messages using a tree
     view to expose the hierarchical structure of email accounts that use folders.
-    It displays the messages in each folder in a list, and when a message is 
-    selected, it uses Qt Extended services to delegate the display of the 
+    It displays the messages in each folder in a list, and when a message is
+    selected, it uses Qt Extended services to delegate the display of the
     message to another application.
 
     \image messagenavigator-example.png Screenshot of the MessageNavigator example
 
-    The application is structured as a stack of widgets, contained by a 
-    QStackedWidget.  We need two widgets in our stack: one to select a folder 
-    from a tree, and another to select a message from a list.  
+    The application is structured as a stack of widgets, contained by a
+    QStackedWidget.  We need two widgets in our stack: one to select a folder
+    from a tree, and another to select a message from a list.
 
-    The example application uses the Messaging Framework Client library's 
-    QMailMessageSetModel class to build a model of the messages in the Qt 
-    Extended mail store.  It divides all the messages into groups, first by the 
-    account to which they belong, and within an account, by the folder where 
-    they are located.  This task is performed by subclassing the 
+    The example application uses the Messaging Framework Client library's
+    QMailMessageSetModel class to build a model of the messages in the Qt
+    Extended mail store.  It divides all the messages into groups, first by the
+    account to which they belong, and within an account, by the folder where
+    they are located.  This task is performed by subclassing the
     QMailMessageSetModel class to create our FolderModel class:
 
     \quotefromfile messagenavigator/foldermodel.h
     \skipto class FolderModel
     \printuntil };
 
-    The base class is specialized in two ways.  The content of the model is 
-    determined by adding the necessary items in the constructor, and the 
-    data elements that are displayed for each item are augmented with an 
+    The base class is specialized in two ways.  The content of the model is
+    determined by adding the necessary items in the constructor, and the
+    data elements that are displayed for each item are augmented with an
     icon by overriding the \l{QMailMessageSetModel::data()}{data} function.
 
-    The content of the model is configured by appending the items we want to 
-    display to the model, in the constructor.  To the empty model, we successively 
+    The content of the model is configured by appending the items we want to
+    display to the model, in the constructor.  To the empty model, we successively
     append a new QMailAccountMessageSet item for each account in the mail store:
-    
+
     \quotefromfile messagenavigator/foldermodel.cpp
     \skipto FolderModel::FolderModel
     \printuntil }
 
-    The QMailAccountMessageSet class represents a message set defined by 
-    selecting all messages associated with the account the item is configured 
-    with.  The constructor for QMailAccountMessageSet takes a parent 
+    The QMailAccountMessageSet class represents a message set defined by
+    selecting all messages associated with the account the item is configured
+    with.  The constructor for QMailAccountMessageSet takes a parent
     container to which it should be appended, and the identifier of the account
-    that it should represent.  It also takes a third parameter, which is used 
-    to specify the optional \c hierarchical property.  If \c hierarchical is true, 
+    that it should represent.  It also takes a third parameter, which is used
+    to specify the optional \c hierarchical property.  If \c hierarchical is true,
     then the QMailAccountMessageSet class will automatically maintain
     a tree of QMailFolderMessageSet items as child items, corresponding to
     the folders belonging to the relevant account in the mail store.  This
     determines the entire content of our model.
 
-    In order to customize the display of the items in our tree view, the 
+    In order to customize the display of the items in our tree view, the
     FolderModel class overrides the \l{QMailMessageSetModel::data()}{data} function
-    of QMailMessageSetModel and provides data for the Qt::DecorationRole value 
+    of QMailMessageSetModel and provides data for the Qt::DecorationRole value
     used by QtopiaItemDelegate:
 
     \quotefromfile messagenavigator/foldermodel.cpp
     \skipto FolderModel::data
     \printto end-data
 
-    For our application, we create a FolderSelector widget which uses a QTreeView 
+    For our application, we create a FolderSelector widget which uses a QTreeView
     to present our folder model:
 
     \quotefromfile messagenavigator/messagenavigator.cpp
@@ -108,10 +108,10 @@
     defined by that message set.  For this, we need a stackable widget to list messages.
 
     The MessageSelector uses a QListView to present a listing of messages
-    associated with a specific contact. To do this, we need to create a 
-    model of message data that the QListView will present. Our class 
-    therefore contains a QMailMessageListModel object, and a QMailMessageDelegate 
-    object, whose responsibility is to render each element in the list 
+    associated with a specific contact. To do this, we need to create a
+    model of message data that the QListView will present. Our class
+    therefore contains a QMailMessageListModel object, and a QMailMessageDelegate
+    object, whose responsibility is to render each element in the list
     view using the data of each message.
 
     \quotefromfile messagenavigator/messagenavigator.cpp
@@ -120,9 +120,9 @@
     \skipuntil end-Adjust
     \printuntil };
 
-    Now that we have widgets to display our folder model and a message list, 
+    Now that we have widgets to display our folder model and a message list,
     we simply need to connect them together:
-    
+
     \quotefromfile messagenavigator/messagenavigator.cpp
     \skipto MessageNavigator::MessageNavigator
     \printto Adjust MessageNavigator
@@ -132,27 +132,27 @@
     \skipto MessageNavigator::showFolderTree
     \printuntil }
 
-    When we have a folder selected from our folder tree, we create a 
-    list of messages corresponding to that folder.  The QMailMessageListModel 
-    provides the setKey() function, which allows the caller to specify the 
-    messages to be listed by providing a QMailMessageKey object that selects 
-    them from the mail store.  We can use the messageKey() function of the 
-    QMailMessageSet object selected in the FolderSelector to acquire a 
+    When we have a folder selected from our folder tree, we create a
+    list of messages corresponding to that folder.  The QMailMessageListModel
+    provides the setKey() function, which allows the caller to specify the
+    messages to be listed by providing a QMailMessageKey object that selects
+    them from the mail store.  We can use the messageKey() function of the
+    QMailMessageSet object selected in the FolderSelector to acquire a
     message key for our model:
 
     \quotefromfile messagenavigator/messagenavigator.cpp
     \skipto void MessageSelector::listMessages(
     \printto end-listMessages
 
-    When the message list has been prepared, we move our message list to 
+    When the message list has been prepared, we move our message list to
     the top of the widget stack, in MessageNavigator::showMessageList():
 
     \skipto void MessageNavigator::showMessageList(
     \printuntil }
 
     Finally, we handle the event where the user selects a message from our
-    list. Rather than displaying the message ourself, we will use the 
-    QtopiaServiceRequest mechanism to request that another application 
+    list. Rather than displaying the message ourself, we will use the
+    QtopiaServiceRequest mechanism to request that another application
     handle this task for us. The \c Messages service exports a \c viewMessage
     function, which takes a QMailMessageId object as a parameter; we respond to the
     user's selection by invoking this service with the identifier of the

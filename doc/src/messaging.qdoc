@@ -32,7 +32,7 @@
 \title Messaging
 
 \section1 Introduction
- 
+
 The Messaging Framework provides the following messaging features:
 \list 1
 \li a library for developing applications that work with messages
@@ -40,7 +40,7 @@ The Messaging Framework provides the following messaging features:
 \li an example client application supporting common messaging functionality
 \endlist
 
-The \l{Messaging Framework Client Library}{Client library} provides classes giving access to all messages stored on the device, via a uniform interface. 
+The \l{Messaging Framework Client Library}{Client library} provides classes giving access to all messages stored on the device, via a uniform interface.
 It simplifies the task of creating messaging client applications, and permits other Messaging Framework applications to interact with messaging data where appropriate.
 New types of messages can be supported by the library without modification to existing client applications.
 
@@ -52,11 +52,11 @@ The \l{Messages Client}{Messages} example client application provides an impleme
 
 \section1 Architecture
 
-The Messaging Framework uses a database to store all messaging-related data. 
+The Messaging Framework uses a database to store all messaging-related data.
 Rather than providing access via Structured Query Language, the Client library wraps the database with classes providing structured, focussed access to the database.
 Clients can add, remove or update messaging data via the wrapper classes, with appropriate guarantees of isolation, and with automatic propagation of updates between clients.
 
-Clients access messaging data via the Client library which provides a direct connection to the messaging database. 
+Clients access messaging data via the Client library which provides a direct connection to the messaging database.
 Notifications of database changes that occur as a result of other clients' actions are received by IPC, and the messaging library automatically reflects those changes in all clients.
 
 A set of model/view classes are provided for clients to access the messaging data content.

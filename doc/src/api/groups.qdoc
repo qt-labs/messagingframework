@@ -72,10 +72,10 @@
     \group messaginglibrary
     \title Messaging Classes
 
-    These classes allow clients to work with mail messages, providing access to 
+    These classes allow clients to work with mail messages, providing access to
     message creation, storage and display functionality.
 
-    Classes are also provided to assist with development of GUI clients that access 
+    Classes are also provided to assist with development of GUI clients that access
     messaging data, via the \l{Messaging Client Utility Classes}{Client Utility Classes},
     and to assist with development of Message Server plugins via the
     \l{Message Server Support Classes}{Server Support Classes}.
