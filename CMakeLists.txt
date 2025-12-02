@@ -27,6 +27,12 @@ endif()
 if(USE_HTML_PARSER)
 find_package(Qt6 REQUIRED COMPONENTS Gui)
 endif()
+
+find_package(ZLIB)
+if(NOT ZLIB_FOUND)
+  message("Zlib not found, IMAP COMPRESS support disabled")
+endif()
+
 if(USE_ACCOUNTS_QT)
   pkg_check_modules(LIBACCOUNTS REQUIRED accounts-qt6 IMPORTED_TARGET)
 endif()
