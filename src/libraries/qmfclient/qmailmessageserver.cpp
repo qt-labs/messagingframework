@@ -520,6 +520,8 @@ void QMailMessageServer::retrieveNewMessages(quint64 action, const QMailAccountI
     This function requires the device to be online, it may initiate communication
     with external servers.
 
+    The request has the identifier \a action.
+
     \sa retrieveFolderList
 */
 void QMailMessageServer::createStandardFolders(quint64 action, const QMailAccountId &accountId)
@@ -749,7 +751,7 @@ void QMailMessageServer::onlineDeleteFolder(quint64 action, const QMailFolderId 
 
 /*!
     Requests that the MessageServer move the folder identified by \a folderId.
-    If \a parentId is a valid folder identifier the new folder will be a child of the parent;
+    If \a newParentId is a valid folder identifier the new folder will be a child of the parent;
     otherwise the folder will be have no parent and will be created at the highest level.
 
     The request has the identifier \a action.

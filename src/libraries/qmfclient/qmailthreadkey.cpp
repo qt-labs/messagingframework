@@ -73,6 +73,12 @@ Q_IMPLEMENT_USER_METATYPE(QMailThreadKey)
     \value UnreadCount The number of unread messages in the thread.
     \value Includes List of message identifiers.
     \value ParentAccountId The identifier of the parent account of the thread.
+    \value Subject The subject of the thread.
+    \value Senders The message senders address strings on the thread.
+    \value LastDate The last date on the thread.
+    \value StartedDate The date when the thread started.
+    \value Status The message status flags.
+    \value Preview The preview text for this message. Normally some snippet of the text at the beginning.
     \value Custom For internal use, may be removed.
 */
 

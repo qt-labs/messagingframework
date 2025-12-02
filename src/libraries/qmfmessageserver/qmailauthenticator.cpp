@@ -128,8 +128,9 @@ QMail::SaslMechanism QMailAuthenticator::authFromCapabilities(const QStringList 
 
 /*!
     Returns the authentication string that should be used to initiate an authentication
-    attempt for the service whose configuration is described by \a svcCfg.  The
-    authentication method is the one chosen in the service configuration.
+    attempt for the service whose configuration is described by \a svcCfg
+    and credentials by \a credentials.
+    The authentication method is the one chosen in the service configuration.
 */
 QByteArray QMailAuthenticator::getAuthentication(const QMailServiceConfiguration &svcCfg,
                                                  const QMailCredentialsInterface &credentials)
@@ -147,7 +148,8 @@ QByteArray QMailAuthenticator::getAuthentication(const QMailServiceConfiguration
 
 /*!
     Returns the response string that should be reported as the response to a
-    service's \a challenge, for the the service desribed by \a svcCfg.
+    service's \a challenge, for the the service desribed by \a svcCfg
+    and credentials by \a credentials.
 
     If the protocol invoking the challenge-response resolution requires
     encoding for the challenge-response tokens (such as Base64), the challenge

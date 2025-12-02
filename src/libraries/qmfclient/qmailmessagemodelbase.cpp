@@ -327,7 +327,7 @@ uint QMailMessageModelBase::limit() const
 }
 
 /*!
-    Sets the max number of messages that model can hold, by default this value is zero, that means,
+    Sets the max number of messages that model can hold to \a limit. By default this value is zero, that means,
     all messages matching the model sort key.
 */
 void QMailMessageModelBase::setLimit(uint limit)

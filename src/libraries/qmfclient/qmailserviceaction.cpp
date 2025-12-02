@@ -401,6 +401,8 @@ void QMailServiceActionPrivate::emitChanges()
     \value ErrInvalidData           The supplied data is inappropriate for the requested action.
     \value ErrTimeout               The service failed to report any activity for an extended period.
     \value ErrInternalStateReset    The service was reset due to state change, such as an external process modifying the owner account.
+    \value ErrNoSslSupport          No SSL support.
+    \value ErrUntrustedCertificates The SSL certificate is not trusted.
     \value ErrorCodeMinimum         The lowest value of any error condition code.
     \value ErrorCodeMaximum         The highest value of any error condition code.
 */

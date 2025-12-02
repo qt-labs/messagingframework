@@ -284,7 +284,7 @@ QStringList QMailCryptographicServiceConfiguration::signatureKeys() const
 }
 
 /*!
-    Stores the keys to be used when creating a cryptographic
+    Stores the \a keys to be used when creating a cryptographic
     signature for an e-mail of this account.
 
     \sa QMailCryptographicService::sign().
@@ -310,17 +310,17 @@ QString QMailCryptographicServiceConfiguration::signatureType() const
 }
 
 /*!
-    Sets up the method to be used when creating a cryptographic
+    Sets up the \a method to be used when creating a cryptographic
     signature for an e-mail of this account.
 
     \sa QMailCryptographicService::sign().
 */
-void QMailCryptographicServiceConfiguration::setSignatureType(const QString &str)
+void QMailCryptographicServiceConfiguration::setSignatureType(const QString &method)
 {
-    if (str.isEmpty()) {
+    if (method.isEmpty()) {
         d->m_cryptoConfig.removeValue(QStringLiteral("pluginName"));
     } else {
-        d->m_cryptoConfig.setValue(QStringLiteral("pluginName"), str);
+        d->m_cryptoConfig.setValue(QStringLiteral("pluginName"), method);
     }
 }
 
@@ -335,7 +335,7 @@ bool QMailCryptographicServiceConfiguration::useSignatureByDefault() const
 
 /*!
     Sets up if a cryptographic signature should be generated for
-    every e-mail of this account.
+    every e-mail of this account according to \a status.
 */
 void QMailCryptographicServiceConfiguration::setUseSignatureByDefault(bool status)
 {

@@ -267,7 +267,7 @@ QMailCredentialsInterface::~QMailCredentialsInterface()
 /*!
     This function is called by the protocol implementations each time
     credentials are needed in a connection with a mail server. Parameters
-    to retrieve the credentials can be stored in @svcCfg.
+    to retrieve the credentials can be stored in \a svcCfg.
 
     When credentials are available, the credential implementation should
     change the status to 'Ready'. If retrieving credentials is done
@@ -314,6 +314,8 @@ QString QMailCredentialsInterface::accessToken() const
 /*!
     This function is called by the protocol implementations when the mail
     servers return from the authentication process with success.
+
+    \a source is the software component that managed to authenticate succesfully.
 */
 void QMailCredentialsInterface::authSuccessNotice(const QString &source)
 {
@@ -329,6 +331,8 @@ void QMailCredentialsInterface::authSuccessNotice(const QString &source)
     Credential implementations can override this function to defer
     invalidation if needed. For instance in the case of internal caching
     requiring to refresh credentials...
+
+    \a source is the software component that failed doing authentication.
 */
 void QMailCredentialsInterface::authFailureNotice(const QString &source)
 {
@@ -357,6 +361,8 @@ bool QMailCredentialsInterface::shouldRetryAuth() const
     working anymore. Credential implementation can override this method
     to implement a mechanism that would notify that credentials need
     to be reset by the user.
+
+    \a source is the software component invalidating the credentials.
 */
 void QMailCredentialsInterface::invalidate(const QString &source)
 {

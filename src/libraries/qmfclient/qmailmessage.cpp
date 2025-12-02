@@ -2677,6 +2677,10 @@ void QMailMessageContentType::setCharset(const QByteArray& charset)
 
 /*!
     Allow to test if the content type matches a specific "type / subtype" string.
+    \a primary is the main type, and \a sub is the subtype.
+    Empty values match everything.
+
+    Returns true if the types match.
 */
 bool QMailMessageContentType::matches(const QByteArray& primary, const QByteArray& sub) const
 {
@@ -4847,8 +4851,10 @@ QMailMessagePartContainer::MultipartType QMailMessagePartContainer::multipartTyp
 
 /*!
     Sets the multipart state of the message to \a type.
+    The \a parameters can be used to set extra parameters on the 'Content-Type' header.
 */
-void QMailMessagePartContainer::setMultipartType(QMailMessagePartContainer::MultipartType type, const QList<QMailMessageHeaderField::ParameterType> &parameters)
+void QMailMessagePartContainer::setMultipartType(QMailMessagePartContainer::MultipartType type,
+                                                 const QList<QMailMessageHeaderField::ParameterType> &parameters)
 {
     d->setMultipartType(type, parameters);
 }
@@ -4907,7 +4913,8 @@ void QMailMessagePartContainer::setContentDisposition(const QMailMessageContentD
 }
 
 /*!
-    Sets the part to contain the body element \a body, \a encodingStatus describes the current status of \a body regarding encoding. Any previous content of this part is deleted by the call.
+    Sets the part to contain the body element \a body, \a encodingStatus describes the current status of \a body
+    regarding encoding. Any previous content of this part is deleted by the call.
     Note: No encoding/decoding operation will be performed in the body element, only the encoding status flag
     will be set if provided.
 */
@@ -5097,7 +5104,7 @@ void QMailMessagePartContainer::appendHeaderField( const QString& id, const QStr
 }
 
 /*!
-    Appends a new header field with the properties of \a field. If the \a id
+    Appends a new header field with the properties of \a field. If the header field id
     should be present only once according to RFC2822 and is already existing,
     it will be updated instead of appended.
 */
@@ -8231,6 +8238,11 @@ QMailMessage QMailMessage::fromSkeletonRfc2822File(const QString& fileName)
     first part of the read receipt message. If \a subjectPrefix is provided, the
     subject of the original message is kept and prefixed with \a subjectPrefix.
     If not, a default subject is set as in the RFC example.
+    If a \a reportingUA parameter is provided, it will be used to indicate
+    the user-agent with a "Reporting-UA" header field.
+    The \a mode parameter defines whether the user explicitly gave permission to
+    send the receipt or whether it's done automatically.
+    The \a type parameter defines whether the message was displayed or deleted etc.
 */
 QMailMessage QMailMessage::asReadReceipt(const QMailMessage &message, const QString &bodyText,
                                          const QString &subjectPrefix,

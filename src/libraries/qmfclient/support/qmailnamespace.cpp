@@ -576,4 +576,5 @@ bool QMail::isMessageServerRunning()
     \value LoginMechanism Simple clear-text user/password authentication mechanism, obsoleted by Plain.
     \value PlainMechanism Simple clear-text user/password authentication mechanism.
     \value CramMd5Mechanism A challenge-response authentication mechanism.
+    \value XOAuth2Mechanism XOAuth2 authentication mechanism.
 */

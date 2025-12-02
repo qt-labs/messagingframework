@@ -178,8 +178,8 @@ QMailThreadIdList::iterator QMailThreadListModelPrivate::lowerBound(const QMailT
   Represents common display roles of a thread. These roles are used to display common thread elements
   in a view and its attached delegates.
 
-  \value ThreadSubjectRole The subject of the thread
-  \value ThreadPreviewRole The preview of the thread
+  \value ThreadSubjectTextRole The subject of the thread
+  \value ThreadPreviewTextRole The preview of the thread
   \value ThreadUnreadCountRole The unread count of the thread
   \value ThreadMessageCountRole The message count of the thread
   \value ThreadSendersRole The senders of the thread

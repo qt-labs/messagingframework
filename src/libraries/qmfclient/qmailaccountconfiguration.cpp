@@ -203,8 +203,8 @@ QString QMailAccountConfiguration::ServiceConfiguration::value(const QString &na
 }
 
 /*!
-    Returns the value as a string list, if the value is not a list,
-    status is set to false.
+    Returns the \a value as a string list, if the value is not a list,
+    \a status is set to false.
 */
 QStringList QMailAccountConfiguration::ServiceConfiguration::asList(const QString &value, bool *status)
 {
@@ -234,8 +234,7 @@ void QMailAccountConfiguration::ServiceConfiguration::setValue(const QString &na
 }
 
 /*!
-    Returns the value as a string list, if the value is not a list,
-    status is set to false.
+    Returns a string presentation of the \a list.
 */
 QString QMailAccountConfiguration::ServiceConfiguration::fromList(const QStringList &list)
 {

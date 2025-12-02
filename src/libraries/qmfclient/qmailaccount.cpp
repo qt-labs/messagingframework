@@ -481,7 +481,8 @@ QMailAddress QMailAccount::fromAliases() const
 }
 
 /*!
-    Sets the other addresses from which the account's outgoing messages can be reported as originating from.
+    Sets the other addresses from which the account's outgoing messages can be reported as originating from
+    as \a aliases.
 
     \sa fromAliases(), setFromAddress()
 */

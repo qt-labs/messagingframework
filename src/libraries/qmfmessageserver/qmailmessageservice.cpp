@@ -414,7 +414,7 @@ QMailStore::MessageRemovalOption QMailMessageSource::messageRemovalOption() cons
     folder that is searched for child folders; these properties are not updated
     for folders that are merely discovered by searching.
 
-    Return true if an operation is initiated.
+    Returns true if an operation is initiated.
 
     \sa retrieveMessageList(), retrieveMessageLists()
 */
@@ -457,7 +457,7 @@ bool QMailMessageSource::retrieveFolderList(const QMailAccountId &accountId, con
     that are present in the mail store will be updated including the QMailMessage::Read and
     QMailMessage::Important flags.
 
-    Return true if an operation is initiated.
+    Returns true if an operation is initiated.
 
     \sa QMailAccount::lastSynchronized(), retrieveMessageLists()
 */
@@ -501,7 +501,7 @@ bool QMailMessageSource::retrieveMessageList(const QMailAccountId &accountId, co
     that are present in the mail store will be updated including the QMailMessage::Read and
     QMailMessage::Important flags.
 
-    Return true if an operation is initiated.
+    Returns true if an operation is initiated.
 
     \sa QMailAccount::lastSynchronized(), retrieveMessageList()
 */
@@ -516,7 +516,7 @@ bool QMailMessageSource::retrieveMessageLists(const QMailAccountId &accountId, c
     return false;
 }
 
-/*
+/*!
     Requests that the message server retrieve new messages for the account \a accountId in the
     folders specified by \a folderIds.
 
@@ -529,6 +529,7 @@ bool QMailMessageSource::retrieveMessageLists(const QMailAccountId &accountId, c
     Detection of deleted messages, and flag updates for messages in the mail store will
     not necessarily be performed.
 
+    Returns true if an operation is initiated.
 */
 bool QMailMessageSource::retrieveNewMessages(const QMailAccountId &accountId, const QMailFolderIdList &folderIds)
 {
@@ -555,7 +556,7 @@ bool QMailMessageSource::retrieveNewMessages(const QMailAccountId &accountId, co
     QMailFolder::serverUndiscoveredCount() properties should be updated for each folder
     from which messages are retrieved.
 
-    Return true if an operation is initiated.
+    Returns true if an operation is initiated.
 */
 bool QMailMessageSource::retrieveMessages(const QMailMessageIdList &ids, QMailRetrievalAction::RetrievalSpecification spec)
 {
@@ -575,7 +576,7 @@ bool QMailMessageSource::retrieveMessages(const QMailMessageIdList &ids, QMailRe
     QMailFolder::serverUndiscoveredCount() properties should be updated for the folder
     from which the part is retrieved.
 
-    Return true if an operation is initiated.
+    Returns true if an operation is initiated.
 */
 bool QMailMessageSource::retrieveMessagePart(const QMailMessagePart::Location &partLocation)
 {
@@ -595,7 +596,7 @@ bool QMailMessageSource::retrieveMessagePart(const QMailMessagePart::Location &p
     QMailFolder::serverUndiscoveredCount() properties should be updated for the folder
     from which the message is retrieved.
 
-    Return true if an operation is initiated.
+    Returns true if an operation is initiated.
 */
 bool QMailMessageSource::retrieveMessageRange(const QMailMessageId &messageId, uint minimum)
 {
@@ -616,7 +617,7 @@ bool QMailMessageSource::retrieveMessageRange(const QMailMessageId &messageId, u
     QMailFolder::serverUndiscoveredCount() properties should be updated for the folder
     from which the part is retrieved.
 
-    Return true if an operation is initiated.
+    Returns true if an operation is initiated.
 */
 bool QMailMessageSource::retrieveMessagePartRange(const QMailMessagePart::Location &partLocation, uint minimum)
 {
@@ -642,7 +643,7 @@ bool QMailMessageSource::retrieveMessagePartRange(const QMailMessagePart::Locati
     in the mail store but found to be no longer available should be marked with the
     \l QMailMessage::Removed status flag.
 
-    Return true if an operation is initiated.
+    Returns true if an operation is initiated.
 
     \sa QMailAccount::lastSynchronized(), retrieveFolderList(), retrieveMessageList(), retrieveMessageLists(), synchronize()
 */
@@ -660,7 +661,7 @@ bool QMailMessageSource::retrieveAll(const QMailAccountId &accountId)
     Update the external server with any changes to message status that have been
     effected on the local device for account \a accountId.
 
-    Return true if an operation is initiated.
+    Returns true if an operation is initiated.
 
     \sa synchronize()
 */
@@ -690,7 +691,7 @@ bool QMailMessageSource::exportUpdates(const QMailAccountId &accountId)
     QMailFolder::serverUndiscoveredCount() properties should be updated for each folder, and
     the lastSynchronized() time of the account updated.
 
-    Return true if an operation is initiated.
+    Returns true if an operation is initiated.
 
     \sa QMailAccount::lastSynchronized(), retrieveAll(), exportUpdates()
 */
@@ -707,7 +708,7 @@ bool QMailMessageSource::synchronize(const QMailAccountId &accountId)
 
     Delete all messages listed in \a ids from the local mail store and the external server.
 
-    Return true if an operation is initiated.
+    Returns true if an operation is initiated.
 
     \sa messagesDeleted()
 */
@@ -725,7 +726,7 @@ bool QMailMessageSource::deleteMessages(const QMailMessageIdList &ids)
 
     Successfully copied messages should be progressively reported via messagesCopied().
 
-    Return true if an operation is initiated.
+    Returns true if an operation is initiated.
 
     \sa messagesCopied()
 */
@@ -744,7 +745,7 @@ bool QMailMessageSource::copyMessages(const QMailMessageIdList &ids, const QMail
 
     Successfully moved messages should be progressively reported via messagesMoved().
 
-    Return true if an operation is initiated.
+    Returns true if an operation is initiated.
 
     \sa messagesMoved()
 */
@@ -766,7 +767,7 @@ bool QMailMessageSource::moveMessages(const QMailMessageIdList &ids, const QMail
 
     Successfully modified messages should be progressively reported via messagesFlagged().
 
-    Return true if an operation is initiated.
+    Returns true if an operation is initiated.
 
     \sa messagesFlagged()
 */
@@ -786,7 +787,7 @@ bool QMailMessageSource::flagMessages(const QMailMessageIdList &ids, quint64 set
     If \a parentId is a valid folder identifier the new folder will be a child of the parent;
     otherwise the folder will be have no parent and will be created at the highest level.
 
-    Return true if an operation is initiated.
+    Returns true if an operation is initiated.
 
     \sa deleteFolder()
 */
@@ -814,7 +815,7 @@ bool QMailMessageSource::createStandardFolders(const QMailAccountId &accountId)
     Renames the folder identified by \a folderId to \a name. The location of the folder
     in the existing hierarchy should not change.
 
-    Return true if an operation is initiated.
+    Returns true if an operation is initiated.
 
     \sa deleteFolder(), createFolder()
 */
@@ -833,7 +834,7 @@ bool QMailMessageSource::renameFolder(const QMailFolderId &folderId, const QStri
     Deletes the folder identified by \a folderId. It is the responsibility of the
     message source to ensure all subfolders and messages are also deleted.
 
-    Return true if an operation is initiated.
+    Returns true if an operation is initiated.
 
     \sa createFolder()
 */
@@ -851,7 +852,7 @@ bool QMailMessageSource::deleteFolder(const QMailFolderId &folderId)
     Moves the folder identified by \a folderId to a folder identified by \a newParentId.
     The name of the folder should not change.
 
-    Return true if an operation is initiated.
+    Returns true if an operation is initiated.
 
     \sa deleteFolder(), createFolder(), renameFolder()
 */
@@ -913,7 +914,7 @@ bool QMailMessageSource::searchMessages(const QMailMessageKey &searchCriteria, c
     meta data form marked with the \l QMailMessage::New status flag, and
     progressively reported via matchingMessageIds().
 
-    Return true if a search operation is initiated.
+    Returns true if a search operation is initiated.
 
     \sa matchingMessageIds(), retrieveMessages()
 */
@@ -970,7 +971,7 @@ bool QMailMessageSource::cancelSearch()
 
     Messages successfully prepared for transmission should be progressively reported via messagesPrepared().
 
-    Return true if an operation is initiated.
+    Returns true if an operation is initiated.
 
     \sa messagesPrepared()
 */
@@ -990,7 +991,7 @@ bool QMailMessageSource::prepareMessages(const QList<QPair<QMailMessagePart::Loc
 
     Any responses resulting from the action should be progressively reported via protocolResponse().
 
-    Return true if an operation is initiated.
+    Returns true if an operation is initiated.
 
     \sa protocolResponse()
 */
@@ -1269,12 +1270,13 @@ QMailMessageSink::~QMailMessageSink()
 
     Successfully transmitted messages should be progressively reported via messagesTransmitted().
 
-    Messages for which for which an unsuccessful attempt to transmit has been made should be progressively reported via messagesFailedTransmission().
+    Messages for which for which an unsuccessful attempt to transmit has been made should be progressively
+    reported via messagesFailedTransmission().
 
     If \a ids is an empty list, the sink should still proceed through all the steps necessary when transmitting messages,
     as this action may be invoked to test the viability of the connection.
 
-    Return true if an operation is initiated.
+    Returns true if an operation is initiated.
 */
 bool QMailMessageSink::transmitMessages(const QMailMessageIdList &ids)
 {
@@ -1404,7 +1406,8 @@ QMailMessageSink &QMailMessageService::sink() const
 
     Returns true if requests to reregister the service should be honored; otherwise returns false.
 
-    An attempt to reregister the service is made when the account for which this service is configured is modified, or when an action associated with the service expires.
+    An attempt to reregister the service is made when the account for which this service is configured is modified,
+    or when an action associated with the service expires.
 */
 
 /*!
@@ -1474,7 +1477,8 @@ QMailMessageSink &QMailMessageService::sink() const
 */
 
 /*!
-    Emits the statusChanged() signal with the Status object constructed from \a code, \a text, \a accountId, \a folderId, \a messageId and \a action.
+    Emits the statusChanged() signal with the Status object constructed from \a code, \a text, \a accountId,
+    \a folderId, \a messageId and \a action.
 
     If possible, a standardized error message is determined from \a code, and prepended to the error message.
 */

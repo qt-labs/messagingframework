@@ -111,7 +111,7 @@ public:
     void setSignatureKeys(const QStringList &keys);
 
     QString signatureType() const;
-    void setSignatureType(const QString &str);
+    void setSignatureType(const QString &method);
 
     bool useSignatureByDefault() const;
     void setUseSignatureByDefault(bool status);
