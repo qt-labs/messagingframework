@@ -188,66 +188,106 @@ void QMailThread::setUnreadCount(uint value)
     d->unreadCount = value;
 }
 
+/*!
+  Gets the subject of the thread.
+*/
 QString QMailThread::subject() const
 {
     return d->subject;
 }
 
+/*!
+  Sets the subject of the thread to \a value.
+*/
 void QMailThread::setSubject(const QString &value)
 {
     d->subject = value;
 }
 
+/*!
+  Gets the senders list of the thread.
+*/
 QMailAddressList QMailThread::senders() const
 {
     return QMailAddress::fromStringList(d->senders);
 }
 
+/*!
+  Sets the senders list of the thread to \a value.
+*/
 void QMailThread::setSenders(const QMailAddressList &value)
 {
     d->senders = QMailAddress::toStringList(value).join(QLatin1String(","));
 }
 
+/*!
+  Adds an address according to \a value to the senders list.
+*/
 void QMailThread::addSender(const QMailAddress &value)
 {
     d->senders.prepend(value.address());
 }
+
+/*!
+  Gets the preview text of the thread.
+*/
 
 QString QMailThread::preview() const
 {
     return d->preview;
 }
 
+/*!
+  Sets the preview text of the thread to \a value.
+*/
 void QMailThread::setPreview(const QString &value)
 {
     d->preview = value;
 }
 
+/*!
+  Gets the last date of the thread.
+*/
 QMailTimeStamp QMailThread::lastDate() const
 {
     return d->lastDate;
 }
 
+/*!
+  Sets the last date of the thread to \a value.
+*/
 void QMailThread::setLastDate(const QMailTimeStamp &value)
 {
     d->lastDate = value;
 }
 
+/*!
+  Gets the started date of the thread.
+*/
 QMailTimeStamp QMailThread::startedDate() const
 {
     return d->startedDate;
 }
 
+/*!
+  Sets the started date of the thread to \a value.
+*/
 void QMailThread::setStartedDate(const QMailTimeStamp &value)
 {
     d->startedDate = value;
 }
 
+/*!
+  Gets the status flags of the thread.
+*/
 quint64 QMailThread::status() const
 {
     return d->status;
 }
 
+/*!
+  Sets the status flags of the thread to \a value.
+*/
 void QMailThread::setStatus(quint64 value)
 {
     d->status = value;

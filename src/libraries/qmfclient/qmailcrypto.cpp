@@ -91,6 +91,13 @@ const QMailMessagePartContainer* QMailCryptographicServiceInterface::findSignedC
     return finder.m_signedConstContainer;
 }
 
+/*!
+    \class QMailCryptographicService
+    \inmodule QmfClient
+
+    This class loads different cryptographic services and allows to sign, verify and decrypt content.
+*/
+
 QMailCryptographicService* QMailCryptographicService::m_pInstance = 0;
 
 QMailCryptographicService::QMailCryptographicService(QObject* parent)
@@ -190,6 +197,11 @@ QMailCrypto::VerificationResult QMailCryptographicService::verifySignature(const
     return QMailCrypto::VerificationResult(QMailCrypto::MissingSignature);
 }
 
+/*!
+    Signs a message \a part with cryptographic mechanism defined by the \a crypto parameter using \a keys.
+    The optional \a cb parameter can be defined for requesting passphrases.
+    Returns the success or error from the operation.
+ */
 QMailCrypto::SignatureResult QMailCryptographicService::sign(QMailMessagePartContainer *part,
                                                              const QString &crypto,
                                                              const QStringList &keys,
@@ -241,7 +253,7 @@ QMailCrypto::DecryptionResult QMailCryptographicService::decrypt(QMailMessagePar
     \class QMailCryptographicServiceConfiguration
     \inmodule QmfClient
 
-    This class allow to handle settings related to cryptographic operations.
+    This class allows to handle settings related to cryptographic operations.
 */
 
 class QMailCryptographicServiceConfiguration::Private
