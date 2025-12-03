@@ -149,9 +149,9 @@ QMailAccountIdList::iterator QMailAccountListModelPrivate::lowerBound(const QMai
 
 /*!
   \class QMailAccountListModel
+  \inmodule QmfClient
 
   \preliminary
-  \ingroup messaginglibrary
   \brief The QMailAccountListModel class provides access to a list of stored accounts.
 
   The QMailAccountListModel presents a list of all the accounts currently stored in

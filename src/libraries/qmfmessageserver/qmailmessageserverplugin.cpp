@@ -90,7 +90,7 @@ QMailMessageServerService::~QMailMessageServerService()
 
 /*!
     \class QMailMessageServerPlugin
-    \ingroup libmessageserver
+    \inmodule QmfMessageServer
 
     \brief The QMailMessageServerPlugin class defines the interface to plugins that provide additional services
     for the messageserver daemon.
@@ -126,7 +126,7 @@ QMailMessageServerPlugin::~QMailMessageServerPlugin()
 
 /*!
     \class QMailMessageServerPluginFactory
-    \ingroup libmessageserver
+    \inmodule QmfMessageServer
 
     \brief The QMailMessageServerPluginFactory class creates objects implementing the QMailMessageServerService interface.
 

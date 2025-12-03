@@ -2154,11 +2154,10 @@ void QMailMessageHeaderFieldPrivate::deserialize(Stream &stream)
 
 /*!
     \class QMailMessageHeaderField
+    \inmodule QmfClient
 
     \preliminary
     \brief The QMailMessageHeaderField class encapsulates the parsing of message header fields.
-
-    \ingroup messaginglibrary
 
     QMailMessageHeaderField provides simplified access to the various components of the
     header field, and allows the field content to be extracted in a standardized form.
@@ -2489,12 +2488,11 @@ void QMailMessageHeaderField::deserialize(Stream &stream)
 
 /*!
     \class QMailMessageContentType
+    \inmodule QmfClient
 
     \preliminary
     \brief The QMailMessageContentType class encapsulates the parsing of the RFC 2822
     'Content-Type' header field.
-
-    \ingroup messaginglibrary
 
     QMailMessageContentType provides simplified access to the various components of the
     'Content-Type' header field.
@@ -2697,12 +2695,11 @@ void QMailMessageContentType::setId(const QByteArray &text)
 
 /*!
     \class QMailMessageContentDisposition
+    \inmodule QmfClient
 
     \preliminary
     \brief The QMailMessageContentDisposition class encapsulates the parsing of the RFC 2822
     'Content-Disposition' header field.
-
-    \ingroup messaginglibrary
 
     QMailMessageContentDisposition provides simplified access to the various components of the
     'Content-Disposition' header field.
@@ -3563,11 +3560,10 @@ void QMailMessageBodyPrivate::deserialize(Stream &stream)
 
 /*!
     \class QMailMessageBody
+    \inmodule QmfClient
 
     \preliminary
     \brief The QMailMessageBody class contains the body element of a message or message part.
-
-    \ingroup messaginglibrary
 
     The body of a message or message part is treated as an atomic unit by the Qt Extended messaging library.
     It can only be inserted into a message part container or extracted
@@ -4700,11 +4696,10 @@ void QMailMessagePartContainerPrivate::deserialize(Stream &stream)
 
 /*!
     \class QMailMessagePartContainer
+    \inmodule QmfClient
 
     \preliminary
     \brief The QMailMessagePartContainer class provides access to a collection of message parts.
-
-    \ingroup messaginglibrary
 
     Message formats such as email messages conforming to
     \l{http://www.ietf.org/rfc/rfc2822.txt} {RFC 2822} (Internet Message Format) can consist of
@@ -5743,12 +5738,11 @@ QMailMessagePartContainerPrivate* QMailMessagePartContainerPrivate::privatePoint
 
 /*!
     \class QMailMessagePart
+    \inmodule QmfClient
     \preliminary
 
     \brief The QMailMessagePart class provides a convenient interface for working
     with message attachments.
-
-    \ingroup messaginglibrary
 
     A message part inherits the properties of QMailMessagePartContainer, and can
     therefore contain a message body or a collection of sub-parts.
@@ -5780,12 +5774,11 @@ QMailMessagePartContainerPrivate* QMailMessagePartContainerPrivate::privatePoint
 
 /*!
     \class QMailMessagePartContainer::Location
+    \inmodule QmfClient
     \preliminary
 
     \brief The Location class contains a specification of the location of a message part
     with the message that contains it.
-
-    \ingroup messaginglibrary
 
     A Location object is used to refer to a single part within a multi-part message.  The
     location can be used to reference a part within a QMailMessage object, via the
@@ -6848,11 +6841,10 @@ void QMailMessageMetaDataPrivate::deserialize(Stream &stream)
 
 /*!
     \class QMailMessageMetaData
+    \inmodule QmfClient
 
     \preliminary
     \brief The QMailMessageMetaData class provides information about a message stored by QMF.
-
-    \ingroup messaginglibrary
 
     The QMailMessageMetaData class provides information about messages stored in the Qt Extended system as QMailMessage objects.
     The meta data is more compact and more easily accessed and
@@ -8074,11 +8066,10 @@ void QMailMessagePrivate::deserialize(Stream &stream)
 
 /*!
     \class QMailMessage
+    \inmodule QmfClient
 
     \preliminary
     \brief The QMailMessage class provides a convenient interface for working with messages.
-
-    \ingroup messaginglibrary
 
     QMailMessage supports a number of types. These include telephony types
     such as SMS and MMS, and Internet email messages as defined in

@@ -84,7 +84,7 @@ QMailMessageServicePlugin *mapping(const QString &key)
 
 /*!
     \class QMailMessageServiceFactory
-    \ingroup libmessageserver
+    \inmodule QmfMessageServer
 
     \brief The QMailMessageServiceFactory class creates objects implementing the QMailMessageService interface.
 
@@ -162,7 +162,7 @@ QMailMessageService *QMailMessageServiceFactory::createService(const QString &ke
 
 /*!
     \class QMailMessageServicePluginInterface
-    \ingroup libmessageserver
+    \inmodule QmfMessageServer
 
     \brief The QMailMessageServicePluginInterface class defines the interface to plugins that provide messaging services.
 
@@ -198,7 +198,7 @@ QMailMessageService *QMailMessageServiceFactory::createService(const QString &ke
 
 /*!
     \class QMailMessageServicePlugin
-    \ingroup libmessageserver
+    \inmodule QmfMessageServer
 
     \brief The QMailMessageServicePlugin class defines a base class for implementing messaging service plugins.
 
@@ -364,7 +364,7 @@ QMailMessageSourcePrivate::QMailMessageSourcePrivate(QMailMessageService *servic
 
 /*!
     \class QMailMessageSource
-    \ingroup libmessageserver
+    \inmodule QmfMessageServer
 
     \brief The QMailMessageSource class defines the interface to objects that provide access to externally sourced
     messages to the messageserver.
@@ -1236,7 +1236,7 @@ QMailMessageSinkPrivate::QMailMessageSinkPrivate(QMailMessageService *service)
 
 /*!
     \class QMailMessageSink
-    \ingroup libmessageserver
+    \inmodule QmfMessageServer
 
     \brief The QMailMessageSink class defines the interface to objects that provide external message transmission
     services to the messageserver.
@@ -1310,7 +1310,7 @@ void QMailMessageSink::notImplemented()
 
 /*!
     \class QMailMessageService
-    \ingroup libmessageserver
+    \inmodule QmfMessageServer
 
     \preliminary
     \brief The QMailMessageService class provides the interface between the message server and components loaded

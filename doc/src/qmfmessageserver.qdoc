@@ -24,9 +24,10 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+//\page qmf-messageserver.html
 
 /*!
-\page qmf-messageserver.html
+\module QmfMessageServer
 \title Message Server Support Library
 
 \tableofcontents
@@ -37,8 +38,6 @@ The Messaging Framework Message Server Support Library provides classes that ass
 of components that operate as plugins within the \l{MessageServer Daemon}{Message Server} daemon.
 The client utility library depends on the \l{Messaging Framework Client Library} to provide data access
 and manipulation classes.
-
-For detailed class information refer to: \l{Message Server Support Classes}.
 
 \section1 Message Accounts
 
@@ -61,8 +60,6 @@ the {MessageServer Daemon}{Message Server} daemon via plugins.
 \row \li QMailMessageService \li The interface between the message server and components loaded from plugin libraries.
 \row \li QMailMessageSink \li The interface to objects that provide message external transmission services to the messageserver.
 \row \li QMailMessageSource \li The interface to objects that provide access to externally sourced messages to the messageserver.
-\row \li QMailMessageServiceEditor \li Interface that allows a service to be edited graphically.
-\row \li QMailMessageServiceConfigurator \li Interface that allows a service to be configured.
 \row \li QMailMessageServiceFactory \li Creates objects implementing the QMailMessageService interface.
 \endtable
 

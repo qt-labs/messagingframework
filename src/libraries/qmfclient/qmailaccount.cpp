@@ -136,9 +136,9 @@ public:
 
 /*!
     \class QMailAccount
+    \inmodule QmfClient
 
     \preliminary
-    \ingroup messaginglibrary
 
     \brief The QMailAccount class represents a messaging account in the mail store.
 

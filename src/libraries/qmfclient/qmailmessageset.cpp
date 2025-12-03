@@ -53,9 +53,9 @@ public:
 
 /*!
     \class QMailMessageSetContainer
+    \inmodule QmfClient
 
     \preliminary
-    \ingroup messaginglibrary
 
     \brief The QMailMessageSetContainer class specifies the interface implemented by container
     nodes in a QMailMessageSet tree hierarchy.
@@ -222,9 +222,9 @@ public:
 
 /*!
     \class QMailMessageSet
+    \inmodule QmfClient
 
     \preliminary
-    \ingroup messaginglibrary
 
     \brief The QMailMessageSet class represents a subset of the messages in the mail store.
 
@@ -365,9 +365,9 @@ public:
 
 /*!
     \class QMailFolderMessageSet
+    \inmodule QmfClient
 
     \preliminary
-    \ingroup messaginglibrary
 
     \brief The QMailFolderMessageSet class represents a set of messages corresponding to the content of a QMailFolder.
 
@@ -613,9 +613,9 @@ public:
 
 /*!
     \class QMailAccountMessageSet
+    \inmodule QmfClient
 
     \preliminary
-    \ingroup messaginglibrary
 
     \brief The QMailAccountMessageSet class represents a set of messages corresponding to the content of a QMailAccount.
 
@@ -867,9 +867,9 @@ public:
 
 /*!
     \class QMailFilterMessageSet
+    \inmodule QmfClient
 
     \preliminary
-    \ingroup messaginglibrary
 
     \brief The QMailFilterMessageSet class represents a set of messages selected by a pre-determined filter criteria.
 
@@ -1125,9 +1125,9 @@ public:
 
 /*!
     \class QMailMessageSetModel
+    \inmodule QmfClient
 
     \preliminary
-    \ingroup messaginglibrary
 
     \brief The QMailMessageSetModel class provides a model for a tree of QMailMessageSets.
 

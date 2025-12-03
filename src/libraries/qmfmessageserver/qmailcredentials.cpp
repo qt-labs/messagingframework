@@ -214,9 +214,9 @@ QMailCredentialsPlugin::~QMailCredentialsPlugin()
 
 /*!
     \class QMailCredentialsInterface
+    \inmodule QmfMessageServer
 
     \preliminary
-    \ingroup libmessageserver
 
     \brief The QMailCredentialsInterface describes how authentication credentials can be retrieved.
 

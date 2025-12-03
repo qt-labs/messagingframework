@@ -42,6 +42,7 @@
 
 /*!
   \class QMailPluginManager
+  \inmodule QmfClient
 
   \brief The QMailPluginManager class is a helper class that simplifies plug-in loading
   for the Messaging framework.

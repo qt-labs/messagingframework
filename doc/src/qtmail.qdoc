@@ -34,8 +34,11 @@
 
 \section1 Introduction
 
-The \e Messages example client application enables the user to receive emails from multiple mail servers, using any of the protocols supported by the \l{MessageServer Daemon}{MessageServer}.
+The \e Messages example client application enables the user to receive emails from multiple mail servers,
+using any of the protocols supported by the \l{MessageServer Daemon}{MessageServer}.
 It also provides the ability to send messages to multiple recipients, with or without attachments.
+
+\warning The example apps are badly outdated.
 
 \section1 Features
 
@@ -80,7 +83,7 @@ The following account features are available:
 \li Accounts \li Allows creation of  an arbitrary number of mail accounts.
 \row
 \li Email Protocols
-\li The following email protocols are provided (other protocols can be added to the MessageServer via pluins):
+\li The following email protocols are provided (other protocols can be added to the MessageServer via plugins):
 \list
 \li POP
 \li IMAP

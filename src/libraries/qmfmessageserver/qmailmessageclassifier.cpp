@@ -36,7 +36,7 @@
 
 /*!
     \class QMailMessageClassifier
-    \ingroup libmessageserver
+    \inmodule QmfMessageServer
 
     \preliminary
     \brief The QMailMessageClassifier class provides a simple mechanism for determining the

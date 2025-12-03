@@ -57,9 +57,9 @@ public:
 
 /*!
     \class QMailMessageRemovalRecord
+    \inmodule QmfClient
 
     \preliminary
-    \ingroup messaginglibrary
 
     \brief The QMailMessageRemovalRecord class represents the record of a message which has been
     removed from the mail store.

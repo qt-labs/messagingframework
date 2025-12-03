@@ -100,7 +100,7 @@ qint64 QMailTransport::Socket::bytesSinceMark() const
 
 /*!
     \class QMailTransport
-    \ingroup libmessageserver
+    \inmodule QmfMessageServer
 
     \preliminary
     \brief The QMailTransport class provides a line-oriented socket for messaging communications.

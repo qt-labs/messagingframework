@@ -76,7 +76,7 @@ struct StandardFolderInfo
 
 /*!
     \namespace QMail
-    \ingroup messaginglibrary
+    \inmodule QmfClient
 
     \brief The QMail namespace contains miscellaneous functionality used by the Messaging framework.
 */

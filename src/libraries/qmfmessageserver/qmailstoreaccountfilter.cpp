@@ -402,7 +402,7 @@ void QMailStoreAccountFilterPrivate::incrementConnectionCount(const QMetaMethod 
 
 /*!
     \class QMailStoreAccountFilter
-    \ingroup libmessageserver
+    \inmodule QmfMessageServer
 
     \preliminary
     \brief The QMailStoreAccountFilter class provides a filtered view of QMailStore signals, affecting a single account.

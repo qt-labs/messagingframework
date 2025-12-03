@@ -39,7 +39,7 @@
 
 /*!
     \class QMailDisconnected
-    \ingroup messaginglibrary
+    \inmodule QmfClient
 
     \preliminary
     \brief The QMailDisconnected class provides functions to work with external servers using the

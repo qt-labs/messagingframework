@@ -33,11 +33,11 @@
 
 /*!
     \class QMailKeyArgument
+    \inmodule QmfClient
 
     \preliminary
     \brief The QMailKeyArgument class template defines a class representing a single criterion
     to be applied when filtering the QMailStore constent with a key object.
-    \ingroup messaginglibrary
 
     A QMailKeyArgument\<PropertyType, ComparatorType\> is composed of a property indicator,
     a comparison operator and a value or set of values to compare with.  The type of the
@@ -85,7 +85,7 @@
 
 /*!
     \class QMailKeyArgument::ValueList
-    \ingroup messaginglibrary
+    \inmodule QmfClient
 
     \brief The ValueList class provides a list of variant values that can be serialized to a stream, and compared.
 

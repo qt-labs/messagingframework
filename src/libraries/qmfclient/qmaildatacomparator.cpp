@@ -33,7 +33,7 @@
 
 /*!
     \namespace QMailDataComparator
-    \ingroup messaginglibrary
+    \inmodule QmfClient
 
     \brief The QMailDataComparator namespace contains types used in specifying the comparison
     of QMailStore objects with user-defined values.

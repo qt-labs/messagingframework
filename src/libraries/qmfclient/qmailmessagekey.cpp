@@ -47,11 +47,11 @@ using namespace QMailKey;
 
 /*!
     \class QMailMessageKey
+    \inmodule QmfClient
 
     \preliminary
     \brief The QMailMessageKey class defines the parameters used for querying a subset of
     all available messages from the mail store.
-    \ingroup messaginglibrary
 
     A QMailMessageKey is composed of a message property, an optional comparison operator
     and a comparison value. The QMailMessageKey class is used in conjunction with the

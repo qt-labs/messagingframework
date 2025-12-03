@@ -45,11 +45,11 @@ Q_IMPLEMENT_USER_METATYPE(QMailThreadKey)
 
 /*!
     \class QMailThreadKey
+    \inmodule QmfClient
 
     \preliminary
     \brief The QMailThreadKey class defines the parameters used for querying a subset of
     all message threads from the mail store.
-    \ingroup messaginglibrary
 
     A QMailThreadKey is composed of a thread property, an optional comparison operator
     and a comparison value. The QMailThreadKey class is used in conjunction with the

@@ -53,12 +53,11 @@ int QMF_EXPORT QuotedPrintableMaxLineLength = 74;
 
 /*!
   \class QMailCodec
+  \inmodule QmfClient
 
   \preliminary
   \brief The QMailCodec class provides mechanisms for encoding and decoding between 7-bit ASCII strings
   and arbitrary octet sequences.
-
-  \ingroup messaginglibrary
 
   Messages transferred via the SMTP protocol must be encoded in 7-bit ASCII characters, even though
   their contents are typically composed in sequences of 8-bit octets.  The QMailCodec class provides
@@ -435,12 +434,11 @@ static inline unsigned char base64Index(const char ascii)
 
 /*!
   \class QMailBase64Codec
+  \inmodule QmfClient
 
   \preliminary
   \brief The QMailBase64Codec class encodes or decodes between 8-bit data and 7-bit ASCII, using the Base64
   character mapping scheme.
-
-  \ingroup messaginglibrary
 
   The Base64 character mapping scheme maps arbitrary 8-bit values into a range of 64 printable
   characters from the 7-bit ASCII set.  The mapping scheme used is defined in
@@ -711,12 +709,11 @@ static inline unsigned char decodeCharacter(unsigned char value)
 
 /*!
   \class QMailQuotedPrintableCodec
+  \inmodule QmfClient
 
   \preliminary
   \brief The QMailQuotedPrintableCodec class encodes or decodes between 8-bit data and 7-bit ASCII,
   using the 'quoted printable' character mapping scheme.
-
-  \ingroup messaginglibrary
 
   The 'quoted printable' character mapping scheme maps arbitrary 8-bit values into 7-bit ASCII
   characters, by replacing values that cannot be directly represented with an escape sequence.
@@ -953,12 +950,11 @@ static void writeStream(QDataStream& out, const char* it, int length)
 
 /*!
   \class QMailPassThroughCodec
+  \inmodule QmfClient
 
   \preliminary
   \brief The QMailPassThroughCodec class uses the QMailCodec interface to move data between streams
   without coding or decoding.
-
-  \ingroup messaginglibrary
 
   The QMailPassThroughCodec allows client code to use the same QMailCodec interface to convert data between
   different ASCII encodings, or no encoding at all, without having to be aware of the details involved.
@@ -1006,11 +1002,10 @@ void QMailPassThroughCodec::decodeChunk(QDataStream& out, const char* it, int le
 
 /*!
   \class QMailLineEndingCodec
+  \inmodule QmfClient
 
   \preliminary
   \brief The QMailLineEndingCodec class encodes textual data to use CR/LF line endings required for SMTP transmission.
-
-  \ingroup messaginglibrary
 
   The QMailLineEndingCodec allows client code to use the QMailCodec interface to encode textual data
   from the local line-ending convention to the CR/LF convention required for SMTP transmission.  The

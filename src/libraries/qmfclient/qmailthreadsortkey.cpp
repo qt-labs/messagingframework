@@ -36,11 +36,11 @@
 
 /*!
     \class QMailThreadSortKey
+    \inmodule QmfClient
 
     \preliminary
     \brief The QMailThreadSortKey class defines the parameters used for sorting a subset of
     threads from the mail store.
-    \ingroup messaginglibrary
 
     \sa QMailStore, QMailThreadKey
 */

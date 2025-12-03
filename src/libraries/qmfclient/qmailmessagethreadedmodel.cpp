@@ -960,9 +960,9 @@ QModelIndex QMailMessageThreadedModelPrivate::indexFromItem(const QMailMessageTh
 
 /*!
     \class QMailMessageThreadedModel
+    \inmodule QmfClient
 
     \preliminary
-    \ingroup messaginglibrary
     \brief The QMailMessageThreadedModel class provides access to a tree of stored messages.
 
     The QMailMessageThreadedModel presents a tree of all the messages currently stored in

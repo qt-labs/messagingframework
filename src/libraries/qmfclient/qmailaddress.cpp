@@ -859,9 +859,9 @@ void QMailAddressPrivate::deserialize(Stream &stream)
 
 /*!
     \class QMailAddress
+    \inmodule QmfClient
 
     \brief The QMailAddress class provides an interface for manipulating message address strings.
-    \ingroup messaginglibrary
 
     QMailAddress provides functions for splitting the address strings of messages into name and
     address components, and for combining the individual components into correctly formatted

@@ -239,6 +239,7 @@ QMailCrypto::DecryptionResult QMailCryptographicService::decrypt(QMailMessagePar
 
 /*!
     \class QMailCryptographicServiceConfiguration
+    \inmodule QmfClient
 
     This class allow to handle settings related to cryptographic operations.
 */

@@ -97,11 +97,11 @@ private:
 
 /*!
     \class QMailAccountConfiguration::ServiceConfiguration
+    \inmodule QmfClient
 
     \preliminary
     \brief The ServiceConfiguration class provides access to the configuration parameters
     of a single named service within an account.
-    \ingroup messaginglibrary
 
     ServiceConfiguration provides an interface mapping the configuration parameters of
     the service as a set of key-value pairs, where all data is maintained in QString form.
@@ -304,10 +304,10 @@ QMailAccountConfiguration::ServiceConfiguration &QMailAccountConfigurationPrivat
 
 /*!
     \class QMailAccountConfiguration
+    \inmodule QmfClient
 
     \preliminary
     \brief The QMailAccountConfiguration class contains the configuration parameters of an account.
-    \ingroup messaginglibrary
 
     QMailAccountConfiguration provides the configuration information for a single account,
     as retrieved from the mail store.  The configuration is stored as key-value pairs, grouped

@@ -116,12 +116,11 @@ QMailMessageServerPrivate::~QMailMessageServerPrivate()
 
 /*!
     \class QMailMessageServer
+    \inmodule QmfClient
 
     \preliminary
     \brief The QMailMessageServer class provides signals and slots which implement a convenient
     interface for communicating with the MessageServer process via IPC.
-
-    \ingroup messaginglibrary
 
     QMF client messaging applications can send and receive messages of various types by
     communicating with the MessageServer.  The MessageServer

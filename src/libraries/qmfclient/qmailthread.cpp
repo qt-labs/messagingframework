@@ -62,10 +62,10 @@ public:
 
 /*!
     \class QMailThread
+    \inmodule QmfClient
 
     \preliminary
     \brief The QMailThread class represents a thread of mail messages in the mail store.
-    \ingroup messaginglibrary
 
     QMailThread represents a thread (also known as conversation) of mail messages.
 

@@ -92,9 +92,9 @@ QMailContentManager *mapping(const QString &scheme)
 
 /*!
     \class QMailContentManagerFactory
+    \inmodule QmfClient
 
     \brief The QMailContentManagerFactory class creates objects implementing the QMailContentManager interface.
-    \ingroup messaginglibrary
 
     The QMailContentManagerFactory class creates objects that manage the storage and retrieval
     of message content via the QMailContentManger interface.  The factory allows implementations to
@@ -189,9 +189,9 @@ void QMailContentManagerFactory::clearContent()
 
 /*!
     \class QMailContentManagerPluginInterface
+    \inmodule QmfClient
 
     \brief The QMailContentManagerPluginInterface class defines the interface to plugins that provide message content management facilities.
-    \ingroup messaginglibrary
 
     The QMailContentManagerPluginInterface class defines the interface to message content manager plugins.  Plugins will
     typically inherit from QMailContentManagerPlugin rather than this class.
@@ -214,9 +214,9 @@ void QMailContentManagerFactory::clearContent()
 
 /*!
     \class QMailContentManagerPlugin
+    \inmodule QmfClient
 
     \brief The QMailContentManagerPlugin class defines a base class for implementing message content manager plugins.
-    \ingroup messaginglibrary
 
     The QMailContentManagerPlugin class provides a base class for plugin classes that provide message content management
     functionality.  Classes that inherit QMailContentManagerPlugin need to provide overrides of the
@@ -250,9 +250,9 @@ QStringList QMailContentManagerPlugin::keys() const
 
 /*!
     \class QMailContentManager
+    \inmodule QmfClient
 
     \brief The QMailContentManager class defines the interface to objects that provide a storage facility for message content.
-    \ingroup messaginglibrary
 
     Qt Extended uses the QMailContentManager interface to delegate the filtering, storage, retrieval and indexing of message content
     from the QMailStore class to classes loaded from plugin libraries.  A library may provide this service by exporting a

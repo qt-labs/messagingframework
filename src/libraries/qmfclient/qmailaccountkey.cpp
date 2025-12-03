@@ -41,11 +41,11 @@ using namespace QMailDataComparator;
 
 /*!
     \class QMailAccountKey
+    \inmodule QmfClient
 
     \preliminary
     \brief The QMailAccountKey class defines the parameters used for querying a subset of
     all available accounts from the mail store.
-    \ingroup messaginglibrary
 
     A QMailAccountKey is composed of an account property, an optional comparison operator
     and a comparison value. The QMailAccountKey class is used in conjunction with the

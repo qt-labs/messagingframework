@@ -77,7 +77,7 @@ static QByteArray cramMd5Response(const QByteArray &nonce, const QByteArray &nam
 
 /*!
     \class QMailAuthenticator
-    \ingroup libmessageserver
+    \inmodule QmfMessageServer
 
     \preliminary
     \brief The QMailAuthenticator class provides a customization point

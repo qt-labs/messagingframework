@@ -86,9 +86,9 @@ QMailMessageModelImplementation::~QMailMessageModelImplementation()
 
 /*!
     \class QMailMessageModelBase
+    \inmodule QmfClient
 
     \preliminary
-    \ingroup messaginglibrary
     \brief The QMailMessageModelBase class provides an interface to a model containing messages.
 
     The QMailMessageModelBase presents a model of all the messages currently stored in

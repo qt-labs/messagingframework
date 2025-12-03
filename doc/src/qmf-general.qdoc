@@ -27,7 +27,7 @@
 
 /*!
 
-\page qtextended-messaging.html
+\page qmf-general.html
 \target top
 \title Messaging
 
@@ -37,6 +37,7 @@ The Messaging Framework provides the following messaging features:
 \list 1
 \li a library for developing applications that work with messages
 \li a server application supporting multiple messaging transport mechanisms
+\li a library to help creating plugins for the server application
 \li an example client application supporting common messaging functionality
 \endlist
 
@@ -51,8 +52,12 @@ with external servers on behalf of Messaging Framework client applications.
 New types of messaging (such as Instant Messages or video messages) can be handled by the server application
 without modification to existing client applications.
 
+The \l{Message Server Support Library}{Server library} provides classes that allow creating external
+plugins to implement support for e.g. new message sources, support for protocols, integrating to external
+notification systems etc.
+
 The \l{Messages Client}{Messages} example client application provides an implementation of standard functionality
-for creating and viewing messages.
+for creating and viewing messages. \b{Warning:} outdated.
 
 \section1 Architecture
 

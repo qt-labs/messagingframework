@@ -37,11 +37,11 @@
 
 /*!
     \class QMailFolderSortKey
+    \inmodule QmfClient
 
     \preliminary
     \brief The QMailFolderSortKey class defines the parameters used for sorting a subset of
     queried folders from the mail store.
-    \ingroup messaginglibrary
 
     A QMailFolderSortKey is composed of a folder property to sort and a sort order.
     The QMailFolderSortKey class is used in conjunction with the QMailStore::queryFolders()

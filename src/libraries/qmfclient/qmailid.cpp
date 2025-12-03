@@ -127,7 +127,7 @@ QTextStream& operator<<(QTextStream& s, const QMailIdPrivate &id)
 
 /*!
     \class QMailAccountId
-    \ingroup messaginglibrary
+    \inmodule QmfClient
 
     \preliminary
     \brief The QMailAccountId class is used to identify accounts stored by QMailStore.
@@ -266,7 +266,7 @@ Q_IMPLEMENT_USER_METATYPE_NO_OPERATORS(QMailAccountIdList)
 
 /*!
     \class QMailThreadId
-    \ingroup messaginglibrary
+    \inmodule QmfClient
 
     \preliminary
     \brief The QMailThreadId class is used to identify threads stored by QMailStore.
@@ -405,7 +405,7 @@ Q_IMPLEMENT_USER_METATYPE_NO_OPERATORS(QMailThreadIdList)
 
 /*!
     \class QMailFolderId
-    \ingroup messaginglibrary
+    \inmodule QmfClient
 
     \preliminary
     \brief The QMailFolderId class is used to identify folders stored by QMailStore.
@@ -560,7 +560,7 @@ Q_IMPLEMENT_USER_METATYPE_NO_OPERATORS(QMailFolderIdList)
 
 /*!
     \class QMailMessageId
-    \ingroup messaginglibrary
+    \inmodule QmfClient
 
     \preliminary
     \brief The QMailMessageId class is used to identify messages stored by QMailStore.

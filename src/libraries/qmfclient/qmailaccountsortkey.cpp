@@ -36,11 +36,11 @@
 
 /*!
     \class QMailAccountSortKey
+    \inmodule QmfClient
 
     \preliminary
     \brief The QMailAccountSortKey class defines the parameters used for sorting a subset of
     queried accounts from the store.
-    \ingroup messaginglibrary
 
     A QMailAccountSortKey is composed of an account property to sort and a sort order.
     The QMailAccountSortKey class is used in conjunction with the QMailStore::query()

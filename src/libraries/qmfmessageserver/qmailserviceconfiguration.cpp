@@ -39,7 +39,7 @@
 
 /*!
     \class QMailServiceConfiguration
-    \ingroup libmessageserver
+    \inmodule QmfMessageServer
 
     \preliminary
     \brief The QMailServiceConfiguration class provides a simple framework for creating

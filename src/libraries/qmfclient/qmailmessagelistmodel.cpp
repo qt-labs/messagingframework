@@ -606,9 +606,9 @@ int QMailMessageListModelPrivate::indexOf(const QMailMessageId& id) const
 
 /*!
     \class QMailMessageListModel
+    \inmodule QmfClient
 
     \preliminary
-    \ingroup messaginglibrary
     \brief The QMailMessageListModel class provides access to a list of stored messages.
 
     The QMailMessageListModel presents a list of all the messages currently stored in

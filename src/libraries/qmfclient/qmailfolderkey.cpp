@@ -41,11 +41,11 @@ using namespace QMailKey;
 
 /*!
     \class QMailFolderKey
+    \inmodule QmfClient
 
     \preliminary
     \brief The QMailFolderKey class defines the parameters used for querying a subset of
     all available folders from the mail store.
-    \ingroup messaginglibrary
 
     A QMailFolderKey is composed of a folder property, an optional comparison operator
     and a comparison value. The QMailFolderKey class is used in conjunction with the

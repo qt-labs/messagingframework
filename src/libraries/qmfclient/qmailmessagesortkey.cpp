@@ -36,11 +36,11 @@
 
 /*!
     \class QMailMessageSortKey
+    \inmodule QmfClient
 
     \preliminary
     \brief The QMailMessageSortKey class defines the parameters used for sorting a subset of
     queried messages from the mail store.
-    \ingroup messaginglibrary
 
     A QMailMessageSortKey is composed of a message property to sort and a sort order.
     The QMailMessageSortKey class is used in conjunction with the QMailStore::queryMessages()

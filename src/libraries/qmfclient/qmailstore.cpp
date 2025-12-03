@@ -37,12 +37,11 @@
 
 /*!
     \class QMailStore
+    \inmodule QmfClient
 
     \preliminary
     \brief The QMailStore class represents the main interface for storage and retrieval
     of messages and folders on the message store.
-
-    \ingroup messaginglibrary
 
     The QMailStore class is accessed through a singleton interface and provides functions
     for adding, updating and deleting of QMailAccounts, QMailFolders, QMailThreads and

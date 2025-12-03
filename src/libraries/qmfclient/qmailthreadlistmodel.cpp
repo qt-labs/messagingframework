@@ -148,9 +148,9 @@ QMailThreadIdList::iterator QMailThreadListModelPrivate::lowerBound(const QMailT
 
 /*!
   \class QMailThreadListModel
+  \inmodule QmfClient
 
   \preliminary
-  \ingroup messaginglibrary
   \brief The QMailThreadListModel class provides access to a list of stored threads.
 
   The QMailThreadListModel presents a list of all the threads currently stored in

@@ -122,10 +122,10 @@ public:
 
 /*!
     \class QMailFolder
+    \inmodule QmfClient
 
     \preliminary
     \brief The QMailFolder class represents a folder for mail messages in the mail store.
-    \ingroup messaginglibrary
 
     QMailFolder represents a folder of mail messages, either defined internally for
     application use, or to represent a folder object held by an external message

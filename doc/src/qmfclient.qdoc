@@ -24,10 +24,12 @@
 ** $QT_END_LICENSE$
 **
 ****************************************************************************/
+// \page qmf-client.html
 
 /*!
-\page qmf-client.html
 \title Messaging Framework Client Library
+
+\module QmfClient
 
 \tableofcontents
 
@@ -41,8 +43,6 @@ via a service request mechanism.
 The Client library provides unified access to the messaging data on a device including concurrent access
 to messaging data by multiple applications, and independence from the mechanism used to store the messaging
 data on the device.
-
-For detailed class information refer to: \l{Messaging Classes}.
 
 The library is augmented by the \l{Message Server Support Library}{Server support} library which provides
 classes that assist with creating plugin components for the \l{MessageServer Daemon}{Message Server} daemon.

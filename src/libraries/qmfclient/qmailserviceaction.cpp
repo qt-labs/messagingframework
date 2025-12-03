@@ -363,9 +363,9 @@ void QMailServiceActionPrivate::emitChanges()
 
 /*!
     \class QMailServiceAction::Status
+    \inmodule QmfClient
 
     \preliminary
-    \ingroup messaginglibrary
 
     \brief The Status class encapsulates the instantaneous state of a QMailServiceAction.
 
@@ -520,9 +520,9 @@ template void QMailServiceAction::Status::deserialize(QDataStream &);
 
 /*!
     \class QMailServiceAction
+    \inmodule QmfClient
 
     \preliminary
-    \ingroup messaginglibrary
 
     \brief The QMailServiceAction class provides the interface for requesting actions from external message services.
 
@@ -857,9 +857,9 @@ void QMailRetrievalActionPrivate::retrievalCompleted(quint64 action)
 
 /*!
     \class QMailRetrievalAction
+    \inmodule QmfClient
 
     \preliminary
-    \ingroup messaginglibrary
 
     \brief The QMailRetrievalAction class provides the interface for retrieving messages from external message services.
 
@@ -1272,9 +1272,9 @@ void QMailTransmitActionPrivate::handleTransmissionCompleted(quint64 action)
 
 /*!
     \class QMailTransmitAction
+    \inmodule QmfClient
 
     \preliminary
-    \ingroup messaginglibrary
 
     \brief The QMailTransmitAction class provides the interface for transmitting messages to external message services.
 
@@ -1663,9 +1663,9 @@ void QMailStorageActionPrivate::storageActionCompleted(quint64 action)
 
 /*!
     \class QMailStorageAction
+    \inmodule QmfClient
 
     \preliminary
-    \ingroup messaginglibrary
 
     \brief The QMailStorageAction class provides the interface for requesting operations on the
     storage of messages within external message services.
@@ -2092,9 +2092,9 @@ void QMailSearchActionPrivate::finaliseSearch()
 
 /*!
     \class QMailSearchAction
+    \inmodule QmfClient
 
     \preliminary
-    \ingroup messaginglibrary
 
     \brief The QMailSearchAction class provides the interface for identifying messages that match a set of search criteria.
 
@@ -2374,9 +2374,9 @@ QMailMessageId QMailActionInfoPrivate::statusMessageId() const
 
 /*!
     \class QMailActionInfo
+    \inmodule QmfClient
 
     \preliminary
-    \ingroup messaginglibrary
 
     \brief The QMailActionInfo class provides the interface for tracking individual actions.
 
@@ -2607,10 +2607,11 @@ void QMailActionObserverPrivate::onActivityChanged(quint64 id, QMailServiceActio
     }
 }
 
-/*! \class QMailActionObserver
+/*!
+   \class QMailActionObserver
+   \inmodule QmfClient
 
    \preliminary
-   \ingroup messaginglibrary
 
    \brief The QMailActionObserver class provides an interface for monitoring currently running actions.
 
@@ -2709,9 +2710,9 @@ void QMailProtocolActionPrivate::handleProtocolRequestCompleted(quint64 action)
 
 /*!
     \class QMailProtocolAction
+    \inmodule QmfClient
 
     \preliminary
-    \ingroup messaginglibrary
 
     \brief The QMailProtocolAction class provides a mechanism for messageserver clients
     and services to collaborate without messageserver involvement.
