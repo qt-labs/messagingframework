@@ -241,7 +241,6 @@ namespace {
 
 struct ErrorEntry { int code; const char* text; };
 typedef QPair<const ErrorEntry*, size_t> ErrorMap;
-typedef QList<ErrorMap> ErrorSet;
 
 static ErrorMap socketErrorInit()
 {
@@ -259,6 +258,18 @@ static ErrorMap socketErrorInit()
         { QAbstractSocket::SocketAddressNotAvailableError, QT_TRANSLATE_NOOP( "QMailServiceAction", "Address not available" ) },
         { QAbstractSocket::UnsupportedSocketOperationError, QT_TRANSLATE_NOOP( "QMailServiceAction", "Unsupported operation" ) },
         { QAbstractSocket::UnknownSocketError, QT_TRANSLATE_NOOP( "QMailServiceAction", "Unknown error" ) },
+        { QAbstractSocket::ProxyAuthenticationRequiredError, QT_TRANSLATE_NOOP( "QMailServiceAction", "Proxy requires authentication" ) },
+        { QAbstractSocket::SslHandshakeFailedError, QT_TRANSLATE_NOOP( "QMailServiceAction", "The SSL/TLS handshake failed" ) },
+        { QAbstractSocket::UnfinishedSocketOperationError, QT_TRANSLATE_NOOP( "QMailServiceAction", "Previous socket operation is unfinished" ) },
+        { QAbstractSocket::ProxyConnectionRefusedError, QT_TRANSLATE_NOOP( "QMailServiceAction", "Proxy refused connection to the server" ) },
+        { QAbstractSocket::ProxyConnectionClosedError, QT_TRANSLATE_NOOP( "QMailServiceAction", "Proxy unexpectedly closed connection" ) },
+        { QAbstractSocket::ProxyConnectionTimeoutError, QT_TRANSLATE_NOOP( "QMailServiceAction", "Connection to proxy connection timed out" ) },
+        { QAbstractSocket::ProxyNotFoundError, QT_TRANSLATE_NOOP( "QMailServiceAction", "Proxy not found at given address" ) },
+        { QAbstractSocket::ProxyProtocolError, QT_TRANSLATE_NOOP( "QMailServiceAction", "Negotiation with the proxy failed" ) },
+        { QAbstractSocket::OperationError, QT_TRANSLATE_NOOP( "QMailServiceAction", "Socket state doesn't allow new operation" ) },
+        { QAbstractSocket::SslInternalError, QT_TRANSLATE_NOOP( "QMailServiceAction", "Internal error in SSL library" ) },
+        { QAbstractSocket::SslInvalidUserDataError, QT_TRANSLATE_NOOP( "QMailServiceAction", "Invalid data reported by SSL library" ) },
+        { QAbstractSocket::TemporaryError, QT_TRANSLATE_NOOP( "QMailServiceAction", "Temporary error" ) },
     };
 
     return qMakePair( static_cast<const ErrorEntry*>(map), ARRAY_SIZE(map) );
@@ -284,6 +295,10 @@ static ErrorMap mailErrorInit()
         { QMailServiceAction::Status::ErrInvalidAddress, QT_TRANSLATE_NOOP( "QMailServiceAction", "Message origin or recipient addresses are not correctly formatted.") },
         { QMailServiceAction::Status::ErrInvalidData, QT_TRANSLATE_NOOP( "QMailServiceAction", "Configured service unable to handle supplied data.") },
         { QMailServiceAction::Status::ErrTimeout, QT_TRANSLATE_NOOP( "QMailServiceAction", "Configured service failed to perform action within a reasonable period of time.") },
+        { QMailServiceAction::Status::ErrInternalServer, QT_TRANSLATE_NOOP( "QMailServiceAction", "Internal server error.") },
+        { QMailServiceAction::Status::ErrInternalStateReset, QT_TRANSLATE_NOOP( "QMailServiceAction", "Internal state was reset.") },
+        { QMailServiceAction::Status::ErrNoSslSupport, QT_TRANSLATE_NOOP( "QMailServiceAction", "SSL is not supported.") },
+        { QMailServiceAction::Status::ErrUntrustedCertificates, QT_TRANSLATE_NOOP( "QMailServiceAction", "Untrusted certificate.") },
     };
 
     return qMakePair( static_cast<const ErrorEntry*>(map), ARRAY_SIZE(map) );
@@ -310,20 +325,32 @@ bool appendErrorText(QString* message, int code, const ErrorMap& map)
     return false;
 }
 
-bool appendErrorText(QString* message, int code, const ErrorSet& mapList)
+void decorateFallback(QString *message, int code)
 {
-    foreach (const ErrorMap& map, mapList)
-        if (appendErrorText(message, code, map))
-            return true;
-
-    return false;
+    if (!message->isEmpty())
+        message->append(QChar::LineFeed);
+    message->append(QChar::fromLatin1('<')
+                    + QString(qApp->translate("QMailServiceAction", "Error %1", "%1 contains numeric error code")).arg(code)
+                    + QChar::fromLatin1('>'));
 }
 
-void decorate(QString* message, int code, const ErrorSet& errorSet)
+void decorateSocketError(QString* message, int code)
 {
-    bool handledByErrorSet = appendErrorText(message, code, errorSet);
+    static ErrorMap socketErrorMap(socketErrorInit());
 
+    bool handledByErrorMap = appendErrorText(message, code, socketErrorMap);
+    if (!handledByErrorMap) {
+        decorateFallback(message, code);
+    }
+}
+
+void decorateServiceStatus(QString* message, QMailServiceAction::Status::ErrorCode code)
+{
+    static ErrorMap mailErrorMap(mailErrorInit());
+
+    bool handledByErrorMap = appendErrorText(message, code, mailErrorMap);
     bool handledByHandler = true;
+
     if (code == QMailServiceAction::Status::ErrFileSystemFull) {
         message->append(QChar::fromLatin1(' ')
                         + (QObject::tr("Storage for messages is full. Some new messages could not be retrieved.")));
@@ -336,12 +363,8 @@ void decorate(QString* message, int code, const ErrorSet& errorSet)
         handledByHandler = false;
     }
 
-    if (!handledByErrorSet && !handledByHandler) {
-        if (!message->isEmpty())
-            message->append(QChar::LineFeed);
-        message->append(QChar::fromLatin1('<')
-                        + QString(qApp->translate("QMailServiceAction", "Error %1", "%1 contains numeric error code")).arg(code)
-                        + QChar::fromLatin1('>'));
+    if (!handledByErrorMap && !handledByHandler) {
+        decorateFallback(message, code);
     }
 }
 
@@ -1504,11 +1527,9 @@ void QMailMessageService::updateStatus(QMailServiceAction::Status::ErrorCode cod
             emit statusChanged(QMailServiceAction::Status(QMailServiceAction::Status::ErrNoError, text, accountId, folderId, messageId));
         }
     } else {
-        static ErrorMap mailErrorMap(mailErrorInit());
-
         // See if we can convert the error code into a readable message
         QString message(text);
-        decorate(&message, code, (ErrorSet() << mailErrorMap));
+        decorateServiceStatus(&message, code);
 
         if (action) {
             emit statusChanged(QMailServiceAction::Status(code, message, accountId, folderId, messageId), action);
@@ -1533,14 +1554,13 @@ void QMailMessageService::updateStatus(int code, const QString &text, const QMai
             emit statusChanged(QMailServiceAction::Status(QMailServiceAction::Status::ErrNoError, text, accountId, folderId, messageId));
         }
     } else {
-        static ErrorMap socketErrorMap(socketErrorInit());
 
         // Code has been offset by +2 on transmit to normalise range
         code -= 2;
 
         // See if we can convert the error code into a system error message
         QString message(text);
-        decorate(&message, code, (ErrorSet() << socketErrorMap));
+        decorateSocketError(&message, code);
 
         if (action) {
             emit statusChanged(QMailServiceAction::Status(QMailServiceAction::Status::ErrSystemError, message, accountId, folderId, messageId), action);

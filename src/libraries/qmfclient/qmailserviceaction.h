@@ -73,8 +73,7 @@ public:
     public:
         enum ErrorCode {
             ErrNoError = 0,
-            ErrorCodeMinimum = 1024,
-            ErrNotImplemented = ErrorCodeMinimum,
+            ErrNotImplemented,
             ErrFrameworkFault,
             ErrSystemError,
             ErrInternalServer,
@@ -93,8 +92,7 @@ public:
             ErrTimeout,
             ErrInternalStateReset,
             ErrNoSslSupport,
-            ErrUntrustedCertificates,
-            ErrorCodeMaximum = ErrInternalStateReset
+            ErrUntrustedCertificates
         };
 
         Status();
