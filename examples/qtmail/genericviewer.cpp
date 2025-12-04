@@ -103,18 +103,19 @@ QMailViewerFactory::PresentationType GenericViewer::presentation() const
     return QMailViewerFactory::StandardPresentation;
 }
 
-QList<QMailMessage::ContentType> GenericViewer::types() const
+QList<QMailMessage::ContentCategory> GenericViewer::types() const
 {
-    return QList<QMailMessage::ContentType>() << QMailMessage::PlainTextContent
-                                              << QMailMessage::RichTextContent
-                                              << QMailMessage::ImageContent
-                                              << QMailMessage::AudioContent
-                                              << QMailMessage::VideoContent
-                                              << QMailMessage::MultipartContent
-                                              << QMailMessage::HtmlContent         // temporary...
-                                              << QMailMessage::VCardContent        // temporary...
-                                              << QMailMessage::VCalendarContent    // temporary...
-                                              << QMailMessage::ICalendarContent;   // temporary...
+    return QList<QMailMessage::ContentCategory>()
+           << QMailMessage::PlainTextContent
+           << QMailMessage::RichTextContent
+           << QMailMessage::ImageContent
+           << QMailMessage::AudioContent
+           << QMailMessage::VideoContent
+           << QMailMessage::MultipartContent
+           << QMailMessage::HtmlContent         // temporary...
+           << QMailMessage::VCardContent        // temporary...
+           << QMailMessage::VCalendarContent    // temporary...
+           << QMailMessage::ICalendarContent;   // temporary...
 }
 
 bool GenericViewer::setMessage(const QMailMessage& mail)

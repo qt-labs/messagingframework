@@ -114,7 +114,7 @@ private:
 
     QMailViewerInterface* currentViewer() const;
 
-    QMailViewerInterface* viewer(QMailMessage::ContentType content, QMailViewerFactory::PresentationType type = QMailViewerFactory::StandardPresentation);
+    QMailViewerInterface* viewer(QMailMessage::ContentCategory content, QMailViewerFactory::PresentationType type = QMailViewerFactory::StandardPresentation);
 
     static QString displayName(const QMailMessage &);
 
@@ -136,7 +136,7 @@ private:
     typedef QStack<QPair<QMailViewerInterface*, QString> > ViewerStack;
     ViewerStack currentView;
 
-    typedef QMap<QPair<QMailMessage::ContentType, QMailViewerFactory::PresentationType>, QMailViewerInterface*> ViewerMap;
+    typedef QMap<QPair<QMailMessage::ContentCategory, QMailViewerFactory::PresentationType>, QMailViewerInterface*> ViewerMap;
     ViewerMap contentViews;
 };
 

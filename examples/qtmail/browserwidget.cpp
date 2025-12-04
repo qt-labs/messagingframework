@@ -835,7 +835,8 @@ void BrowserWidget::displayHtml(const QMailMessage* mail)
         if (mail->partCount() > 0) {
             bodyText = renderMultipart(*mail);
         } else {
-            bodyText = (mail->content() == QMailMessage::PlainTextContent) ? formatText(mail->body().data()) : mail->body().data();
+            bodyText = (mail->contentCategory() == QMailMessage::PlainTextContent) ? formatText(mail->body().data())
+                                                                                   : mail->body().data();
 
             if (!mail->contentAvailable()) {
                 QString trailer =
@@ -1202,7 +1203,6 @@ QString BrowserWidget::handleReplies(const QString& txt) const
 QString BrowserWidget::buildParagraph(const QString& txt, const QString& prepend, bool preserveWs) const
 {
     Q_UNUSED(prepend);
-    QStringList out;
 
     QString input = encodeUrlAndMail( preserveWs ? txt : txt.simplified() );
     if (preserveWs)

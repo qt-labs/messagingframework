@@ -246,7 +246,7 @@ void ReadMail::updateView(QMailViewerFactory::PresentationType type)
         }
     }
 
-    QMailMessage::ContentType content(mail.content());
+    QMailMessage::ContentCategory content(mail.contentCategory());
     if ((content == QMailMessage::NoContent) || (content == QMailMessage::UnknownContent)) {
         // Attempt to show the message as text, from the subject if necessary
         content = QMailMessage::PlainTextContent;
@@ -480,7 +480,7 @@ QMailViewerInterface* ReadMail::currentViewer() const
     return currentView.top().first;
 }
 
-QMailViewerInterface* ReadMail::viewer(QMailMessage::ContentType content, QMailViewerFactory::PresentationType type)
+QMailViewerInterface* ReadMail::viewer(QMailMessage::ContentCategory content, QMailViewerFactory::PresentationType type)
 {
     ViewerMap::iterator it = contentViews.find(qMakePair(content, type));
     if (it == contentViews.end()) {

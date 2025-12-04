@@ -58,11 +58,11 @@ public:
 
     virtual QString key() const = 0;
     virtual QList<QMailMessage::MessageType> messageTypes() const = 0;
-    virtual QList<QMailMessage::ContentType> contentTypes() const = 0;
+    virtual QList<QMailMessage::ContentCategory> contentTypes() const = 0;
     virtual QString name(QMailMessage::MessageType type) const = 0;
     virtual QString displayName(QMailMessage::MessageType type) const = 0;
     virtual QIcon displayIcon(QMailMessage::MessageType type) const = 0;
-    virtual bool isSupported(QMailMessage::MessageType t, QMailMessage::ContentType c = QMailMessage::NoContent) const
+    virtual bool isSupported(QMailMessage::MessageType t, QMailMessage::ContentCategory c = QMailMessage::NoContent) const
     {
         bool supportsMessageType(t == QMailMessage::AnyType || messageTypes().contains(t));
         bool supportsContentType(c == QMailMessage::NoContent || contentTypes().contains(c));
@@ -100,14 +100,14 @@ class QMailComposerFactory
 public:
     // Yield the key for each interface supporting the supplied type
     static QStringList keys(QMailMessage::MessageType type = QMailMessage::AnyType,
-                            QMailMessage::ContentType contentType = QMailMessage::NoContent);
+                            QMailMessage::ContentCategory contentType = QMailMessage::NoContent);
 
     // Yield the default key for the supplied type
     static QString defaultKey( QMailMessage::MessageType type = QMailMessage::AnyType );
 
     // Properties available for each interface
     static QList<QMailMessage::MessageType> messageTypes(const QString &key);
-    //static QList<QMailMessage::ContentType> contentTypes(const QString& key);
+    //static QList<QMailMessage::ContentCategory> contentTypes(const QString& key);
     static QString name(const QString &key, QMailMessage::MessageType type);
     static QString displayName(const QString &key, QMailMessage::MessageType type);
     static QIcon displayIcon(const QString &key, QMailMessage::MessageType type);

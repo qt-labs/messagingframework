@@ -322,7 +322,7 @@ public:
     void setParentAccountId(const QMailAccountId& id);
     void setServerUid(const QString &server);
     void setSize(uint size);
-    void setContent(QMailMessage::ContentType type);
+    void setContentCategory(QMailMessage::ContentCategory type);
 
     void setSubject(const QString& s);
     void setDate(const QMailTimeStamp& timeStamp);
@@ -361,7 +361,7 @@ public:
 
     QMailMessage::MessageType _messageType;
     quint64 _status;
-    QMailMessage::ContentType _contentType;
+    QMailMessage::ContentCategory _contentCategory;
 
     QMailAccountId _parentAccountId;
     QString _serverUid;

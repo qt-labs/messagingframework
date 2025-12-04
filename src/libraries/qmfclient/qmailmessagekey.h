@@ -74,7 +74,7 @@ public:
         Size = (1 << 11),
         ParentAccountId = (1 << 12),
         AncestorFolderIds = (1 << 13),
-        ContentType = (1 << 14),
+        ContentCategory = (1 << 14),
         PreviousParentFolderId = (1 << 15),
         ContentScheme = (1 << 16),
         ContentIdentifier = (1 << 17),
@@ -175,8 +175,8 @@ public:
     static QMailMessageKey ancestorFolderIds(const QMailFolderIdList &ids, QMailDataComparator::InclusionComparator cmp = QMailDataComparator::Includes);
     static QMailMessageKey ancestorFolderIds(const QMailFolderKey &key, QMailDataComparator::InclusionComparator cmp = QMailDataComparator::Includes);
 
-    static QMailMessageKey contentType(QMailMessageMetaData::ContentType type, QMailDataComparator::EqualityComparator cmp = QMailDataComparator::Equal);
-    static QMailMessageKey contentType(const QList<QMailMessageMetaData::ContentType> &types, QMailDataComparator::InclusionComparator cmp = QMailDataComparator::Includes);
+    static QMailMessageKey contentCategory(QMailMessageMetaData::ContentCategory type, QMailDataComparator::EqualityComparator cmp = QMailDataComparator::Equal);
+    static QMailMessageKey contentCategory(const QList<QMailMessageMetaData::ContentCategory> &types, QMailDataComparator::InclusionComparator cmp = QMailDataComparator::Includes);
 
     static QMailMessageKey previousParentFolderId(const QMailFolderId &id, QMailDataComparator::EqualityComparator cmp = QMailDataComparator::Equal);
     static QMailMessageKey previousParentFolderId(const QMailFolderIdList &ids, QMailDataComparator::InclusionComparator cmp = QMailDataComparator::Includes);

@@ -1201,9 +1201,10 @@ QList<QMailMessage::MessageType> EmailComposerInterface::messageTypes() const
     return QList<QMailMessage::MessageType>() << QMailMessage::Email;
 }
 
-QList<QMailMessage::ContentType> EmailComposerInterface::contentTypes() const
+QList<QMailMessage::ContentCategory> EmailComposerInterface::contentTypes() const
 {
-    return QList<QMailMessage::ContentType>() << QMailMessage::RichTextContent
+    return QList<QMailMessage::ContentCategory>()
+        << QMailMessage::RichTextContent
         << QMailMessage::PlainTextContent
         << QMailMessage::VCardContent
         << QMailMessage::MultipartContent;

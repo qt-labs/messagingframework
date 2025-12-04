@@ -637,7 +637,7 @@ public:
         AnyType = Mms | Sms | Email | System | Instant
     };
 
-    enum ContentType {
+    enum ContentCategory {
         UnknownContent        = 0,
         NoContent             = 1,
         PlainTextContent      = 2,
@@ -748,8 +748,18 @@ public:
 
     virtual uint indicativeSize() const;
 
-    virtual ContentType content() const;
-    virtual void setContent(ContentType type);
+    virtual ContentCategory contentCategory() const;
+    virtual void setContentCategory(ContentCategory type);
+
+    Q_DECL_DEPRECATED_X("Use contentCategory()") ContentCategory content() const
+    {
+        return contentCategory();
+    }
+
+    Q_DECL_DEPRECATED_X("Use setContentCategory()") void setContent(ContentCategory type)
+    {
+        setContentCategory(type);
+    }
 
     virtual QMailFolderId previousParentFolderId() const;
     virtual void setPreviousParentFolderId(const QMailFolderId &id);
@@ -862,7 +872,7 @@ public:
     typedef QPair<ChunkType, QByteArray> MessageChunk;
 
     using QMailMessageMetaData::MessageType;
-    using QMailMessageMetaData::ContentType;
+    using QMailMessageMetaData::ContentCategory;
     using QMailMessageMetaData::ResponseType;
 
     static QMailMessage fromRfc2822(const QByteArray &ba);
@@ -997,7 +1007,7 @@ typedef QList<QMailMessage::MessageType> QMailMessageTypeList;
 Q_DECLARE_USER_METATYPE(QMailMessageBody::TransferEncoding)
 Q_DECLARE_USER_METATYPE(QMailMessagePartContainer::MultipartType)
 Q_DECLARE_USER_METATYPE(QMailMessage::MessageType)
-Q_DECLARE_USER_METATYPE(QMailMessage::ContentType)
+Q_DECLARE_USER_METATYPE(QMailMessage::ContentCategory)
 Q_DECLARE_USER_METATYPE(QMailMessage::ResponseType)
 Q_DECLARE_USER_METATYPE(QMailMessage::AttachmentsAction)
 

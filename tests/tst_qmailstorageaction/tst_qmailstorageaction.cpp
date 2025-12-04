@@ -348,7 +348,7 @@ void tst_QMailStorageAction::initTestCase()
         message.setStatus(QMailMessage::Read, true);
         message.setServerUid("sim:12345");
         message.setSize(1 * 1024);
-        message.setContent(QMailMessage::PlainTextContent);
+        message.setContentCategory(QMailMessage::PlainTextContent);
         message.setCustomField("present", "true");
         message.setCustomField("todo", "true");
 
@@ -372,7 +372,7 @@ void tst_QMailStorageAction::initTestCase()
         message.setStatus(QMailMessage::Read, false);
         message.setServerUid("inboxMessage1");
         message.setSize(5 * 1024);
-        message.setContent(QMailMessage::PlainTextContent);
+        message.setContentCategory(QMailMessage::PlainTextContent);
         message.setCustomField("present", "true");
 
         QVERIFY(QMailStore::instance()->addMessage(&message));
@@ -396,7 +396,7 @@ void tst_QMailStorageAction::initTestCase()
         message.setStatus(QMailMessage::Sent, true);
         message.setServerUid("archivedMessage1");
         message.setSize(15 * 1024);
-        message.setContent(QMailMessage::VideoContent);
+        message.setContentCategory(QMailMessage::VideoContent);
         message.setCustomField("present", "true");
 
         QVERIFY(QMailStore::instance()->addMessage(&message));
@@ -425,7 +425,7 @@ void tst_QMailStorageAction::initTestCase()
         message.setStatus(QMailMessage::Read, true);
         message.setServerUid("inboxMessage2");
         message.setSize(5 * 1024);
-        message.setContent(QMailMessage::HtmlContent);
+        message.setContentCategory(QMailMessage::HtmlContent);
         message.setInResponseTo(inboxMessage1);
         message.setResponseType(QMailMessage::Forward);
         message.setCustomField("present", "true");
@@ -452,7 +452,7 @@ void tst_QMailStorageAction::initTestCase()
         message.setStatus(QMailMessage::Read, false);
         message.setServerUid("savedMessage2");
         message.setSize(5 * 1024);
-        message.setContent(QMailMessage::HtmlContent);
+        message.setContentCategory(QMailMessage::HtmlContent);
         message.setInResponseTo(archivedMessage1);
         message.setResponseType(QMailMessage::Reply);
         message.setCustomField("present", "true");
@@ -496,7 +496,7 @@ void tst_QMailStorageAction::test_storageaction_add()
     message.setStatus(QMailMessage::Read, false);
     message.setServerUid("savedMessage3");
     message.setSize(5 * 1024);
-    message.setContent(QMailMessage::HtmlContent);
+    message.setContentCategory(QMailMessage::HtmlContent);
     message.setCustomField("present", "true");
 
     messages << message;
@@ -748,7 +748,7 @@ void tst_QMailStorageAction::test_storageaction_rollBackUpdates()
     message.setStatus(QMailMessage::Read, false);
     message.setServerUid("savedMessage5");
     message.setSize(7 * 1024);
-    message.setContent(QMailMessage::HtmlContent);
+    message.setContentCategory(QMailMessage::HtmlContent);
     message.setCustomField("present", "true");
 
     QVERIFY(QMailStore::instance()->addMessage(&message));
@@ -844,7 +844,7 @@ void tst_QMailStorageAction::test_storageaction_discardMessages()
     message.setStatus(QMailMessage::Read, false);
     message.setServerUid("savedMessage4");
     message.setSize(6 * 1024);
-    message.setContent(QMailMessage::HtmlContent);
+    message.setContentCategory(QMailMessage::HtmlContent);
     message.setCustomField("present", "true");
 
     QVERIFY(QMailStore::instance()->addMessage(&message));

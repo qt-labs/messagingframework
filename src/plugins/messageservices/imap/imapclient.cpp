@@ -910,7 +910,7 @@ void ImapClient::messageFetched(QMailMessage& mail, const QString &detachedFilen
             mail.setParentAccountId(existing.parentAccountId());
             mail.setParentFolderId(existing.parentFolderId());
             mail.setStatus(existing.status());
-            mail.setContent(existing.content());
+            mail.setContentCategory(existing.contentCategory());
             mail.setReceivedDate(existing.receivedDate());
             QMailDisconnected::copyPreviousFolder(existing, &mail);
             mail.setInResponseTo(existing.inResponseTo());

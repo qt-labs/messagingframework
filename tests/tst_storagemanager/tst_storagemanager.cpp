@@ -160,7 +160,7 @@ void tst_StorageManager::initTestCase()
     msg1.setStatus(QMailMessage::Read, true);
     msg1.setServerUid("sim:12345");
     msg1.setSize(1 * 1024);
-    msg1.setContent(QMailMessage::PlainTextContent);
+    msg1.setContentCategory(QMailMessage::PlainTextContent);
     msg1.setCustomField("present", "true");
     msg1.setCustomField("todo", "true");
     QVERIFY(QMailStore::instance()->addMessage(&msg1));
@@ -179,7 +179,7 @@ void tst_StorageManager::initTestCase()
     msg2.setStatus(QMailMessage::Read, false);
     msg2.setServerUid("inboxmsg21");
     msg2.setSize(5 * 1024);
-    msg2.setContent(QMailMessage::PlainTextContent);
+    msg2.setContentCategory(QMailMessage::PlainTextContent);
     msg2.setCustomField("present", "true");
     msg2.setBody(QMailMessageBody::fromData(mime1,QMailMessageContentType("multipart/digest"),QMailMessageBody::QuotedPrintable));
     QVERIFY(QMailStore::instance()->addMessage(&msg2));
@@ -218,7 +218,7 @@ void tst_StorageManager::test_add()
     msg3.setStatus(QMailMessage::Read, false);
     msg3.setServerUid("inboxmsg22");
     msg3.setSize(5 * 1024);
-    msg3.setContent(QMailMessage::PlainTextContent);
+    msg3.setContentCategory(QMailMessage::PlainTextContent);
     msg3.setCustomField("present", "true");
     msg3.setBody(QMailMessageBody::fromData("plaintext",QMailMessageContentType("text/plain"),QMailMessageBody::QuotedPrintable));
     msg3.setCustomField("qmf-detached-filename", "file1x2y-detached");
@@ -242,7 +242,7 @@ void tst_StorageManager::test_remove()
     msg4.setStatus(QMailMessage::Read, false);
     msg4.setServerUid("unique-inboxmsg22");
     msg4.setSize(5 * 1024);
-    msg4.setContent(QMailMessage::PlainTextContent);
+    msg4.setContentCategory(QMailMessage::PlainTextContent);
     msg4.setCustomField("present", "true");
     msg4.setBody(QMailMessageBody::fromData("plaintext",QMailMessageContentType("text/plain"),QMailMessageBody::QuotedPrintable));
     msg4.setCustomField("qmf-detached-filename", "non-existent");

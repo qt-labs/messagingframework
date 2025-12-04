@@ -114,7 +114,7 @@ QList<QMailMessage::MessageType> QMailComposerInterface::messageTypes() const
 /*!
     Returns the content types created by the composer.
 */
-QList<QMailMessage::ContentType> QMailComposerInterface::contentTypes() const
+QList<QMailMessage::ContentCategory> QMailComposerInterface::contentTypes() const
 {
     return composerInterface()->contentTypes();
 }
@@ -292,7 +292,7 @@ QString QMailComposerInterface::status() const
 /*!
     Returns a list of keys identifying classes that can compose messages of type \a type containing \a contentType content.
 */
-QStringList QMailComposerFactory::keys( QMailMessage::MessageType type , QMailMessage::ContentType contentType)
+QStringList QMailComposerFactory::keys( QMailMessage::MessageType type , QMailMessage::ContentCategory contentType)
 {
     QStringList in;
 

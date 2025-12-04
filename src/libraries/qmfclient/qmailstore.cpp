@@ -1475,7 +1475,7 @@ QMailMessageMetaData QMailStore::dataToTransfer(const QMailMessageMetaData* mess
     metaData.setParentAccountId(message->parentAccountId());
     metaData.setServerUid(message->serverUid());
     metaData.setSize(message->size());
-    metaData.setContent(message->content());
+    metaData.setContentCategory(message->contentCategory());
     metaData.setPreviousParentFolderId(message->previousParentFolderId());
     metaData.setContentScheme(message->contentScheme());
     metaData.setContentIdentifier(message->contentIdentifier());

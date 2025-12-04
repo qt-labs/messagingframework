@@ -103,7 +103,7 @@ using namespace QMailKey;
     \value Size The size of the message.
     \value ParentAccountId The ID of the account the message was downloaded from.
     \value AncestorFolderIds The set of IDs of folders which are direct or indirect parents of this message.
-    \value ContentType The type of data contained within the message.
+    \value ContentCategory The type of data contained within the message.
     \value PreviousParentFolderId The parent folder ID this message was contained in, prior to moving to the current parent folder.
     \value ContentScheme The scheme used to store the content of the message.
     \value ContentIdentifier The identifier used to store the content of the message.
@@ -747,25 +747,27 @@ QMailMessageKey QMailMessageKey::ancestorFolderIds(const QMailFolderKey &key, QM
 /*!
     Returns a key matching messages whose content type matches \a type, according to \a cmp.
 
-    \sa QMailMessage::content()
+    \sa QMailMessage::contentCategory()
 */
-QMailMessageKey QMailMessageKey::contentType(QMailMessageMetaData::ContentType type, QMailDataComparator::EqualityComparator cmp)
+QMailMessageKey QMailMessageKey::contentCategory(QMailMessageMetaData::ContentCategory type,
+                                                 QMailDataComparator::EqualityComparator cmp)
 {
-    return QMailMessageKey(ContentType, static_cast<int>(type), QMailKey::comparator(cmp));
+    return QMailMessageKey(ContentCategory, static_cast<int>(type), QMailKey::comparator(cmp));
 }
 
 /*!
     Returns a key matching messages whose content type is a member of \a types, according to \a cmp.
 
-    \sa QMailMessage::content()
+    \sa QMailMessage::contentCategory()
 */
-QMailMessageKey QMailMessageKey::contentType(const QList<QMailMessageMetaData::ContentType> &types, QMailDataComparator::InclusionComparator cmp)
+QMailMessageKey QMailMessageKey::contentCategory(const QList<QMailMessageMetaData::ContentCategory> &types,
+                                                 QMailDataComparator::InclusionComparator cmp)
 {
     QList<int> x;
-    foreach (QMailMessageMetaData::ContentType type, types)
+    foreach (QMailMessageMetaData::ContentCategory type, types)
         x.append(static_cast<int>(type));
 
-    return QMailMessageKey(x, ContentType, QMailKey::comparator(cmp));
+    return QMailMessageKey(x, ContentCategory, QMailKey::comparator(cmp));
 }
 
 /*!

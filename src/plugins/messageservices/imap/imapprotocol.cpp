@@ -2079,7 +2079,7 @@ QStringList SearchMessageState::convertValue(const QVariant &value, const QMailM
     case QMailMessageKey::AncestorFolderIds:
         return QStringList();
         break;
-    case QMailMessageKey::ContentType:
+    case QMailMessageKey::ContentCategory:
         break;
     case QMailMessageKey::PreviousParentFolderId:
         break;

@@ -350,7 +350,7 @@ void tst_QMailStoreKeys::initTestCase()
         message.setStatus(QMailMessage::Read, true);
         message.setServerUid("sim:12345");
         message.setSize(1 * 1024);
-        message.setContent(QMailMessage::PlainTextContent);
+        message.setContentCategory(QMailMessage::PlainTextContent);
         message.setCustomField("present", "true");
         message.setCustomField("todo", "true");
 
@@ -374,7 +374,7 @@ void tst_QMailStoreKeys::initTestCase()
         message.setStatus(QMailMessage::Read, false);
         message.setServerUid("inboxMessage1");
         message.setSize(5 * 1024);
-        message.setContent(QMailMessage::PlainTextContent);
+        message.setContentCategory(QMailMessage::PlainTextContent);
         message.setCustomField("present", "true");
 
         QVERIFY(QMailStore::instance()->addMessage(&message));
@@ -398,7 +398,7 @@ void tst_QMailStoreKeys::initTestCase()
         message.setStatus(QMailMessage::Sent, true);
         message.setServerUid("archivedMessage1");
         message.setSize(15 * 1024);
-        message.setContent(QMailMessage::VideoContent);
+        message.setContentCategory(QMailMessage::VideoContent);
         message.setCustomField("present", "true");
 
         QVERIFY(QMailStore::instance()->addMessage(&message));
@@ -427,7 +427,7 @@ void tst_QMailStoreKeys::initTestCase()
         message.setStatus(QMailMessage::Read, true);
         message.setServerUid("inboxMessage2");
         message.setSize(5 * 1024);
-        message.setContent(QMailMessage::HtmlContent);
+        message.setContentCategory(QMailMessage::HtmlContent);
         message.setInResponseTo(inboxMessage1);
         message.setResponseType(QMailMessage::Forward);
         message.setCustomField("present", "true");
@@ -454,7 +454,7 @@ void tst_QMailStoreKeys::initTestCase()
         message.setStatus(QMailMessage::Read, false);
         message.setServerUid("savedMessage2");
         message.setSize(5 * 1024);
-        message.setContent(QMailMessage::HtmlContent);
+        message.setContentCategory(QMailMessage::HtmlContent);
         message.setInResponseTo(archivedMessage1);
         message.setResponseType(QMailMessage::Reply);
         message.setCustomField("present", "true");
@@ -2086,36 +2086,36 @@ void tst_QMailStoreKeys::messageAncestorFolderIds()
 void tst_QMailStoreKeys::messageContentType()
 {
     // ContentType equality
-    QCOMPARE(messageSet(QMailMessageKey::contentType(QMailMessage::PlainTextContent, Equal)), messageSet() << smsMessage << inboxMessage1);
-    QCOMPARE(messageSet(~QMailMessageKey::contentType(QMailMessage::PlainTextContent, Equal)), messageSet() << archivedMessage1 << inboxMessage2 << savedMessage2);
-    QCOMPARE(messageSet(QMailMessageKey::contentType(QMailMessage::HtmlContent, Equal)), messageSet() << inboxMessage2 << savedMessage2);
-    QCOMPARE(messageSet(~QMailMessageKey::contentType(QMailMessage::HtmlContent, Equal)), messageSet() << smsMessage << inboxMessage1 << archivedMessage1);
-    QCOMPARE(messageSet(QMailMessageKey::contentType(QMailMessage::VoicemailContent, Equal)), noMessages);
-    QCOMPARE(messageSet(~QMailMessageKey::contentType(QMailMessage::VoicemailContent, Equal)), allMessages);
+    QCOMPARE(messageSet(QMailMessageKey::contentCategory(QMailMessage::PlainTextContent, Equal)), messageSet() << smsMessage << inboxMessage1);
+    QCOMPARE(messageSet(~QMailMessageKey::contentCategory(QMailMessage::PlainTextContent, Equal)), messageSet() << archivedMessage1 << inboxMessage2 << savedMessage2);
+    QCOMPARE(messageSet(QMailMessageKey::contentCategory(QMailMessage::HtmlContent, Equal)), messageSet() << inboxMessage2 << savedMessage2);
+    QCOMPARE(messageSet(~QMailMessageKey::contentCategory(QMailMessage::HtmlContent, Equal)), messageSet() << smsMessage << inboxMessage1 << archivedMessage1);
+    QCOMPARE(messageSet(QMailMessageKey::contentCategory(QMailMessage::VoicemailContent, Equal)), noMessages);
+    QCOMPARE(messageSet(~QMailMessageKey::contentCategory(QMailMessage::VoicemailContent, Equal)), allMessages);
 
     // ContentType inequality
-    QCOMPARE(messageSet(QMailMessageKey::contentType(QMailMessage::PlainTextContent, NotEqual)), messageSet() << archivedMessage1 << inboxMessage2 << savedMessage2);
-    QCOMPARE(messageSet(~QMailMessageKey::contentType(QMailMessage::PlainTextContent, NotEqual)), messageSet() << smsMessage << inboxMessage1);
-    QCOMPARE(messageSet(QMailMessageKey::contentType(QMailMessage::HtmlContent, NotEqual)), messageSet() << smsMessage << inboxMessage1 << archivedMessage1);
-    QCOMPARE(messageSet(~QMailMessageKey::contentType(QMailMessage::HtmlContent, NotEqual)), messageSet() << inboxMessage2 << savedMessage2);
-    QCOMPARE(messageSet(QMailMessageKey::contentType(QMailMessage::VoicemailContent, NotEqual)), allMessages);
-    QCOMPARE(messageSet(~QMailMessageKey::contentType(QMailMessage::VoicemailContent, NotEqual)), noMessages);
+    QCOMPARE(messageSet(QMailMessageKey::contentCategory(QMailMessage::PlainTextContent, NotEqual)), messageSet() << archivedMessage1 << inboxMessage2 << savedMessage2);
+    QCOMPARE(messageSet(~QMailMessageKey::contentCategory(QMailMessage::PlainTextContent, NotEqual)), messageSet() << smsMessage << inboxMessage1);
+    QCOMPARE(messageSet(QMailMessageKey::contentCategory(QMailMessage::HtmlContent, NotEqual)), messageSet() << smsMessage << inboxMessage1 << archivedMessage1);
+    QCOMPARE(messageSet(~QMailMessageKey::contentCategory(QMailMessage::HtmlContent, NotEqual)), messageSet() << inboxMessage2 << savedMessage2);
+    QCOMPARE(messageSet(QMailMessageKey::contentCategory(QMailMessage::VoicemailContent, NotEqual)), allMessages);
+    QCOMPARE(messageSet(~QMailMessageKey::contentCategory(QMailMessage::VoicemailContent, NotEqual)), noMessages);
 
     // List inclusion
-    QCOMPARE(messageSet(QMailMessageKey::contentType(QList<QMailMessage::ContentType>())), noMessages);
-    QCOMPARE(messageSet(~QMailMessageKey::contentType(QList<QMailMessage::ContentType>())), allMessages);
-    QCOMPARE(messageSet(QMailMessageKey::contentType(QList<QMailMessage::ContentType>() << QMailMessage::VideoContent)), messageSet() << archivedMessage1);
-    QCOMPARE(messageSet(~QMailMessageKey::contentType(QList<QMailMessage::ContentType>() << QMailMessage::VideoContent)), messageSet() << smsMessage << inboxMessage1 << inboxMessage2 << savedMessage2);
-    QCOMPARE(messageSet(QMailMessageKey::contentType(QList<QMailMessage::ContentType>() << QMailMessage::VideoContent << QMailMessage::HtmlContent)), messageSet() << archivedMessage1 << inboxMessage2 << savedMessage2);
-    QCOMPARE(messageSet(~QMailMessageKey::contentType(QList<QMailMessage::ContentType>() << QMailMessage::VideoContent << QMailMessage::HtmlContent)), messageSet() << smsMessage << inboxMessage1);
+    QCOMPARE(messageSet(QMailMessageKey::contentCategory(QList<QMailMessage::ContentCategory>())), noMessages);
+    QCOMPARE(messageSet(~QMailMessageKey::contentCategory(QList<QMailMessage::ContentCategory>())), allMessages);
+    QCOMPARE(messageSet(QMailMessageKey::contentCategory(QList<QMailMessage::ContentCategory>() << QMailMessage::VideoContent)), messageSet() << archivedMessage1);
+    QCOMPARE(messageSet(~QMailMessageKey::contentCategory(QList<QMailMessage::ContentCategory>() << QMailMessage::VideoContent)), messageSet() << smsMessage << inboxMessage1 << inboxMessage2 << savedMessage2);
+    QCOMPARE(messageSet(QMailMessageKey::contentCategory(QList<QMailMessage::ContentCategory>() << QMailMessage::VideoContent << QMailMessage::HtmlContent)), messageSet() << archivedMessage1 << inboxMessage2 << savedMessage2);
+    QCOMPARE(messageSet(~QMailMessageKey::contentCategory(QList<QMailMessage::ContentCategory>() << QMailMessage::VideoContent << QMailMessage::HtmlContent)), messageSet() << smsMessage << inboxMessage1);
 
     // List exclusion
-    QCOMPARE(messageSet(QMailMessageKey::contentType(QList<QMailMessage::ContentType>(), Excludes)), allMessages);
-    QCOMPARE(messageSet(~QMailMessageKey::contentType(QList<QMailMessage::ContentType>(), Excludes)), noMessages);
-    QCOMPARE(messageSet(QMailMessageKey::contentType(QList<QMailMessage::ContentType>() << QMailMessage::VideoContent, Excludes)), messageSet() << smsMessage << inboxMessage1 << inboxMessage2 << savedMessage2);
-    QCOMPARE(messageSet(~QMailMessageKey::contentType(QList<QMailMessage::ContentType>() << QMailMessage::VideoContent, Excludes)), messageSet() << archivedMessage1);
-    QCOMPARE(messageSet(QMailMessageKey::contentType(QList<QMailMessage::ContentType>() << QMailMessage::VideoContent << QMailMessage::HtmlContent, Excludes)), messageSet() << smsMessage << inboxMessage1);
-    QCOMPARE(messageSet(~QMailMessageKey::contentType(QList<QMailMessage::ContentType>() << QMailMessage::VideoContent << QMailMessage::HtmlContent, Excludes)), messageSet() << archivedMessage1 << inboxMessage2 << savedMessage2);
+    QCOMPARE(messageSet(QMailMessageKey::contentCategory(QList<QMailMessage::ContentCategory>(), Excludes)), allMessages);
+    QCOMPARE(messageSet(~QMailMessageKey::contentCategory(QList<QMailMessage::ContentCategory>(), Excludes)), noMessages);
+    QCOMPARE(messageSet(QMailMessageKey::contentCategory(QList<QMailMessage::ContentCategory>() << QMailMessage::VideoContent, Excludes)), messageSet() << smsMessage << inboxMessage1 << inboxMessage2 << savedMessage2);
+    QCOMPARE(messageSet(~QMailMessageKey::contentCategory(QList<QMailMessage::ContentCategory>() << QMailMessage::VideoContent, Excludes)), messageSet() << archivedMessage1);
+    QCOMPARE(messageSet(QMailMessageKey::contentCategory(QList<QMailMessage::ContentCategory>() << QMailMessage::VideoContent << QMailMessage::HtmlContent, Excludes)), messageSet() << smsMessage << inboxMessage1);
+    QCOMPARE(messageSet(~QMailMessageKey::contentCategory(QList<QMailMessage::ContentCategory>() << QMailMessage::VideoContent << QMailMessage::HtmlContent, Excludes)), messageSet() << archivedMessage1 << inboxMessage2 << savedMessage2);
 }
 
 void tst_QMailStoreKeys::messagePreviousParentFolderId()

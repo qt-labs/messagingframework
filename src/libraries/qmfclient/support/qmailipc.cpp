@@ -107,7 +107,7 @@ const QDBusArgument &operator<<(QDBusArgument &argument, const QMailMessageMetaD
     argument.beginStructure();
     argument << static_cast<int>(metadata.messageType());
     argument << metadata.status(); // quint64
-    argument << static_cast<int>(metadata.content());
+    argument << static_cast<int>(metadata.contentCategory());
     argument << metadata.parentAccountId(); // qmailaccountid
     argument << metadata.serverUid(); // string
     argument << metadata.size(); // uint
@@ -157,7 +157,7 @@ const QDBusArgument &operator>>(const QDBusArgument &argument, QMailMessageMetaD
     metadata.setStatus(uint64Val);
 
     argument >> intVal;
-    metadata.setContent(static_cast<QMailMessageMetaData::ContentType>(intVal));
+    metadata.setContentCategory(static_cast<QMailMessageMetaData::ContentCategory>(intVal));
 
     QMailAccountId accountId;
     argument >> accountId;

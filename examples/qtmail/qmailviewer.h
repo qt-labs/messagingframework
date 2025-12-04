@@ -63,11 +63,11 @@ public:
     };
 
     // Yield the ID for each interface supporting the supplied type, where the
-    // value is interpreted as a ContentType value
-    static QStringList keys(QMailMessage::ContentType type = QMailMessage::UnknownContent, PresentationType pres = AnyPresentation);
+    // value is interpreted as a ContentCategory value
+    static QStringList keys(QMailMessage::ContentCategory type = QMailMessage::UnknownContent, PresentationType pres = AnyPresentation);
 
     // Yield the default ID for the supplied type
-    static QString defaultKey(QMailMessage::ContentType type = QMailMessage::UnknownContent, PresentationType pres = AnyPresentation);
+    static QString defaultKey(QMailMessage::ContentCategory type = QMailMessage::UnknownContent, PresentationType pres = AnyPresentation);
 
     // Use the interface identified by the supplied ID to create a viewer
     static QMailViewerInterface *create(const QString &key, QWidget *parent = nullptr);
@@ -94,9 +94,9 @@ public:
 
     virtual QString key() const = 0;
     virtual QMailViewerFactory::PresentationType presentation() const = 0;
-    virtual QList<QMailMessage::ContentType> types() const = 0;
+    virtual QList<QMailMessage::ContentCategory> types() const = 0;
 
-    bool isSupported(QMailMessage::ContentType t, QMailViewerFactory::PresentationType pres) const
+    bool isSupported(QMailMessage::ContentCategory t, QMailViewerFactory::PresentationType pres) const
     {
         if ((pres != QMailViewerFactory::AnyPresentation) && (pres != presentation()))
             return false;

@@ -6565,7 +6565,7 @@ static quint64 calendarCancellationFlag = 0;
 QMailMessageMetaDataPrivate::QMailMessageMetaDataPrivate()
     : _messageType(QMailMessage::None),
       _status(0),
-      _contentType(QMailMessage::UnknownContent),
+      _contentCategory(QMailMessage::UnknownContent),
       _size(0),
       _responseType(QMailMessage::NoResponse),
       _customFieldsModified(false),
@@ -6613,9 +6613,9 @@ void QMailMessageMetaDataPrivate::setSize(uint size)
     updateMember(_size, size);
 }
 
-void QMailMessageMetaDataPrivate::setContent(QMailMessage::ContentType type)
+void QMailMessageMetaDataPrivate::setContentCategory(QMailMessage::ContentCategory type)
 {
-    updateMember(_contentType, type);
+    updateMember(_contentCategory, type);
 }
 
 void QMailMessageMetaDataPrivate::setSubject(const QString& s)
@@ -6784,7 +6784,7 @@ void QMailMessageMetaDataPrivate::serialize(Stream &stream) const
 {
     stream << _messageType;
     stream << _status;
-    stream << _contentType;
+    stream << _contentCategory;
     stream << _parentAccountId;
     stream << _serverUid;
     stream << _size;
@@ -6819,7 +6819,7 @@ void QMailMessageMetaDataPrivate::deserialize(Stream &stream)
 
     stream >> _messageType;
     stream >> _status;
-    stream >> _contentType;
+    stream >> _contentCategory;
     stream >> _parentAccountId;
     stream >> _serverUid;
     stream >> _size;
@@ -7223,6 +7223,31 @@ const quint64 &QMailMessageMetaData::Todo = todoFlag;
 const quint64 &QMailMessageMetaData::NoNotification = noNotificationFlag;
 const quint64 &QMailMessageMetaData::CalendarCancellation = calendarCancellationFlag;
 
+
+/*!
+    \enum QMailMessageMetaData::ContentCategory
+
+    This enum type is used to describe the content category of the message.
+
+    \value UnknownContent        Unknown content
+    \value NoContent             Empty message
+    \value PlainTextContent      Plain text
+    \value RichTextContent       Rich text
+    \value HtmlContent           HTML content
+    \value ImageContent          Image content
+    \value AudioContent          Audio content
+    \value VideoContent          Video content
+    \value MultipartContent      Multipart content
+    \value SmilContent           SMIL content
+    \value VoicemailContent      Voicemail content
+    \value VideomailContent      Videomail content
+    \value VCardContent          VCard content
+    \value VCalendarContent      VCalendar content
+    \value ICalendarContent      iCalendar content
+    \value DeliveryReportContent Delivery report content
+    \value UserContent           User specific content
+*/
+
 /*!
     Constructs an empty message meta data object.
 */
@@ -7617,20 +7642,18 @@ uint QMailMessageMetaData::indicativeSize() const
 /*!
     Returns the type of content contained within the message.
 */
-QMailMessage::ContentType QMailMessageMetaData::content() const
+QMailMessage::ContentCategory QMailMessageMetaData::contentCategory() const
 {
-    return d->_contentType;
+    return d->_contentCategory;
 }
 
 /*!
-    \fn QMailMessageMetaData::setContent(QMailMessageMetaData::ContentType)
-
     Sets the type of content contained within the message to \a type.
     It is the caller's responsibility to ensure that this value matches the actual content.
 */
-void QMailMessageMetaData::setContent(QMailMessage::ContentType type)
+void QMailMessageMetaData::setContentCategory(ContentCategory type)
 {
-    d->setContent(type);
+    d->setContentCategory(type);
 }
 
 /*!

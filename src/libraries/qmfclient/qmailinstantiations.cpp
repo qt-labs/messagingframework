@@ -37,7 +37,7 @@
 Q_IMPLEMENT_USER_METATYPE_ENUM(QMailMessageBody::TransferEncoding)
 Q_IMPLEMENT_USER_METATYPE_ENUM(QMailMessagePartContainer::MultipartType)
 Q_IMPLEMENT_USER_METATYPE_ENUM(QMailMessage::MessageType)
-Q_IMPLEMENT_USER_METATYPE_ENUM(QMailMessage::ContentType)
+Q_IMPLEMENT_USER_METATYPE_ENUM(QMailMessage::ContentCategory)
 Q_IMPLEMENT_USER_METATYPE_ENUM(QMailMessage::ResponseType)
 Q_IMPLEMENT_USER_METATYPE_ENUM(QMailMessage::AttachmentsAction)
 

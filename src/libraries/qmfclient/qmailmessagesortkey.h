@@ -59,7 +59,7 @@ public:
         ServerUid,
         Size,
         ParentAccountId,
-        ContentType,
+        ContentCategory,
         PreviousParentFolderId,
         CopyServerUid,
         ListId,
@@ -100,7 +100,7 @@ public:
     static QMailMessageSortKey serverUid(Qt::SortOrder order = Qt::AscendingOrder);
     static QMailMessageSortKey size(Qt::SortOrder order = Qt::AscendingOrder);
     static QMailMessageSortKey parentAccountId(Qt::SortOrder order = Qt::AscendingOrder);
-    static QMailMessageSortKey contentType(Qt::SortOrder order = Qt::AscendingOrder);
+    static QMailMessageSortKey contentCategory(Qt::SortOrder order = Qt::AscendingOrder);
     static QMailMessageSortKey previousParentFolderId(Qt::SortOrder order = Qt::AscendingOrder);
     static QMailMessageSortKey copyServerUid(Qt::SortOrder order = Qt::AscendingOrder);
     static QMailMessageSortKey restoreFolderId(Qt::SortOrder order = Qt::AscendingOrder);

@@ -146,7 +146,7 @@ void tst_QMail_ListModels::initTestCase()
     msg1.setStatus(QMailMessage::Read, true);
     msg1.setServerUid("sim:12345");
     msg1.setSize(1 * 1024);
-    msg1.setContent(QMailMessage::PlainTextContent);
+    msg1.setContentCategory(QMailMessage::PlainTextContent);
     msg1.setCustomField("present", "true");
     msg1.setCustomField("todo", "true");
     QVERIFY(QMailStore::instance()->addMessage(&msg1));
@@ -165,7 +165,7 @@ void tst_QMail_ListModels::initTestCase()
     msg2.setStatus(QMailMessage::Read, false);
     msg2.setServerUid("inboxmsg21");
     msg2.setSize(5 * 1024);
-    msg2.setContent(QMailMessage::PlainTextContent);
+    msg2.setContentCategory(QMailMessage::PlainTextContent);
     msg2.setCustomField("present", "true");
     msg2.setBody(QMailMessageBody::fromData(m1,QMailMessageContentType("text/plain"),QMailMessageBody::QuotedPrintable));
     QVERIFY(QMailStore::instance()->addMessage(&msg2));

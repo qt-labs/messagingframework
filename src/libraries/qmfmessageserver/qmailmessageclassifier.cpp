@@ -43,7 +43,7 @@
     type of content contained by a message.
 
     QMailMessageClassifier inspects a message to determine what type of content it contains,
-    according to the classification of \l{QMailMessageMetaData::ContentType}{QMailMessage::ContentType}.
+    according to the classification of \l{QMailMessageMetaData::ContentCategory}{QMailMessage::ContentCategory}.
 */
 
 /*!
@@ -58,9 +58,9 @@ QMailMessageClassifier::~QMailMessageClassifier()
 {
 }
 
-static QMailMessage::ContentType fromContentType(const QMailMessageContentType& contentType)
+static QMailMessage::ContentCategory fromContentType(const QMailMessageContentType &contentType)
 {
-    QMailMessage::ContentType content = QMailMessage::UnknownContent;
+    QMailMessage::ContentCategory content = QMailMessage::UnknownContent;
 
     if (contentType.matches("text", "html")) {
         content = QMailMessage::HtmlContent;
@@ -86,17 +86,17 @@ static QMailMessage::ContentType fromContentType(const QMailMessageContentType& 
     is currently set to \l{QMailMessageMetaData::UnknownContent}{QMailMessageMetaData::UnknownContent}.
     If the content type is determined, the message record is updated and true is returned.
 
-    \sa QMailMessageMetaData::setContent()
+    \sa QMailMessageMetaData::setContentCategory()
 */
 bool QMailMessageClassifier::classifyMessage(QMailMessage *message)
 {
-    if (message && message->content() == QMailMessage::UnknownContent) {
+    if (message && message->contentCategory() == QMailMessage::UnknownContent) {
         QMailMessagePartContainer::MultipartType multipartType(message->multipartType());
         QMailMessageContentType contentType(message->contentType());
 
         // The content type is used to categorise the message more narrowly than
         // its transport categorisation
-        QMailMessage::ContentType content = QMailMessage::UnknownContent;
+        QMailMessage::ContentCategory content = QMailMessage::UnknownContent;
 
         switch (message->messageType()) {
         case QMailMessage::Sms:
@@ -155,7 +155,7 @@ bool QMailMessageClassifier::classifyMessage(QMailMessage *message)
         }
 
         if (content != QMailMessage::UnknownContent) {
-            message->setContent(content);
+            message->setContentCategory(content);
             return true;
         }
     }

@@ -68,7 +68,7 @@ public:
 
     virtual QString key() const;
     virtual QList<QMailMessage::MessageType> messageTypes() const;
-    virtual QList<QMailMessage::ContentType> contentTypes() const;
+    virtual QList<QMailMessage::ContentCategory> contentTypes() const;
     virtual QString name(QMailMessage::MessageType type) const;
     virtual QString displayName(QMailMessage::MessageType type) const;
     virtual QIcon displayIcon(QMailMessage::MessageType type) const;

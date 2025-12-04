@@ -250,14 +250,14 @@ bool QMailViewerInterface::handleOutgoingMessages( const QMailMessageIdList &lis
 */
 
 /*!
-    \fn bool QMailViewerInterface::isSupported(QMailMessage::ContentType t, QMailViewerFactory::PresentationType pres) const
+    \fn bool QMailViewerInterface::isSupported(QMailMessage::ContentCategory t, QMailViewerFactory::PresentationType pres) const
 
     Returns true if the viewer can present a message containing data of content type \a t, using the
     presentation type \a pres.
 */
 
 /*!
-    \fn QList<QMailMessage::ContentType> QMailViewerInterface::types() const
+    \fn QList<QMailMessage::ContentCategory> QMailViewerInterface::types() const
 
     Returns a list of the content types that can be presented by this viewer component.
 */
@@ -306,7 +306,7 @@ void QMailViewerInterface::setResource(const QUrl& name, QVariant value)
     Returns a list of keys identifying classes that can display a message containing \a type content,
     using the presentation type \a pres.
 */
-QStringList QMailViewerFactory::keys(QMailMessage::ContentType type, PresentationType pres)
+QStringList QMailViewerFactory::keys(QMailMessage::ContentCategory type, PresentationType pres)
 {
     QStringList in;
 
@@ -320,7 +320,7 @@ QStringList QMailViewerFactory::keys(QMailMessage::ContentType type, Presentatio
     Returns the key identifying the first class found that can display message containing \a type content,
     using the presentation type \a pres.
 */
-QString QMailViewerFactory::defaultKey(QMailMessage::ContentType type, PresentationType pres)
+QString QMailViewerFactory::defaultKey(QMailMessage::ContentCategory type, PresentationType pres)
 {
     QStringList list(QMailViewerFactory::keys(type, pres));
     return (list.isEmpty() ? QString() : list.first());

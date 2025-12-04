@@ -73,7 +73,7 @@
     \value ServerUid The IMAP server UID of the message.
     \value ParentAccountId The ID of the account the mesasge was downloaded from.
     \value Size The size of the message.
-    \value ContentType The type of data contained within the message.
+    \value ContentCategory The type of data contained within the message.
     \value PreviousParentFolderId The parent folder ID this message was contained in, prior to moving to the current parent folder.
     \value CopyServerUid The server uid of the message this is a copy of
     \value ListId The name of the list
@@ -327,11 +327,11 @@ QMailMessageSortKey QMailMessageSortKey::parentAccountId(Qt::SortOrder order)
 /*!
     Returns a key that sorts messages by their content types, according to \a order.
 
-    \sa QMailMessage::content()
+    \sa QMailMessage::contentCategory()
 */
-QMailMessageSortKey QMailMessageSortKey::contentType(Qt::SortOrder order)
+QMailMessageSortKey QMailMessageSortKey::contentCategory(Qt::SortOrder order)
 {
-    return QMailMessageSortKey(ContentType, order);
+    return QMailMessageSortKey(ContentCategory, order);
 }
 
 /*!

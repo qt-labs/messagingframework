@@ -1162,7 +1162,7 @@ void PopClient::createMail()
 
         mail->setId(existing.id());
         mail->setStatus(existing.status());
-        mail->setContent(existing.content());
+        mail->setContentCategory(existing.contentCategory());
         QMailDisconnected::copyPreviousFolder(existing, mail);
         mail->setContentScheme(existing.contentScheme());
         mail->setContentIdentifier(existing.contentIdentifier());

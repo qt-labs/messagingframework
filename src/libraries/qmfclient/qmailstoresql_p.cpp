@@ -323,7 +323,7 @@ public:
 
     QVariant size() const { return _data.size(); }
 
-    QVariant content() const { return static_cast<int>(_data.content()); }
+    QVariant contentCategory() const { return static_cast<int>(_data.contentCategory()); }
 
     QVariant previousParentFolderId() const { return _data.previousParentFolderId().toULongLong(); }
 
@@ -409,9 +409,9 @@ public:
         return QMailStoreSql::extractValue<int>(_value);
     }
 
-    QMailMessage::ContentType content() const
+    QMailMessage::ContentCategory contentCategory() const
     {
-        return static_cast<QMailMessage::ContentType>(QMailStoreSql::extractValue<int>(_value));
+        return static_cast<QMailMessage::ContentCategory>(QMailStoreSql::extractValue<int>(_value));
     }
 
     QMailFolderId previousParentFolderId() const
@@ -482,7 +482,7 @@ static QMailStoreSql::MessagePropertyMap messagePropertyMap()
     map.insert(QMailMessageKey::ParentAccountId, QLatin1String("parentaccountid"));
     map.insert(QMailMessageKey::ServerUid, QLatin1String("serveruid"));
     map.insert(QMailMessageKey::Size, QLatin1String("size"));
-    map.insert(QMailMessageKey::ContentType, QLatin1String("contenttype"));
+    map.insert(QMailMessageKey::ContentCategory, QLatin1String("contenttype"));
     map.insert(QMailMessageKey::PreviousParentFolderId, QLatin1String("previousparentfolderid"));
     map.insert(QMailMessageKey::ContentScheme, QLatin1String("mailfile"));
     map.insert(QMailMessageKey::ContentIdentifier, QLatin1String("mailfile"));
@@ -703,7 +703,7 @@ static QMap<QMailMessageSortKey::Property, QMailMessageKey::Property> messageSor
     map.insert(QMailMessageSortKey::ParentAccountId, QMailMessageKey::ParentAccountId);
     map.insert(QMailMessageSortKey::ServerUid, QMailMessageKey::ServerUid);
     map.insert(QMailMessageSortKey::Size, QMailMessageKey::Size);
-    map.insert(QMailMessageSortKey::ContentType, QMailMessageKey::ContentType);
+    map.insert(QMailMessageSortKey::ContentCategory, QMailMessageKey::ContentCategory);
     map.insert(QMailMessageSortKey::PreviousParentFolderId, QMailMessageKey::PreviousParentFolderId);
     map.insert(QMailMessageSortKey::CopyServerUid, QMailMessageKey::CopyServerUid);
     map.insert(QMailMessageSortKey::ListId, QMailMessageKey::ListId);
@@ -1152,9 +1152,9 @@ public:
 
     int size() const { return value<int>(QMailMessageKey::Size); }
 
-    QMailMessage::ContentType content() const
+    QMailMessage::ContentCategory contentCategory() const
     {
-        return static_cast<QMailMessage::ContentType>(value<int>(QMailMessageKey::ContentType, QMailMessage::UnknownContent));
+        return static_cast<QMailMessage::ContentCategory>(value<int>(QMailMessageKey::ContentCategory, QMailMessage::UnknownContent));
     }
 
     QMailFolderId previousParentFolderId() const { return QMailFolderId(value<quint64>(QMailMessageKey::PreviousParentFolderId)); }
@@ -1369,7 +1369,7 @@ void appendWhereValues<QMailMessageKey::ArgumentType>(const QMailMessageKey::Arg
         values += extractor.size();
         break;
 
-    case QMailMessageKey::ContentType:
+    case QMailMessageKey::ContentCategory:
         values += extractor.content();
         break;
 
@@ -2185,7 +2185,7 @@ QString whereClauseItem<QMailMessageKey>(const QMailMessageKey &key, const QMail
         case QMailMessageKey::TimeStamp:
         case QMailMessageKey::ReceptionTimeStamp:
         case QMailMessageKey::Size:
-        case QMailMessageKey::ContentType:
+        case QMailMessageKey::ContentCategory:
         case QMailMessageKey::ContentScheme:
         case QMailMessageKey::ContentIdentifier:
         case QMailMessageKey::ResponseType:
@@ -2607,7 +2607,7 @@ const QMailMessageKey::Properties &QMailStoreSql::updatableMessageProperties()
                                            QMailMessageKey::ParentAccountId |
                                            QMailMessageKey::ServerUid |
                                            QMailMessageKey::Size |
-                                           QMailMessageKey::ContentType |
+                                           QMailMessageKey::ContentCategory |
                                            QMailMessageKey::PreviousParentFolderId |
                                            QMailMessageKey::ContentScheme |
                                            QMailMessageKey::ContentIdentifier |
@@ -3480,8 +3480,8 @@ void QMailStoreSql::extractMessageMetaData(const QSqlRecord& r,
             metaData->setSize(messageRecord.size());
             break;
 
-        case QMailMessageKey::ContentType:
-            metaData->setContent(messageRecord.content());
+        case QMailMessageKey::ContentCategory:
+            metaData->setContentCategory(messageRecord.contentCategory());
             break;
 
         case QMailMessageKey::PreviousParentFolderId:
@@ -3745,8 +3745,8 @@ QVariantList QMailStoreSql::messageValues(const QMailMessageKey::Properties& pro
                 values.append(extractor.size());
                 break;
 
-            case QMailMessageKey::ContentType:
-                values.append(extractor.content());
+            case QMailMessageKey::ContentCategory:
+                values.append(extractor.contentCategory());
                 break;
 
             case QMailMessageKey::PreviousParentFolderId:
@@ -6172,7 +6172,7 @@ QMailStoreSql::AttemptResult QMailStoreSql::attemptAddMessage(QMailMessageMetaDa
     values.insert(QLatin1String("mailfile"), ::contentUri(*metaData));
     values.insert(QLatin1String("serveruid"), metaData->serverUid());
     values.insert(QLatin1String("size"), metaData->size());
-    values.insert(QLatin1String("contenttype"), static_cast<int>(metaData->content()));
+    values.insert(QLatin1String("contenttype"), static_cast<int>(metaData->contentCategory()));
     values.insert(QLatin1String("responseid"), metaData->inResponseTo().toULongLong());
     values.insert(QLatin1String("responsetype"), metaData->responseType());
     values.insert(QLatin1String("receivedstamp"), QMailTimeStamp(metaData->receivedDate()).toUTC());

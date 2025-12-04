@@ -379,8 +379,8 @@ void QMailStorePrivate::updateMessageValues(const QMailMessageKey::Properties& p
                 metaData->setSize(values.size());
                 break;
 
-            case QMailMessageKey::ContentType:
-                metaData->setContent(values.content());
+            case QMailMessageKey::ContentCategory:
+                metaData->setContentCategory(values.contentCategory());
                 break;
 
             case QMailMessageKey::PreviousParentFolderId:
@@ -1145,8 +1145,8 @@ void QMailStorePrivate::messagePropertiesRemotelyChanged(const QMailMessageIdLis
                     metaData.setSize(data.size());
                     break;
 
-                case QMailMessageKey::ContentType:
-                    metaData.setContent(data.content());
+                case QMailMessageKey::ContentCategory:
+                    metaData.setContentCategory(data.contentCategory());
                     break;
 
                 case QMailMessageKey::PreviousParentFolderId:
