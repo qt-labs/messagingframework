@@ -133,7 +133,7 @@ QMailCrypto::DecryptionResult QMailCryptoGPG::decrypt(QMailMessagePartContainer 
     QByteArray decData;
     QMailCrypto::DecryptionResult result;
     result.engine = QStringLiteral("libgpgme.so");
-    result.status = QMailCryptoGPGME::decrypt(body.body().data(QMailMessageBody::Decoded), decData);
+    result.status = decryptData(body.body().data(QMailMessageBody::Decoded), decData);
     if (result.status == QMailCrypto::Decrypted) {
         const QMailMessage mail = QMailMessage::fromRfc2822(decData);
 

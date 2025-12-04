@@ -299,7 +299,7 @@ QMailCrypto::SignatureResult QMailCryptoGPGME::getSignature(const QByteArray &me
         // For testing purpose, just creating a md5 of data
         // and use this as signature data.
         QCryptographicHash md5(QCryptographicHash::Md5);
-        md5.addData(mess, strlen(mess));
+        md5.addData(mess);
         result = md5.result().toHex();
 
         micalg = "pgp-md5";
@@ -448,8 +448,7 @@ static QMailCrypto::CryptResult toCryptResult(gpgme_error_t err)
     }
 }
 
-QMailCrypto::CryptResult QMailCryptoGPGME::decrypt(const QByteArray &encData,
-                                                      QByteArray &decData) const
+QMailCrypto::CryptResult QMailCryptoGPGME::decryptData(const QByteArray &encData, QByteArray &decData) const
 {
     GPGmeContext ctx(m_protocol);
     if (!ctx) {

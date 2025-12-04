@@ -68,7 +68,7 @@ protected:
                                         const QByteArray &messageData,
                                         QList<QMailCrypto::KeyResult> &keyResults) const;
 
-    QMailCrypto::CryptResult decrypt(const QByteArray &encData, QByteArray &decData) const;
+    QMailCrypto::CryptResult decryptData(const QByteArray &encData, QByteArray &decData) const;
 
 private:
     QMailCrypto::SignatureResult getSignature(const QByteArray &message,
