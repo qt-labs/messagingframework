@@ -55,7 +55,7 @@ class QMFUTIL_EXPORT SelectFolderDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit SelectFolderDialog(FolderModel *model, QWidget *parent = Q_NULLPTR);
+    explicit SelectFolderDialog(FolderModel *model, QWidget *parent = nullptr);
 
     void setInvalidSelections(const QList<QMailMessageSet*> &invalid);
 

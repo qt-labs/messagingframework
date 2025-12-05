@@ -144,7 +144,7 @@ public:
         FolderRenamePermittedRole
     };
 
-    EmailFolderModel(QObject *parent = Q_NULLPTR);
+    EmailFolderModel(QObject *parent = nullptr);
     ~EmailFolderModel();
 
     virtual void init();
@@ -172,7 +172,7 @@ class QMFUTIL_EXPORT AccountFolderModel : public EmailFolderModel
     Q_OBJECT
 
 public:
-    explicit AccountFolderModel(const QMailAccountId &id, QObject *parent = Q_NULLPTR);
+    explicit AccountFolderModel(const QMailAccountId &id, QObject *parent = nullptr);
 
     void init() override;
 

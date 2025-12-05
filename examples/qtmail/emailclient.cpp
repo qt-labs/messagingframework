@@ -83,7 +83,7 @@ class ActivityIcon : public QLabel
     Q_OBJECT
 
 public:
-    ActivityIcon(QWidget* parent = Q_NULLPTR);
+    ActivityIcon(QWidget* parent = nullptr);
 
 private slots:
     void itemChanged(StatusItem* item);

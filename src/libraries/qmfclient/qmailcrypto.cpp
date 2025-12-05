@@ -48,8 +48,8 @@ struct SignedContainerFinder
 
     SignedContainerFinder(QMailCryptographicServiceInterface *engine)
         : m_engine(engine)
-        , m_signedContainer(0)
-        , m_signedConstContainer(0)
+        , m_signedContainer(nullptr)
+        , m_signedConstContainer(nullptr)
     {
     }
 
@@ -71,7 +71,8 @@ struct SignedContainerFinder
     }
 };
 
-QMailMessagePartContainer* QMailCryptographicServiceInterface::findSignedContainer(QMailMessagePartContainer *part)
+QMailMessagePartContainer*
+QMailCryptographicServiceInterface::findSignedContainer(QMailMessagePartContainer *part)
 {
     if (partHasSignature(*part))
         return part;
@@ -81,7 +82,8 @@ QMailMessagePartContainer* QMailCryptographicServiceInterface::findSignedContain
     return finder.m_signedContainer;
 }
 
-const QMailMessagePartContainer* QMailCryptographicServiceInterface::findSignedContainer(const QMailMessagePartContainer *part)
+const QMailMessagePartContainer*
+QMailCryptographicServiceInterface::findSignedContainer(const QMailMessagePartContainer *part)
 {
     if (partHasSignature(*part))
         return part;
@@ -98,7 +100,7 @@ const QMailMessagePartContainer* QMailCryptographicServiceInterface::findSignedC
     This class loads different cryptographic services and allows to sign, verify and decrypt content.
 */
 
-QMailCryptographicService* QMailCryptographicService::m_pInstance = 0;
+QMailCryptographicService* QMailCryptographicService::m_pInstance = nullptr;
 
 QMailCryptographicService::QMailCryptographicService(QObject* parent)
     : QMailPluginManager(QString::fromLatin1("crypto"), parent)
@@ -132,13 +134,14 @@ QMailCryptographicServiceInterface* QMailCryptographicService::decryptionEngine(
                 return engine;
         }
     }
-    return Q_NULLPTR;
+    return nullptr;
 }
 
-QMailMessagePartContainer* QMailCryptographicService::findSignedContainer(QMailMessagePartContainer *part, QMailCryptographicServiceInterface **engine)
+QMailMessagePartContainer*
+QMailCryptographicService::findSignedContainer(QMailMessagePartContainer *part,
+                                               QMailCryptographicServiceInterface **engine)
 {
-    QMailCryptographicService *plugins =
-        QMailCryptographicService::instance();
+    QMailCryptographicService *plugins = QMailCryptographicService::instance();
     QStringList engines = plugins->list();
 
     if (engine)
@@ -158,10 +161,12 @@ QMailMessagePartContainer* QMailCryptographicService::findSignedContainer(QMailM
 
     return 0;
 }
-const QMailMessagePartContainer* QMailCryptographicService::findSignedContainer(const QMailMessagePartContainer *part, QMailCryptographicServiceInterface **engine)
+
+const QMailMessagePartContainer*
+QMailCryptographicService::findSignedContainer(const QMailMessagePartContainer *part,
+                                               QMailCryptographicServiceInterface **engine)
 {
-    QMailCryptographicService *plugins =
-        QMailCryptographicService::instance();
+    QMailCryptographicService *plugins = QMailCryptographicService::instance();
     QStringList engines = plugins->list();
 
     if (engine)
@@ -184,8 +189,7 @@ const QMailMessagePartContainer* QMailCryptographicService::findSignedContainer(
 
 QMailCrypto::VerificationResult QMailCryptographicService::verifySignature(const QMailMessagePartContainer &part)
 {
-    QMailCryptographicService *plugins =
-        QMailCryptographicService::instance();
+    QMailCryptographicService *plugins = QMailCryptographicService::instance();
     QStringList engines = plugins->list();
 
     for (QStringList::iterator it = engines.begin(); it != engines.end(); it++) {
@@ -220,7 +224,7 @@ QMailCrypto::SignatureResult QMailCryptographicService::sign(QMailMessagePartCon
 
 bool QMailCryptographicService::canDecrypt(const QMailMessagePartContainer &part)
 {
-    return instance()->decryptionEngine(part) != Q_NULLPTR;
+    return instance()->decryptionEngine(part) != nullptr;
 }
 
 QMailCrypto::DecryptionResult QMailCryptographicService::decrypt(QMailMessagePartContainer *part,

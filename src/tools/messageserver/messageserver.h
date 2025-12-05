@@ -49,7 +49,7 @@ class MessageServer : public QObject
     Q_OBJECT
 
 public:
-    MessageServer(QObject *parent = Q_NULLPTR);
+    MessageServer(QObject *parent = nullptr);
     ~MessageServer();
 
     bool init();

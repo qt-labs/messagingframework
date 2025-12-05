@@ -110,8 +110,7 @@ static int insensitiveIndexOf(const QByteArray& target, const QByteArray &source
                 // We may find the next place to search in our scan
                 if ((restart == it) && (*searchIt == *(it - 1)))
                     restart = searchIt;
-            }
-            while (toupper(*searchIt++) == toupper(*matchIt++));
+            } while (toupper(*searchIt++) == toupper(*matchIt++));
 
             // No match
             it = restart;
@@ -181,7 +180,7 @@ private:
     // We need to keep these in an external map, because QFile is noncopyable
     struct QFileMapping
     {
-        QFileMapping() : file(0), mapping(0), size(0) {}
+        QFileMapping() : file(nullptr), mapping(nullptr), size(0) {}
 
         QFile* file;
         char* mapping;
@@ -363,14 +362,14 @@ template <typename Stream>
 Stream& operator>>(Stream &stream, LongStringPrivate& ls) { ls.deserialize(stream); return stream; }
 
 LongStringPrivate::LongStringPrivate()
-    : mapping(0),
+    : mapping(nullptr),
       offset(0),
       len(0)
 {
 }
 
 LongStringPrivate::LongStringPrivate(const QByteArray& ba)
-    : mapping(0),
+    : mapping(nullptr),
       data(ba),
       offset(0),
       len(data.length())
@@ -385,7 +384,7 @@ LongStringPrivate::LongStringPrivate(const QString& filename)
 }
 
 LongStringPrivate::LongStringPrivate(const LongStringPrivate &other)
-    : mapping(0),
+    : mapping(nullptr),
       offset(0),
       len(0)
 {
@@ -402,7 +401,8 @@ const LongStringPrivate &LongStringPrivate::operator=(const LongStringPrivate &o
     if (&other != this) {
         delete mapping;
 
-        mapping = (other.mapping ? new LongStringFileMapping(other.mapping->fileName()) : 0);
+        mapping = other.mapping ? new LongStringFileMapping(other.mapping->fileName())
+                                : nullptr;
         data = (other.mapping ? QByteArray() : other.data);
         offset = other.offset;
         len = other.len;
@@ -506,7 +506,7 @@ QTextStream* LongStringPrivate::textStream() const
 template <typename Stream>
 void LongStringPrivate::serialize(Stream &stream) const
 {
-    bool usesMapping(mapping != 0);
+    bool usesMapping(mapping != nullptr);
 
     stream << usesMapping;
     if (usesMapping) {

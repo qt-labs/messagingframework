@@ -52,7 +52,7 @@ class MESSAGESERVER_EXPORT QMailMessageServerPlugin : public QObject
     Q_OBJECT
 
 public:
-    QMailMessageServerPlugin(QObject* parent = Q_NULLPTR);
+    QMailMessageServerPlugin(QObject* parent = nullptr);
     ~QMailMessageServerPlugin();
 
     virtual QString key() const = 0;

@@ -54,7 +54,7 @@ class QmfStorageManager : public QObject, public QMailContentManager
     Q_OBJECT
 
 public:
-    QmfStorageManager(QObject *parent = Q_NULLPTR);
+    QmfStorageManager(QObject *parent = nullptr);
     ~QmfStorageManager();
 
     QMailStore::ErrorCode add(QMailMessage *message, QMailContentManager::DurabilityRequirement durability) override;
@@ -76,6 +76,7 @@ public:
     static QString messagePartUndecodedFilePath(const QMailMessagePart &part, const QString &fileName);
 
     ManagerRole role() const override { return StorageRole; }
+
 protected slots:
     void clearAccountPath(const QMailAccountIdList&);
 

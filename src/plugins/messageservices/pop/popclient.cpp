@@ -128,12 +128,12 @@ void PopClient::deleteTransport()
         disconnect(transport, SIGNAL(errorOccurred(int,QString)), this, SLOT(transportError(int,QString)));
         disconnect(transport, SIGNAL(readyRead()), this, SLOT(incomingData()));
         disconnect(transport, SIGNAL(sslErrorOccured(QMailServiceAction::Status::ErrorCode,QString)),
-                this, SIGNAL(connectionError(QMailServiceAction::Status::ErrorCode,QString)));
+                   this, SIGNAL(connectionError(QMailServiceAction::Status::ErrorCode,QString)));
 
         // A Qt socket remains in an unusuable state for a short time after closing,
         // thus it can't be immediately reused
         transport->deleteLater();
-        transport = 0;
+        transport = nullptr;
     }
 }
 

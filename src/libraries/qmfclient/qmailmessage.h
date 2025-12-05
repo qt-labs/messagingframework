@@ -379,7 +379,8 @@ public:
 
     // Parts management interface:
     MultipartType multipartType() const;
-    void setMultipartType(MultipartType type, const QList<QMailMessageHeaderField::ParameterType> &parameters = QList<QMailMessageHeaderField::ParameterType>());
+    void setMultipartType(MultipartType type,
+                          const QList<QMailMessageHeaderField::ParameterType> &parameters = QList<QMailMessageHeaderField::ParameterType>());
 
     uint partCount() const;
 
@@ -414,10 +415,12 @@ public:
 
     // Header fields describing this part container
     QString headerFieldText( const QString &id ) const;
-    QMailMessageHeaderField headerField( const QString &id, QMailMessageHeaderField::FieldType fieldType = QMailMessageHeaderField::StructuredField ) const;
+    QMailMessageHeaderField headerField(const QString &id,
+                                        QMailMessageHeaderField::FieldType fieldType = QMailMessageHeaderField::StructuredField) const;
 
     QStringList headerFieldsText( const QString &id ) const;
-    QList<QMailMessageHeaderField> headerFields( const QString &id, QMailMessageHeaderField::FieldType fieldType = QMailMessageHeaderField::StructuredField ) const;
+    QList<QMailMessageHeaderField> headerFields(const QString &id,
+                                                QMailMessageHeaderField::FieldType fieldType = QMailMessageHeaderField::StructuredField) const;
 
     QList<QMailMessageHeaderField> headerFields() const;
 
@@ -463,7 +466,7 @@ protected:
     QMailMessagePartContainer(const QMailMessagePartContainer &other);
     QMailMessagePartContainer(QMailMessagePartContainerPrivate *priv);
 
-    virtual void setHeader(const QMailMessageHeader& header, const QMailMessagePartContainerPrivate* parent = Q_NULLPTR);
+    virtual void setHeader(const QMailMessageHeader& header, const QMailMessagePartContainerPrivate* parent = nullptr);
 
     QSharedDataPointer<QMailMessagePartContainerPrivate> d;
 
@@ -506,13 +509,19 @@ public:
     static QMailMessagePart fromData(const QString& input, const QMailMessageContentDisposition& disposition,
                                      const QMailMessageContentType& type, QMailMessageBody::TransferEncoding encoding);
 
-    static QMailMessagePart fromMessageReference(const QMailMessageId &id, const QMailMessageContentDisposition& disposition,
-                                                 const QMailMessageContentType& type, QMailMessageBody::TransferEncoding encoding);
-    static QMailMessagePart fromPartReference(const QMailMessagePart::Location &partLocation, const QMailMessageContentDisposition& disposition,
-                                              const QMailMessageContentType& type, QMailMessageBody::TransferEncoding encoding);
+    static QMailMessagePart fromMessageReference(const QMailMessageId &id,
+                                                 const QMailMessageContentDisposition &disposition,
+                                                 const QMailMessageContentType &type,
+                                                 QMailMessageBody::TransferEncoding encoding);
+    static QMailMessagePart fromPartReference(const QMailMessagePart::Location &partLocation,
+                                              const QMailMessageContentDisposition &disposition,
+                                              const QMailMessageContentType &type,
+                                              QMailMessageBody::TransferEncoding encoding);
 
-    void setReference(const QMailMessageId &id, const QMailMessageContentType& type, QMailMessageBody::TransferEncoding encoding);
-    void setReference(const QMailMessagePart::Location &location, const QMailMessageContentType& type, QMailMessageBody::TransferEncoding encoding);
+    void setReference(const QMailMessageId &id, const QMailMessageContentType &type,
+                      QMailMessageBody::TransferEncoding encoding);
+    void setReference(const QMailMessagePart::Location &location, const QMailMessageContentType &type,
+                      QMailMessageBody::TransferEncoding encoding);
 
     QString contentID() const;
     void setContentID(const QString &s);
@@ -953,7 +962,7 @@ public:
     template <typename Stream> void deserialize(Stream &stream);
 
 protected:
-    void setHeader(const QMailMessageHeader& header, const QMailMessagePartContainerPrivate* parent = Q_NULLPTR) override;
+    void setHeader(const QMailMessageHeader& header, const QMailMessagePartContainerPrivate* parent = nullptr) override;
 
 private:
     friend class QMailStore;

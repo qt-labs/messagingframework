@@ -455,10 +455,10 @@ private:
     bool obsoleteContent(const QString& identifier);
 
     template<typename AccessType, typename FunctionType>
-    bool repeatedly(FunctionType func, const QString &description, Transaction *t = Q_NULLPTR) const;
+    bool repeatedly(FunctionType func, const QString &description, Transaction *t = nullptr) const;
 
     quint64 threadId(const QMailMessageId &id);
-    AttemptResult updateLatestInConversation(quint64 threadId, QMailMessageIdList *messagesUpdated, quint64 *updatedTo = Q_NULLPTR);
+    AttemptResult updateLatestInConversation(quint64 threadId, QMailMessageIdList *messagesUpdated, quint64 *updatedTo = nullptr);
     AttemptResult updateLatestInConversation(const QSet<quint64> &threadIds, QMailMessageIdList *messagesUpdated);
 
     AttemptResult addCustomFields(quint64 id, const QMap<QString, QString> &fields, const QString &tableName);

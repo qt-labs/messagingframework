@@ -48,12 +48,12 @@ public:
     QMailCryptoGPG();
     ~QMailCryptoGPG() {}
 
-    bool partHasSignature(const QMailMessagePartContainer &part) const Q_DECL_OVERRIDE;
-    QMailCrypto::VerificationResult verifySignature(const QMailMessagePartContainer &part) const Q_DECL_OVERRIDE;
-    QMailCrypto::SignatureResult sign(QMailMessagePartContainer *part, const QStringList &keys) const Q_DECL_OVERRIDE;
+    bool partHasSignature(const QMailMessagePartContainer &part) const override;
+    QMailCrypto::VerificationResult verifySignature(const QMailMessagePartContainer &part) const override;
+    QMailCrypto::SignatureResult sign(QMailMessagePartContainer *part, const QStringList &keys) const override;
 
-    bool canDecrypt(const QMailMessagePartContainer &part) const Q_DECL_OVERRIDE;
-    QMailCrypto::DecryptionResult decrypt(QMailMessagePartContainer *part) const Q_DECL_OVERRIDE;
+    bool canDecrypt(const QMailMessagePartContainer &part) const override;
+    QMailCrypto::DecryptionResult decrypt(QMailMessagePartContainer *part) const override;
 };
 
 #endif

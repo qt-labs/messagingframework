@@ -56,7 +56,7 @@ public:
         ThreadIdRole
     };
 
-    QMailThreadListModel(QObject *parent = Q_NULLPTR);
+    QMailThreadListModel(QObject *parent = nullptr);
     virtual ~QMailThreadListModel();
 
     int rowCount(const QModelIndex& index = QModelIndex()) const override;

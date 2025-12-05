@@ -68,7 +68,7 @@ class SaveContactDialog : public QDialog
 public:
     enum Selection { None = 0, Create, Existing };
 
-    SaveContactDialog(const QMailAddress &address, QWidget *parent = Q_NULLPTR)
+    SaveContactDialog(const QMailAddress &address, QWidget *parent = nullptr)
         : QDialog(parent),
           sel(None),
           createButton(new QPushButton(tr("Create new contact"))),

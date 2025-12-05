@@ -185,7 +185,8 @@ struct ElementDecomposer
             }
         } else if (c == '(') {
             if (it == begin) {
-                if (reportDepth > 0) return false;
+                if (reportDepth > 0)
+                    return false;
 
                 ++reportDepth;
                 return true;

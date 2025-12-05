@@ -72,8 +72,7 @@ QMailCrypto::VerificationResult QMailCryptoGPG::verifySignature(const QMailMessa
     return result;
 }
 
-QMailCrypto::SignatureResult QMailCryptoGPG::sign(QMailMessagePartContainer *part,
-                                                     const QStringList &keys) const
+QMailCrypto::SignatureResult QMailCryptoGPG::sign(QMailMessagePartContainer *part, const QStringList &keys) const
 {
     if (!part) {
         qCWarning(lcMessaging) << "unable to sign a NULL part.";

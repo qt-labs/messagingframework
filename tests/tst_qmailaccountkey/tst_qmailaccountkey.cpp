@@ -62,9 +62,11 @@ void tst_qmailaccountkey::testQMailAccountKey()
     QMailAccountKey secondKey(QMailAccountKey::id(QMailAccountId(1)));
     QMailAccountKey testKey;
     testKey = firstKey;
-    QVERIFY (firstKey != secondKey);
+    QVERIFY(firstKey != secondKey);
+
     testKey &= firstKey;
     QCOMPARE(firstKey, testKey);
+
     testKey |= secondKey;
     QVERIFY((testKey | firstKey) == secondKey);
 }

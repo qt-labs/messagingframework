@@ -101,7 +101,7 @@ class RecipientWidget : public QWidget
     Q_OBJECT
 
 public:
-    RecipientWidget(QWidget* parent = Q_NULLPTR);
+    RecipientWidget(QWidget* parent = nullptr);
 
     bool isRemoveEnabled() const;
     void setRemoveEnabled(bool val);
@@ -229,7 +229,7 @@ class RecipientListWidget : public QWidget
     Q_OBJECT
 
 public:
-    RecipientListWidget(QWidget* parent = Q_NULLPTR);
+    RecipientListWidget(QWidget* parent = nullptr);
     QStringList recipients(RecipientType t) const;
     QStringList recipients() const;
     void setRecipients(RecipientType, const QStringList& list);
@@ -487,7 +487,7 @@ class BodyTextEdit : public QTextEdit
     Q_OBJECT
 
 public:
-    BodyTextEdit(EmailComposerInterface* composer, QWidget* parent = Q_NULLPTR);
+    BodyTextEdit(EmailComposerInterface* composer, QWidget* parent = nullptr);
 
     bool isComposing();
     bool isEmpty();

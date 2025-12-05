@@ -71,7 +71,7 @@ QMailCrypto::VerificationResult QMailCryptoSMIME::verifySignature(const QMailMes
 }
 
 QMailCrypto::SignatureResult QMailCryptoSMIME::sign(QMailMessagePartContainer *part,
-                                                       const QStringList &keys) const
+                                                    const QStringList &keys) const
 {
     if (!part) {
         qCWarning(lcMessaging) << "unable to sign a NULL part.";

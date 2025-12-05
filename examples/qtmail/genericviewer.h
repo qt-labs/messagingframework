@@ -56,7 +56,7 @@ class GenericViewer : public QMailViewerInterface
     Q_OBJECT
 
 public:
-    GenericViewer(QWidget* parent = Q_NULLPTR);
+    GenericViewer(QWidget* parent = nullptr);
 
     QWidget* widget() const;
 

@@ -182,7 +182,7 @@ public:
     const QMailMessagePart& partAt(const QMailMessagePart::Location& location) const;
     QMailMessagePart& partAt(const QMailMessagePart::Location& location);
 
-    void setHeader(const QMailMessageHeader& header, const QMailMessagePartContainerPrivate* parent = Q_NULLPTR);
+    void setHeader(const QMailMessageHeader& header, const QMailMessagePartContainerPrivate* parent = nullptr);
 
     QByteArray headerField( const QByteArray &headerName ) const;
     QList<QByteArray> headerFields( const QByteArray &headerName, int maximum = 0 ) const;

@@ -56,7 +56,7 @@ class BrowserWidget : public QWidget
     Q_OBJECT
 
 public:
-    BrowserWidget(QWidget *parent = Q_NULLPTR);
+    BrowserWidget(QWidget *parent = nullptr);
 
 #ifndef USE_WEBKIT
     void setResource(const QUrl& name, QVariant var);

@@ -46,7 +46,7 @@ class SelectListWidget : public QListWidget
     Q_OBJECT
 
 public:
-    SelectListWidget(QWidget* parent = Q_NULLPTR);
+    SelectListWidget(QWidget* parent = nullptr);
 
 signals:
     void cancel();

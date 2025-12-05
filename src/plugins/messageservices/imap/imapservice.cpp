@@ -169,9 +169,9 @@ private:
                           quint64 limit, const QMailMessageSortKey &sort, bool count);
 
 
-    virtual bool setStrategy(ImapStrategy *strategy, const char *signal = Q_NULLPTR);
+    virtual bool setStrategy(ImapStrategy *strategy, const char *signal = nullptr);
 
-    virtual void appendStrategy(ImapStrategy *strategy, const char *signal = Q_NULLPTR);
+    virtual void appendStrategy(ImapStrategy *strategy, const char *signal = nullptr);
     virtual bool initiateStrategy();
     void queueDisconnectedOperations(const QMailAccountId &accountId);
 
@@ -1425,7 +1425,8 @@ void ImapService::enable()
     connect(_client, SIGNAL(progressChanged(uint, uint)), this, SIGNAL(progressChanged(uint, uint)));
     connect(_client, SIGNAL(progressChanged(uint, uint)), _source, SLOT(resetExpiryTimer()));
     connect(_client, SIGNAL(errorOccurred(int, QString)), this, SLOT(errorOccurred(int, QString)));
-    connect(_client, SIGNAL(errorOccurred(QMailServiceAction::Status::ErrorCode, QString)), this, SLOT(errorOccurred(QMailServiceAction::Status::ErrorCode, QString)));
+    connect(_client, SIGNAL(errorOccurred(QMailServiceAction::Status::ErrorCode, QString)),
+            this, SLOT(errorOccurred(QMailServiceAction::Status::ErrorCode, QString)));
     connect(_client, SIGNAL(updateStatus(QString)), this, SLOT(updateStatus(QString)));
     connect(_client, &ImapClient::pushEmailError, this, &ImapService::retryPushEmail);
 

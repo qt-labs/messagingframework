@@ -8879,10 +8879,14 @@ bool QMailStoreSql::recalculateThreadsColumns(const QMailThreadIdList& modifiedT
         thread.setUnreadCount(unreadCount);
         thread.setStatus(status);
         thread.setSenders(QMailAddress::fromStringList(senders));
-        QMailThreadKey::Properties props(QMailThreadKey::MessageCount | QMailThreadKey::UnreadCount |
-                                         QMailThreadKey::LastDate | QMailThreadKey::StartedDate |
-                                         QMailThreadKey::Preview | QMailThreadKey::Subject |
-                                         QMailThreadKey::Status | QMailThreadKey::Senders);
+        QMailThreadKey::Properties props(QMailThreadKey::MessageCount
+                                         | QMailThreadKey::UnreadCount
+                                         | QMailThreadKey::LastDate
+                                         | QMailThreadKey::StartedDate
+                                         | QMailThreadKey::Preview
+                                         | QMailThreadKey::Subject
+                                         | QMailThreadKey::Status
+                                         | QMailThreadKey::Senders);
 
         QSqlQuery query(simpleQuery(QString::fromLatin1("UPDATE mailthreads SET %1 WHERE id=?").arg(expandProperties(props, true)),
                                     QVariantList() << threadValues(props, thread) << threadId.toULongLong(),

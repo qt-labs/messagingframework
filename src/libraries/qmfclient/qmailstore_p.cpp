@@ -34,14 +34,12 @@
 #include "qmailstore_p.h"
 #include "qmailcontentmanager.h"
 #include "qmailmessageremovalrecord.h"
-#include "qmailtimestamp.h"
 #include "qmailnamespace.h"
 #include "qmaillog.h"
 
 #include <QCoreApplication>
 #include <QDir>
 #include <QFile>
-#include <QThread>
 #include <QRegularExpression>
 
 // The number of milliseconds that the database can be unused before
@@ -162,15 +160,23 @@ bool QMailStorePrivate::addFolder(QMailFolder *folder,
 }
 
 bool QMailStorePrivate::addMessages(const QList<QMailMessage *> &messages,
-                                    QMailMessageIdList *addedMessageIds, QMailThreadIdList *addedThreadIds, QMailMessageIdList *updatedMessageIds, QMailThreadIdList *updatedThreadIds, QMailFolderIdList *modifiedFolderIds, QMailThreadIdList *modifiedThreadIds, QMailAccountIdList *modifiedAccountIds)
+                                    QMailMessageIdList *addedMessageIds, QMailThreadIdList *addedThreadIds,
+                                    QMailMessageIdList *updatedMessageIds, QMailThreadIdList *updatedThreadIds,
+                                    QMailFolderIdList *modifiedFolderIds, QMailThreadIdList *modifiedThreadIds,
+                                    QMailAccountIdList *modifiedAccountIds)
 {
-    return QMailStoreSql::addMessages(messages, addedMessageIds, addedThreadIds, updatedMessageIds, updatedThreadIds, modifiedFolderIds, modifiedThreadIds, modifiedAccountIds);
+    return QMailStoreSql::addMessages(messages, addedMessageIds, addedThreadIds, updatedMessageIds, updatedThreadIds,
+                                      modifiedFolderIds, modifiedThreadIds, modifiedAccountIds);
 }
 
 bool QMailStorePrivate::addMessages(const QList<QMailMessageMetaData *> &messages,
-                                    QMailMessageIdList *addedMessageIds, QMailThreadIdList *addedThreadIds, QMailMessageIdList *updatedMessageIds, QMailThreadIdList *updatedThreadIds, QMailFolderIdList *modifiedFolderIds, QMailThreadIdList *modifiedThreadIds, QMailAccountIdList *modifiedAccountIds)
+                                    QMailMessageIdList *addedMessageIds, QMailThreadIdList *addedThreadIds,
+                                    QMailMessageIdList *updatedMessageIds, QMailThreadIdList *updatedThreadIds,
+                                    QMailFolderIdList *modifiedFolderIds, QMailThreadIdList *modifiedThreadIds,
+                                    QMailAccountIdList *modifiedAccountIds)
 {
-    return QMailStoreSql::addMessages(messages, addedMessageIds, addedThreadIds, updatedMessageIds, updatedThreadIds, modifiedFolderIds, modifiedThreadIds, modifiedAccountIds);
+    return QMailStoreSql::addMessages(messages, addedMessageIds, addedThreadIds, updatedMessageIds, updatedThreadIds,
+                                      modifiedFolderIds, modifiedThreadIds, modifiedAccountIds);
 }
 
 bool QMailStorePrivate::addThread(QMailThread *thread, QMailThreadIdList *addedThreadIds)
@@ -179,9 +185,14 @@ bool QMailStorePrivate::addThread(QMailThread *thread, QMailThreadIdList *addedT
 }
 
 bool QMailStorePrivate::removeAccounts(const QMailAccountKey &key,
-                                       QMailAccountIdList *deletedAccountIds, QMailFolderIdList *deletedFolderIds, QMailThreadIdList *deletedThreadIds, QMailMessageIdList *deletedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailThreadIdList *modifiedThreadIds, QMailAccountIdList *modifiedAccountIds)
+                                       QMailAccountIdList *deletedAccountIds, QMailFolderIdList *deletedFolderIds,
+                                       QMailThreadIdList *deletedThreadIds, QMailMessageIdList *deletedMessageIds,
+                                       QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds,
+                                       QMailThreadIdList *modifiedThreadIds, QMailAccountIdList *modifiedAccountIds)
 {
-    bool success = QMailStoreSql::removeAccounts(key, deletedAccountIds, deletedFolderIds, deletedThreadIds, deletedMessageIds, updatedMessageIds, modifiedFolderIds, modifiedThreadIds, modifiedAccountIds);
+    bool success = QMailStoreSql::removeAccounts(key, deletedAccountIds, deletedFolderIds, deletedThreadIds,
+                                                 deletedMessageIds, updatedMessageIds, modifiedFolderIds,
+                                                 modifiedThreadIds, modifiedAccountIds);
     if (success) {
         removeExpiredData(*deletedMessageIds, *deletedThreadIds, *deletedFolderIds, *deletedAccountIds);
         if (accountManager) {
@@ -195,9 +206,14 @@ bool QMailStorePrivate::removeAccounts(const QMailAccountKey &key,
 }
 
 bool QMailStorePrivate::removeFolders(const QMailFolderKey &key, QMailStore::MessageRemovalOption option,
-                                      QMailFolderIdList *deletedFolderIds, QMailMessageIdList *deletedMessageIds, QMailThreadIdList *deletedThreadIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailThreadIdList *modifiedThreadIds, QMailAccountIdList *modifiedAccountIds)
+                                      QMailFolderIdList *deletedFolderIds, QMailMessageIdList *deletedMessageIds,
+                                      QMailThreadIdList *deletedThreadIds, QMailMessageIdList *updatedMessageIds,
+                                      QMailFolderIdList *modifiedFolderIds, QMailThreadIdList *modifiedThreadIds,
+                                      QMailAccountIdList *modifiedAccountIds)
 {
-    bool success = QMailStoreSql::removeFolders(key, option, deletedFolderIds, deletedMessageIds, deletedThreadIds, updatedMessageIds, modifiedFolderIds, modifiedThreadIds, modifiedAccountIds);
+    bool success = QMailStoreSql::removeFolders(key, option, deletedFolderIds, deletedMessageIds, deletedThreadIds,
+                                                updatedMessageIds, modifiedFolderIds, modifiedThreadIds,
+                                                modifiedAccountIds);
     if (success) {
         removeExpiredData(*deletedMessageIds, *deletedThreadIds, *deletedFolderIds);
     }
@@ -205,9 +221,12 @@ bool QMailStorePrivate::removeFolders(const QMailFolderKey &key, QMailStore::Mes
 }
 
 bool QMailStorePrivate::removeMessages(const QMailMessageKey &key, QMailStore::MessageRemovalOption option,
-                                       QMailMessageIdList *deletedMessageIds, QMailThreadIdList* deletedThreadIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailThreadIdList *modifiedThreadIds, QMailAccountIdList *modifiedAccountIds)
+                                       QMailMessageIdList *deletedMessageIds, QMailThreadIdList* deletedThreadIds,
+                                       QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds,
+                                       QMailThreadIdList *modifiedThreadIds, QMailAccountIdList *modifiedAccountIds)
 {
-    bool success = QMailStoreSql::removeMessages(key, option, deletedMessageIds, deletedThreadIds, updatedMessageIds, modifiedFolderIds, modifiedThreadIds, modifiedAccountIds);
+    bool success = QMailStoreSql::removeMessages(key, option, deletedMessageIds, deletedThreadIds, updatedMessageIds,
+                                                 modifiedFolderIds, modifiedThreadIds, modifiedAccountIds);
     if (success) {
         removeExpiredData(*deletedMessageIds, *deletedThreadIds);
     }
@@ -215,9 +234,12 @@ bool QMailStorePrivate::removeMessages(const QMailMessageKey &key, QMailStore::M
 }
 
 bool QMailStorePrivate::removeThreads(const QMailThreadKey &key, QMailStore::MessageRemovalOption option,
-                               QMailThreadIdList *deletedThreads, QMailMessageIdList *deletedMessageIds, QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailThreadIdList *modifiedThreadIds, QMailAccountIdList *modifiedAccountIds)
+                                      QMailThreadIdList *deletedThreads, QMailMessageIdList *deletedMessageIds,
+                                      QMailMessageIdList *updatedMessageIds, QMailFolderIdList *modifiedFolderIds,
+                                      QMailThreadIdList *modifiedThreadIds, QMailAccountIdList *modifiedAccountIds)
 {
-    bool success = QMailStoreSql::removeThreads(key, option, deletedThreads, deletedMessageIds, updatedMessageIds, modifiedFolderIds, modifiedThreadIds, modifiedAccountIds);
+    bool success = QMailStoreSql::removeThreads(key, option, deletedThreads, deletedMessageIds, updatedMessageIds,
+                                                modifiedFolderIds, modifiedThreadIds, modifiedAccountIds);
     if (success) {
         removeExpiredData(*deletedMessageIds, *deletedThreads);
     }
@@ -274,9 +296,12 @@ bool QMailStorePrivate::updateThread(QMailThread *thread,
 }
 
 bool QMailStorePrivate::updateMessages(const QList<QPair<QMailMessageMetaData*, QMailMessage*> > &messages,
-                                       QMailMessageIdList *updatedMessageIds, QMailThreadIdList *modifiedThreads, QMailMessageIdList *modifiedMessageIds, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds)
+                                       QMailMessageIdList *updatedMessageIds, QMailThreadIdList *modifiedThreads,
+                                       QMailMessageIdList *modifiedMessageIds, QMailFolderIdList *modifiedFolderIds,
+                                       QMailAccountIdList *modifiedAccountIds)
 {
-    bool success = QMailStoreSql::updateMessages(messages, updatedMessageIds, modifiedThreads, modifiedMessageIds, modifiedFolderIds, modifiedAccountIds);
+    bool success = QMailStoreSql::updateMessages(messages, updatedMessageIds, modifiedThreads, modifiedMessageIds,
+                                                 modifiedFolderIds, modifiedAccountIds);
     if (success) {
         for (const QPair<QMailMessageMetaData*, QMailMessage*> &message : messages) {
             QMailMessageMetaData *metaData = message.first;
@@ -416,10 +441,17 @@ void QMailStorePrivate::updateMessageValues(const QMailMessageKey::Properties& p
     metaData->setStatus(QMailMessage::UnloadedData, true);
 }
 
-bool QMailStorePrivate::updateMessagesMetaData(const QMailMessageKey &key, const QMailMessageKey::Properties &properties, const QMailMessageMetaData &data,
-                                               QMailMessageIdList *updatedMessageIds, QMailThreadIdList *deletedThreads, QMailThreadIdList *modifiedThreads, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds)
+bool QMailStorePrivate::updateMessagesMetaData(const QMailMessageKey &key,
+                                               const QMailMessageKey::Properties &properties,
+                                               const QMailMessageMetaData &data,
+                                               QMailMessageIdList *updatedMessageIds,
+                                               QMailThreadIdList *deletedThreads,
+                                               QMailThreadIdList *modifiedThreads,
+                                               QMailFolderIdList *modifiedFolderIds,
+                                               QMailAccountIdList *modifiedAccountIds)
 {
-    bool success = QMailStoreSql::updateMessagesMetaData(key, properties, data, updatedMessageIds, deletedThreads, modifiedThreads, modifiedFolderIds, modifiedAccountIds);
+    bool success = QMailStoreSql::updateMessagesMetaData(key, properties, data, updatedMessageIds, deletedThreads,
+                                                         modifiedThreads, modifiedFolderIds, modifiedAccountIds);
     if (success) {
         // Update the header cache
         foreach (const QMailMessageId& id, *updatedMessageIds) {
@@ -440,9 +472,13 @@ bool QMailStorePrivate::updateMessagesMetaData(const QMailMessageKey &key, const
 }
 
 bool QMailStorePrivate::updateMessagesMetaData(const QMailMessageKey &key, quint64 status, bool set,
-                                               QMailMessageIdList *updatedMessageIds, QMailThreadIdList *modifiedThreads, QMailFolderIdList *modifiedFolderIds, QMailAccountIdList *modifiedAccountIds)
+                                               QMailMessageIdList *updatedMessageIds,
+                                               QMailThreadIdList *modifiedThreads,
+                                               QMailFolderIdList *modifiedFolderIds,
+                                               QMailAccountIdList *modifiedAccountIds)
 {
-    bool success = QMailStoreSql::updateMessagesMetaData(key, status, set, updatedMessageIds, modifiedThreads, modifiedFolderIds, modifiedAccountIds);
+    bool success = QMailStoreSql::updateMessagesMetaData(key, status, set, updatedMessageIds, modifiedThreads,
+                                                         modifiedFolderIds, modifiedAccountIds);
     if (success) {
         // Update the header cache
         foreach (const QMailMessageId& id, *updatedMessageIds) {
@@ -453,7 +489,8 @@ bool QMailStorePrivate::updateMessagesMetaData(const QMailMessageKey &key, quint
                 cachedMetaData.setStatus(newStatus);
                 cachedMetaData.setUnmodified();
                 messageCache.insert(cachedMetaData);
-                uidCache.insert(qMakePair(cachedMetaData.parentAccountId(), cachedMetaData.serverUid()), cachedMetaData.id());
+                uidCache.insert(qMakePair(cachedMetaData.parentAccountId(), cachedMetaData.serverUid()),
+                                cachedMetaData.id());
             }
         }
 
@@ -539,27 +576,31 @@ QMailAccountIdList QMailStorePrivate::queryExternalAccounts(const QMailAccountKe
     return accountManager ? accountManager->queryAccounts(key) : QMailAccountIdList();
 }
 
-QMailAccountIdList QMailStorePrivate::queryAccounts(const QMailAccountKey &key, const QMailAccountSortKey &sortKey, uint limit, uint offset) const
+QMailAccountIdList QMailStorePrivate::queryAccounts(const QMailAccountKey &key, const QMailAccountSortKey &sortKey,
+                                                    uint limit, uint offset) const
 {
     return accountManager ? accountManager->queryAccounts(key, sortKey, limit, offset)
         : QMailStoreSql::queryAccounts(key, sortKey, limit, offset);
 }
 
-QMailFolderIdList QMailStorePrivate::queryFolders(const QMailFolderKey &key, const QMailFolderSortKey &sortKey, uint limit, uint offset) const
+QMailFolderIdList QMailStorePrivate::queryFolders(const QMailFolderKey &key, const QMailFolderSortKey &sortKey,
+                                                  uint limit, uint offset) const
 {
     return QMailStoreSql::queryFolders(key, sortKey, limit, offset);
 }
 
-QMailMessageIdList QMailStorePrivate::queryMessages(const QMailMessageKey &key, const QMailMessageSortKey &sortKey, uint limit, uint offset) const
+QMailMessageIdList QMailStorePrivate::queryMessages(const QMailMessageKey &key, const QMailMessageSortKey &sortKey,
+                                                    uint limit, uint offset) const
 {
-    //store the results of this call for cache preloading
+    // store the results of this call for cache preloading
     lastQueryMessageResult = QMailStoreSql::queryMessages(key, sortKey, limit, offset);
     return lastQueryMessageResult;
 }
 
-QMailThreadIdList QMailStorePrivate::queryThreads(const QMailThreadKey &key, const QMailThreadSortKey &sortKey, uint limit, uint offset) const
+QMailThreadIdList QMailStorePrivate::queryThreads(const QMailThreadKey &key, const QMailThreadSortKey &sortKey,
+                                                  uint limit, uint offset) const
 {
-    //store the results of this call for cache preloading
+    // store the results of this call for cache preloading
     lastQueryThreadResult = QMailStoreSql::queryThreads(key, sortKey, limit, offset);
     return lastQueryThreadResult;
 }
@@ -580,7 +621,7 @@ QMailAccount QMailStorePrivate::account(const QMailAccountId &id) const
                 result.setStandardFolder(it.key(), it.value());
             }
         }
-        //update cache
+        // update cache
         accountCache.insert(result);
     }
     return result;
@@ -670,7 +711,9 @@ QMailMessageMetaData QMailStorePrivate::messageMetaData(const QString &uid, cons
     return metaData;
 }
 
-QMailMessageMetaDataList QMailStorePrivate::messagesMetaData(const QMailMessageKey &key, const QMailMessageKey::Properties &properties, QMailStore::ReturnOption option) const
+QMailMessageMetaDataList QMailStorePrivate::messagesMetaData(const QMailMessageKey &key,
+                                                             const QMailMessageKey::Properties &properties,
+                                                             QMailStore::ReturnOption option) const
 {
     return QMailStoreSql::messagesMetaData(key, properties, option);
 }
@@ -680,7 +723,8 @@ QMailThreadList QMailStorePrivate::threads(const QMailThreadKey &key, QMailStore
     return QMailStoreSql::threads(key, option);
 }
 
-QMailMessageRemovalRecordList QMailStorePrivate::messageRemovalRecords(const QMailAccountId &accountId, const QMailFolderId &folderId) const
+QMailMessageRemovalRecordList QMailStorePrivate::messageRemovalRecords(const QMailAccountId &accountId,
+                                                                       const QMailFolderId &folderId) const
 {
     return QMailStoreSql::messageRemovalRecords(accountId, folderId);
 }
@@ -715,7 +759,8 @@ quint64 QMailStorePrivate::messageStatusMask(const QString &name) const
     return QMailStoreSql::messageStatusMask(name);
 }
 
-void QMailStorePrivate::removeExpiredData(const QMailMessageIdList& messageIds, const QMailThreadIdList& threadIds, const QMailFolderIdList& folderIds, const QMailAccountIdList& accountIds)
+void QMailStorePrivate::removeExpiredData(const QMailMessageIdList& messageIds, const QMailThreadIdList& threadIds,
+                                          const QMailFolderIdList& folderIds, const QMailAccountIdList& accountIds)
 {
     foreach (const QMailMessageId& id, messageIds) {
         messageCache.remove(id);
@@ -798,8 +843,8 @@ void QMailStorePrivate::preloadHeaderCache(const QMailMessageId& id) const
             uidCache.insert(qMakePair(metaData.parentAccountId(), metaData.serverUid()), metaData.id());
             if (metaData.id() == id) {
                 result = metaData;
+            }
         }
-    }
     }
 }
 
@@ -1014,7 +1059,6 @@ void QMailStorePrivate::messageMetaDataRemotelyChanged(QMailStore::ChangeType ch
                                                        const QMailMessageMetaDataList &data)
 {
     if (!data.isEmpty()) {
-
         QMailMessageIdList ids;
 
         for (const QMailMessageMetaData& metaData : data) {
@@ -1036,7 +1080,6 @@ void QMailStorePrivate::messageMetaDataRemotelyChanged(QMailStore::ChangeType ch
             break;
         }
     }
-
 }
 
 void QMailStorePrivate::messagePropertiesRemotelyChanged(const QMailMessageIdList& ids,
@@ -1139,7 +1182,6 @@ void QMailStorePrivate::messagePropertiesRemotelyChanged(const QMailMessageIdLis
 
             metaData.setUnmodified();
             messageCache.insert(metaData);
-
         }
     }
 

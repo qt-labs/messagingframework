@@ -57,7 +57,7 @@ class ServerObserver : public QMainWindow
 {
     Q_OBJECT
 public:
-    ServerObserver(QWidget *parent = Q_NULLPTR);
+    ServerObserver(QWidget *parent = nullptr);
     virtual ~ServerObserver();
 private slots:
     void actionsChanged(QList<QSharedPointer< QMailActionInfo> > actions);
@@ -72,7 +72,7 @@ private:
 class RowWidget : public QWidget {
     Q_OBJECT
 public:
-    RowWidget(QSharedPointer<QMailActionInfo> action, QWidget *parent = Q_NULLPTR);
+    RowWidget(QSharedPointer<QMailActionInfo> action, QWidget *parent = nullptr);
 
 public slots:
     void progressChanged(uint x, uint y);

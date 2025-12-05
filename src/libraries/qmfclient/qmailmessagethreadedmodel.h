@@ -43,7 +43,7 @@ class QMF_EXPORT QMailMessageThreadedModel : public QMailMessageModelBase
     Q_OBJECT
 
 public:
-    QMailMessageThreadedModel(QObject* parent = Q_NULLPTR);
+    QMailMessageThreadedModel(QObject* parent = nullptr);
     virtual ~QMailMessageThreadedModel();
 
     int rootRow(const QModelIndex& index) const;

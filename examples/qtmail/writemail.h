@@ -56,7 +56,7 @@ class WriteMail : public QMainWindow
     Q_OBJECT
 
 public:
-    WriteMail(QWidget* parent = Q_NULLPTR);
+    WriteMail(QWidget* parent = nullptr);
 
     void create(const QMailMessage& initMessage = QMailMessage());
     void respond(const QMailMessage& source, QMailMessage::ResponseType type);

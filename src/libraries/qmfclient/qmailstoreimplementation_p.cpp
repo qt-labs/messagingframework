@@ -85,12 +85,16 @@ bool QMailStoreNullImplementation::addFolder(QMailFolder *, QMailFolderIdList *,
     return false;
 }
 
-bool QMailStoreNullImplementation::addMessages(const QList<QMailMessage *> &, QMailMessageIdList *, QMailThreadIdList *, QMailMessageIdList *, QMailThreadIdList *, QMailFolderIdList *, QMailThreadIdList *, QMailAccountIdList *)
+bool QMailStoreNullImplementation::addMessages(const QList<QMailMessage *> &, QMailMessageIdList *,
+                                               QMailThreadIdList *, QMailMessageIdList *, QMailThreadIdList *,
+                                               QMailFolderIdList *, QMailThreadIdList *, QMailAccountIdList *)
 {
     return false;
 }
 
-bool QMailStoreNullImplementation::addMessages(const QList<QMailMessageMetaData *> &, QMailMessageIdList *, QMailThreadIdList *, QMailMessageIdList *, QMailThreadIdList *, QMailFolderIdList *, QMailThreadIdList *, QMailAccountIdList *)
+bool QMailStoreNullImplementation::addMessages(const QList<QMailMessageMetaData *> &, QMailMessageIdList *,
+                                               QMailThreadIdList *, QMailMessageIdList *, QMailThreadIdList *,
+                                               QMailFolderIdList *, QMailThreadIdList *, QMailAccountIdList *)
 {
     return false;
 }
@@ -100,17 +104,24 @@ bool QMailStoreNullImplementation::addThread(QMailThread *, QMailThreadIdList *)
     return false;
 }
 
-bool QMailStoreNullImplementation::removeAccounts(const QMailAccountKey &, QMailAccountIdList *, QMailFolderIdList *, QMailThreadIdList *, QMailMessageIdList *, QMailMessageIdList *, QMailFolderIdList *, QMailThreadIdList *, QMailAccountIdList *)
+bool QMailStoreNullImplementation::removeAccounts(const QMailAccountKey &, QMailAccountIdList *, QMailFolderIdList *,
+                                                  QMailThreadIdList *, QMailMessageIdList *, QMailMessageIdList *,
+                                                  QMailFolderIdList *, QMailThreadIdList *, QMailAccountIdList *)
 {
     return false;
 }
 
-bool QMailStoreNullImplementation::removeFolders(const QMailFolderKey &, QMailStore::MessageRemovalOption, QMailFolderIdList *, QMailMessageIdList *, QMailThreadIdList *, QMailMessageIdList *, QMailFolderIdList *, QMailThreadIdList *, QMailAccountIdList *)
+bool QMailStoreNullImplementation::removeFolders(const QMailFolderKey &, QMailStore::MessageRemovalOption,
+                                                 QMailFolderIdList *, QMailMessageIdList *, QMailThreadIdList *,
+                                                 QMailMessageIdList *, QMailFolderIdList *, QMailThreadIdList *,
+                                                 QMailAccountIdList *)
 {
     return false;
 }
 
-bool QMailStoreNullImplementation::removeMessages(const QMailMessageKey &, QMailStore::MessageRemovalOption, QMailMessageIdList *, QMailThreadIdList*, QMailMessageIdList *, QMailFolderIdList *, QMailThreadIdList *, QMailAccountIdList *)
+bool QMailStoreNullImplementation::removeMessages(const QMailMessageKey &, QMailStore::MessageRemovalOption,
+                                                  QMailMessageIdList *, QMailThreadIdList*, QMailMessageIdList *,
+                                                  QMailFolderIdList *, QMailThreadIdList *, QMailAccountIdList *)
 {
     return false;
 }
@@ -137,17 +148,24 @@ bool QMailStoreNullImplementation::updateFolder(QMailFolder *, QMailFolderIdList
     return false;
 }
 
-bool QMailStoreNullImplementation::updateMessages(const QList<QPair<QMailMessageMetaData *, QMailMessage *> > &, QMailMessageIdList *, QMailThreadIdList *, QMailMessageIdList *, QMailFolderIdList *, QMailAccountIdList *)
+bool QMailStoreNullImplementation::updateMessages(const QList<QPair<QMailMessageMetaData *, QMailMessage *> > &,
+                                                  QMailMessageIdList *, QMailThreadIdList *, QMailMessageIdList *,
+                                                  QMailFolderIdList *, QMailAccountIdList *)
 {
     return false;
 }
 
-bool QMailStoreNullImplementation::updateMessagesMetaData(const QMailMessageKey &, const QMailMessageKey::Properties &, const QMailMessageMetaData &, QMailMessageIdList *, QMailThreadIdList *, QMailThreadIdList *, QMailFolderIdList *, QMailAccountIdList *)
+bool QMailStoreNullImplementation::updateMessagesMetaData(const QMailMessageKey &, const QMailMessageKey::Properties &,
+                                                          const QMailMessageMetaData &, QMailMessageIdList *,
+                                                          QMailThreadIdList *, QMailThreadIdList *,
+                                                          QMailFolderIdList *, QMailAccountIdList *)
 {
     return false;
 }
 
-bool QMailStoreNullImplementation::updateMessagesMetaData(const QMailMessageKey &, quint64, bool, QMailMessageIdList *, QMailThreadIdList *, QMailFolderIdList *, QMailAccountIdList *)
+bool QMailStoreNullImplementation::updateMessagesMetaData(const QMailMessageKey &, quint64, bool,
+                                                          QMailMessageIdList *, QMailThreadIdList *,
+                                                          QMailFolderIdList *, QMailAccountIdList *)
 {
     return false;
 }
@@ -200,22 +218,26 @@ int QMailStoreNullImplementation::sizeOfMessages(const QMailMessageKey &) const
     return 0;
 }
 
-QMailAccountIdList QMailStoreNullImplementation::queryAccounts(const QMailAccountKey &, const QMailAccountSortKey &, uint, uint) const
+QMailAccountIdList QMailStoreNullImplementation::queryAccounts(const QMailAccountKey &, const QMailAccountSortKey &,
+                                                               uint, uint) const
 {
     return QMailAccountIdList();
 }
 
-QMailFolderIdList QMailStoreNullImplementation::queryFolders(const QMailFolderKey &, const QMailFolderSortKey &, uint, uint) const
+QMailFolderIdList QMailStoreNullImplementation::queryFolders(const QMailFolderKey &, const QMailFolderSortKey &,
+                                                             uint, uint) const
 {
     return QMailFolderIdList();
 }
 
-QMailMessageIdList QMailStoreNullImplementation::queryMessages(const QMailMessageKey &, const QMailMessageSortKey &, uint, uint) const
+QMailMessageIdList QMailStoreNullImplementation::queryMessages(const QMailMessageKey &, const QMailMessageSortKey &,
+                                                               uint, uint) const
 {
     return QMailMessageIdList();
 }
 
-QMailThreadIdList QMailStoreNullImplementation::queryThreads(const QMailThreadKey &, const QMailThreadSortKey &, uint, uint) const
+QMailThreadIdList QMailStoreNullImplementation::queryThreads(const QMailThreadKey &, const QMailThreadSortKey &,
+                                                             uint, uint) const
 {
     return QMailThreadIdList();
 }
@@ -260,7 +282,9 @@ QMailMessageMetaData QMailStoreNullImplementation::messageMetaData(const QString
     return QMailMessageMetaData();
 }
 
-QMailMessageMetaDataList QMailStoreNullImplementation::messagesMetaData(const QMailMessageKey &, const QMailMessageKey::Properties &, QMailStore::ReturnOption) const
+QMailMessageMetaDataList QMailStoreNullImplementation::messagesMetaData(const QMailMessageKey &,
+                                                                        const QMailMessageKey::Properties &,
+                                                                        QMailStore::ReturnOption) const
 {
     return QMailMessageMetaDataList();
 }
@@ -270,7 +294,8 @@ QMailThreadList QMailStoreNullImplementation::threads(const QMailThreadKey &, QM
     return QMailThreadList();
 }
 
-QMailMessageRemovalRecordList QMailStoreNullImplementation::messageRemovalRecords(const QMailAccountId &, const QMailFolderId &) const
+QMailMessageRemovalRecordList QMailStoreNullImplementation::messageRemovalRecords(const QMailAccountId &,
+                                                                                  const QMailFolderId &) const
 {
     return QMailMessageRemovalRecordList();
 }

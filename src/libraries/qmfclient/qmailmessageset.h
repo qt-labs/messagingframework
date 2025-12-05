@@ -245,7 +245,7 @@ public:
         SubclassUserRole
     };
 
-    QMailMessageSetModel(QObject *parent = Q_NULLPTR);
+    QMailMessageSetModel(QObject *parent = nullptr);
     virtual ~QMailMessageSetModel();
 
     int rowCount(const QModelIndex &parentIndex) const override;

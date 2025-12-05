@@ -119,7 +119,7 @@ public:
     bool removeThread(const QMailThreadId &id, MessageRemovalOption option = NoRemovalRecord);
     bool removeThreads(const QMailThreadKey& key, QMailStore::MessageRemovalOption option = NoRemovalRecord);
 
-    bool updateAccount(QMailAccount* account, QMailAccountConfiguration* config = Q_NULLPTR);
+    bool updateAccount(QMailAccount* account, QMailAccountConfiguration* config = nullptr);
     bool updateAccountConfiguration(QMailAccountConfiguration* config);
     bool updateFolder(QMailFolder* f);
     bool updateMessage(QMailMessage* m);

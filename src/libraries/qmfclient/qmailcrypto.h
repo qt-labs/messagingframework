@@ -140,6 +140,7 @@ public:
     QMailMessagePartContainer* findSignedContainer(QMailMessagePartContainer *part);
     const QMailMessagePartContainer* findSignedContainer(const QMailMessagePartContainer *part);
 };
+
 QT_BEGIN_NAMESPACE
 Q_DECLARE_INTERFACE(QMailCryptographicServiceInterface, "org.qt-project.Qt.QMailCryptographicServiceInterface")
 QT_END_NAMESPACE
@@ -150,8 +151,10 @@ class QMF_EXPORT QMailCryptographicService : public QMailPluginManager
 
 public:
     static QMailCryptographicService* instance();
-    static QMailMessagePartContainer* findSignedContainer(QMailMessagePartContainer *part, QMailCryptographicServiceInterface **engine = Q_NULLPTR);
-    static const QMailMessagePartContainer* findSignedContainer(const QMailMessagePartContainer *part, QMailCryptographicServiceInterface **engine = Q_NULLPTR);
+    static QMailMessagePartContainer* findSignedContainer(QMailMessagePartContainer *part,
+                                                          QMailCryptographicServiceInterface **engine = nullptr);
+    static const QMailMessagePartContainer* findSignedContainer(const QMailMessagePartContainer *part,
+                                                                QMailCryptographicServiceInterface **engine = nullptr);
 
     QMailCryptographicServiceInterface* instance(const QString &engine);
     QMailCryptographicServiceInterface* decryptionEngine(const QMailMessagePartContainer &part);
@@ -160,14 +163,14 @@ public:
     static QMailCrypto::SignatureResult sign(QMailMessagePartContainer *part,
                                              const QString &crypto,
                                              const QStringList &keys,
-                                             QMailCrypto::PassphraseCallback cb = Q_NULLPTR);
+                                             QMailCrypto::PassphraseCallback cb = nullptr);
 
     static bool canDecrypt(const QMailMessagePartContainer &part);
     static QMailCrypto::DecryptionResult decrypt(QMailMessagePartContainer *part,
-                                                 QMailCrypto::PassphraseCallback cb = Q_NULLPTR);
+                                                 QMailCrypto::PassphraseCallback cb = nullptr);
 
 private:
-    QMailCryptographicService(QObject *parent = Q_NULLPTR);
+    QMailCryptographicService(QObject *parent = nullptr);
     ~QMailCryptographicService();
 
     static QMailCryptographicService* m_pInstance;

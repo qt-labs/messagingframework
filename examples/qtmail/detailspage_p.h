@@ -70,7 +70,7 @@ class DetailsPage : public QWidget
 
 public:
 
-    DetailsPage( QWidget *parent, const char *name = Q_NULLPTR );
+    DetailsPage( QWidget *parent, const char *name = nullptr );
 
     void setDefaultAccount( const QMailAccountId& defaultId );
 

@@ -39,7 +39,8 @@
 
 #include <QCryptographicHash>
 
-QMailCryptoGPGME::QMailCryptoGPGME(gpgme_protocol_t protocol): m_protocol(protocol), m_cb(0)
+QMailCryptoGPGME::QMailCryptoGPGME(gpgme_protocol_t protocol)
+    : m_protocol(protocol), m_cb(0)
 {
     gpgme_error_t err;
 
@@ -75,11 +76,10 @@ QMailCryptoGPGME::QMailCryptoGPGME(gpgme_protocol_t protocol): m_protocol(protoc
 
 static QByteArray canonicalizeStr(const char *str)
 {
-    const char *p;
-
     QByteArray out;
     out.reserve(strlen(str) * 1.1);
-    for (p = str; *p != '\0'; ++p) {
+
+    for (const char *p = str; *p != '\0'; ++p) {
         if (*p != '\r') {
             if (*p == '\n')
                 out.append('\r');
@@ -237,9 +237,9 @@ struct GPGmeData {
 };
 
 QMailCrypto::SignatureResult QMailCryptoGPGME::getSignature(const QByteArray &message,
-                                                               const QStringList &keys,
-                                                               QByteArray &result,
-                                                               QByteArray &micalg) const
+                                                            const QStringList &keys,
+                                                            QByteArray &result,
+                                                            QByteArray &micalg) const
 {
     result.clear();
     micalg.clear();
@@ -333,9 +333,9 @@ QMailCrypto::SignatureResult QMailCryptoGPGME::getSignature(const QByteArray &me
 }
 
 QMailCrypto::SignatureResult QMailCryptoGPGME::computeSignature(QMailMessagePartContainer &part,
-                                                                   const QStringList &keys,
-                                                                   QByteArray &signedData,
-                                                                   QByteArray &micalg) const
+                                                                const QStringList &keys,
+                                                                QByteArray &signedData,
+                                                                QByteArray &micalg) const
 {
     /* Generate the transfer output corresponding to part. */
     QMailMessagePart data;
@@ -376,8 +376,8 @@ QMailCrypto::SignatureResult QMailCryptoGPGME::computeSignature(QMailMessagePart
 }
 
 QMailCrypto::SignatureResult QMailCryptoGPGME::verify(const QByteArray &sigData,
-                                                         const QByteArray &messageData,
-                                                         QList<QMailCrypto::KeyResult> &keyResults) const
+                                                      const QByteArray &messageData,
+                                                      QList<QMailCrypto::KeyResult> &keyResults) const
 {
     keyResults.clear();
 

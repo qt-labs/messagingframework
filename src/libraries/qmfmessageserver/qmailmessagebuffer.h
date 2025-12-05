@@ -55,7 +55,7 @@ class MESSAGESERVER_EXPORT QMailMessageBuffer : public QObject
 {
     Q_OBJECT
 public:
-    QMailMessageBuffer(QObject *parent = Q_NULLPTR);
+    QMailMessageBuffer(QObject *parent = nullptr);
     virtual ~QMailMessageBuffer();
 
     static QMailMessageBuffer *instance();

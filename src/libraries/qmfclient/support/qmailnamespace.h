@@ -36,7 +36,6 @@
 
 #include "qmailglobal.h"
 #include "qmailaccount.h"
-#include "qmailfolder.h"
 
 #include <QDate>
 #include <QString>

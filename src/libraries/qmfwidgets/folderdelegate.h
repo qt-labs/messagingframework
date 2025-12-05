@@ -49,7 +49,7 @@ class FolderDelegate : public QItemDelegate
     Q_OBJECT
 
 public:
-    FolderDelegate(QAbstractItemView *parent = Q_NULLPTR);
+    FolderDelegate(QAbstractItemView *parent = nullptr);
     FolderDelegate(QWidget *parent);
 
     void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override;

@@ -72,7 +72,8 @@
     within the account configuration object \a config.
 */
 QMailServiceConfiguration::QMailServiceConfiguration(QMailAccountConfiguration *config, const QString &service)
-    : _config(config->services().contains(service) ? &config->serviceConfiguration(service) : 0)
+    : _config(config->services().contains(service) ? &config->serviceConfiguration(service)
+                                                   : nullptr)
 {
 }
 
@@ -81,7 +82,9 @@ QMailServiceConfiguration::QMailServiceConfiguration(QMailAccountConfiguration *
     within the account configuration object \a config.
 */
 QMailServiceConfiguration::QMailServiceConfiguration(const QMailAccountConfiguration &config, const QString &service)
-    : _config(const_cast<QMailAccountConfiguration::ServiceConfiguration*>(config.services().contains(service) ? &config.serviceConfiguration(service) : 0))
+    : _config(const_cast<QMailAccountConfiguration::ServiceConfiguration*>(config.services().contains(service)
+                                                                           ? &config.serviceConfiguration(service)
+                                                                           : nullptr))
 {
 }
 

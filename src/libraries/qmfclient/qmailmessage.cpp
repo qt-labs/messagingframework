@@ -1615,7 +1615,7 @@ QMailMessageHeaderFieldPrivate::QMailMessageHeaderFieldPrivate(const QByteArray&
     parse(text, structured);
 }
 
-static bool validExtension(const QByteArray& trailer, int* number = Q_NULLPTR, bool* encoded = Q_NULLPTR)
+static bool validExtension(const QByteArray& trailer, int* number = nullptr, bool* encoded = nullptr)
 {
     // Extensions according to RFC 2231:
     QRegularExpressionMatch extensionFormat
@@ -1632,7 +1632,7 @@ static bool validExtension(const QByteArray& trailer, int* number = Q_NULLPTR, b
     return false;
 }
 
-static bool matchingParameter(const QByteArray& name, const QByteArray& other, bool* encoded = Q_NULLPTR)
+static bool matchingParameter(const QByteArray& name, const QByteArray& other, bool* encoded = nullptr)
 {
     QByteArray match(name.trimmed());
 
@@ -1938,7 +1938,7 @@ static QByteArray protectedParameter(const QByteArray& value)
         return value;
 }
 
-static bool extendedParameter(const QByteArray& name, QByteArray* truncated = 0, int* number = Q_NULLPTR, bool* encoded = Q_NULLPTR)
+static bool extendedParameter(const QByteArray& name, QByteArray* truncated = 0, int* number = nullptr, bool* encoded = nullptr)
 {
     QByteArray param(name.trimmed());
 
@@ -3261,7 +3261,9 @@ void QMailMessageBodyPrivate::ensureCharsetExist()
     }
 }
 
-void QMailMessageBodyPrivate::fromLongString(LongString& ls, const QMailMessageContentType& content, QMailMessageBody::TransferEncoding te, QMailMessageBody::EncodingStatus status)
+void QMailMessageBodyPrivate::fromLongString(LongString& ls, const QMailMessageContentType& content,
+                                             QMailMessageBody::TransferEncoding te,
+                                             QMailMessageBody::EncodingStatus status)
 {
     _encoding = te;
     _type = content;
@@ -3272,7 +3274,9 @@ void QMailMessageBodyPrivate::fromLongString(LongString& ls, const QMailMessageC
     ensureCharsetExist();
 }
 
-void QMailMessageBodyPrivate::fromFile(const QString& file, const QMailMessageContentType& content, QMailMessageBody::TransferEncoding te, QMailMessageBody::EncodingStatus status)
+void QMailMessageBodyPrivate::fromFile(const QString& file, const QMailMessageContentType& content,
+                                       QMailMessageBody::TransferEncoding te,
+                                       QMailMessageBody::EncodingStatus status)
 {
     _encoding = te;
     _type = content;
@@ -3283,7 +3287,9 @@ void QMailMessageBodyPrivate::fromFile(const QString& file, const QMailMessageCo
     ensureCharsetExist();
 }
 
-void QMailMessageBodyPrivate::fromStream(QDataStream& in, const QMailMessageContentType& content, QMailMessageBody::TransferEncoding te, QMailMessageBody::EncodingStatus status)
+void QMailMessageBodyPrivate::fromStream(QDataStream& in, const QMailMessageContentType& content,
+                                         QMailMessageBody::TransferEncoding te,
+                                         QMailMessageBody::EncodingStatus status)
 {
     _encoding = te;
     _type = content;
@@ -3310,7 +3316,8 @@ void QMailMessageBodyPrivate::fromStream(QDataStream& in, const QMailMessageCont
     ensureCharsetExist();
 }
 
-void QMailMessageBodyPrivate::fromStream(QTextStream& in, const QMailMessageContentType& content, QMailMessageBody::TransferEncoding te)
+void QMailMessageBodyPrivate::fromStream(QTextStream& in, const QMailMessageContentType& content,
+                                         QMailMessageBody::TransferEncoding te)
 {
     _encoding = te;
     _type = content;
@@ -4185,7 +4192,8 @@ static QMailMessageContentType updateContentType(const QByteArray& existing, QMa
     return type;
 }
 
-void QMailMessagePartContainerPrivate::setMultipartType(QMailMessagePartContainer::MultipartType type, const QList<QMailMessageHeaderField::ParameterType> &parameters)
+void QMailMessagePartContainerPrivate::setMultipartType(QMailMessagePartContainer::MultipartType type,
+                                                        const QList<QMailMessageHeaderField::ParameterType> &parameters)
 {
     // TODO: Is there any value in keeping _multipartType and _boundary externally from
     // Content-type header field?
@@ -6093,7 +6101,8 @@ QMailMessagePart QMailMessagePart::fromPartReference(const QMailMessagePart::Loc
 
     \sa referenceType(), setReferenceResolution()
 */
-void QMailMessagePart::setReference(const QMailMessageId &id, const QMailMessageContentType& type, QMailMessageBody::TransferEncoding encoding)
+void QMailMessagePart::setReference(const QMailMessageId &id, const QMailMessageContentType& type,
+                                    QMailMessageBody::TransferEncoding encoding)
 {
     messagePartImpl()->setReference(id, type, encoding);
 }
@@ -6108,7 +6117,8 @@ void QMailMessagePart::setReference(const QMailMessageId &id, const QMailMessage
 
     \sa referenceType(), setReferenceResolution()
 */
-void QMailMessagePart::setReference(const QMailMessagePart::Location &location, const QMailMessageContentType& type, QMailMessageBody::TransferEncoding encoding)
+void QMailMessagePart::setReference(const QMailMessagePart::Location &location, const QMailMessageContentType& type,
+                                    QMailMessageBody::TransferEncoding encoding)
 {
     messagePartImpl()->setReference(location, type, encoding);
 }

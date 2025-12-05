@@ -50,7 +50,7 @@ class StatusBar : public QWidget
     Q_OBJECT
 
 public:
-    StatusBar(QWidget* parent = Q_NULLPTR);
+    StatusBar(QWidget* parent = nullptr);
 
 public slots:
     void setProgress(unsigned int min, unsigned int max);

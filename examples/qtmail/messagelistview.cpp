@@ -64,7 +64,7 @@ class QuickSearchWidget : public QWidget
 {
     Q_OBJECT
 public:
-    QuickSearchWidget(QWidget* parent = Q_NULLPTR);
+    QuickSearchWidget(QWidget* parent = nullptr);
 
     QMailMessageKey searchKey() const;
 

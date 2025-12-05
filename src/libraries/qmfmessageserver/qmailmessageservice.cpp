@@ -78,7 +78,7 @@ QMailMessageServicePlugin *mapping(const QString &key)
         return it.value();
 
     qCWarning(lcMessaging) << "Unable to map service for key:" << key;
-    return 0;
+    return nullptr;
 }
 
 }
@@ -159,7 +159,7 @@ QMailMessageService *QMailMessageServiceFactory::createService(const QString &ke
     if (QMailMessageServicePlugin* plugin = mapping(key))
         return plugin->createService(accountId);
 
-    return 0;
+    return nullptr;
 }
 
 /*!
@@ -293,7 +293,7 @@ bool appendErrorText(QString* message, int code, const ErrorMap& map)
 {
     const ErrorEntry *it = map.first, *end = map.first + map.second; // ptr arithmetic!
 
-    for ( ; it != end; ++it)
+    for ( ; it != end; ++it) {
         if (it->code == code) {
             QString extra(qApp->translate("QMailServiceAction", it->text));
             if (!extra.isEmpty()) {
@@ -305,6 +305,7 @@ bool appendErrorText(QString* message, int code, const ErrorMap& map)
             }
             return true;
         }
+    }
 
     return false;
 }
@@ -327,7 +328,8 @@ void decorate(QString* message, int code, const ErrorSet& errorSet)
         message->append(QChar::fromLatin1(' ')
                         + (QObject::tr("Storage for messages is full. Some new messages could not be retrieved.")));
     } else if (code == QMailServiceAction::Status::ErrEnqueueFailed) {
-        message->append(QString::fromLatin1("\n").append(qApp->translate("QMailServiceAction", "Unable to send; message moved to Drafts folder")));
+        message->append(QString::fromLatin1("\n").append(qApp->translate("QMailServiceAction",
+                                                                         "Unable to send; message moved to Drafts folder")));
     } else if (code == QMailServiceAction::Status::ErrUnknownResponse) {
         message->prepend(qApp->translate("QMailServiceAction", "Unexpected response from server: "));
     } else {
@@ -420,7 +422,8 @@ QMailStore::MessageRemovalOption QMailMessageSource::messageRemovalOption() cons
 
     \sa retrieveMessageList(), retrieveMessageLists()
 */
-bool QMailMessageSource::retrieveFolderList(const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending)
+bool QMailMessageSource::retrieveFolderList(const QMailAccountId &accountId, const QMailFolderId &folderId,
+                                            bool descending)
 {
     Q_UNUSED(accountId)
     Q_UNUSED(folderId)
@@ -463,7 +466,8 @@ bool QMailMessageSource::retrieveFolderList(const QMailAccountId &accountId, con
 
     \sa QMailAccount::lastSynchronized(), retrieveMessageLists()
 */
-bool QMailMessageSource::retrieveMessageList(const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort)
+bool QMailMessageSource::retrieveMessageList(const QMailAccountId &accountId, const QMailFolderId &folderId,
+                                             uint minimum, const QMailMessageSortKey &sort)
 {
     Q_UNUSED(accountId)
     Q_UNUSED(folderId)
@@ -507,7 +511,8 @@ bool QMailMessageSource::retrieveMessageList(const QMailAccountId &accountId, co
 
     \sa QMailAccount::lastSynchronized(), retrieveMessageList()
 */
-bool QMailMessageSource::retrieveMessageLists(const QMailAccountId &accountId, const QMailFolderIdList &folderIds, uint minimum, const QMailMessageSortKey &sort)
+bool QMailMessageSource::retrieveMessageLists(const QMailAccountId &accountId, const QMailFolderIdList &folderIds,
+                                              uint minimum, const QMailMessageSortKey &sort)
 {
     Q_UNUSED(accountId)
     Q_UNUSED(folderIds)
@@ -560,7 +565,8 @@ bool QMailMessageSource::retrieveNewMessages(const QMailAccountId &accountId, co
 
     Returns true if an operation is initiated.
 */
-bool QMailMessageSource::retrieveMessages(const QMailMessageIdList &ids, QMailRetrievalAction::RetrievalSpecification spec)
+bool QMailMessageSource::retrieveMessages(const QMailMessageIdList &ids,
+                                          QMailRetrievalAction::RetrievalSpecification spec)
 {
     Q_UNUSED(ids)
     Q_UNUSED(spec)
@@ -890,7 +896,8 @@ bool QMailMessageSource::moveFolder(const QMailFolderId &folderId, const QMailFo
 
     \sa matchingMessageIds(), retrieveMessages()
 */
-bool QMailMessageSource::searchMessages(const QMailMessageKey &searchCriteria, const QString &bodyText, quint64 limit, const QMailMessageSortKey &sort)
+bool QMailMessageSource::searchMessages(const QMailMessageKey &searchCriteria, const QString &bodyText,
+                                        quint64 limit, const QMailMessageSortKey &sort)
 {
     Q_UNUSED(searchCriteria)
     Q_UNUSED(bodyText)
@@ -920,7 +927,8 @@ bool QMailMessageSource::searchMessages(const QMailMessageKey &searchCriteria, c
 
     \sa matchingMessageIds(), retrieveMessages()
 */
-bool QMailMessageSource::searchMessages(const QMailMessageKey &searchCriteria, const QString &bodyText, const QMailMessageSortKey &sort)
+bool QMailMessageSource::searchMessages(const QMailMessageKey &searchCriteria, const QString &bodyText,
+                                        const QMailMessageSortKey &sort)
 {
     Q_UNUSED(searchCriteria)
     Q_UNUSED(bodyText)
@@ -1138,7 +1146,8 @@ void QMailMessageSource::copyMessages()
             message.setParentFolderId(d->_destinationId);
 
             if (!QMailStore::instance()->addMessage(&message)) {
-                qCWarning(lcMailStore) << "Unable to copy messages to folder:" << d->_destinationId << "for account:" << message.parentAccountId();
+                qCWarning(lcMailStore) << "Unable to copy messages to folder:" << d->_destinationId
+                                       << "for account:" << message.parentAccountId();
 
                 emit d->_service->statusChanged(
                     QMailServiceAction::Status(QMailServiceAction::Status::ErrFrameworkFault,
@@ -1882,7 +1891,8 @@ bool QMailMessageSource::moveFolder(const QMailFolderId &folderId, const QMailFo
 
     The request has the identifier \a action.
 */
-bool QMailMessageSource::searchMessages(const QMailMessageKey &searchCriteria, const QString& bodyText, quint64 limit, const QMailMessageSortKey &sort, quint64 action)
+bool QMailMessageSource::searchMessages(const QMailMessageKey &searchCriteria, const QString& bodyText, quint64 limit,
+                                        const QMailMessageSortKey &sort, quint64 action)
 {
     Q_UNUSED(searchCriteria)
     Q_UNUSED(bodyText)
@@ -1901,7 +1911,8 @@ bool QMailMessageSource::searchMessages(const QMailMessageKey &searchCriteria, c
 
     The request has the identifier \a action.
 */
-bool QMailMessageSource::searchMessages(const QMailMessageKey &searchCriteria, const QString& bodyText, const QMailMessageSortKey &sort, quint64 action)
+bool QMailMessageSource::searchMessages(const QMailMessageKey &searchCriteria, const QString& bodyText,
+                                        const QMailMessageSortKey &sort, quint64 action)
 {
     Q_UNUSED(searchCriteria)
     Q_UNUSED(bodyText)
@@ -1951,7 +1962,8 @@ bool QMailMessageSource::cancelSearch(quint64 action)
 
     The request has the identifier \a action.
 */
-bool QMailMessageSource::prepareMessages(const QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > &ids, quint64 action)
+bool QMailMessageSource::prepareMessages(const QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > &ids,
+                                         quint64 action)
 {
     Q_UNUSED(ids)
     Q_UNUSED(action)
@@ -1967,7 +1979,8 @@ bool QMailMessageSource::prepareMessages(const QList<QPair<QMailMessagePart::Loc
 
     The request has the identifier \a action.
 */
-bool QMailMessageSource::protocolRequest(const QMailAccountId &accountId, const QString &request, const QVariantMap &data, quint64 action)
+bool QMailMessageSource::protocolRequest(const QMailAccountId &accountId, const QString &request, const QVariantMap &data,
+                                         quint64 action)
 {
     Q_UNUSED(accountId)
     Q_UNUSED(request)

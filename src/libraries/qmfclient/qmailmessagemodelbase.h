@@ -91,7 +91,7 @@ public:
         MessageIdRole
     };
 
-    QMailMessageModelBase(QObject* parent = Q_NULLPTR);
+    QMailMessageModelBase(QObject* parent = nullptr);
     virtual ~QMailMessageModelBase();
 
     int rowCount(const QModelIndex& index = QModelIndex()) const override;

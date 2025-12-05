@@ -607,7 +607,7 @@ struct PartStorer
     bool allowRename;
 
     PartStorer(QMailMessage *m, const QString &f, const QString &e, QList< QSharedPointer<QFile> > *o, bool ar)
-     : message(m), fileName(f), existing(e), openParts(o), allowRename(ar) {}
+        : message(m), fileName(f), existing(e), openParts(o), allowRename(ar) {}
 
     bool operator()(const QMailMessagePart &part)
     {

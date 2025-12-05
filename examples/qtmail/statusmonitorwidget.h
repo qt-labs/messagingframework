@@ -53,7 +53,7 @@ class StatusMonitorWidget : public QFrame
     Q_OBJECT
 
 public:
-    StatusMonitorWidget(QWidget* parent = Q_NULLPTR, uint bottomMargin = 0, uint rightMargin = 0);
+    StatusMonitorWidget(QWidget* parent = nullptr, uint bottomMargin = 0, uint rightMargin = 0);
     QSize sizeHint() const;
 
 protected:

@@ -53,7 +53,7 @@ class QMF_EXPORT QMailMessageServer : public QObject
     Q_OBJECT
 
 public:
-    QMailMessageServer(QObject* parent = Q_NULLPTR);
+    QMailMessageServer(QObject* parent = nullptr);
     ~QMailMessageServer();
 
 private:

@@ -231,8 +231,8 @@ public:
 ImapTransport::ImapTransport(const char* name)
     : QMailTransport(name)
     , _compress(false)
-    , _decompressor(0)
-    , _compressor(0)
+    , _decompressor(nullptr)
+    , _compressor(nullptr)
 {
     test();
 }
@@ -313,9 +313,9 @@ void ImapTransport::imapClose()
     close();
     _compress = false;
     delete _decompressor;
-    _decompressor = 0;
+    _decompressor = nullptr;
     delete _compressor;
-    _compressor = 0;
+    _compressor = nullptr;
 }
 
 void ImapTransport::test()

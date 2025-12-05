@@ -94,6 +94,7 @@ protected:
 private:
     QScopedPointer<QMailCredentialsInterfacePrivate> d;
 };
+
 QT_BEGIN_NAMESPACE
 Q_DECLARE_INTERFACE(QMailCredentialsInterface, "org.qt-project.Qt.QMailCredentialsInterface")
 QT_END_NAMESPACE
@@ -109,6 +110,7 @@ public:
     virtual QString key() const = 0;
     virtual QMailCredentialsInterface *createCredentialsHandler(QObject *parent = nullptr) = 0;
 };
+
 QT_BEGIN_NAMESPACE
 Q_DECLARE_INTERFACE(QMailCredentialsPlugin, "org.qt-project.Qt.QMailCredentialsPlugin")
 QT_END_NAMESPACE
