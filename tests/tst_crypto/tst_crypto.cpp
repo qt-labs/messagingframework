@@ -96,15 +96,16 @@ tst_Crypto::tst_Crypto()
         if (!err) {
             while (info) {
                 qWarning() << "protocol:" << gpgme_get_protocol_name(info->protocol);
-                if (info->file_name && !info->version)
+                if (info->file_name && !info->version) {
                     qWarning() << "engine " << info->file_name << " not installed properly";
-                else if (info->file_name && info->version && info->req_version)
+                } else if (info->file_name && info->version && info->req_version) {
                     qWarning() << "engine " << info->file_name
                                << " version " << info->version
                                << " installed, but at least version "
                                << info->req_version << " required";
-                else
+                } else {
                     qWarning() << "unknown issue";
+                }
                 info = info->next;
             }
         } else {
@@ -126,6 +127,7 @@ void tst_Crypto::importKey(const QString &path, gpgme_protocol_t protocol,
 
     QFile f(path);
     if (!f.open(QIODevice::ReadOnly)) {
+        qWarning() << "Error opening" << path;
         QFAIL("Key file does not exist or cannot be opened for reading!");
     }
 
@@ -203,7 +205,7 @@ void tst_Crypto::deleteKey(const QString &fingerprint, gpgme_protocol_t protocol
     gpgme_release(ctx);
 }
 
-static QString passphrase(const QString &info)
+static QString passphraseCb(const QString &info)
 {
     Q_UNUSED(info);
 
@@ -212,10 +214,12 @@ static QString passphrase(const QString &info)
 
 void tst_Crypto::initTestCase()
 {
-    importKey(QStringLiteral("%1/testdata/key.asc").arg(QCoreApplication::applicationDirPath()), GPGME_PROTOCOL_OpenPGP, &m_pgpKey); // no pass
-    importKey(QStringLiteral("%1/testdata/QMFtest.pem").arg(QCoreApplication::applicationDirPath()), GPGME_PROTOCOL_CMS, &m_smimeKey); // pass for it is QMFtest2018
-    QFile::copy(QStringLiteral("%1/testdata/FECA2AF719090DD594C02C27F9CB3F8ED7EDAB31.key").arg(QCoreApplication::applicationDirPath()),
-                QDir::homePath() + QDir::separator() + ".gnupg/private-keys-v1.d/FECA2AF719090DD594C02C27F9CB3F8ED7EDAB31.key");
+    importKey(QFINDTESTDATA("/testdata/key.asc"),
+              GPGME_PROTOCOL_OpenPGP, &m_pgpKey); // no pass
+    importKey(QFINDTESTDATA("/testdata/QMFtest.pem"),
+              GPGME_PROTOCOL_CMS, &m_smimeKey); // pass for it is QMFtest2018
+    QFile::copy(QFINDTESTDATA("/testdata/FECA2AF719090DD594C02C27F9CB3F8ED7EDAB31.key"),
+                QDir::homePath() + "/.gnupg/private-keys-v1.d/FECA2AF719090DD594C02C27F9CB3F8ED7EDAB31.key");
 
     QMailAccount account;
     account.setName("Account 1");
@@ -325,20 +329,19 @@ void tst_Crypto::verify()
     QFETCH(QMailCrypto::SignatureResult, expectedStatus);
     QFETCH(QString, expectedKeyId);
 
-    QFile f(QStringLiteral("%1/%2").arg(QCoreApplication::applicationDirPath(),
-                                        rfc2822Filename));
+    QFile f(QFINDTESTDATA(rfc2822Filename));
     if (!f.open(QIODevice::ReadOnly)) {
         QFAIL("Mail file does not exist or cannot be opened for reading!");
     }
 
-    QMailMessage msg = QMailMessage::fromRfc2822File(QStringLiteral("%1/%2").arg(QCoreApplication::applicationDirPath(),
-                                        rfc2822Filename));
+    QMailMessage msg = QMailMessage::fromRfc2822File(QFINDTESTDATA(rfc2822Filename));
 
     QMailCrypto::VerificationResult result = QMailCryptographicService::verifySignature(msg);
     QCOMPARE(result.summary, expectedStatus);
     if (expectedStatus == QMailCrypto::MissingSignature
-        || expectedStatus == QMailCrypto::UnknownError)
+        || expectedStatus == QMailCrypto::UnknownError) {
         return;
+    }
     QCOMPARE(result.keyResults.length(), 1);
     QCOMPARE(result.keyResults.at(0).key, expectedKeyId);
     QCOMPARE(result.keyResults.at(0).status, expectedStatus);
@@ -375,24 +378,23 @@ void tst_Crypto::sign()
     QFETCH(QMailCrypto::SignatureResult, expectedStatus);
     QFETCH(QString, signedFilename);
 
-    QFile f(QStringLiteral("%1/%2").arg(QCoreApplication::applicationDirPath(),
-                                        rfc2822Filename));
+    QFile f(QFINDTESTDATA(rfc2822Filename));
     if (!f.open(QIODevice::ReadOnly)) {
         QFAIL("Mail file does not exist or cannot be opened for reading!");
     }
 
     // Check message signing.
-    QMailMessage msg = QMailMessage::fromRfc2822File(QStringLiteral("%1/%2").arg(QCoreApplication::applicationDirPath(),
-                                                                                 rfc2822Filename));
-    QCOMPARE(QMailCryptographicService::sign(&msg, plugin, QStringList(fingerprint), passphrase), expectedStatus);
+    QMailMessage msg = QMailMessage::fromRfc2822File(QFINDTESTDATA(rfc2822Filename));
+    QCOMPARE(QMailCryptographicService::sign(&msg, plugin, QStringList(fingerprint), passphraseCb),
+             expectedStatus);
 
     // Check signed message output.
     // Replace the random boundary strings with a fixed one for comparison.
     QRegularExpression rx("qmf:[^=]+==");
     QString signedMsg = QString(msg.toRfc2822());
     signedMsg.replace(rx, "testingtestingtesting");
-    QFile f2(QStringLiteral("%1/%2").arg(QCoreApplication::applicationDirPath(),
-                                         signedFilename));
+
+    QFile f2(QFINDTESTDATA(signedFilename));
     if (!f2.open(QIODevice::ReadOnly)) {
         QFAIL("Mail file does not exist or cannot be opened for reading!");
     }
@@ -443,15 +445,13 @@ void tst_Crypto::storage()
     QFETCH(QString, rfc2822Filename);
     QFETCH(QString, plugin);
 
-    QFile f(QStringLiteral("%1/%2").arg(QCoreApplication::applicationDirPath(),
-                                        rfc2822Filename));
+    QFile f(QFINDTESTDATA(rfc2822Filename));
     if (!f.open(QIODevice::ReadOnly)) {
         QFAIL("Mail file does not exist or cannot be opened for reading!");
     }
 
     // Store message.
-    QMailMessage msg = QMailMessage::fromRfc2822File(QStringLiteral("%1/%2").arg(QCoreApplication::applicationDirPath(),
-                                                                                 rfc2822Filename));
+    QMailMessage msg = QMailMessage::fromRfc2822File(QFINDTESTDATA(rfc2822Filename));
     QCOMPARE(msg.partCount(), uint(2));
     QVERIFY(!msg.partAt(0).undecodedData().isEmpty());
 
