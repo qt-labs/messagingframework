@@ -54,6 +54,24 @@
 #include <QStandardPaths>
 
 namespace {
+/*
+  The maximum number of service actions that can be serviced
+  concurrently on the device. Service actions that can't be serviced
+  immediately are queued until an appropriate service becomes available.
+
+  Used to limit peak memory (RAM) used by the messageserver.
+*/
+int MaximumConcurrentServiceActions = 2;
+
+/*
+  The maximum number of service actions that can be serviced
+  concurrently per process. Service actions that can't be serviced
+  immediately are queued until an appropriate service becomes available.
+
+  Used to prevent a client from monopolizing usage of shared services.
+*/
+int MaximumConcurrentServiceActionsPerProcess = 1;
+
 QSet<QMailAccountId> messageAccounts(const QMailMessageIdList &ids)
 {
     QSet<QMailAccountId> accountIds; // accounts that own these messages
@@ -1051,7 +1069,7 @@ void ServiceHandler::dispatchRequest()
         }
 
         // Limit number of concurrent actions serviced on the device
-        if (mActiveActions.count() >= QMail::maximumConcurrentServiceActions())
+        if (mActiveActions.count() >= MaximumConcurrentServiceActions)
             return;
 
         Request *request = it->data();
@@ -1061,13 +1079,13 @@ void ServiceHandler::dispatchRequest()
         int requestProcessCount = 1; // including the request
         foreach (quint64 actionId, mActiveActions.keys()) {
             if ((actionId >> 32) == requestProcess) {
-                if (++requestProcessCount > QMail::maximumConcurrentServiceActionsPerProcess()) {
+                if (++requestProcessCount > MaximumConcurrentServiceActionsPerProcess) {
                     break;
                 }
             }
         }
 
-        if (requestProcessCount > QMail::maximumConcurrentServiceActionsPerProcess()) {
+        if (requestProcessCount > MaximumConcurrentServiceActionsPerProcess) {
             ++it;
             continue;
         }

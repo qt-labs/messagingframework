@@ -44,6 +44,10 @@
 #include <QThread>
 #include <QRegularExpression>
 
+// The number of milliseconds that the database can be unused before
+// it will be automatically closed to reduce RAM use.
+static int DatabaseAutoCloseTimeout = 600*1000;
+
 QMailStorePrivate::QMailStorePrivate(QMailStore* parent,
                                      QMailAccountManager *accountManager)
     : QMailStoreImplementation(parent),
@@ -467,7 +471,7 @@ bool QMailStorePrivate::ensureDurability()
 
 void QMailStorePrivate::databaseOpened() const
 {
-    databaseUnloadTimer.start(QMail::databaseAutoCloseTimeout());
+    databaseUnloadTimer.start(DatabaseAutoCloseTimeout);
 }
 
 void QMailStorePrivate::unloadDatabase()

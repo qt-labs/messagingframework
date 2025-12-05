@@ -57,10 +57,6 @@ namespace QMail
     QMF_EXPORT QString baseSubject(const QString& subject, bool *replyOrForward);
     QMF_EXPORT QStringList messageIdentifiers(const QString& str);
     QMF_EXPORT bool detectStandardFolders(const QMailAccountId &accountId);
-    QMF_EXPORT int maximumConcurrentServiceActions();
-    QMF_EXPORT int maximumConcurrentServiceActionsPerProcess();
-    QMF_EXPORT int maximumPushConnections();
-    QMF_EXPORT int databaseAutoCloseTimeout();
     QMF_EXPORT bool isMessageServerRunning();
 
     template<typename StringType> struct qchar_conversion;

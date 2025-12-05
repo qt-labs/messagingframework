@@ -48,6 +48,8 @@
 #define PLUGIN_KEY "messageservices"
 
 namespace {
+// The maximum number of push connections that may  be started by the message server process.
+int MaximumPushConnections = 10;
 
 class PluginMap : public QMap<QString, QMailMessageServicePlugin*>
 {
@@ -2228,16 +2230,16 @@ static int reservedPushConnections = 0;
 
     Attempts to reserve push \a connections, returns the number of connections reserved.
 
-    Used by protocol pugins to limit RAM used by the message server.
+    Used by protocol plugins to limit RAM used by the message server.
 
-    \sa QMail::maximumPushConnections(), releasePushConnections()
+    \sa releasePushConnections()
 */
 int QMailMessageService::reservePushConnections(int connections)
 {
-    if (connections + reservedPushConnections > QMail::maximumPushConnections()) {
+    if (connections + reservedPushConnections > MaximumPushConnections) {
         qCWarning(lcMessaging) << Q_FUNC_INFO << "Unable to reserve"
                                << connections + reservedPushConnections
-                               << "push connections, as only" << QMail::maximumPushConnections()
+                               << "push connections, as only" << MaximumPushConnections
                                << "connections allowed.";
         return 0;
     }

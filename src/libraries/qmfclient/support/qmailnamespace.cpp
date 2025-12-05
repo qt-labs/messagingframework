@@ -510,49 +510,6 @@ bool QMail::detectStandardFolders(const QMailAccountId &accountId)
 }
 
 /*
-  Returns the maximum number of service actions that can be serviced
-  concurrently on the device. Service actions that can't be serviced
-  immediately are queued until an appropriate service becomes available.
-
-  Used to limit peak memory (RAM) used by the messageserver.
-*/
-int QMail::maximumConcurrentServiceActions()
-{
-    return 2;
-}
-
-/*
-  Returns the maximum number of service actions that can be serviced
-  concurrently per process. Service actions that can't be serviced
-  immediately are queued until an appropriate service becomes available.
-
-  Used by the messageserver to prevent a client form monopolizing usage
-  of shared services.
-*/
-int QMail::maximumConcurrentServiceActionsPerProcess()
-{
-    return 1;
-}
-
-/*
-  Returns the maximum number of push connections that may
-  be started by the message server process.
-*/
-int QMail::maximumPushConnections()
-{
-    return 10;
-}
-
-/*
-  Returns the number of milliseconds that the database can be unused before
-  it will be automatically closed to reduce RAM use.
-*/
-int QMail::databaseAutoCloseTimeout()
-{
-    return 600*1000;
-}
-
-/*
   Returns whether the message server is running or not.
 */
 bool QMail::isMessageServerRunning()
