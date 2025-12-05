@@ -8,8 +8,7 @@ set(SRC
   qmailmessageservice.cpp
   qmailserviceconfiguration.cpp
   qmailstoreaccountfilter.cpp
-  qmailtransport.cpp
-  qmailheartbeattimer_qtimer.cpp) # NB: There are multiple implementations
+  qmailtransport.cpp)
 
 set(HEADERS
   longstream_p.h
@@ -21,8 +20,7 @@ set(HEADERS
   qmailmessageservice.h
   qmailserviceconfiguration.h
   qmailstoreaccountfilter.h
-  qmailtransport.h
-  qmailheartbeattimer.h)
+  qmailtransport.h)
 
 add_library(QmfMessageServer SHARED ${SRC} ${HEADERS})
 

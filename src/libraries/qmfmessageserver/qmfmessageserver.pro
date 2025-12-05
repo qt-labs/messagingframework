@@ -22,8 +22,7 @@ HEADERS += \
     qmailmessageservice.h \
     qmailserviceconfiguration.h \
     qmailstoreaccountfilter.h \
-    qmailtransport.h \
-    qmailheartbeattimer.h
+    qmailtransport.h
 
 SOURCES += \
            longstream.cpp \
@@ -35,6 +34,5 @@ SOURCES += \
            qmailmessageservice.cpp \
            qmailserviceconfiguration.cpp \
            qmailstoreaccountfilter.cpp \
-           qmailtransport.cpp \
-           qmailheartbeattimer_qtimer.cpp # NB: There are multiple implementations
+           qmailtransport.cpp
 
