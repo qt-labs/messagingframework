@@ -83,10 +83,9 @@ public:
     void removeAllFromBuffer(QMailMessage *message);
 
 signals:
-    void connectionError(QMailServiceAction::Status::ErrorCode status, const QString &msg);
     void errorOccurred(int, const QString &);
     void errorOccurred(QMailServiceAction::Status::ErrorCode, const QString &);
-    void updateStatus(const QString &);
+    void statusChanged(const QString &);
 
     void messageActionCompleted(const QString &uid);
 
@@ -95,7 +94,7 @@ signals:
 
     void allMessagesReceived();
 
-protected slots:
+private slots:
     void messageBufferFlushed();
     void connected(QMailTransport::EncryptType encryptType);
     void transportError(int, QString msg);

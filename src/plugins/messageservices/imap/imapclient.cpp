@@ -173,7 +173,8 @@ namespace {
     }
 }
 
-class IdleProtocol : public ImapProtocol {
+class IdleProtocol : public ImapProtocol
+{
     Q_OBJECT
 
 public:
@@ -187,11 +188,11 @@ signals:
     void idleFlagsChangedNotification(QMailFolderId);
     void transportError();
 
-protected slots:
-    virtual void idleContinuation(ImapCommand, const QString &);
-    virtual void idleCommandTransition(ImapCommand, OperationStatus);
-    virtual void idleRenew();
-    virtual void idleTransportError();
+private slots:
+    void idleContinuation(ImapCommand, const QString &);
+    void idleCommandTransition(ImapCommand, OperationStatus);
+    void idleRenew();
+    void idleTransportError();
     void logIn();
     void onCredentialsStatusChanged();
 
@@ -209,16 +210,16 @@ IdleProtocol::IdleProtocol(ImapClient *client, const QMailFolder &folder, QMailC
     , _folder(folder)
     , _credentials(credentials)
 {
-    connect(this, SIGNAL(continuationRequired(ImapCommand, QString)),
-            this, SLOT(idleContinuation(ImapCommand, QString)) );
-    connect(this, SIGNAL(completed(ImapCommand, OperationStatus)),
-            this, SLOT(idleCommandTransition(ImapCommand, OperationStatus)) );
-    connect(this, SIGNAL(connectionError(int,QString)),
-            this, SLOT(idleTransportError()) );
-    connect(this, SIGNAL(connectionError(QMailServiceAction::Status::ErrorCode,QString)),
-            this, SLOT(idleTransportError()) );
-    connect(_client, SIGNAL(sessionError()),
-            this, SLOT(idleTransportError()) );
+    connect(this, &IdleProtocol::continuationRequired,
+            this, &IdleProtocol::idleContinuation);
+    connect(this, &IdleProtocol::completed,
+            this, &IdleProtocol::idleCommandTransition);
+    connect(this, &IdleProtocol::socketError,
+            [this](int, const QString &) { idleTransportError(); });
+    connect(this, &IdleProtocol::connectionError,
+            [this](QMailServiceAction::Status::ErrorCode, const QString&) { idleTransportError(); });
+    connect(_client, &ImapClient::sessionError,
+            this, &IdleProtocol::idleTransportError);
 
     _timeoutTimer.setSingleShot(true);
     _timeoutTimer.setInterval(30 * 1000);
@@ -390,52 +391,53 @@ ImapClient::ImapClient(const QMailAccountId &id, QObject* parent)
     _protocol.setObjectName(QString("%1").arg(count));
     _strategyContext = new ImapStrategyContext(this);
     _strategyContext->setStrategy(&_strategyContext->synchronizeAccountStrategy);
-    connect(&_protocol, SIGNAL(completed(ImapCommand, OperationStatus)),
-            this, SLOT(commandCompleted(ImapCommand, OperationStatus)) );
-    connect(&_protocol, SIGNAL(mailboxListed(QString,QString)),
-            this, SLOT(mailboxListed(QString,QString)));
-    connect(&_protocol, SIGNAL(messageFetched(QMailMessage&, const QString &, bool)),
-            this, SLOT(messageFetched(QMailMessage&, const QString &, bool)) );
-    connect(&_protocol, SIGNAL(dataFetched(QString, QString, QString, int)),
-            this, SLOT(dataFetched(QString, QString, QString, int)) );
-    connect(&_protocol, SIGNAL(partHeaderFetched(QString, QString, QString, int)),
-            this, SLOT(partHeaderFetched(QString, QString, QString, int)) );
-    connect(&_protocol, SIGNAL(nonexistentUid(QString)),
-            this, SLOT(nonexistentUid(QString)) );
-    connect(&_protocol, SIGNAL(messageStored(QString)),
-            this, SLOT(messageStored(QString)) );
-    connect(&_protocol, SIGNAL(messageCopied(QString, QString)),
-            this, SLOT(messageCopied(QString, QString)) );
-    connect(&_protocol, SIGNAL(messageCreated(QMailMessageId, QString)),
-            this, SLOT(messageCreated(QMailMessageId, QString)) );
-    connect(&_protocol, SIGNAL(downloadSize(QString, int)),
-            this, SLOT(downloadSize(QString, int)) );
-    connect(&_protocol, SIGNAL(urlAuthorized(QString)),
-            this, SLOT(urlAuthorized(QString)) );
-    connect(&_protocol, SIGNAL(folderCreated(QString, bool)),
-            this, SLOT(folderCreated(QString, bool)));
-    connect(&_protocol, SIGNAL(folderDeleted(QMailFolder, bool)),
-            this, SLOT(folderDeleted(QMailFolder, bool)));
-    connect(&_protocol, SIGNAL(folderRenamed(QMailFolder, QString, bool)),
-            this, SLOT(folderRenamed(QMailFolder, QString, bool)));
-    connect(&_protocol, SIGNAL(folderMoved(QMailFolder, QString, QMailFolderId, bool)),
-            this, SLOT(folderMoved(QMailFolder, QString, QMailFolderId, bool)));
-    connect(&_protocol, SIGNAL(updateStatus(QString)),
-            this, SLOT(transportStatus(QString)) );
-    connect(&_protocol, SIGNAL(connectionError(int,QString)),
-            this, SLOT(transportError(int,QString)) );
-    connect(&_protocol, SIGNAL(connectionError(QMailServiceAction::Status::ErrorCode,QString)),
-            this, SLOT(transportError(QMailServiceAction::Status::ErrorCode,QString)) );
+    connect(&_protocol, &ImapProtocol::completed,
+            this, &ImapClient::commandCompleted);
+    connect(&_protocol, &ImapProtocol::mailboxListed,
+            this, &ImapClient::mailboxListed);
+    connect(&_protocol, &ImapProtocol::messageFetched,
+            this, &ImapClient::messageFetched);
+    connect(&_protocol, &ImapProtocol::dataFetched,
+            this, &ImapClient::dataFetched);
+    connect(&_protocol, &ImapProtocol::partHeaderFetched,
+            this, &ImapClient::partHeaderFetched);
+    connect(&_protocol, &ImapProtocol::nonexistentUid,
+            this, &ImapClient::nonexistentUid);
+    connect(&_protocol, &ImapProtocol::messageStored,
+            this, &ImapClient::messageStored);
+    connect(&_protocol, &ImapProtocol::messageCopied,
+            this, &ImapClient::messageCopied);
+    connect(&_protocol, &ImapProtocol::messageCreated,
+            this, &ImapClient::messageCreated);
+    connect(&_protocol, &ImapProtocol::downloadSize,
+            this, &ImapClient::downloadSize);
+    connect(&_protocol, &ImapProtocol::urlAuthorized,
+            this, &ImapClient::urlAuthorized);
+    connect(&_protocol, &ImapProtocol::folderCreated,
+            this, &ImapClient::folderCreated);
+    connect(&_protocol, &ImapProtocol::folderDeleted,
+            this, &ImapClient::folderDeleted);
+    connect(&_protocol, &ImapProtocol::folderRenamed,
+            this, &ImapClient::folderRenamed);
+    connect(&_protocol, &ImapProtocol::folderMoved,
+            this, &ImapClient::folderMoved);
+    connect(&_protocol, &ImapProtocol::statusChanged,
+            this, &ImapClient::statusChanged);
+    connect(&_protocol, &ImapProtocol::socketError,
+            this, &ImapClient::handleSocketConnectionError);
+    connect(&_protocol, &ImapProtocol::connectionError,
+            this, &ImapClient::handleConnectionError);
 
     _inactiveTimer.setSingleShot(true);
-    connect(&_inactiveTimer, SIGNAL(timeout()),
-            this, SLOT(connectionInactive()));
+    connect(&_inactiveTimer, &QTimer::timeout,
+            this, &ImapClient::connectionInactive);
 
     _idleTimer.setSingleShot(true);
     _idleTimer.setInterval(28 * 60 * 1000);
     connect(&_idleTimer, &QTimer::timeout, this, &ImapClient::renewPushEmail);
 
-    connect(QMailMessageBuffer::instance(), SIGNAL(flushed()), this, SLOT(messageBufferFlushed()));
+    connect(QMailMessageBuffer::instance(), &QMailMessageBuffer::flushed,
+            this, &ImapClient::messageBufferFlushed);
 
     setupAccount();
 }
@@ -580,7 +582,7 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
             // missing the IDLE capability.
             // Currently idle connections must be established before main connection will
             // service requests.
-            emit updateStatus( tr("Checking capabilities" ) );
+            emit statusChanged( tr("Checking capabilities" ) );
             _protocol.sendCapability();
             break;
 
@@ -599,7 +601,7 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
                 if (ImapAuthenticator::useEncryption(ImapConfiguration(config),
                                                      _protocol.capabilities())) {
                     // Switch to encrypted mode
-                    emit updateStatus( tr("Starting TLS" ) );
+                    emit statusChanged(tr("Starting TLS"));
                     _protocol.sendStartTLS();
                     break;
                 }
@@ -636,7 +638,7 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
             // After logging in server capabilities reported may change  so we need to request
             // capabilities again, unless already received in an unsolicited response
             if (!_protocol.receivedCapabilities()) {
-                emit updateStatus( tr("Checking capabilities" ) );
+                emit statusChanged(tr("Checking capabilities"));
                 _protocol.sendCapability();
                 break;
             }
@@ -668,7 +670,7 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
                 // This is a noop when IDLE is already established
                 // for the given folders
                 monitor(configurationIdleFolderIds());
-                emit updateStatus( tr("Logging in idle connection" ) );
+                emit statusChanged(tr("Logging in idle connection"));
             }
 
             bool compressCapable(_protocol.capabilities().contains("COMPRESS=DEFLATE", Qt::CaseInsensitive));
@@ -701,7 +703,8 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
         case IMAP_Noop:
         {
             QMailAccountConfiguration config(_accountId);
-            _inactiveTimer.start(_closeCount ? MaxTimeBeforeNoop : ImapConfiguration(config).timeTillLogout() % MaxTimeBeforeNoop);
+            _inactiveTimer.start(_closeCount ? MaxTimeBeforeNoop
+                                             : ImapConfiguration(config).timeTillLogout() % MaxTimeBeforeNoop);
             break;
         }
 
@@ -938,7 +941,7 @@ void ImapClient::messageFetched(QMailMessage& mail, const QString &detachedFilen
 
     _classifier.classifyMessage(&mail);
 
-    QMailMessage *bufferMessage(new QMailMessage(mail));
+    QMailMessage *bufferMessage = new QMailMessage(mail);
     _bufferedMessages.append(bufferMessage);
     if (_strategyContext->messageFetched(*bufferMessage)) {
         removeAllFromBuffer(bufferMessage);
@@ -1455,14 +1458,14 @@ QMailAccountId ImapClient::account() const
     return _accountId;
 }
 
-void ImapClient::transportError(int code, const QString &msg)
+void ImapClient::handleSocketConnectionError(int code, const QString &msg)
 {
     operationFailed(code, msg);
 }
 
-void ImapClient::transportError(QMailServiceAction::Status::ErrorCode code, const QString &msg)
+void ImapClient::handleConnectionError(QMailServiceAction::Status::ErrorCode code, const QString &message)
 {
-    operationFailed(code, msg);
+    operationFailed(code, message);
 }
 
 void ImapClient::closeConnection()
@@ -1471,11 +1474,6 @@ void ImapClient::closeConnection()
     if ( _protocol.inUse() ) {
         _protocol.close();
     }
-}
-
-void ImapClient::transportStatus(const QString& status)
-{
-    emit updateStatus(status);
 }
 
 void ImapClient::cancelTransfer(QMailServiceAction::Status::ErrorCode code, const QString &text)
@@ -1510,7 +1508,7 @@ void ImapClient::connectionInactive()
     if (_closeCount == 0) {
         _rapidClosing = false;
         if ( _protocol.connected()) {
-            emit updateStatus( tr("Logging out") );
+            emit statusChanged( tr("Logging out") );
             _protocol.sendLogout();
             // Client MUST read tagged response, but if connection hangs in logout state newConnection will autoClose.
         } else {
@@ -1683,10 +1681,10 @@ void ImapClient::monitor(const QMailFolderIdList &mailboxIds)
             protocol->setObjectName(QString("I:%1").arg(count));
             _monitored.insert(id, protocol);
             _waitingForIdleFolderIds.append(id);
-            connect(protocol, SIGNAL(idleNewMailNotification(QMailFolderId)),
-                    this, SIGNAL(idleNewMailNotification(QMailFolderId)));
-            connect(protocol, SIGNAL(idleFlagsChangedNotification(QMailFolderId)),
-                    this, SIGNAL(idleFlagsChangedNotification(QMailFolderId)));
+            connect(protocol, &IdleProtocol::idleNewMailNotification,
+                    this, &ImapClient::idleNewMailNotification);
+            connect(protocol,  &IdleProtocol::idleFlagsChangedNotification,
+                    this, &ImapClient::idleFlagsChangedNotification);
             connect(protocol, &IdleProtocol::transportError,
                     this, &ImapClient::pushEmailError);
             protocol->open(imapCfg);
@@ -1702,16 +1700,19 @@ void ImapClient::messageBufferFlushed()
 
 void ImapClient::removeAllFromBuffer(QMailMessage *message)
 {
-    if (message) {
-        QMultiMap<QMailMessageId, QString>::const_iterator i = detachedTempFiles.find(message->id());
-        while (i != detachedTempFiles.end() && i.key() == message->id()) {
-            if (!(*i).isEmpty() && QFile::exists(*i)) {
-                QFile::remove(*i);
-            }
-            ++i;
-        }
-        detachedTempFiles.remove(message->id());
+    if (!message) {
+        return;
     }
+
+    QMultiMap<QMailMessageId, QString>::const_iterator it = detachedTempFiles.find(message->id());
+    while (it != detachedTempFiles.end() && it.key() == message->id()) {
+        if (!(*it).isEmpty() && QFile::exists(*it)) {
+            QFile::remove(*it);
+        }
+        ++it;
+    }
+    detachedTempFiles.remove(message->id());
+
     int i = 0;
     while ((i = _bufferedMessages.indexOf(message, i)) != -1) {
         delete _bufferedMessages.at(i);
@@ -1721,7 +1722,7 @@ void ImapClient::removeAllFromBuffer(QMailMessage *message)
 
 void ImapClient::logIn()
 {
-    emit updateStatus( tr("Logging in" ) );
+    emit statusChanged(tr("Logging in"));
     if (_credentials->status() == QMailCredentialsInterface::Ready) {
         QMailAccountConfiguration config(_accountId);
         _protocol.sendLogin(config, _credentials);

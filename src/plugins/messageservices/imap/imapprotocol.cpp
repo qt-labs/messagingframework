@@ -3260,29 +3260,29 @@ ImapProtocol::ImapProtocol()
       _authenticated(false),
       _receivedCapabilities(false)
 {
-    connect(&_incomingDataTimer, SIGNAL(timeout()), this, SLOT(incomingData()));
-    connect(&_fsm->listState, SIGNAL(mailboxListed(QString, QString)),
-            this, SIGNAL(mailboxListed(QString, QString)));
-    connect(&_fsm->genUrlAuthState, SIGNAL(urlAuthorized(QString)),
-            this, SIGNAL(urlAuthorized(QString)));
-    connect(&_fsm->appendState, SIGNAL(messageCreated(QMailMessageId, QString)),
-            this, SIGNAL(messageCreated(QMailMessageId, QString)));
-    connect(&_fsm->uidFetchState, SIGNAL(downloadSize(QString, int)),
-            this, SIGNAL(downloadSize(QString, int)));
-    connect(&_fsm->uidFetchState, SIGNAL(nonexistentUid(QString)),
-            this, SIGNAL(nonexistentUid(QString)));
-    connect(&_fsm->uidStoreState, SIGNAL(messageStored(QString)),
-            this, SIGNAL(messageStored(QString)));
-    connect(&_fsm->uidCopyState, SIGNAL(messageCopied(QString, QString)),
-            this, SIGNAL(messageCopied(QString, QString)));
-    connect(&_fsm->createState, SIGNAL(folderCreated(QString, bool)),
-            this, SIGNAL(folderCreated(QString, bool)));
-    connect(&_fsm->deleteState, SIGNAL(folderDeleted(QMailFolder, bool)),
-            this, SIGNAL(folderDeleted(QMailFolder, bool)));
-    connect(&_fsm->renameState, SIGNAL(folderRenamed(QMailFolder, QString, bool)),
-            this, SIGNAL(folderRenamed(QMailFolder, QString, bool)));
-    connect(&_fsm->moveState, SIGNAL(folderMoved(QMailFolder, QString, QMailFolderId, bool)),
-            this, SIGNAL(folderMoved(QMailFolder, QString, QMailFolderId, bool)));
+    connect(&_incomingDataTimer, &QTimer::timeout, this, &ImapProtocol::incomingData);
+    connect(&_fsm->listState, &ListState::mailboxListed,
+            this, &ImapProtocol::mailboxListed);
+    connect(&_fsm->genUrlAuthState, &GenUrlAuthState::urlAuthorized,
+            this, &ImapProtocol::urlAuthorized);
+    connect(&_fsm->appendState, &AppendState::messageCreated,
+            this, &ImapProtocol::messageCreated);
+    connect(&_fsm->uidFetchState, &UidFetchState::downloadSize,
+            this, &ImapProtocol::downloadSize);
+    connect(&_fsm->uidFetchState, &UidFetchState::nonexistentUid,
+            this, &ImapProtocol::nonexistentUid);
+    connect(&_fsm->uidStoreState, &UidStoreState::messageStored,
+            this, &ImapProtocol::messageStored);
+    connect(&_fsm->uidCopyState, &UidCopyState::messageCopied,
+            this, &ImapProtocol::messageCopied);
+    connect(&_fsm->createState, &CreateState::folderCreated,
+            this, &ImapProtocol::folderCreated);
+    connect(&_fsm->deleteState, &DeleteState::folderDeleted,
+            this, &ImapProtocol::folderDeleted);
+    connect(&_fsm->renameState, &RenameState::folderRenamed,
+            this, &ImapProtocol::folderRenamed);
+    connect(&_fsm->moveState, &MoveState::folderMoved,
+            this, &ImapProtocol::folderMoved);
 }
 
 ImapProtocol::~ImapProtocol()
@@ -3318,19 +3318,20 @@ bool ImapProtocol::open( const ImapConfiguration& config, qint64 bufferSize)
     if (!_transport) {
         _transport = new ImapTransport("IMAP");
 
-        connect(_transport, SIGNAL(updateStatus(QString)),
-                this, SIGNAL(updateStatus(QString)));
-        connect(_transport, SIGNAL(errorOccurred(int,QString)),
-                this, SLOT(errorHandling(int,QString)));
-        connect(_transport, SIGNAL(connected(QMailTransport::EncryptType)),
-                this, SLOT(connected(QMailTransport::EncryptType)));
-        connect(_transport, SIGNAL(readyRead()),
-                this, SLOT(incomingData()));
-        connect(_transport, SIGNAL(sslErrorOccured(QMailServiceAction::Status::ErrorCode,QString)),
-                this, SIGNAL(connectionError(QMailServiceAction::Status::ErrorCode,QString)));
+        connect(_transport, &ImapTransport::statusChanged,
+                this, &ImapProtocol::statusChanged);
+        connect(_transport, &ImapTransport::connected,
+                this, &ImapProtocol::handleConnected);
+        connect(_transport, &ImapTransport::readyRead,
+                this, &ImapProtocol::incomingData);
+        connect(_transport, &ImapTransport::socketErrorOccurred,
+                this, &ImapProtocol::handleSocketError);
+        connect(_transport, &ImapTransport::sslErrorOccurred,
+                this, &ImapProtocol::handleSslError);
     }
 
-    qCDebug(lcIMAP) << objectName() << "About to open connection" << config.mailUserName() << config.mailServer(); // useful to see object name
+    qCDebug(lcIMAP) << objectName() << "About to open connection" << config.mailUserName()
+                    << config.mailServer(); // useful to see object name
     _transport->setAcceptUntrustedCertificates(config.acceptUntrustedCertificates());
     _transport->open(config.mailServer(), config.mailPort(), static_cast<QMailTransport::EncryptType>(config.mailEncryption()));
 
@@ -3356,7 +3357,7 @@ void ImapProtocol::close()
 
 bool ImapProtocol::connected() const
 {
-    return (_transport && _transport->connected());
+    return (_transport && _transport->isConnected());
 }
 
 bool ImapProtocol::encrypted() const
@@ -3654,22 +3655,29 @@ void ImapProtocol::sendEnable(const QString &extensions)
     _fsm->setState(&_fsm->enableState);
 }
 
-void ImapProtocol::connected(QMailTransport::EncryptType encryptType)
+void ImapProtocol::handleConnected(QMailTransport::EncryptType encryptType)
 {
     if (encryptType == QMailTransport::Encrypt_TLS) {
         emit completed(IMAP_StartTLS, OpOk);
     }
 }
 
-void ImapProtocol::errorHandling(int status, QString msg)
+void ImapProtocol::handleSocketError(int status, const QString &message)
 {
     _mailbox = ImapMailboxProperties();
+    QString msg = message;
 
     if (msg.isEmpty())
         msg = tr("Connection failed");
 
     if (_fsm->command() != IMAP_Logout)
-        emit connectionError(status, msg);
+        emit socketError(status, msg);
+}
+
+void ImapProtocol::handleSslError(QMailServiceAction::Status::ErrorCode error)
+{
+    // maybe silly string, but used to be like that in qmailtransport
+    emit connectionError(error, tr("Socket error"));
 }
 
 void ImapProtocol::sendData(const QString &cmd, bool maskDebug)

@@ -47,6 +47,7 @@
 namespace {
 
 const QString serviceKey("imap4");
+int ThirtySeconds = 30;
 
 }
 
@@ -65,18 +66,19 @@ public:
           _setMask(0),
           _unsetMask(0)
     {
-        connect(&_intervalTimer, SIGNAL(timeout()), this, SLOT(intervalCheck()));
-        connect(&_pushIntervalTimer, SIGNAL(timeout()), this, SLOT(pushIntervalCheck()));
-        connect(&_strategyExpiryTimer, SIGNAL(timeout()), this, SLOT(expireStrategy()));
+        connect(&_intervalTimer, &QTimer::timeout, this, &Source::intervalCheck);
+        connect(&_pushIntervalTimer, &QTimer::timeout, this, &Source::pushIntervalCheck);
+        connect(&_strategyExpiryTimer, &QTimer::timeout, this, &Source::expireStrategy);
     }
 
-    void initClientConnections() {
+    void initClientConnections()
+    {
         connect(_service->_client, SIGNAL(allMessagesReceived()), this, SIGNAL(newMessagesAvailable()));
-        connect(_service->_client, SIGNAL(messageCopyCompleted(QMailMessage&, QMailMessage)), this, SLOT(messageCopyCompleted(QMailMessage&, QMailMessage)));
-        connect(_service->_client, SIGNAL(messageActionCompleted(QString)), this, SLOT(messageActionCompleted(QString)));
-        connect(_service->_client, SIGNAL(retrievalCompleted()), this, SLOT(retrievalCompleted()));
-        connect(_service->_client, SIGNAL(idleNewMailNotification(QMailFolderId)), this, SLOT(queueMailCheck(QMailFolderId)));
-        connect(_service->_client, SIGNAL(idleFlagsChangedNotification(QMailFolderId)), this, SLOT(queueFlagsChangedCheck(QMailFolderId)));
+        connect(_service->_client, &ImapClient::messageCopyCompleted, this, &Source::messageCopyCompleted);
+        connect(_service->_client, &ImapClient::messageActionCompleted, this, &Source::handleMessageActionCompleted);
+        connect(_service->_client, &ImapClient::retrievalCompleted, this, &Source::handleRetrievalCompleted);
+        connect(_service->_client, &ImapClient::idleNewMailNotification, this, &Source::queueMailCheck);
+        connect(_service->_client, &ImapClient::idleFlagsChangedNotification, this, &Source::queueFlagsChangedCheck);
         connect(_service->_client, SIGNAL(matchingMessageIds(QMailMessageIdList)), this, SIGNAL(matchingMessageIds(QMailMessageIdList)));
         connect(_service->_client, SIGNAL(remainingMessagesCount(uint)), this, SIGNAL(remainingMessagesCount(uint)));
         connect(_service->_client, SIGNAL(messagesCount(uint)), this, SIGNAL(messagesCount(uint)));
@@ -146,8 +148,8 @@ public slots:
     bool prepareMessages(const QList<QPair<QMailMessagePart::Location, QMailMessagePart::Location> > &ids) override;
 
     void messageCopyCompleted(QMailMessage &message, const QMailMessage &original);
-    void messageActionCompleted(const QString &uid);
-    void retrievalCompleted();
+    void handleMessageActionCompleted(const QString &uid);
+    void handleRetrievalCompleted();
     void retrievalTerminated();
     void intervalCheck();
     void pushIntervalCheck();
@@ -229,7 +231,7 @@ bool ImapService::Source::retrieveMessageLists(const QMailAccountId &accountId, 
     }
 
     if (ids.isEmpty()) {
-        QTimer::singleShot(0, this, SLOT(retrievalCompleted()));
+        QTimer::singleShot(0, this, &Source::handleRetrievalCompleted);
         return true;
     }
 
@@ -257,7 +259,7 @@ bool ImapService::Source::retrieveNewMessages(const QMailAccountId &accountId, c
     }
 
     if (ids.isEmpty()) {
-        QTimer::singleShot(0, this, SLOT(retrievalCompleted()));
+        QTimer::singleShot(0, this, &Source::handleRetrievalCompleted);
         return true;
     }
 
@@ -384,7 +386,7 @@ bool ImapService::Source::retrieveMessagePart(const QMailMessagePart::Location &
     QMailMessage msg(partLocation.containingMessageId());
     if (!msg.contains(partLocation) || msg.partAt(partLocation).contentAvailable()) {
         // Already retrieved (or invalid)
-        QTimer::singleShot(0, this, SLOT(retrievalCompleted()));
+        QTimer::singleShot(0, this, &Source::handleRetrievalCompleted);
         return true;
     }
 
@@ -422,7 +424,7 @@ bool ImapService::Source::retrieveMessageRange(const QMailMessageId &messageId, 
     QMailMessage msg(messageId);
     if (msg.contentAvailable()) {
         // Already retrieved
-        QTimer::singleShot(0, this, SLOT(retrievalCompleted()));
+        QTimer::singleShot(0, this, &Source::handleRetrievalCompleted);
         return true;
     }
 
@@ -466,7 +468,7 @@ bool ImapService::Source::retrieveMessagePartRange(const QMailMessagePart::Locat
     QMailMessage msg(partLocation.containingMessageId());
     if (!msg.contains(partLocation) || msg.partAt(partLocation).contentAvailable()) {
         // Already retrieved (or invalid)
-        QTimer::singleShot(0, this, SLOT(retrievalCompleted()));
+        QTimer::singleShot(0, this, &Source::handleRetrievalCompleted);
         return true;
     }
 
@@ -705,7 +707,7 @@ bool ImapService::Source::moveMessages(const QMailMessageIdList &messageIds, con
     }
 
     if (serverMessages.isEmpty()) {
-        QTimer::singleShot(0, this, SLOT(retrievalCompleted()));
+        QTimer::singleShot(0, this, &Source::handleRetrievalCompleted);
     }
     return true;
 }
@@ -900,9 +902,9 @@ bool ImapService::Source::flagMessages(const QMailMessageIdList &messageIds, qui
         }
     }
 
-    //ensure retrievalCompleted gets called when a strategy has not been used (i.e. local read flag change)
-    //otherwise actionCompleted does not get signaled to messageserver and service becomes permanently unavailable
-    QTimer::singleShot(0, this, SLOT(retrievalCompleted()));
+    // ensure handleRetrievalCompleted gets called when a strategy has not been used (i.e. local read flag change)
+    // otherwise actionCompleted does not get signaled to messageserver and service becomes permanently unavailable
+    QTimer::singleShot(0, this, &Source::handleRetrievalCompleted);
 
     return true;
 }
@@ -1238,7 +1240,7 @@ void ImapService::Source::messageCopyCompleted(QMailMessage &message, const QMai
     Q_UNUSED(original);
 }
 
-void ImapService::Source::messageActionCompleted(const QString &uid)
+void ImapService::Source::handleMessageActionCompleted(const QString &uid)
 {
     if (uid.startsWith("id:")) {
         emit messageActionCompleted(QMailMessageIdList() << QMailMessageId(uid.mid(3).toULongLong()));
@@ -1250,7 +1252,7 @@ void ImapService::Source::messageActionCompleted(const QString &uid)
     }
 }
 
-void ImapService::Source::retrievalCompleted()
+void ImapService::Source::handleRetrievalCompleted()
 {
     _strategyExpiryTimer.stop();
     _unavailable = false;
@@ -1348,7 +1350,7 @@ void ImapService::Source::queueMailCheck(QMailFolderId folderId)
 
     _service->_client->requestRapidClose();
     if (folderId.isValid()) {
-        retrievalCompleted(); // move onto retrieveMessageList stage
+        handleRetrievalCompleted(); // move onto retrieveMessageList stage
     } else {
         _actionQueue.append(new RetrieveFolderListCommand(_service->accountId(), folderId, true)); // Convenient for user to export pending changes also
     }
@@ -1411,9 +1413,9 @@ ImapService::ImapService(const QMailAccountId &accountId)
     if (account.status() & QMailAccount::Enabled) {
         enable();
     }
-    connect(_restartPushEmailTimer, SIGNAL(timeout()), this, SLOT(restartPushEmail()));
-    connect(QMailStore::instance(), SIGNAL(accountsUpdated(const QMailAccountIdList&)),
-            this, SLOT(accountsUpdated(const QMailAccountIdList&)));
+    connect(_restartPushEmailTimer, &QTimer::timeout, this, &ImapService::restartPushEmail);
+    connect(QMailStore::instance(), &QMailStore::accountsUpdated,
+            this, &ImapService::accountsUpdated);
 }
 
 void ImapService::enable()
@@ -1427,7 +1429,7 @@ void ImapService::enable()
     connect(_client, SIGNAL(errorOccurred(int, QString)), this, SLOT(errorOccurred(int, QString)));
     connect(_client, SIGNAL(errorOccurred(QMailServiceAction::Status::ErrorCode, QString)),
             this, SLOT(errorOccurred(QMailServiceAction::Status::ErrorCode, QString)));
-    connect(_client, SIGNAL(updateStatus(QString)), this, SLOT(updateStatus(QString)));
+    connect(_client, &ImapClient::statusChanged, this, &ImapService::handleStatusChange);
     connect(_client, &ImapClient::pushEmailError, this, &ImapService::retryPushEmail);
 
     QMailAccountConfiguration accountCfg(_accountId);
@@ -1633,7 +1635,7 @@ void ImapService::errorOccurred(QMailServiceAction::Status::ErrorCode code, cons
     emit actionCompleted(false);
 }
 
-void ImapService::updateStatus(const QString &text)
+void ImapService::handleStatusChange(const QString &text)
 {
     updateStatus(QMailServiceAction::Status::ErrNoError, text, _accountId);
 }
@@ -1643,8 +1645,8 @@ void ImapService::createIdleSession()
     // Fail after 10 sec if no network reply is received
     _networkSessionTimer->setSingleShot(true);
     _networkSessionTimer->setInterval(10000);
-    connect(_networkSessionTimer, SIGNAL(timeout()),
-            this, SLOT(onSessionConnectionTimeout()));
+    connect(_networkSessionTimer, &QTimer::timeout,
+            this, &ImapService::onSessionConnectionTimeout);
     openIdleSession();
 }
 

@@ -167,18 +167,21 @@ void SmtpClient::openTransport()
         // Set up the transport
         transport = new QMailTransport("SMTP");
 
-        connect(transport, SIGNAL(readyRead()),
-                this, SLOT(readyRead()));
-        connect(transport, SIGNAL(connected(QMailTransport::EncryptType)),
-                this, SLOT(connected(QMailTransport::EncryptType)));
-        connect(transport, SIGNAL(bytesWritten(qint64)),
-                this, SLOT(sent(qint64)));
-        connect(transport, SIGNAL(updateStatus(QString)),
-                this, SIGNAL(updateStatus(QString)));
-        connect(transport, SIGNAL(errorOccurred(int,QString)),
-                this, SLOT(transportError(int,QString)));
-        connect(transport, SIGNAL(sslErrorOccured(QMailServiceAction::Status::ErrorCode,QString)),
-                this, SIGNAL(connectionError(QMailServiceAction::Status::ErrorCode,QString)));
+        connect(transport, &QMailTransport::readyRead,
+                this, &SmtpClient::readyRead);
+        connect(transport, &QMailTransport::connected,
+                this, &SmtpClient::handleConnected);
+        connect(transport, &QMailTransport::bytesWritten,
+                this, &SmtpClient::handleSent);
+        connect(transport, &QMailTransport::statusChanged,
+                this, &SmtpClient::statusChanged);
+        connect(transport, &QMailTransport::socketErrorOccurred,
+                this, &SmtpClient::transportError);
+        connect(transport, &QMailTransport::sslErrorOccurred,
+                [](QMailServiceAction::Status::ErrorCode errorCode) {
+            // at least report this
+            qCWarning(lcSMTP) << "SMTP encountered SSL error" << errorCode;
+        });
     }
 
     status = Init;
@@ -278,13 +281,13 @@ QMailServiceAction::Status::ErrorCode SmtpClient::addMail(const QMailMessage& ma
     return QMailServiceAction::Status::ErrNoError;
 }
 
-void SmtpClient::connected(QMailTransport::EncryptType encryptType)
+void SmtpClient::handleConnected(QMailTransport::EncryptType encryptType)
 {
     delete authTimeout;
     authTimeout = new QTimer;
     authTimeout->setSingleShot(true);
 
-    connect(authTimeout, SIGNAL(timeout()), this, SLOT(authExpired()));
+    connect(authTimeout, &QTimer::timeout, this, &SmtpClient::authExpired);
     const int timeout = 40 * 1000;
     authTimeout->setInterval(timeout);
     authTimeout->start();
@@ -292,7 +295,7 @@ void SmtpClient::connected(QMailTransport::EncryptType encryptType)
     SmtpConfiguration smtpCfg(config);
     if (smtpCfg.smtpEncryption() == encryptType) {
         qCDebug(lcSMTP) << "Connected";
-        emit updateStatus(tr("Connected"));
+        emit statusChanged(tr("Connected"));
     }
 
     if ((smtpCfg.smtpEncryption() == QMailTransport::Encrypt_TLS) && (status == TLS)) {
@@ -311,7 +314,7 @@ void SmtpClient::transportError(int errorCode, QString msg)
     operationFailed(errorCode, msg);
 }
 
-void SmtpClient::sent(qint64 size)
+void SmtpClient::handleSent(qint64 size)
 {
     if (sendingId.isValid() && messageLength) {
         SendMap::const_iterator it = m_sendUnits.find(sendingId);
@@ -724,7 +727,7 @@ void SmtpClient::nextAction(const QString &response)
         sendCommand("MAIL FROM:" + email.from);
         status = Recv;
 
-        emit updateStatus(tr("Sending: %1").arg(email.mail.subject().simplified()));
+        emit statusChanged(tr("Sending: %1").arg(email.mail.subject().simplified()));
         break;
     }
     case Recv:
@@ -822,10 +825,13 @@ void SmtpClient::nextAction(const QString &response)
             // written each time so there is no need to allocate large buffers to hold everything.
             temporaryFile->seek(0);
             waitingForBytes = 0;
-            if (transport->isEncrypted())
-                connect(&(transport->socket()), SIGNAL(encryptedBytesWritten(qint64)), this, SLOT(sendMoreData(qint64)));
-            else
-                connect(transport, SIGNAL(bytesWritten(qint64)), this, SLOT(sendMoreData(qint64)));
+            if (transport->isEncrypted()) {
+                connect(&(transport->socket()), &QSslSocket::encryptedBytesWritten,
+                        this, &SmtpClient::sendMoreData);
+            } else {
+                connect(transport, &QMailTransport::bytesWritten,
+                        this, &SmtpClient::sendMoreData);
+            }
 
             // trigger the sending of the first block of data
             sendMoreData(0);
@@ -916,7 +922,7 @@ void SmtpClient::nextAction(const QString &response)
 
         if (sentCount) {
             sendList.clear();
-            emit updateStatus(tr("Sent %n messages", "", sentCount));
+            emit statusChanged(tr("Sent %n messages", "", sentCount));
         }
         emit sendCompleted();
         break;
@@ -1068,10 +1074,13 @@ void SmtpClient::authExpired()
 void SmtpClient::stopTransferring()
 {
     if (temporaryFile) {
-        if (transport->isEncrypted())
-            disconnect(&(transport->socket()), SIGNAL(encryptedBytesWritten(qint64)), this, SLOT(sendMoreData(qint64)));
-        else
-            disconnect(transport, SIGNAL(bytesWritten(qint64)), this, SLOT(sendMoreData(qint64)));
+        if (transport->isEncrypted()) {
+            disconnect(&(transport->socket()), &QSslSocket::encryptedBytesWritten,
+                       this, &SmtpClient::sendMoreData);
+        } else {
+            disconnect(transport, &QMailTransport::bytesWritten,
+                                  this, &SmtpClient::sendMoreData);
+        }
         delete temporaryFile;
         temporaryFile = nullptr;
         status = Sent;

@@ -55,9 +55,9 @@ public:
           _queuedMailCheckInProgress(false)
     {
         connect(&_service->_client, SIGNAL(allMessagesReceived()), this, SIGNAL(newMessagesAvailable()));
-        connect(&_service->_client, SIGNAL(messageActionCompleted(QString)), this, SLOT(messageActionCompleted(QString)));
-        connect(&_service->_client, SIGNAL(retrievalCompleted()), this, SLOT(retrievalCompleted()));
-        connect(&_intervalTimer, SIGNAL(timeout()), this, SLOT(queueMailCheck()));
+        connect(&_service->_client, &PopClient::messageActionCompleted, this, &Source::messageActionCompleted);
+        connect(&_service->_client, &PopClient::retrievalCompleted, this, &Source::retrievalCompleted);
+        connect(&_intervalTimer, &QTimer::timeout, this, &Source::queueMailCheck);
     }
 
     void setIntervalTimer(int interval)
@@ -103,7 +103,8 @@ private:
     QTimer _intervalTimer;
 };
 
-bool PopService::Source::retrieveFolderList(const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending)
+bool PopService::Source::retrieveFolderList(const QMailAccountId &accountId, const QMailFolderId &folderId,
+                                            bool descending)
 {
     if (!accountId.isValid()) {
         _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("No account specified"));
@@ -116,8 +117,8 @@ bool PopService::Source::retrieveFolderList(const QMailAccountId &accountId, con
         _unavailable = true;
     } else {
         // Just report success
-        _service->updateStatus(QString());
-        QTimer::singleShot(0, this, SLOT(retrievalCompleted()));
+        _service->handleStatusChange(QString());
+        QTimer::singleShot(0, this, &Source::retrievalCompleted);
     }
     return true;
 
@@ -125,7 +126,8 @@ bool PopService::Source::retrieveFolderList(const QMailAccountId &accountId, con
     Q_UNUSED(folderId)
 }
 
-bool PopService::Source::retrieveMessageLists(const QMailAccountId &accountId, const QMailFolderIdList &folderIds, uint minimum, const QMailMessageSortKey &sort)
+bool PopService::Source::retrieveMessageLists(const QMailAccountId &accountId, const QMailFolderIdList &folderIds,
+                                              uint minimum, const QMailMessageSortKey &sort)
 {
     if (folderIds.isEmpty()) {
         _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("No folders specified"));
@@ -135,7 +137,8 @@ bool PopService::Source::retrieveMessageLists(const QMailAccountId &accountId, c
     return retrieveMessageList(accountId, QMailFolderId(), minimum, sort);
 }
 
-bool PopService::Source::retrieveMessageList(const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort)
+bool PopService::Source::retrieveMessageList(const QMailAccountId &accountId, const QMailFolderId &folderId,
+                                             uint minimum, const QMailMessageSortKey &sort)
 {
     if (!accountId.isValid()) {
         _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("No account specified"));
@@ -152,8 +155,8 @@ bool PopService::Source::retrieveMessageList(const QMailAccountId &accountId, co
 
     if (!_service->_client.synchronizationEnabled(folderId)) {
         // Just report success
-        _service->updateStatus(QString());
-        QTimer::singleShot(0, this, SLOT(retrievalCompleted()));
+        _service->handleStatusChange(QString());
+        QTimer::singleShot(0, this, &Source::retrievalCompleted);
         return true;
     }
 
@@ -165,7 +168,8 @@ bool PopService::Source::retrieveMessageList(const QMailAccountId &accountId, co
     Q_UNUSED(sort)
 }
 
-bool PopService::Source::retrieveMessages(const QMailMessageIdList &messageIds, QMailRetrievalAction::RetrievalSpecification spec)
+bool PopService::Source::retrieveMessages(const QMailMessageIdList &messageIds,
+                                          QMailRetrievalAction::RetrievalSpecification spec)
 {
     if (messageIds.isEmpty()) {
         _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("No messages to retrieve"));
@@ -174,7 +178,7 @@ bool PopService::Source::retrieveMessages(const QMailMessageIdList &messageIds, 
 
     if (spec == QMailRetrievalAction::Flags) {
         // Just report success
-        QTimer::singleShot(0, this, SLOT(retrievalCompleted()));
+        QTimer::singleShot(0, this, &Source::retrievalCompleted);
         return true;
     }
 
@@ -199,7 +203,7 @@ bool PopService::Source::exportUpdates(const QMailAccountId &accountId)
     }
 
     // Just report success
-    QTimer::singleShot(0, this, SLOT(retrievalCompleted()));
+    QTimer::singleShot(0, this, &Source::retrievalCompleted);
     return true;
 }
 
@@ -312,9 +316,9 @@ PopService::PopService(const QMailAccountId &accountId)
     connect(&_client, SIGNAL(errorOccurred(int, QString)), this, SLOT(errorOccurred(int, QString)));
     connect(&_client, SIGNAL(errorOccurred(QMailServiceAction::Status::ErrorCode, QString)),
             this, SLOT(errorOccurred(QMailServiceAction::Status::ErrorCode, QString)));
-    connect(&_client, SIGNAL(updateStatus(QString)), this, SLOT(updateStatus(QString)));
-    connect(QMailStore::instance(), SIGNAL(accountsUpdated(const QMailAccountIdList&)),
-            this, SLOT(accountsUpdated(const QMailAccountIdList&)));
+    connect(&_client, &PopClient::statusChanged, this, &PopService::handleStatusChange);
+    connect(QMailStore::instance(), &QMailStore::accountsUpdated,
+            this, &PopService::accountsUpdated);
 
     QMailAccountConfiguration accountCfg(accountId);
     PopConfiguration popCfg(accountCfg);
@@ -373,7 +377,7 @@ void PopService::errorOccurred(QMailServiceAction::Status::ErrorCode code, const
     emit actionCompleted(false);
 }
 
-void PopService::updateStatus(const QString &text)
+void PopService::handleStatusChange(const QString &text)
 {
     updateStatus(QMailServiceAction::Status::ErrNoError, text, _client.accountId());
 }

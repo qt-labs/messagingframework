@@ -42,7 +42,12 @@
 class ServiceActionCommand
 {
 public:
-    virtual ~ServiceActionCommand() { if (!_action.isNull()) _action->deleteLater(); }
+    virtual ~ServiceActionCommand()
+    {
+        if (!_action.isNull())
+            _action->deleteLater();
+    }
+
     virtual void execute() = 0;
     QPointer<QMailServiceAction> action() { return _action; }
 
@@ -56,6 +61,7 @@ class ServiceActionQueue : public QObject
 
 public:
     ServiceActionQueue();
+
     void append(ServiceActionCommand *command);
     void clear();
 
@@ -94,7 +100,8 @@ private:
 class RetrieveMessageListCommand : public ServiceActionCommand
 {
 public:
-    RetrieveMessageListCommand(const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum = 0, const QMailMessageSortKey &sort = QMailMessageSortKey());
+    RetrieveMessageListCommand(const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum = 0,
+                               const QMailMessageSortKey &sort = QMailMessageSortKey());
     void execute() override;
 
 private:
@@ -107,7 +114,8 @@ private:
 class RetrieveMessageListsCommand : public ServiceActionCommand
 {
 public:
-    RetrieveMessageListsCommand(const QMailAccountId &accountId, const QMailFolderIdList &folderIds, uint minimum = 0, const QMailMessageSortKey &sort = QMailMessageSortKey());
+    RetrieveMessageListsCommand(const QMailAccountId &accountId, const QMailFolderIdList &folderIds, uint minimum = 0,
+                                const QMailMessageSortKey &sort = QMailMessageSortKey());
     void execute() override;
 
 private:

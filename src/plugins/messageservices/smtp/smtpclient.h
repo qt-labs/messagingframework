@@ -79,23 +79,21 @@ public:
     QMailServiceAction::Status::ErrorCode addMail(const QMailMessage& mail);
 
 signals:
-    void connectionError(QMailServiceAction::Status::ErrorCode status, const QString &msg);
     void errorOccurred(int, const QString &);
     void errorOccurred(const QMailServiceAction::Status &, const QString &);
-    void updateStatus(const QString &);
+    void statusChanged(const QString &);
 
     void progressChanged(uint, uint);
     void messageTransmitted(const QMailMessageId&);
     void sendCompleted();
     void fetchCapabilitiesFinished();
 
-protected slots:
-    void connected(QMailTransport::EncryptType encryptType);
+private slots:
+    void handleConnected(QMailTransport::EncryptType encryptType);
     void transportError(int, QString msg);
     void readyRead();
-    void sent(qint64);
+    void handleSent(qint64);
 
-private slots:
     void sendMoreData(qint64);
     void authExpired();
     void onCredentialsStatusChanged();

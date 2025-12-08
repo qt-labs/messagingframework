@@ -1025,7 +1025,7 @@ void ServiceHandler::enqueueRequest(Request *req, quint64 action,
         _requestsFile.flush();
     }
 
-    QTimer::singleShot(0, this, SLOT(dispatchRequest()));
+    QTimer::singleShot(0, this, &ServiceHandler::dispatchRequest);
 }
 
 namespace {
@@ -1121,7 +1121,7 @@ void ServiceHandler::dispatchRequest()
             if (mActionExpiry.isEmpty()) {
                 // Start the expiry timer. Convert to milliseconds, and avoid shooting too early
                 const int expiryMs = ExpirySeconds * 1000;
-                QTimer::singleShot(expiryMs + 50, this, SLOT(expireAction()));
+                QTimer::singleShot(expiryMs + 50, this, &ServiceHandler::expireAction);
             }
             mActionExpiry.append(request->action);
         } else {
@@ -1232,7 +1232,7 @@ void ServiceHandler::expireAction()
 
             // milliseconds until it expires
             quint64 nextShot(nextExpiry <= now ? 0 : (nextExpiry - now) * 1000 + 50);
-            QTimer::singleShot(nextShot, this, SLOT(expireAction()));
+            QTimer::singleShot(nextShot, this, &ServiceHandler::expireAction);
             return;
         } else {
             expiryIt = mActionExpiry.erase(expiryIt); // Just remove this non-existent action
@@ -1294,7 +1294,7 @@ void ServiceHandler::cancelTransfer(quint64 action)
             mActiveActions.erase(it);
 
         // See if there are more actions
-        QTimer::singleShot(0, this, SLOT(dispatchRequest()));
+        QTimer::singleShot(0, this, &ServiceHandler::dispatchRequest);
     } else {
         // See if this is a pending request that we can abort
         auto it = mRequests.begin(), end = mRequests.end();
@@ -2722,7 +2722,7 @@ void ServiceHandler::searchMessages(quint64 action, const QMailMessageKey &filte
 
         // Schedule this search
         mSearches.append(MessageSearch(action, searchIds, bodyText));
-        QTimer::singleShot(0, this, SLOT(continueSearch()));
+        QTimer::singleShot(0, this, &ServiceHandler::continueSearch);
     }
 }
 
@@ -2773,7 +2773,7 @@ bool ServiceHandler::dispatchSearchMessages(Request *req)
                 mSearches.append(MessageSearch(request->action,
                                                QMailStore::instance()->queryMessages(request->filter, request->sort),
                                                request->bodyText));
-                QTimer::singleShot(0, this, SLOT(continueSearch()));
+                QTimer::singleShot(0, this, &ServiceHandler::continueSearch);
             }
         }
     }
@@ -2799,7 +2799,7 @@ void ServiceHandler::cancelLocalSearch(quint64 action) // cancel local search
 
 void ServiceHandler::shutdown()
 {
-    QTimer::singleShot(0, QCoreApplication::instance(), SLOT(quit()));
+    QTimer::singleShot(0, QCoreApplication::instance(), &QCoreApplication::quit);
 }
 
 void ServiceHandler::listActions()
@@ -2952,7 +2952,7 @@ void ServiceHandler::handleActionCompleted(bool success, QMailMessageService *se
 
 
     // See if there are pending requests
-    QTimer::singleShot(0, this, SLOT(dispatchRequest()));
+    QTimer::singleShot(0, this, &ServiceHandler::dispatchRequest);
 }
 
 void ServiceHandler::emitMessagesTransmitted(const QMailMessageIdList& ml, quint64 a)
@@ -3139,7 +3139,7 @@ void ServiceHandler::onAvailabilityChanged(bool available)
             mUnavailableServices.remove(service);
 
             // See if there are pending requests that can now be dispatched
-            QTimer::singleShot(0, this, SLOT(dispatchRequest()));
+            QTimer::singleShot(0, this, &ServiceHandler::dispatchRequest);
         } else {
             mUnavailableServices.insert(service);
         }
@@ -3202,7 +3202,7 @@ void ServiceHandler::onActionCompleted(bool success)
 
     qCWarning(lcMessaging) << "Would not determine server/action completing";
     // See if there are pending requests
-    QTimer::singleShot(0, this, SLOT(dispatchRequest()));
+    QTimer::singleShot(0, this, &ServiceHandler::dispatchRequest);
 }
 
 void ServiceHandler::reportFailure(quint64 action, QMailServiceAction::Status::ErrorCode code, const QString &text,
@@ -3264,10 +3264,10 @@ void ServiceHandler::continueSearch()
                 mSearches.removeFirst();
 
                 if (!mSearches.isEmpty())
-                    QTimer::singleShot(0, this, SLOT(continueSearch()));
+                    QTimer::singleShot(0, this, &ServiceHandler::continueSearch);
             }
         } else {
-            QTimer::singleShot(0, this, SLOT(continueSearch()));
+            QTimer::singleShot(0, this, &ServiceHandler::continueSearch);
         }
     }
 }

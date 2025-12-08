@@ -463,7 +463,7 @@ QMailAccountId ImapStrategyContextBase::accountId()
 
 void ImapStrategyContextBase::updateStatus(const QString &text)
 {
-    emit _client->updateStatus(text);
+    emit _client->statusChanged(text);
 }
 
 void ImapStrategyContextBase::progressChanged(uint progress, uint total)

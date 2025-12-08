@@ -56,10 +56,6 @@ private:
     PopClient *mClient = nullptr;
 };
 
-QTEST_MAIN(tst_PopClient)
-
-#include "tst_pop.moc"
-
 void tst_PopClient::initTestCase()
 {
     QMailAccount account;
@@ -94,7 +90,7 @@ void tst_PopClient::cleanupTestCase()
 void tst_PopClient::test_connection()
 {
     QSignalSpy completed(mClient, &PopClient::retrievalCompleted);
-    QSignalSpy updateStatus(mClient, &PopClient::updateStatus);
+    QSignalSpy updateStatus(mClient, &PopClient::statusChanged);
 
     mClient->testConnection();
     QVERIFY(!completed.wait(250)); // Fails with wrong credentials
@@ -105,3 +101,7 @@ void tst_PopClient::test_connection()
     QCOMPARE(updateStatus.takeFirst().first().toString(), QString::fromLatin1("Connected"));
     QCOMPARE(updateStatus.takeFirst().first().toString(), QString::fromLatin1("Logging in"));
 }
+
+QTEST_MAIN(tst_PopClient)
+
+#include "tst_pop.moc"

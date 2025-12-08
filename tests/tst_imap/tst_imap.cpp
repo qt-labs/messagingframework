@@ -112,7 +112,7 @@ void tst_ImapClient::test_connection()
 {
     ConnectionStrategy strategy;
     QSignalSpy completed(mClient, &ImapClient::retrievalCompleted);
-    QSignalSpy updateStatus(mClient, &ImapClient::updateStatus);
+    QSignalSpy updateStatus(mClient, &ImapClient::statusChanged);
 
     mClient->setStrategy(&strategy);
     mClient->newConnection();

@@ -38,7 +38,7 @@
 ServiceActionQueue::ServiceActionQueue()
     : _running(false)
 {
-    QObject::connect(&_timer, SIGNAL(timeout()), this, SLOT(executeNextCommand()));
+    QObject::connect(&_timer, &QTimer::timeout, this, &ServiceActionQueue::executeNextCommand);
 }
 
 // Takes ownership of *command.
@@ -61,8 +61,8 @@ void ServiceActionQueue::executeNextCommand()
     }
     _running = true;
     ServiceActionCommand *command(_commands.first());
-    QObject::connect(command->action(), SIGNAL(activityChanged(QMailServiceAction::Activity)),
-                     this, SLOT(activityChanged(QMailServiceAction::Activity)));
+    QObject::connect(command->action(), &QMailServiceAction::activityChanged,
+                     this, &ServiceActionQueue::activityChanged);
     command->execute();
 }
 

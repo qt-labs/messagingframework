@@ -1179,7 +1179,7 @@ QMailMessageSetModel::QMailMessageSetModel(QObject *parent)
     : QAbstractItemModel(parent),
       QMailMessageSetContainer(new QMailMessageSetModelPrivate)
 {
-    QTimer::singleShot(0, this, SLOT(delayedInit()));
+    QTimer::singleShot(0, this, &QMailMessageSetModel::delayedInit);
 }
 
 /*! \internal */
@@ -1438,7 +1438,7 @@ void QMailMessageSetModel::testForResync()
     Q_D(QMailMessageSetModel);
 
     if (d->_updateState == QMailMessageSetModelPrivate::Detect) {
-        QTimer::singleShot(0, this, SLOT(ceasePropagatingUpdates()));
+        QTimer::singleShot(0, this, &QMailMessageSetModel::ceasePropagatingUpdates);
         d->_updateState = QMailMessageSetModelPrivate::Detected;
     }
 }

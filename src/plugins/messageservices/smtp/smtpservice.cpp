@@ -49,8 +49,8 @@ public:
         : QMailMessageSink(service),
           _service(service)
     {
-        connect(&_service->_client, SIGNAL(messageTransmitted(QMailMessageId)), this, SLOT(messageTransmitted(QMailMessageId)));
-        connect(&_service->_client, SIGNAL(sendCompleted()), this, SLOT(sendCompleted()));
+        connect(&_service->_client, &SmtpClient::messageTransmitted, this, &Sink::messageTransmitted);
+        connect(&_service->_client, &SmtpClient::sendCompleted, this, &Sink::sendCompleted);
     }
 
 public slots:
@@ -106,10 +106,9 @@ SmtpService::SmtpService(const QMailAccountId &accountId)
       _capabilityFetchTimeout(0)
 {
     connect(&_client, SIGNAL(progressChanged(uint, uint)), this, SIGNAL(progressChanged(uint, uint)));
-
     connect(&_client, SIGNAL(errorOccurred(int, QString)), this, SLOT(errorOccurred(int, QString)));
     connect(&_client, SIGNAL(errorOccurred(QMailServiceAction::Status, QString)), this, SLOT(errorOccurred(QMailServiceAction::Status, QString)));
-    connect(&_client, SIGNAL(updateStatus(QString)), this, SLOT(updateStatus(QString)));
+    connect(&_client, &SmtpClient::statusChanged, this, &SmtpService::handleStatusChange);
 
     fetchCapabilities();
 }
@@ -206,7 +205,7 @@ void SmtpService::errorOccurred(const QMailServiceAction::Status & status, const
     emit actionCompleted(false);
 }
 
-void SmtpService::updateStatus(const QString &text)
+void SmtpService::handleStatusChange(const QString &text)
 {
     updateStatus(QMailServiceAction::Status::ErrNoError, text, _client.account());
 }

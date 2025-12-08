@@ -81,8 +81,8 @@ PopClient::PopClient(const QMailAccountId &id, QObject* parent)
       credentials(QMailCredentialsFactory::getCredentialsHandlerForAccount(config))
 {
     inactiveTimer.setSingleShot(true);
-    connect(&inactiveTimer, SIGNAL(timeout()), this, SLOT(connectionInactive()));
-    connect(QMailMessageBuffer::instance(), SIGNAL(flushed()), this, SLOT(messageBufferFlushed()));
+    connect(&inactiveTimer, &QTimer::timeout, this, &PopClient::connectionInactive);
+    connect(QMailMessageBuffer::instance(), &QMailMessageBuffer::flushed, this, &PopClient::messageBufferFlushed);
 
     setupAccount();
     setupFolders();
@@ -110,12 +110,15 @@ void PopClient::createTransport()
         // Set up the transport
         transport = new QMailTransport("POP");
 
-        connect(transport, SIGNAL(updateStatus(QString)), this, SIGNAL(updateStatus(QString)));
-        connect(transport, SIGNAL(connected(QMailTransport::EncryptType)), this, SLOT(connected(QMailTransport::EncryptType)));
-        connect(transport, SIGNAL(errorOccurred(int,QString)), this, SLOT(transportError(int,QString)));
-        connect(transport, SIGNAL(readyRead()), this, SLOT(incomingData()));
-        connect(transport, SIGNAL(sslErrorOccured(QMailServiceAction::Status::ErrorCode,QString)),
-                this, SIGNAL(connectionError(QMailServiceAction::Status::ErrorCode,QString)));
+        connect(transport, &QMailTransport::statusChanged, this, &PopClient::statusChanged);
+        connect(transport, &QMailTransport::connected, this, &PopClient::connected);
+        connect(transport, &QMailTransport::socketErrorOccurred, this, &PopClient::transportError);
+        connect(transport, &QMailTransport::readyRead, this, &PopClient::incomingData);
+        connect(transport, &QMailTransport::sslErrorOccurred,
+                [](QMailServiceAction::Status::ErrorCode errorCode) {
+            // at least report this
+            qCWarning(lcPOP) << "POP encountered SSL error" << errorCode;
+        });
     }
 }
 
@@ -123,12 +126,7 @@ void PopClient::deleteTransport()
 {
     if (transport) {
         // Need to immediately disconnect these signals or slots may try to use null transport object
-        disconnect(transport, SIGNAL(updateStatus(QString)), this, SIGNAL(updateStatus(QString)));
-        disconnect(transport, SIGNAL(connected(QMailTransport::EncryptType)), this, SLOT(connected(QMailTransport::EncryptType)));
-        disconnect(transport, SIGNAL(errorOccurred(int,QString)), this, SLOT(transportError(int,QString)));
-        disconnect(transport, SIGNAL(readyRead()), this, SLOT(incomingData()));
-        disconnect(transport, SIGNAL(sslErrorOccured(QMailServiceAction::Status::ErrorCode,QString)),
-                   this, SIGNAL(connectionError(QMailServiceAction::Status::ErrorCode,QString)));
+        disconnect(transport, nullptr, this, nullptr);
 
         // A Qt socket remains in an unusuable state for a short time after closing,
         // thus it can't be immediately reused
@@ -163,7 +161,7 @@ void PopClient::newConnection()
     testing = false;
     pendingDeletes = false;
     lastStatusTimer.start();
-    if (transport && transport->connected()) {
+    if (transport && transport->isConnected()) {
         if (selected) {
             // Re-use the existing connection
             inactiveTimer.stop();
@@ -195,7 +193,7 @@ void PopClient::newConnection()
         messageCount = 0;
     }
 
-    if (transport && transport->connected() && selected) {
+    if (transport && transport->isConnected() && selected) {
         if (deleting) {
             uidlIntegrityCheck();
         }
@@ -379,7 +377,7 @@ void PopClient::connected(QMailTransport::EncryptType encryptType)
     PopConfiguration popCfg(config);
     if (popCfg.mailEncryption() == encryptType) {
         qCDebug(lcPOP) << "Connected";
-        emit updateStatus(tr("Connected"));
+        emit statusChanged(tr("Connected"));
     }
 
     if ((popCfg.mailEncryption() != QMailTransport::Encrypt_SSL) && (status == TLS)) {
@@ -401,7 +399,7 @@ void PopClient::closeConnection()
     inactiveTimer.stop();
 
     if (transport) {
-        if (transport->connected()) {
+        if (transport->isConnected()) {
             if ( status == Exit ) {
                 // We have already sent our quit command
                 transport->close();
@@ -736,7 +734,7 @@ void PopClient::nextAction()
     {
         qCDebug(lcPOP) << "connected, checking credentials status" << credentials->status();
         if (credentials->status() == QMailCredentialsInterface::Ready) {
-            emit updateStatus(tr("Logging in"));
+            emit statusChanged(tr("Logging in"));
 
             // Get the login command sequence to use
             authCommands = PopAuthenticator::getAuthentication(PopConfiguration(config),
@@ -817,14 +815,14 @@ void PopClient::nextAction()
         if (msgNum != -1) {
             if (!selected) {
                 if (messageCount == 1) {
-                    emit updateStatus(tr("Previewing", "Previewing <no of messages>") + QChar(' ') + QString::number(newUids.count()));
+                    emit statusChanged(tr("Previewing", "Previewing <no of messages>") + QChar(' ') + QString::number(newUids.count()));
                 }
                 if (lastStatusTimer.elapsed() > 1000) {
                     lastStatusTimer.start();
                     emit progressChanged(messageCount, newUids.count());
                 }
             } else {
-                emit updateStatus(tr("Completing %1 / %2").arg(messageCount).arg(selectionMap.count()));
+                emit statusChanged(tr("Completing %1 / %2").arg(messageCount).arg(selectionMap.count()));
             }
 
             QString temp = QString::number(msgNum);
@@ -840,7 +838,7 @@ void PopClient::nextAction()
             // No more messages to be fetched - are there any to be deleted?
             if (!obsoleteUids.isEmpty()) {
                 qCDebug(lcPOP) << qPrintable(QString::number(obsoleteUids.count()) + " messages in mailbox to be deleted");
-                emit updateStatus(tr("Removing old messages"));
+                emit statusChanged(tr("Removing old messages"));
 
                 nextStatus = DeleteMessage;
             } else {
@@ -868,7 +866,7 @@ void PopClient::nextAction()
             // on device before removing mail from external mail server
             QMailStore::instance()->ensureDurability();
             int pos = msgPosFromUidl(messageUid);
-            emit updateStatus(tr("Removing message from server"));
+            emit statusChanged(tr("Removing message from server"));
             nextCommand = ("DELE " + QString::number(pos));
             nextStatus = DeleAfterRetr;
         } else {
@@ -953,7 +951,7 @@ void PopClient::nextAction()
     case Quit:
     {
         qCDebug(lcPOP) << "[" << config.id() << "]" << "logging out.";
-        emit updateStatus(tr("Logging out"));
+        emit statusChanged(tr("Logging out"));
         nextStatus = Exit;
         nextCommand = "QUIT";
         waitForInput = true;

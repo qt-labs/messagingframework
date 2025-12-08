@@ -58,11 +58,11 @@ public:
 public slots:
     bool cancelOperation(QMailServiceAction::Status::ErrorCode code, const QString &text) override;
 
-protected slots:
+private slots:
     void errorOccurred(int code, const QString &text);
     void errorOccurred(QMailServiceAction::Status::ErrorCode code, const QString &text);
 
-    void updateStatus(const QString& text);
+    void handleStatusChange(const QString& text);
     void accountsUpdated(const QMailAccountIdList &ids);
 
 private:

@@ -64,7 +64,8 @@ QMailMessageBuffer::QMailMessageBuffer(QObject *parent)
     : QObject(parent), d(new QMailMessageBufferPrivate)
 {
     d->messageTimer.setSingleShot(true);
-    connect(&d->messageTimer, SIGNAL(timeout()), this, SLOT(messageTimeout()));
+    connect(&d->messageTimer, &QTimer::timeout,
+            this, &QMailMessageBuffer::messageTimeout);
 
     d->lastFlushTimePerMessage = 0;
 

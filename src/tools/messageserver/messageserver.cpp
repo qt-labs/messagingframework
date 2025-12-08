@@ -155,7 +155,7 @@ bool MessageServer::init()
             this, &MessageServer::retrievalCompleted);
 
     // clean up any temporary messages that were not cleaned up by clients
-    QTimer::singleShot(0, this, SLOT(cleanupTemporaryMessages()));
+    QTimer::singleShot(0, this, &MessageServer::cleanupTemporaryMessages);
 
     emit handler->actionsListed(QMailActionDataList());
 

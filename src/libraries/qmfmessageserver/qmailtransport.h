@@ -38,7 +38,7 @@
 #include <qmailserviceaction.h>
 
 #include <QObject>
-#include <QAbstractSocket>
+#include <QSslSocket>
 #include <QTimer>
 #include <QSslError>
 
@@ -64,7 +64,7 @@ public:
     virtual ~QMailTransport();
 
     // Open a connection to the specified server
-    void open(const QString& url, int port, EncryptType encryptionType);
+    void open(const QString &hostName, int port, EncryptType encryptionType);
 
     void setAcceptUntrustedCertificates(bool accept);
     bool acceptUntrustedCertificates() const;
@@ -76,7 +76,7 @@ public:
     void close();
 
     // True if a connection has been established with the desired enryption type
-    bool connected() const;
+    bool isConnected() const;
 
     bool isEncrypted() const;
 
@@ -85,7 +85,7 @@ public:
 
     // Access a stream to write to the mail server (must have an open connection)
     QDataStream& stream();
-    QAbstractSocket& socket();
+    QSslSocket& socket();
 
     // Read line-oriented data from the transport (must have an open connection)
     bool canReadLine() const;
@@ -102,25 +102,20 @@ Q_SIGNALS:
     void readyRead();
     void bytesWritten(qint64 transmitted);
 
-    void errorOccurred(int status, QString);
-    void updateStatus(const QString &);
-    void sslErrorOccured(QMailServiceAction::Status::ErrorCode, QString);
+    void statusChanged(const QString &statusText);
+    void socketErrorOccurred(int status, const QString &message);
+    void sslErrorOccurred(QMailServiceAction::Status::ErrorCode error);
 
-public Q_SLOTS:
-    void errorHandling(int errorCode, QString msg);
-    void socketError(QAbstractSocket::SocketError error);
-
-protected Q_SLOTS:
+private Q_SLOTS:
+    void handleSocketError(QAbstractSocket::SocketError error);
     void connectionEstablished();
     void hostConnectionTimeOut();
     void encryptionEstablished();
-    void connectionFailed(const QList<QSslError>& errors);
-
-protected:
-    // Override to modify certificate error handling
-    virtual QMailServiceAction::Status::ErrorCode classifyCertificateErrors(const QList<QSslError>& errors);
+    void handleSslErrors(const QList<QSslError>& errors);
 
 private:
+    void reportSocketError(int errorCode, QString msg);
+    QMailServiceAction::Status::ErrorCode classifyCertificateErrors(const QList<QSslError>& errors);
     void createSocket(EncryptType encryptType);
     EncryptType mailEncryption() const;
 

@@ -88,7 +88,7 @@ void tst_SmtpClient::cleanupTestCase()
 void tst_SmtpClient::test_connection()
 {
     QSignalSpy completed(mClient, &SmtpClient::sendCompleted);
-    QSignalSpy updateStatus(mClient, &SmtpClient::updateStatus);
+    QSignalSpy updateStatus(mClient, &SmtpClient::statusChanged);
 
     mClient->newConnection();
     QVERIFY(completed.wait());
@@ -102,7 +102,7 @@ void tst_SmtpClient::test_connection()
 void tst_SmtpClient::test_auth()
 {
     QSignalSpy completed(mClient, &SmtpClient::sendCompleted);
-    QSignalSpy updateStatus(mClient, &SmtpClient::updateStatus);
+    QSignalSpy updateStatus(mClient, &SmtpClient::statusChanged);
 
     QMailAccountConfiguration config(mClient->account());
     SmtpConfigurationEditor smtp(&config);

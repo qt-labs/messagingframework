@@ -94,7 +94,7 @@ public:
 signals:
     void errorOccurred(int, const QString &);
     void errorOccurred(QMailServiceAction::Status::ErrorCode, const QString &);
-    void updateStatus(const QString &);
+    void statusChanged(const QString &);
     void pushEmailError();
     void renewPushEmail();
 
@@ -115,8 +115,8 @@ signals:
     void sessionError();
 
 public slots:
-    void transportError(int, const QString &msg);
-    void transportError(QMailServiceAction::Status::ErrorCode, const QString &msg);
+    void handleSocketConnectionError(int, const QString &msg);
+    void handleConnectionError(QMailServiceAction::Status::ErrorCode, const QString &message);
 
     void mailboxListed(const QString &, const QString &);
     void messageFetched(QMailMessage& mail, const QString &detachedFilename, bool structureOnly);
@@ -133,12 +133,11 @@ public slots:
     void folderRenamed(const QMailFolder &folder, const QString &newName, bool success);
     void folderMoved(const QMailFolder &folder, const QString &newName, const QMailFolderId &newParentId, bool success);
 
-protected slots:
+private slots:
     void connectionInactive();
     void commandCompleted(ImapCommand, OperationStatus);
     void checkCommandResponse(ImapCommand, OperationStatus);
     void commandTransition(ImapCommand, OperationStatus);
-    void transportStatus(const QString& status);
     void messageBufferFlushed();
     void onCredentialsStatusChanged();
 
@@ -158,6 +157,7 @@ private:
     void updateFolderCountStatus(QMailFolder *folder);
 
     static const int MaxTimeBeforeNoop = 60 * 1000; // 1 minute (this must be >= 1ms)
+
     QMailAccountId _accountId;
 
     ImapProtocol _protocol;

@@ -33,13 +33,8 @@
 
 #include "qmailtransport.h"
 
-#include <QFile>
-#include <QTimer>
-#include <QSslSocket>
 #include <QSslError>
-
 #include <QNetworkProxy>
-#include <QUrl>
 
 #include <qmaillog.h>
 #include <qmailnamespace.h>
@@ -126,15 +121,16 @@ qint64 QMailTransport::Socket::bytesSinceMark() const
     Creates a transport object with the supplied object \a name.
 */
 QMailTransport::QMailTransport(const char* name)
-    : mName(name),
-      mConnected(false),
-      mInUse(false),
-      mAcceptUntrustedCertificates(false)
+    : mSocket(nullptr)
+    , encryption(Encrypt_NONE)
+    , mStream(nullptr)
+    , mName(name)
+    , mConnected(false)
+    , mInUse(false)
+    , mAcceptUntrustedCertificates(false)
 {
-    encryption = Encrypt_NONE;
-    mSocket = 0;
-    mStream = 0;
-    connect( &connectToHostTimeOut, SIGNAL(timeout()), this, SLOT(hostConnectionTimeOut()) );
+    connect(&connectToHostTimeOut, &QTimer::timeout,
+            this, &QMailTransport::hostConnectionTimeOut);
 }
 
 /*! \internal */
@@ -190,9 +186,9 @@ void QMailTransport::createSocket(EncryptType encryptType)
     encryption = encryptType;
     connect(mSocket, &QSslSocket::encrypted, this, &QMailTransport::encryptionEstablished);
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    connect(mSocket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(connectionFailed(QList<QSslError>)));
+    connect(mSocket, SIGNAL(sslErrors(QList<QSslError>)), this, SLOT(handleSslErrors(QList<QSslError>)));
 #else
-    connect(mSocket, &QSslSocket::sslErrors, this, &QMailTransport::connectionFailed);
+    connect(mSocket, &QSslSocket::sslErrors, this, &QMailTransport::handleSslErrors);
 #endif
 
     const int bufferLimit = 101*1024; // Limit memory used when downloading
@@ -200,9 +196,9 @@ void QMailTransport::createSocket(EncryptType encryptType)
     mSocket->setObjectName(QString::fromUtf8(mName) + QString::fromLatin1("-socket"));
     connect(mSocket, &QAbstractSocket::connected, this, &QMailTransport::connectionEstablished);
 #if QT_VERSION < QT_VERSION_CHECK(6, 0, 0)
-    connect(mSocket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(socketError(QAbstractSocket::SocketError)));
+    connect(mSocket, SIGNAL(error(QAbstractSocket::SocketError)), this, SLOT(handleSocketError(QAbstractSocket::SocketError)));
 #else
-    connect(mSocket, &QAbstractSocket::errorOccurred, this, &QMailTransport::socketError);
+    connect(mSocket, &QAbstractSocket::errorOccurred, this, &QMailTransport::handleSocketError);
 #endif
     connect(mSocket, &QAbstractSocket::readyRead, this, &QMailTransport::readyRead);
     connect(mSocket, &QAbstractSocket::bytesWritten, this, &QMailTransport::bytesWritten);
@@ -211,9 +207,9 @@ void QMailTransport::createSocket(EncryptType encryptType)
 }
 
 /*!
-    Opens a connection to the supplied \a url and \a port, using the specified \a encryptionType.
+    Opens a connection to the supplied \a hostName and \a port, using the specified \a encryptionType.
 */
-void QMailTransport::open(const QString& url, int port, EncryptType encryptionType)
+void QMailTransport::open(const QString &hostName, int port, EncryptType encryptionType)
 {
     if (mSocket && mSocket->isOpen()) {
         qCWarning(lcMessaging) << "Failed to open connection - already open!";
@@ -225,14 +221,14 @@ void QMailTransport::open(const QString& url, int port, EncryptType encryptionTy
     const int threeMin = 3 * 60 * 1000;
     connectToHostTimeOut.start(threeMin); // even this seems way too long?
     createSocket(encryptionType);
-    emit updateStatus(tr("DNS lookup"));
+    emit statusChanged(tr("DNS lookup"));
 
-    qCDebug(lcMessaging) << "Opening connection - " << url << ':' << port
+    qCDebug(lcMessaging) << "Opening connection - " << hostName << ':' << port
                          << (encryptionType == Encrypt_SSL ? " SSL" : (encryptionType == Encrypt_TLS ? " TLS" : ""));
     if (mailEncryption() == Encrypt_SSL)
-        mSocket->connectToHostEncrypted(url, port);
+        mSocket->connectToHostEncrypted(hostName, port);
     else
-        mSocket->connectToHost(url, port);
+        mSocket->connectToHost(hostName, port);
 }
 
 void QMailTransport::setAcceptUntrustedCertificates(bool accept)
@@ -275,7 +271,7 @@ void QMailTransport::close()
 /*!
     Returns true if a connection has been established.
 */
-bool QMailTransport::connected() const
+bool QMailTransport::isConnected() const
 {
     return mConnected;
 }
@@ -311,7 +307,7 @@ QDataStream& QMailTransport::stream()
 /*!
     Returns the socket object allowing state to be accessed and manipulated.
 */
-QAbstractSocket& QMailTransport::socket()
+QSslSocket& QMailTransport::socket()
 {
     Q_ASSERT(mSocket);
     return *mSocket;
@@ -355,7 +351,7 @@ void QMailTransport::connectionEstablished()
     connectToHostTimeOut.stop();
     if (mailEncryption() == Encrypt_NONE) {
         mConnected = true;
-        emit updateStatus(tr("Connected"));
+        emit statusChanged(tr("Connected"));
     }
 
     qCDebug(lcMessaging) << mName << ": connection established";
@@ -366,7 +362,7 @@ void QMailTransport::connectionEstablished()
 void QMailTransport::hostConnectionTimeOut()
 {
     connectToHostTimeOut.stop();
-    errorHandling(QAbstractSocket::SocketTimeoutError, tr("Connection timed out"));
+    reportSocketError(QAbstractSocket::SocketTimeoutError, tr("Connection timed out"));
 }
 
 /*! \internal */
@@ -374,7 +370,7 @@ void QMailTransport::encryptionEstablished()
 {
     if (mailEncryption() != Encrypt_NONE) {
         mConnected = true;
-        emit updateStatus(tr("Connected"));
+        emit statusChanged(tr("Connected"));
     }
 
     qCDebug(lcMessaging) << mName << ": Secure connection established";
@@ -382,7 +378,7 @@ void QMailTransport::encryptionEstablished()
 }
 
 /*! \internal */
-void QMailTransport::connectionFailed(const QList<QSslError>& errors)
+void QMailTransport::handleSslErrors(const QList<QSslError>& errors)
 {
     QMailServiceAction::Status::ErrorCode errorCode = classifyCertificateErrors(errors);
 
@@ -395,8 +391,8 @@ void QMailTransport::connectionFailed(const QList<QSslError>& errors)
         mInUse = false;
         mSocket->abort();
 
-        emit updateStatus(tr("Error occurred"));
-        emit sslErrorOccured(errorCode, tr("Socket error"));
+        emit statusChanged(tr("Error occurred"));
+        emit sslErrorOccurred(errorCode);
     }
 }
 
@@ -433,25 +429,25 @@ QMailServiceAction::Status::ErrorCode QMailTransport::classifyCertificateErrors(
 }
 
 /*! \internal */
-void QMailTransport::errorHandling(int status, QString msg)
+void QMailTransport::reportSocketError(int status, QString msg)
 {
     connectToHostTimeOut.stop();
     mConnected = false;
     mInUse = false;
     mSocket->abort();
 
-    emit updateStatus(tr("Error occurred"));
+    emit statusChanged(tr("Error occurred"));
 
     // Socket errors run from -1; offset this value by +2
-    emit errorOccurred(status + 2, msg);
+    emit socketErrorOccurred(status + 2, msg);
 }
 
 /*! \internal */
-void QMailTransport::socketError(QAbstractSocket::SocketError status)
+void QMailTransport::handleSocketError(QAbstractSocket::SocketError status)
 {
     qCWarning(lcMessaging) << "socketError:" << static_cast<int>(status)
                            << ':' << mSocket->errorString();
-    errorHandling(static_cast<int>(status), tr("Socket error"));
+    reportSocketError(static_cast<int>(status), tr("Socket error"));
 }
 
 /*!
@@ -485,15 +481,15 @@ QMailTransport::EncryptType QMailTransport::mailEncryption() const
 */
 
 /*!
-    \fn void QMailTransport::errorOccurred(int status, QString text);
+    \fn void QMailTransport::socketErrorOccurred(int status, const QString &text);
 
     This signal is emitted when an error is encountered.
-    The value of \a status corresponds to a value of QSslSocket::SocketError, and \a text
+    The value of \a status corresponds to a value of QAbstractSocket::SocketError, and \a text
     contains a textual annotation where possible.
 */
 
 /*!
-    \fn void QMailTransport::updateStatus(const QString &status);
+    \fn void QMailTransport::statusChanged(const QString &status);
 
     This signal is emitted when a change in status is reported.  The new status is described by \a status.
 */

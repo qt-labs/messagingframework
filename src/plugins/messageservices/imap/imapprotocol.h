@@ -122,7 +122,6 @@ enum OperationStatus {
     OpBad,
 };
 
-class Email;
 class ImapConfiguration;
 class ImapTransport;
 class ImapContextFSM;
@@ -235,10 +234,11 @@ signals:
 
     void continuationRequired(ImapCommand, const QString &);
     void completed(ImapCommand, OperationStatus);
-    void updateStatus(const QString &);
+    void statusChanged(const QString &);
 
-    void connectionError(int status, const QString &msg);
-    void connectionError(QMailServiceAction::Status::ErrorCode status, const QString &msg);
+    void socketError(int status, const QString &message);
+    // this is mostly ssl or transport in use
+    void connectionError(QMailServiceAction::Status::ErrorCode status, const QString &message);
 
     // Possibly unilateral notifications related to currently selected folder
     void exists(int);
@@ -249,8 +249,9 @@ signals:
     void noModSeq();
 
 protected slots:
-    void connected(QMailTransport::EncryptType encryptType);
-    void errorHandling(int status, QString msg);
+    void handleConnected(QMailTransport::EncryptType encryptType);
+    void handleSocketError(int status, const QString &message);
+    void handleSslError(QMailServiceAction::Status::ErrorCode error);
     void incomingData();
 
 private:

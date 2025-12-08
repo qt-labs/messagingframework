@@ -206,10 +206,10 @@ Q_SIGNALS:
     void protocolResponse(const QString &response, const QVariantMap &data, quint64 action);
 
 protected Q_SLOTS:
-    void deleteMessages();
-    void copyMessages();
-    void moveMessages();
-    void flagMessages();
+    void deletePendingMessages();
+    void copyPendingMessages();
+    void movePendingMessages();
+    void flagPendingMessages();
 
 protected:
     QMailMessageSource(QMailMessageService *service);

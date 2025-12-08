@@ -249,21 +249,21 @@ bool QMailStoreEvents::initConnections()
     }
 
     if (QMailStore *store = QMailStore::instance()) {
-        connect(store, SIGNAL(accountsUpdated(QMailAccountIdList)), this, SLOT(accountsUpdated(QMailAccountIdList)));
-        connect(store, SIGNAL(accountContentsModified(QMailAccountIdList)), this, SLOT(accountContentsModified(QMailAccountIdList)));
+        connect(store, &QMailStore::accountsUpdated, this, &QMailStoreEvents::accountsUpdated);
+        connect(store, &QMailStore::accountContentsModified, this, &QMailStoreEvents::accountContentsModified);
 
-        connect(store, SIGNAL(messagesAdded(QMailMessageIdList)), this, SLOT(messagesAdded(QMailMessageIdList)));
-        connect(store, SIGNAL(messagesRemoved(QMailMessageIdList)), this, SLOT(messagesRemoved(QMailMessageIdList)));
-        connect(store, SIGNAL(messagesUpdated(QMailMessageIdList)), this, SLOT(messagesUpdated(QMailMessageIdList)));
-        connect(store, SIGNAL(messageContentsModified(QMailMessageIdList)), this, SLOT(messageContentsModified(QMailMessageIdList)));
+        connect(store, &QMailStore::messagesAdded, this, &QMailStoreEvents::messagesAdded);
+        connect(store, &QMailStore::messagesRemoved, this, &QMailStoreEvents::messagesRemoved);
+        connect(store, &QMailStore::messagesUpdated, this, &QMailStoreEvents::messagesUpdated);
+        connect(store, &QMailStore::messageContentsModified, this, &QMailStoreEvents::messageContentsModified);
 
-        connect(store, SIGNAL(foldersAdded(QMailFolderIdList)), this, SLOT(foldersAdded(QMailFolderIdList)));
-        connect(store, SIGNAL(foldersRemoved(QMailFolderIdList)), this, SLOT(foldersRemoved(QMailFolderIdList)));
-        connect(store, SIGNAL(foldersUpdated(QMailFolderIdList)), this, SLOT(foldersUpdated(QMailFolderIdList)));
-        connect(store, SIGNAL(folderContentsModified(QMailFolderIdList)), this, SLOT(folderContentsModified(QMailFolderIdList)));
+        connect(store, &QMailStore::foldersAdded, this, &QMailStoreEvents::foldersAdded);
+        connect(store, &QMailStore::foldersRemoved, this, &QMailStoreEvents::foldersRemoved);
+        connect(store, &QMailStore::foldersUpdated, this, &QMailStoreEvents::foldersUpdated);
+        connect(store, &QMailStore::folderContentsModified, this, &QMailStoreEvents::folderContentsModified);
 
-        connect(store, SIGNAL(messageRemovalRecordsAdded(QMailAccountIdList)), this, SLOT(messageRemovalRecordsAdded(QMailAccountIdList)));
-        connect(store, SIGNAL(messageRemovalRecordsRemoved(QMailAccountIdList)), this, SLOT(messageRemovalRecordsRemoved(QMailAccountIdList)));
+        connect(store, &QMailStore::messageRemovalRecordsAdded, this, &QMailStoreEvents::messageRemovalRecordsAdded);
+        connect(store, &QMailStore::messageRemovalRecordsRemoved, this, &QMailStoreEvents::messageRemovalRecordsRemoved);
     }
 
     return true;

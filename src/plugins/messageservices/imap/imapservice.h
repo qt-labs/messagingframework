@@ -61,21 +61,19 @@ public:
 
 public slots:
     bool cancelOperation(QMailServiceAction::Status::ErrorCode code, const QString &text) override;
-    virtual void restartPushEmail();
-    virtual void initiatePushEmail();
 
-protected slots:
-    virtual void accountsUpdated(const QMailAccountIdList &ids);
+private slots:
+    void restartPushEmail();
+    void accountsUpdated(const QMailAccountIdList &ids);
     void errorOccurred(int code, const QString &text);
     void errorOccurred(QMailServiceAction::Status::ErrorCode code, const QString &text);
 
-    void updateStatus(const QString& text);
+    void handleStatusChange(const QString &text);
     // Only used for IMAP IDLE, network session for other request types are managed by the caller.
     void createIdleSession();
     void openIdleSession();
     void closeIdleSession();
 
-private slots:
     void onOnlineStateChanged(bool isOnline);
     void onSessionOpened();
     void onSessionStateChanged(IdleNetworkSession::State status);
@@ -86,6 +84,7 @@ private:
     class Source;
     friend class Source;
 
+    void initiatePushEmail();
     bool accountPushEnabled();
     void retryPushEmail();
     void setPersistentConnectionStatus(bool status);
@@ -101,9 +100,8 @@ private:
     int _pushRetry;
     bool _accountWasPushEnabled;
     QStringList _previousPushFolders;
-    enum { ThirtySeconds = 30 };
-    IdleNetworkSession              *_networkSession;          // IDLE network session
-    QTimer                          *_networkSessionTimer;
+    IdleNetworkSession *_networkSession; // IDLE network session
+    QTimer *_networkSessionTimer;
 };
 
 class ImapServicePlugin : public QMailMessageServicePlugin

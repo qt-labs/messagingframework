@@ -746,7 +746,7 @@ bool QMailMessageSource::synchronize(const QMailAccountId &accountId)
 bool QMailMessageSource::deleteMessages(const QMailMessageIdList &ids)
 {
     d->_ids = ids;
-    QTimer::singleShot(0, this, SLOT(deleteMessages()));
+    QTimer::singleShot(0, this, &QMailMessageSource::deletePendingMessages);
     return true;
 }
 
@@ -765,7 +765,7 @@ bool QMailMessageSource::copyMessages(const QMailMessageIdList &ids, const QMail
 {
     d->_ids = ids;
     d->_destinationId = destinationId;
-    QTimer::singleShot(0, this, SLOT(copyMessages()));
+    QTimer::singleShot(0, this, &QMailMessageSource::copyPendingMessages);
     return true;
 }
 
@@ -784,7 +784,7 @@ bool QMailMessageSource::moveMessages(const QMailMessageIdList &ids, const QMail
 {
     d->_ids = ids;
     d->_destinationId = destinationId;
-    QTimer::singleShot(0, this, SLOT(moveMessages()));
+    QTimer::singleShot(0, this, &QMailMessageSource::movePendingMessages);
     return true;
 }
 
@@ -807,7 +807,7 @@ bool QMailMessageSource::flagMessages(const QMailMessageIdList &ids, quint64 set
     d->_ids = ids;
     d->_setMask = setMask;
     d->_unsetMask = unsetMask;
-    QTimer::singleShot(0, this, SLOT(flagMessages()));
+    QTimer::singleShot(0, this, &QMailMessageSource::flagPendingMessages);
     return true;
 }
 
@@ -1112,7 +1112,7 @@ void QMailMessageSource::notImplemented()
 }
 
 /*! \internal */
-void QMailMessageSource::deleteMessages()
+void QMailMessageSource::deletePendingMessages()
 {
     uint total = d->_ids.count();
     emit d->_service->progressChanged(0, total);
@@ -1136,7 +1136,7 @@ void QMailMessageSource::deleteMessages()
 }
 
 /*! \internal */
-void QMailMessageSource::copyMessages()
+void QMailMessageSource::copyPendingMessages()
 {
     bool successful(true);
 
@@ -1191,7 +1191,7 @@ void QMailMessageSource::copyMessages()
 }
 
 /*! \internal */
-void QMailMessageSource::moveMessages()
+void QMailMessageSource::movePendingMessages()
 {
     uint total = d->_ids.count();
     emit d->_service->progressChanged(0, total);
@@ -1218,7 +1218,7 @@ void QMailMessageSource::moveMessages()
 }
 
 /*! \internal */
-void QMailMessageSource::flagMessages()
+void QMailMessageSource::flagPendingMessages()
 {
     uint total = d->_ids.count();
     emit d->_service->progressChanged(0, total);
