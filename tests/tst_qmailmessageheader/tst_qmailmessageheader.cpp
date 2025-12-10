@@ -968,7 +968,7 @@ void tst_QMailMessageHeaderField::encodeContent_data()
         << QByteArray("ISO-8859-1")
         << QByteArray("=?ISO-8859-1?Q?mary=40example=2Enet?=");
 
-    /* Qt Extended seems to be configured without iso-8859-[^1]
+    /* Qt Messaging Framework seems to be configured without iso-8859-[^1]
     QTest::newRow("ISO-8859-2 encoding")
         << QString("hello")
         << QByteArray("ISO-8859-2")

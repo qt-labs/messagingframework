@@ -396,7 +396,7 @@ QMailMessageSourcePrivate::QMailMessageSourcePrivate(QMailMessageService *servic
     \brief The QMailMessageSource class defines the interface to objects that provide access to externally sourced
     messages to the messageserver.
 
-    The Qt Extended messageserver uses the QMailMessageSource interface to cooperate with components loaded
+    The Qt Messaging Framework messageserver uses the QMailMessageSource interface to cooperate with components loaded
     from plugin libraries, that act as sources of messaging data for the messaging framework.  Instances of
     QMailMessageSource are not created directly by the messageserver, but are exported by QMailMessageService
     objects via their \l{QMailMessageService::source()}{source} function.
@@ -1275,7 +1275,7 @@ QMailMessageSinkPrivate::QMailMessageSinkPrivate(QMailMessageService *service)
     \brief The QMailMessageSink class defines the interface to objects that provide external message transmission
     services to the messageserver.
 
-    The Qt Extended messageserver uses the QMailMessageSink interface to cooperate with components loaded
+    The Qt Messaging Framework messageserver uses the QMailMessageSink interface to cooperate with components loaded
     from plugin libraries, that act as external transmitters of messaging data for the messaging framework.
     Instances of QMailMessageSink are not created directly by the messageserver, but are exported by
     QMailMessageService objects via their \l{QMailMessageService::sink()}{sink} function.

@@ -49,7 +49,7 @@ Q_GLOBAL_STATIC(GenericViewer, genericViewerInstance);
 
     \brief The QMailViewerInterface class defines the interface to objects that can display a mail message.
 
-    Qt Extended uses the QMailViewerInterface interface for displaying mail messages.  A class may implement the
+    Qt Messaging Framework uses the QMailViewerInterface interface for displaying mail messages.  A class may implement the
     QMailViewerInterface interface to display a mail message format.
 
     The message to be displayed is provided to the viewer class using the \l {QMailViewerInterface::setMessage()}

@@ -254,7 +254,7 @@ QStringList QMailContentManagerPlugin::keys() const
 
     \brief The QMailContentManager class defines the interface to objects that provide a storage facility for message content.
 
-    Qt Extended uses the QMailContentManager interface to delegate the filtering, storage, retrieval and indexing of message content
+    Qt Messaging Framework uses the QMailContentManager interface to delegate the filtering, storage, retrieval and indexing of message content
     from the QMailStore class to classes loaded from plugin libraries.  A library may provide this service by exporting a
     class implementing the QMailContentManager interface, and an associated instance of QMailContentManagerPlugin.
 

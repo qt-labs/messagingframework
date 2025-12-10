@@ -34,7 +34,7 @@
     example application allows the user to browse for messages using a tree
     view to expose the hierarchical structure of email accounts that use folders.
     It displays the messages in each folder in a list, and when a message is
-    selected, it uses Qt Extended services to delegate the display of the
+    selected, it uses Qt Messaging Framework services to delegate the display of the
     message to another application.
 
     \image messagenavigator-example.png Screenshot of the MessageNavigator example

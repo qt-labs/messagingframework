@@ -50,7 +50,7 @@ Q_GLOBAL_STATIC(EmailComposerInterface, composerInterface);
 
     \brief The QMailComposerInterface class defines the interface to objects that can compose a mail message.
 
-    Qt Extended uses the QMailComposerInterface interface for composing mail messages.  A class may implement the
+    Qt Messaging Framework uses the QMailComposerInterface interface for composing mail messages.  A class may implement the
     QMailComposerInterface interface to compose a mail message format.
 
     The composer class may start composing with no associated message, or it may be provided with an existing

@@ -32,12 +32,12 @@
     The MessageViewer example shows how to create a client application
     which accesses messages stored by the Messaging Framework. The
     example application searches for, and displays the properties of messages
-    stored by the Messaging Framework, but uses Qt Extended services to delegate the display
+    stored by the Messaging Framework, but uses Qt Messaging Framework services to delegate the display
     of the messages to another application.
 
     \image messageviewer-example.png Screenshot of the MessageViewer example
 
-    The example application uses the Qt Extended PIM library's Contacts listing
+    The example application uses the Qt Messaging Framework PIM library's Contacts listing
     to list the messages stored on the device, by contact.  The application
     starts by allowing the user to select a contact from those stored on
     the device.  Once a contact has been selected, a list of all the

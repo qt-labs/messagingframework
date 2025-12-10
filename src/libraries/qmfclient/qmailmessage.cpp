@@ -3572,7 +3572,7 @@ void QMailMessageBodyPrivate::deserialize(Stream &stream)
     \preliminary
     \brief The QMailMessageBody class contains the body element of a message or message part.
 
-    The body of a message or message part is treated as an atomic unit by the Qt Extended messaging library.
+    The body of a message or message part is treated as an atomic unit by the Qt Messaging Framework library.
     It can only be inserted into a message part container or extracted
     from one.  It can be inserted or extracted using either a QByteArray, a QDataStream
     or to/from a file.  In the case of unicode text data, the insertion and extraction can
@@ -6856,7 +6856,7 @@ void QMailMessageMetaDataPrivate::deserialize(Stream &stream)
     \preliminary
     \brief The QMailMessageMetaData class provides information about a message stored by QMF.
 
-    The QMailMessageMetaData class provides information about messages stored in the Qt Extended system as QMailMessage objects.
+    The QMailMessageMetaData class provides information about messages stored in the Qt Messaging Framework system as QMailMessage objects.
     The meta data is more compact and more easily accessed and
     manipulated than the content of the message itself.  Many messaging-related tasks can
     be accomplished by manipulating the message meta data, such as listing, filtering, and
@@ -6880,7 +6880,7 @@ void QMailMessageMetaDataPrivate::deserialize(Stream &stream)
     \c "Incoming" against the result of QMailMessage::status().
 
     This flag indicates that the message has been sent from an external source to an
-    account whose messages are retrieved to Qt Extended.
+    account whose messages are retrieved to Qt Messaging Framework.
 */
 
 /*!
@@ -6889,7 +6889,7 @@ void QMailMessageMetaDataPrivate::deserialize(Stream &stream)
     The status mask needed for testing the value of the registered status flag named
     \c "Outgoing" against the result of QMailMessage::status().
 
-    This flag indicates that the message originates within Qt Extended, for transmission
+    This flag indicates that the message originates within Qt Messaging Framework, for transmission
     to an external message sink.
 */
 
@@ -7315,7 +7315,7 @@ void QMailMessageMetaData::setParentFolderId(const QMailFolderId &id)
 }
 
 /*!
-    Returns the Qt Extended unique QMailMessageId of the message.
+    Returns the Qt Messaging Framework unique QMailMessageId of the message.
 */
 QMailMessageId QMailMessageMetaData::id() const
 {
