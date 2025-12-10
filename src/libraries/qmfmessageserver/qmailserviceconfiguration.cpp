@@ -106,7 +106,7 @@ QMailServiceConfiguration::~QMailServiceConfiguration()
 */
 QString QMailServiceConfiguration::service() const
 {
-    return _config->service();
+    return _config ? _config->service() : QString();
 }
 
 /*!
@@ -114,7 +114,7 @@ QString QMailServiceConfiguration::service() const
 */
 QMailAccountId QMailServiceConfiguration::id() const
 {
-    return _config->id();
+    return _config ? _config->id() : QMailAccountId();
 }
 
 /*!
@@ -171,7 +171,7 @@ void QMailServiceConfiguration::setType(ServiceType type)
 */
 bool QMailServiceConfiguration::isValid() const
 {
-    return (_config != 0);
+    return _config != nullptr;
 }
 
 /*!
