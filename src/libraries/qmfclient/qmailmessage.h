@@ -261,7 +261,7 @@ public:
     };
 
     enum EncodingFormat {
-        None = 0,
+        UndefinedEncoding = 0,
         Encoded = 1,
         Decoded = 2
     };
@@ -404,7 +404,8 @@ public:
     void setContentDisposition(const QMailMessageContentDisposition& disposition);
 
     // Body management interface:
-    virtual void setBody(const QMailMessageBody &body, QMailMessageBody::EncodingFormat encodingStatus = QMailMessageBody::None);
+    virtual void setBody(const QMailMessageBody &body,
+                         QMailMessageBody::EncodingFormat encodingStatus = QMailMessageBody::UndefinedEncoding);
     QMailMessageBody body() const;
 
     bool hasBody() const;
@@ -916,7 +917,8 @@ public:
 
     void removeHeaderField( const QString &id ) override;
 
-    void setBody(const QMailMessageBody &body, QMailMessageBody::EncodingFormat encodingStatus = QMailMessageBody::None) override;
+    void setBody(const QMailMessageBody &body,
+                 QMailMessageBody::EncodingFormat encodingStatus = QMailMessageBody::UndefinedEncoding) override;
 
     // Overrides of QMMMD functions where the data needs to be stored to the part container also:
 

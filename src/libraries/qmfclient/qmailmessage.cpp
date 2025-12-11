@@ -3630,8 +3630,9 @@ void QMailMessageBodyPrivate::deserialize(Stream &stream)
 
     This enum type is used to describe the format in which body data should be presented.
 
-    \value Encoded      The body data should be presented in encoded form.
-    \value Decoded      The body data should be presented in unencoded form.
+    \value UndefinedEncoding The encoding is not defined
+    \value Encoded           The body data should be presented in encoded form.
+    \value Decoded           The body data should be presented in unencoded form.
 */
 
 /*!

@@ -224,7 +224,8 @@ public:
     // Note: this returns a reference:
     QMailMessageBody& body();
     const QMailMessageBody& body() const;
-    void setBody(const QMailMessageBody& body, QMailMessageBody::EncodingFormat encodingStatus = QMailMessageBody::None);
+    void setBody(const QMailMessageBody& body,
+                 QMailMessageBody::EncodingFormat encodingStatus = QMailMessageBody::UndefinedEncoding);
     void setBodyProperties(const QMailMessageContentType &type, QMailMessageBody::TransferEncoding encoding);
 
     bool hasBody() const;
