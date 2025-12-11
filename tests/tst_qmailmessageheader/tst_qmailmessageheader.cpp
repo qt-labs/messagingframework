@@ -175,12 +175,13 @@ int main(int argc, char *argv[])
     tst_QMailMessageContentType contentType;
     tst_QMailMessageContentDisposition contentDisposition;
 
-    QTest::qExec(&dummy, argc, argv);
-    QTest::qExec(&messageHeader, argc, argv);
-    QTest::qExec(&contentType, argc, argv);
-    QTest::qExec(&contentDisposition, argc, argv);
+    int retVal = 0;
+    retVal += QTest::qExec(&dummy, argc, argv);
+    retVal += QTest::qExec(&messageHeader, argc, argv);
+    retVal += QTest::qExec(&contentType, argc, argv);
+    retVal += QTest::qExec(&contentDisposition, argc, argv);
 
-    return 0;
+    return retVal;
 }
 
 Q_DECLARE_METATYPE(QMailMessageHeaderField::ParameterType)
@@ -1162,10 +1163,10 @@ void tst_QMailMessageHeaderField::output_data()
 
     QTest::newRow("Unbreakable token after breakable whitespace")
         << QByteArray("Content-Disposition")
-        << QByteArray("attachment; filename=/home/a_user_with_a_long_username/qmf/home/Documents/channell1.jpg")
+        << QByteArray("attachment; filename=/home/a_user_with_a_long_username/qmf/home/Documents/extra/channell1.jpg")
         << QByteArray(
 "Content-Disposition: attachment;" CRLF
-" filename=/home/a_user_with_a_long_username/qmf/home/Documents/channell1.jpg" CRLF
+" filename=/home/a_user_with_a_long_username/qmf/home/Documents/extra/channell1.jpg" CRLF
 " " CRLF);
 }
 

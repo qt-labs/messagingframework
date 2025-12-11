@@ -769,11 +769,6 @@ void tst_MessageServer::onProgressChanged(uint value, uint total)
 
 int main(int argc, char** argv)
 {
-    /*
-        Ensure that this test doesn't run as the QWS server.
-        This is because we intend to fork() later on and we don't want to
-        have to process events for the sake of the child process.
-    */
     QCoreApplication app(argc, argv);
 
     int iters = 1;
