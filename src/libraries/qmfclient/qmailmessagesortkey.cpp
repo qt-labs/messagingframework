@@ -194,6 +194,7 @@ const QList<QMailMessageSortKey::ArgumentType> &QMailMessageSortKey::arguments()
 
 /*!
     \fn QMailMessageSortKey::serialize(Stream &stream) const
+    \internal
 
     Writes the contents of a QMailMessageSortKey to a \a stream.
 */
@@ -204,6 +205,7 @@ template <typename Stream> void QMailMessageSortKey::serialize(Stream &stream) c
 
 /*!
     \fn QMailMessageSortKey::deserialize(Stream &stream)
+    \internal
 
     Reads the contents of a QMailMessageSortKey from \a stream.
 */

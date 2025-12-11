@@ -300,6 +300,7 @@ QMailKey::Combiner QMailAccountKey::combiner() const
 
 /*!
     \fn QMailAccountKey::serialize(Stream &stream) const
+    \internal
 
     Writes the contents of a QMailAccountKey to a \a stream.
 */
@@ -310,6 +311,7 @@ template <typename Stream> void QMailAccountKey::serialize(Stream &stream) const
 
 /*!
     \fn QMailAccountKey::deserialize(Stream &stream)
+    \internal
 
     Reads the contents of a QMailAccountKey from \a stream.
 */

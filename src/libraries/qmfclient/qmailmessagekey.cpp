@@ -328,6 +328,7 @@ QMailKey::Combiner QMailMessageKey::combiner() const
 
 /*!
     \fn QMailMessageKey::serialize(Stream &stream) const
+    \internal
 
     Writes the contents of a QMailMessageKey to a \a stream.
 */
@@ -338,6 +339,7 @@ template <typename Stream> void QMailMessageKey::serialize(Stream &stream) const
 
 /*!
     \fn QMailMessageKey::deserialize(Stream &stream)
+    \internal
 
     Reads the contents of a QMailMessageKey from \a stream.
 */
@@ -1093,12 +1095,14 @@ QMailMessageKey QMailMessageKey::parentThreadId(const QMailThreadKey &key, QMail
 //create implementations for QDataStream
 /*!
     \fn void QMailMessageKey::serialize<QDataStream>(QDataStream& stream) const;
+    \internal
     Serialize the message key to \a stream.
 */
 template void QMF_EXPORT QMailMessageKey::serialize<QDataStream>(QDataStream& stream) const;
 
 /*!
     \fn void QMailMessageKey::deserialize<QDataStream>(QDataStream& stream);
+    \internal
     Deserialize the message key from \a stream.
 */
 template void QMF_EXPORT QMailMessageKey::deserialize<QDataStream>(QDataStream& stream);

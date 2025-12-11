@@ -292,6 +292,7 @@ QMailKey::Combiner QMailThreadKey::combiner() const
 
 /*!
     \fn QMailThreadKey::serialize(Stream &stream) const
+    \internal
 
     Writes the contents of a QMailThreadKey to a \a stream.
 */
@@ -302,6 +303,7 @@ template <typename Stream> void QMailThreadKey::serialize(Stream &stream) const
 
 /*!
     \fn QMailThreadKey::deserialize(Stream &stream)
+    \internal
 
     Reads the contents of a QMailThreadKey from \a stream.
 */

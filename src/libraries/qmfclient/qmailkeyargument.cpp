@@ -95,19 +95,15 @@
 */
 
 /*!
-    \fn bool QMailKeyArgument::ValueList::operator==(const ValueList &other) const
-
-    Returns true if this list and \a other contain equivalent values.
-*/
-
-/*!
     \fn void QMailKeyArgument::ValueList::serialize(Stream &stream) const
+    \internal
 
     Writes the contents of a ValueList to \a stream.
 */
 
 /*!
     \fn void QMailKeyArgument::ValueList::deserialize(Stream &stream)
+    \internal
 
     Reads the contents of a ValueList from \a stream.
 */
@@ -131,12 +127,14 @@
 
 /*!
     \fn void QMailKeyArgument::serialize(Stream &stream) const
+    \internal
 
     Writes the contents of a QMailKeyArgument to \a stream.
 */
 
 /*!
     \fn void QMailKeyArgument::deserialize(Stream &stream)
+    \internal
 
     Reads the contents of a QMailKeyArgument from \a stream.
 */

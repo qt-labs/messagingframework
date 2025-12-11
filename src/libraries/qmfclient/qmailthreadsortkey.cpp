@@ -175,6 +175,7 @@ const QList<QMailThreadSortKey::ArgumentType> &QMailThreadSortKey::arguments() c
 
 /*!
     \fn QMailThreadSortKey::serialize(Stream &stream) const
+    \internal
 
     Writes the contents of a QMailThreadSortKey to a \a stream.
 */
@@ -185,6 +186,7 @@ template <typename Stream> void QMailThreadSortKey::serialize(Stream &stream) co
 
 /*!
     \fn QMailThreadSortKey::deserialize(Stream &stream)
+    \internal
 
     Reads the contents of a QMailThreadSortKey from \a stream.
 */
@@ -202,7 +204,6 @@ QMailThreadSortKey QMailThreadSortKey::id(Qt::SortOrder order)
 {
     return QMailThreadSortKey(Id, order);
 }
-
 
 /*!
     Returns a key that sorts threads by their account identifiers, according to \a order.

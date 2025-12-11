@@ -308,6 +308,7 @@ QMailKey::Combiner QMailFolderKey::combiner() const
 
 /*!
     \fn QMailFolderKey::serialize(Stream &stream) const
+    \internal
 
     Writes the contents of a QMailFolderKey to a \a stream.
 */
@@ -318,6 +319,7 @@ template <typename Stream> void QMailFolderKey::serialize(Stream &stream) const
 
 /*!
     \fn QMailFolderKey::deserialize(Stream &stream)
+    \internal
 
     Reads the contents of a QMailFolderKey from \a stream.
 */
