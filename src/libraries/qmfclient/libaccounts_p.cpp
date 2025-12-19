@@ -528,7 +528,8 @@ QMailAccount LibAccountManager::account(const QMailAccountId &id) const
                           : QMailAddress(account->valueAsString(QLatin1String("emailaddress"))));
     const QStringList aliases = account->value(QLatin1String("emailAliases")).toStringList();
     if (!aliases.isEmpty())
-        result.setFromAliases(QMailAddress(aliases.join(';')));
+        result.setFromAliases(QMailAddress(QStringLiteral("aliases"),
+                                           aliases.join(',')));
 
     if ((static_cast<uint>(account->valueAsUInt64(QLatin1String("lastSynchronized")))) == 0) {
         result.setLastSynchronized(QMailTimeStamp());
