@@ -776,10 +776,6 @@ QList<QMailAddress> QMailAddressPrivate::groupMembers() const
     return QList<QMailAddress>();
 }
 
-// We need to keep a default copy of this, because constructing a new
-// one is expensive and sends multiple DBus messages, whose responses it
-// will not survive to receive...
-
 QString QMailAddressPrivate::name() const
 {
     return QMail::unquoteString(_name);
