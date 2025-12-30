@@ -2,7 +2,7 @@ version: 2
 accept_configuration:
   condition: property
   property: host.osVersion
-  in_values: [Ubuntu_22_04]
+  in_values: [Ubuntu_22_04, Ubuntu_24_04]
 
 Configurations:
   - Template: 'qtci-linux-Ubuntu-22.04-x86_64-51'
