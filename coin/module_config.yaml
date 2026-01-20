@@ -4,13 +4,13 @@ accept_configuration:
   property: host.osVersion
   in_values: [Ubuntu_22_04, Ubuntu_24_04]
 
-Configurations:
-  - Template: 'qtci-linux-Ubuntu-22.04-x86_64-51'
-    Compiler: 'GCC'
-    Features: ['DisableTests']
+
 
 instructions:
   Build:
+    - type: EnvironmentVariable
+      variableName: NON_QTBASE_CMAKE_ARGS
+      variableValue: "{{.Env.NON_QTBASE_CMAKE_ARGS}} -DCMAKE_INSTALL_PREFIX:PATH=/home/qt/work/install -DBUILD_TESTING=OFF"
     - !include "{{qt/qtbase}}/coin_module_build_template_v2.yaml"
 
   Test: []

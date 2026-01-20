@@ -59,8 +59,8 @@ add_compile_options(-Wall -Wextra -Wpedantic)
 add_subdirectory(src)
 if(BUILD_TESTING)
   add_subdirectory(tests)
+  add_subdirectory(benchmarks)
 endif()
-add_subdirectory(benchmarks)
 add_subdirectory(examples)
 
 # TODO: translation support is missing quite a bit. Defining here just some basic ones
