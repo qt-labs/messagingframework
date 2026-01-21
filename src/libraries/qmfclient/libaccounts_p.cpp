@@ -81,7 +81,8 @@ QStringList toStringList(const QMailAddress &address)
 bool AccountSatisfyTheKey(Accounts::Account* account, const QMailAccountKey& key);
 
 template <typename Property>
-bool AccountCompareProperty(Accounts::Account* account, Property value, QMailKey::Comparator op, const QMailAccountKey::ArgumentType::ValueList& arguments)
+bool AccountCompareProperty(Accounts::Account* account, Property value, QMailKey::Comparator op,
+                            const QMailAccountKey::ArgumentType::ValueList& arguments)
 {
     // Argument list should not be empty.
     // Otherwise we have nothing to compare.
@@ -140,7 +141,8 @@ bool AccountCompareProperty(Accounts::Account* account, Property value, QMailKey
 }
 
 template <>
-bool AccountCompareProperty(Accounts::Account*, quint64 value, QMailKey::Comparator op, const QMailAccountKey::ArgumentType::ValueList& arguments)
+bool AccountCompareProperty(Accounts::Account*, quint64 value, QMailKey::Comparator op,
+                            const QMailAccountKey::ArgumentType::ValueList& arguments)
 {
     // Argument list should not be empty.
     // Otherwise we have nothing to compare.
@@ -213,7 +215,8 @@ bool AccountCompareProperty(Accounts::Account*, quint64 value, QMailKey::Compara
 }
 
 template <>
-bool AccountCompareProperty(Accounts::Account*, const QString& value, QMailKey::Comparator op, const QMailAccountKey::ArgumentType::ValueList& arguments)
+bool AccountCompareProperty(Accounts::Account*, const QString& value, QMailKey::Comparator op,
+                            const QMailAccountKey::ArgumentType::ValueList& arguments)
 {
     // Argument list should not be empty.
     // Otherwise we have nothing to compare.
@@ -284,7 +287,8 @@ bool AccountCompareProperty(Accounts::Account*, const QString& value, QMailKey::
     return false;
 }
 
-bool AccountCompareProperty(Accounts::Account* account, QMailKey::Comparator op, const QMailAccountKey::ArgumentType::ValueList& arguments)
+bool AccountCompareProperty(Accounts::Account* account, QMailKey::Comparator op,
+                            const QMailAccountKey::ArgumentType::ValueList& arguments)
 {
     // Argument list should not be empty.
     // Otherwise we have nothing to compare.
@@ -524,12 +528,17 @@ QMailAccount LibAccountManager::account(const QMailAccountId &id) const
 
     result.setSignature(account->valueAsString(QLatin1String("signature")));
     result.setFromAddress(account->contains(QLatin1String("fullName"))
-                          ? QMailAddress(account->valueAsString(QLatin1String("fullName")), account->valueAsString(QLatin1String("emailaddress")))
+                          ? QMailAddress(account->valueAsString(QLatin1String("fullName")),
+                                         account->valueAsString(QLatin1String("emailaddress")))
                           : QMailAddress(account->valueAsString(QLatin1String("emailaddress"))));
     const QStringList aliases = account->value(QLatin1String("emailAliases")).toStringList();
-    if (!aliases.isEmpty())
-        result.setFromAliases(QMailAddress(QStringLiteral("aliases"),
-                                           aliases.join(',')));
+    if (!aliases.isEmpty()) {
+        if (aliases.count() > 1) {
+            result.setFromAliases(QMailAddress(QStringLiteral("aliases"), aliases.join(',')));
+        } else {
+            result.setFromAliases(QMailAddress(aliases.at(0)));
+        }
+    }
 
     if ((static_cast<uint>(account->valueAsUInt64(QLatin1String("lastSynchronized")))) == 0) {
         result.setLastSynchronized(QMailTimeStamp());
@@ -680,7 +689,8 @@ bool LibAccountManager::addAccount(QMailAccount *account,
 
     Accounts::ServiceList services = sharedAccount->services(QLatin1String("e-mail"));
     if (!services.count()) {
-        qCWarning(lcMessaging) << "E-mail Services not found, make sure that *.service and *.provider files are properly installed.";
+        qCWarning(lcMessaging) << "E-mail Services not found, make sure that *.service and *.provider files are "
+                                  "properly installed.";
         return false;
     }
     if (services.count() != 1) {
@@ -778,7 +788,8 @@ bool LibAccountManager::removeAccounts(const QMailAccountIdList &ids)
     return success;
 }
 
-void LibAccountManager::updateAccountCustomFields(QSharedPointer<Accounts::Account>& account, const QMap<QString, QString> &fields)
+void LibAccountManager::updateAccountCustomFields(QSharedPointer<Accounts::Account>& account,
+                                                  const QMap<QString, QString> &fields)
 {
     account->beginGroup(QLatin1String("customFields"));
 
@@ -832,7 +843,6 @@ void LibAccountManager::updateAccountCustomFields(QSharedPointer<Accounts::Accou
         QVariantList::const_iterator value = addedValues.begin();
         while (field != addedFields.end() && value != addedValues.end())
             account->setValue(field++->toString(), *value++);
-
     }
 
     account->endGroup();
@@ -923,7 +933,8 @@ bool LibAccountManager::updateSharedAccount(QMailAccount *account,
                 foreach (const QString& name, sharedAccount->allKeys()) {
                     const QVariant &value = sharedAccount->value(name);
                     if (value.typeName() == QStringLiteral("QStringList")) {
-                        existing.insert(qMakePair(group, name), QMailAccountConfiguration::ServiceConfiguration::fromList(value.toStringList()));
+                        existing.insert(qMakePair(group, name),
+                                        QMailAccountConfiguration::ServiceConfiguration::fromList(value.toStringList()));
                     } else {
                         existing.insert(qMakePair(group, name), value.toString());
                     }
@@ -1052,7 +1063,9 @@ void LibAccountManager::clearContent()
             account->remove();
             account->syncAndBlock();
         } else {
-            qCWarning(lcMessaging) << Q_FUNC_INFO << "E-mail Services not found, make sure that *.service and *.provider files are properly installed and e-mail services are enabled.";
+            qCWarning(lcMessaging) << Q_FUNC_INFO
+                                   << "E-mail Services not found, make sure that *.service and *.provider files are "
+                                      "properly installed and e-mail services are enabled.";
             reportAccountError(manager->lastError());
         }
     }

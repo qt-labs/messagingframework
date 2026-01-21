@@ -9067,12 +9067,14 @@ bool QMailStoreSql::deleteMessages(const QMailMessageKey& key,
         if (query.lastError().type() != QSqlError::NoError)
             return false;
 
-        while (query.next())
+        while (query.next()) {
             predecessors.insert(QMailMessageId(extractValue<quint64>(query.value(0))), QMailMessageId(extractValue<quint64>(query.value(1))));
+        }
 
         {
             QVariantList messageIdList;
             QVariantList newResponseIdList;
+
             for (QMap<QMailMessageId, QMailMessageId>::iterator it(update_map.begin()) ; it != update_map.end() ; ++it) {
                 QMailMessageId to_update(it.key());
 
