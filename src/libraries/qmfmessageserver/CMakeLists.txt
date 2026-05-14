@@ -22,6 +22,8 @@ set(HEADERS
   qmailstoreaccountfilter.h
   qmailtransport.h)
 
+set(LIBRARY_NAME QmfMessageServer-qt6)
+
 add_library(QmfMessageServer SHARED ${SRC} ${HEADERS})
 
 target_compile_definitions(QmfMessageServer PRIVATE MESSAGESERVER_INTERNAL)
@@ -30,6 +32,7 @@ target_link_libraries(QmfMessageServer
   PRIVATE Qt6::Network
   PUBLIC Qt6::Core QmfClient)
 set_target_properties(QmfMessageServer PROPERTIES
+  OUTPUT_NAME ${LIBRARY_NAME}
   SOVERSION ${PROJECT_VERSION_MAJOR}
   VERSION ${PROJECT_VERSION}
   PUBLIC_HEADER "${HEADERS}"
@@ -41,7 +44,7 @@ install(TARGETS QmfMessageServer
 
 if (ECM_FOUND)
   ecm_generate_pkgconfig_file(
-        BASE_NAME QmfMessageServer
+        BASE_NAME ${LIBRARY_NAME}
         INCLUDE_INSTALL_DIR ${CMAKE_INSTALL_INCLUDEDIR}/qt6/QmfMessageServer
         DEPS Qt6Core QmfClient PRIVATE Qt6Network
         URL "https://codereview.qt-project.org/gitweb?p=qt-labs%2Fmessagingframework.git"

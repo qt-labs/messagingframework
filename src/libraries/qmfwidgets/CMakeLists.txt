@@ -16,6 +16,8 @@ set(HEADERS
   selectfolder.h
   qtmailnamespace.h)
 
+set(LIBRARY_NAME QmfWidgets-qt6)
+
 qt_add_resources(SRC qmfutil.qrc)
 
 add_library(QmfWidgets SHARED ${SRC} ${HEADERS})
@@ -25,6 +27,7 @@ target_include_directories(QmfWidgets PRIVATE ../qmfclient ../qmfclient/support)
 target_link_libraries(QmfWidgets
   PUBLIC Qt6::Core Qt6::Widgets QmfClient)
 set_target_properties(QmfWidgets PROPERTIES
+  OUTPUT_NAME ${LIBRARY_NAME}
   SOVERSION ${PROJECT_VERSION_MAJOR}
   VERSION ${PROJECT_VERSION}
   PUBLIC_HEADER "${HEADERS}")

@@ -110,6 +110,8 @@ set(PRIVATE_HEADERS
   qmailthreadsortkey_p.h
   longstring_p.h)
 
+set(LIBRARY_NAME QmfClient-qt6)
+
 if (ICU_FOUND)
   set(SRC ${SRC}
     support/qmailcharsetdetector.cpp)
@@ -140,6 +142,7 @@ target_link_libraries(QmfClient
   PRIVATE Qt6::Sql Qt6::Network Qt6::Core5Compat Qt6::DBus
   PUBLIC Qt6::Core)
 set_target_properties(QmfClient PROPERTIES
+  OUTPUT_NAME ${LIBRARY_NAME}
   SOVERSION ${PROJECT_VERSION_MAJOR}
   VERSION ${PROJECT_VERSION}
   PUBLIC_HEADER "${PUBLIC_HEADERS}"
@@ -179,7 +182,7 @@ endif()
 
 if (ECM_FOUND)
   ecm_generate_pkgconfig_file(
-        BASE_NAME QmfClient
+        BASE_NAME ${LIBRARY_NAME}
         INCLUDE_INSTALL_DIR ${CMAKE_INSTALL_INCLUDEDIR}/qt6/QmfClient
         DEPS Qt6Core PRIVATE Qt6Core5Compat PRIVATE Qt6DBus PRIVATE Qt6Sql PRIVATE Qt6Network
         URL "https://codereview.qt-project.org/gitweb?p=qt-labs%2Fmessagingframework.git"
