@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.16)
 
 project(QtMessagingFramework
-  VERSION 4.0.4
+  VERSION 6.0.0
   DESCRIPTION "a C++ library and daemon server process to build email clients")
 
 set(CMAKE_AUTOMOC ON)
