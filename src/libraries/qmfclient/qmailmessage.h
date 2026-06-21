@@ -682,6 +682,7 @@ public:
     static const quint64 &New;
     static const quint64 &ReadReplyRequested;
     static const quint64 &Trash;
+    static const quint64 &Archived;
     static const quint64 &PartialContentAvailable;
     static const quint64 &HasAttachments;
     static const quint64 &HasReferences;

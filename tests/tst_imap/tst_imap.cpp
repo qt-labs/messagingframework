@@ -51,10 +51,16 @@ private slots:
     void initTestCase();
     void cleanupTestCase();
 
+    // Runs before test_connection(), which makes a real (failing) network
+    // connection attempt; this test needs the client's protocol/strategy
+    // state to be untouched by that attempt.
+    void test_specialUseFlagsWithoutCapability();
+
     void test_connection();
 
 private:
     ImapClient *mClient = nullptr;
+    QMailAccountId mAccountId;
 };
 
 void tst_ImapClient::initTestCase()
@@ -78,7 +84,8 @@ void tst_ImapClient::initTestCase()
 
     QVERIFY(QMailStore::instance()->addAccount(&account, &config));
 
-    mClient = new ImapClient(account.id(), this);
+    mAccountId = account.id();
+    mClient = new ImapClient(mAccountId, this);
 }
 
 void tst_ImapClient::cleanupTestCase()
@@ -107,6 +114,49 @@ public:
         }
     }
 };
+
+void tst_ImapClient::test_specialUseFlagsWithoutCapability()
+{
+    // Simulate a server telling us about the archive folder
+    mClient->mailboxListed("\\Archive", "Archive");
+
+    QMailFolderId archiveId = mClient->mailboxId("Archive");
+    QVERIFY(archiveId.isValid());
+
+    // Account should have that folder set as its archive folder
+    QMailAccount account(mAccountId);
+    QCOMPARE(account.standardFolder(QMailFolder::ArchiveFolder), archiveId);
+
+    // The folder should have its archive flag set
+    QMailFolder archiveFolder(archiveId);
+    QVERIFY(archiveFolder.status() & QMailFolder::Archive);
+
+    // Simulate server telling us about the same folder, but it doesn't send
+    // the Archive flag.
+    mClient->mailboxListed(QString(), "Archive");
+
+    // Account should still have that folder set as its archive folder
+    account = QMailAccount(mAccountId);
+    QCOMPARE(account.standardFolder(QMailFolder::ArchiveFolder), archiveId);
+
+    // Folder should still have its archive flag set
+    archiveFolder = QMailFolder(archiveId);
+    QVERIFY(archiveFolder.status() & QMailFolder::Archive);
+
+    // Simulate server telling us a different folder is now the archive folder
+    mClient->mailboxListed("\\Archive", "Archive2");
+
+    QMailFolderId archive2Id = mClient->mailboxId("Archive2");
+    QVERIFY(archive2Id.isValid());
+
+    // Account should now have Archive2 set as its archive folder
+    account = QMailAccount(mAccountId);
+    QCOMPARE(account.standardFolder(QMailFolder::ArchiveFolder), archive2Id);
+
+    // The old archive folder should not have its archive flag set
+    archiveFolder = QMailFolder(archiveId);
+    QVERIFY(!(archiveFolder.status() & QMailFolder::Archive));
+}
 
 void tst_ImapClient::test_connection()
 {

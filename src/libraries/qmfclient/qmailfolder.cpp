@@ -45,6 +45,7 @@ static quint64 sentFlag = 0;
 static quint64 trashFlag = 0;
 static quint64 draftsFlag = 0;
 static quint64 junkFlag = 0;
+static quint64 archiveFlag = 0;
 static quint64 childCreationPermittedFlag = 0;
 static quint64 renamePermittedFlag = 0;
 static quint64 deletionPermittedFlag = 0;
@@ -230,6 +231,16 @@ public:
 */
 
 /*!
+    \variable QMailFolder::Archive
+
+    The status mask needed for testing the value of the registered status flag named
+    \c "Archive" against the result of QMailFolder::status().
+
+    This flag indicates that a folder is the account's archive folder, used to store
+    messages kept indefinitely outside the inbox without being marked as trash or junk.
+*/
+
+/*!
     \variable QMailFolder::ChildCreationPermitted
 
     The status mask needed for testing the value of the registered status flag named
@@ -308,6 +319,7 @@ const quint64 &QMailFolder::Sent = sentFlag;
 const quint64 &QMailFolder::Trash = trashFlag;
 const quint64 &QMailFolder::Drafts = draftsFlag;
 const quint64 &QMailFolder::Junk = junkFlag;
+const quint64 &QMailFolder::Archive = archiveFlag;
 const quint64 &QMailFolder::ChildCreationPermitted = childCreationPermittedFlag;
 const quint64 &QMailFolder::RenamePermitted = renamePermittedFlag;
 const quint64 &QMailFolder::DeletionPermitted = deletionPermittedFlag;

@@ -1170,7 +1170,7 @@ public:
         ListState::init();
     }
 
-    void setParameters(const QString &reference, const QString &mailbox, bool xlist = false);
+    void setParameters(const QString &reference, const QString &mailbox, bool xlist = false, bool specialUse = false);
     void setDiscoverDelimiter();
 
     bool permitsPipelining() const override { return true; }
@@ -1186,23 +1186,25 @@ signals:
 private:
     struct ListParameters
     {
-        ListParameters() : _xlist(false) {}
+        ListParameters() : _xlist(false), _specialUse(false) {}
 
         QString _reference;
         QString _mailbox;
         bool _xlist;
+        bool _specialUse;
     };
 
     // The list of reference/mailbox pairs we're listing (via multiple commands), in order
     QList<ListParameters> _parameters;
 };
 
-void ListState::setParameters(const QString &reference, const QString &mailbox, bool xlist)
+void ListState::setParameters(const QString &reference, const QString &mailbox, bool xlist, bool specialUse)
 {
     ListParameters params;
     params._reference = reference;
     params._mailbox = mailbox;
     params._xlist = xlist;
+    params._specialUse = specialUse;
 
     _parameters.append(params);
 }
@@ -1239,7 +1241,14 @@ QString ListState::transmit(ImapContext *c)
     QString command("LIST");
     if (params._xlist)
         command = "XLIST";
-    return c->sendCommand(QString("%1 %2 %3").arg(command).arg(reference).arg(mailbox));
+
+    QString listCommand = QString("%1 %2 %3").arg(command).arg(reference).arg(mailbox);
+
+    // Per RFC 6154, if the server advertised SPECIAL-USE, ask server to include
+    // each folder's SPECIAL-USE attribute (ie Archive, Sent, etc.)
+    if (params._specialUse && !params._xlist)
+        listCommand.append(QLatin1String(" RETURN (SPECIAL-USE)"));
+    return c->sendCommand(listCommand);
 }
 
 void ListState::leave(ImapContext *)
@@ -3506,7 +3515,7 @@ void ImapProtocol::sendList( const QMailFolder &reference, const QString &mailbo
 
 
     // Now request the actual list
-    _fsm->listState.setParameters(path, mailbox, capabilities().contains("XLIST"));
+    _fsm->listState.setParameters(path, mailbox, capabilities().contains("XLIST"), capabilities().contains("SPECIAL-USE"));
     _fsm->setState(&_fsm->listState);
 }
 

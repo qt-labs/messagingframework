@@ -2813,6 +2813,8 @@ bool QMailStoreSql::initStore(const QString &localFolderName)
                                             63, true, const_cast<quint64 *>(&QMailFolder::Drafts), t, false)
                 || attemptRegisterStatusBit(QLatin1String("Junk"), QLatin1String("folderstatus"),
                                             63, true, const_cast<quint64 *>(&QMailFolder::Junk), t, false)
+                || attemptRegisterStatusBit(QLatin1String("Archive"), QLatin1String("folderstatus"),
+                                            63, true, const_cast<quint64 *>(&QMailFolder::Archive), t, false)
                 || attemptRegisterStatusBit(QLatin1String("ChildCreationPermitted"), QLatin1String("folderstatus"),
                                             63, true, const_cast<quint64 *>(&QMailFolder::ChildCreationPermitted), t, false)
                 || attemptRegisterStatusBit(QLatin1String("RenamePermitted"), QLatin1String("folderstatus"),
@@ -2855,6 +2857,8 @@ bool QMailStoreSql::initStore(const QString &localFolderName)
                                             63, true, const_cast<quint64 *>(&QMailMessage::ReadReplyRequested), t, false)
                 || attemptRegisterStatusBit(QLatin1String("Trash"), QLatin1String("messagestatus"),
                                             63, true, const_cast<quint64 *>(&QMailMessage::Trash), t, false)
+                || attemptRegisterStatusBit(QLatin1String("Archived"), QLatin1String("messagestatus"),
+                                            63, true, const_cast<quint64 *>(&QMailMessage::Archived), t, false)
                 || attemptRegisterStatusBit(QLatin1String("PartialContentAvailable"), QLatin1String("messagestatus"),
                                             63, true, const_cast<quint64 *>(&QMailMessage::PartialContentAvailable), t, false)
                 || attemptRegisterStatusBit(QLatin1String("HasAttachments"), QLatin1String("messagestatus"),

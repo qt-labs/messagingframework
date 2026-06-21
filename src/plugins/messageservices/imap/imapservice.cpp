@@ -779,6 +779,46 @@ bool ImapService::Source::flagMessages(const QMailMessageIdList &messageIds, qui
         }
     }
 
+    // This behavior is identical to the Trash behavior, but for the Archive folder
+    if ((setMask & QMailMessage::Archived) || (unsetMask & QMailMessage::Archived)) {
+
+        QMailFolderId archiveId(QMailAccount(_service->accountId()).standardFolder(QMailFolder::ArchiveFolder));
+
+        if (archiveId.isValid()) {
+
+            _setMask = setMask;
+            _unsetMask = unsetMask;
+
+            if (setMask & QMailMessage::Archived) {
+                _service->_client->strategyContext()->moveMessagesStrategy.clearSelection();
+                _service->_client->strategyContext()->moveMessagesStrategy.appendMessageSet(messageIds, archiveId);
+
+                appendStrategy(&_service->_client->strategyContext()->moveMessagesStrategy, SIGNAL(messagesFlagged(QMailMessageIdList)));
+
+                if (!_unavailable)
+                    return initiateStrategy();
+                return true;
+
+            } else if (_unsetMask & QMailMessage::Archived) {
+
+                QMap<QMailFolderId, QMailMessageIdList> destinationList;
+                // These messages need to be restored to their previous locations
+                destinationList = QMailDisconnected::restoreMap(messageIds);
+
+                _service->_client->strategyContext()->moveMessagesStrategy.clearSelection();
+                QMap<QMailFolderId, QMailMessageIdList>::const_iterator it = destinationList.begin(), end = destinationList.end();
+                for ( ; it != end; ++it) {
+                    _service->_client->strategyContext()->moveMessagesStrategy.appendMessageSet(it.value(), it.key());
+                }
+
+                appendStrategy(&_service->_client->strategyContext()->moveMessagesStrategy, SIGNAL(messagesFlagged(QMailMessageIdList)));
+                if (!_unavailable)
+                    return initiateStrategy();
+                return true;
+            }
+        }
+    }
+
     if (setMask & QMailMessage::Sent) {
         QMailFolderId sentId(QMailAccount(_service->accountId()).standardFolder(QMailFolder::SentFolder));
         if (sentId.isValid()) {

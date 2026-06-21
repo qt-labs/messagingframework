@@ -52,7 +52,8 @@ public:
         DraftsFolder,
         SentFolder,
         TrashFolder,
-        JunkFolder
+        JunkFolder,
+        ArchiveFolder
     };
 
     static const quint64 &SynchronizationEnabled;
@@ -65,6 +66,7 @@ public:
     static const quint64 &Trash;
     static const quint64 &Drafts;
     static const quint64 &Junk;
+    static const quint64 &Archive;
     static const quint64 &ChildCreationPermitted;
     static const quint64 &RenamePermitted;
     static const quint64 &DeletionPermitted;

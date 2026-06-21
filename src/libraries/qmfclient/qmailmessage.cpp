@@ -6549,6 +6549,7 @@ static quint64 unloadedDataFlag = 0;
 static quint64 newFlag = 0;
 static quint64 readReplyRequestedFlag = 0;
 static quint64 trashFlag = 0;
+static quint64 archiveFlag = 0;
 static quint64 partialContentAvailableFlag = 0;
 static quint64 hasAttachmentsFlag = 0;
 static quint64 hasReferencesFlag = 0;
@@ -7006,6 +7007,15 @@ void QMailMessageMetaDataPrivate::deserialize(Stream &stream)
 */
 
 /*!
+    \variable QMailMessageMetaData::Archived
+
+    The status mask needed for testing the value of the registered status flag named
+    \c "Archived" against the result of QMailMessage::status().
+
+    This flag indicates that the message has been moved to the account's archive folder.
+*/
+
+/*!
     \variable QMailMessageMetaData::ContentAvailable
 
     The status mask needed for testing the value of the registered status flag named
@@ -7212,6 +7222,7 @@ const quint64 &QMailMessageMetaData::UnloadedData = unloadedDataFlag;
 const quint64 &QMailMessageMetaData::New = newFlag;
 const quint64 &QMailMessageMetaData::ReadReplyRequested = readReplyRequestedFlag;
 const quint64 &QMailMessageMetaData::Trash = trashFlag;
+const quint64 &QMailMessageMetaData::Archived = archiveFlag;
 const quint64 &QMailMessageMetaData::PartialContentAvailable = partialContentAvailableFlag;
 const quint64 &QMailMessageMetaData::HasAttachments = hasAttachmentsFlag;
 const quint64 &QMailMessageMetaData::HasReferences = hasReferencesFlag;

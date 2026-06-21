@@ -102,7 +102,7 @@ namespace {
         quint64 _messageFlag;
     };
 
-    static void setFolderFlags(QMailAccount *account, QMailFolder *folder, const QString &flags, bool setStandardFlags)
+    static void setFolderFlags(QMailAccount *account, QMailFolder *folder, const QString &flags)
     {
         // Set permitted flags
         bool childCreationPermitted(!flags.contains("\\NoInferiors", Qt::CaseInsensitive));
@@ -114,16 +114,27 @@ namespace {
             return;
         }
 
-        if (!setStandardFlags)
-            return;
-
         // Set standard folder flags
+        //
+        // A server can report special-use flags (\Trash, \Sent, \Drafts, \Junk,
+        // \Archive, ...) in a plain LIST response even if it never advertises the
+        // XLIST or SPECIAL-USE capability (RFC 6154 explicitly permits this; some
+        // real servers, e.g. Proton, do exactly this). So we always
+        // check for these flags here rather than checking for XLIST/SPECIAL-USE.
+        //
+        // However, it's possible for a server to not report these flags at all,
+        // and yet QMail::detectStandardFolders() (qmailnamespace.cpp) might have
+        // correctly identified them by their name anyway. We don't want to
+        // incorrectly clear the flag here simply because the folder doesn't have
+        // an explicit flag. So below, a flag is only ever turned on when present.
+        // It is never turned off due to being absent.
         QList<FlagInfo> flagInfoList;
         flagInfoList << FlagInfo(QStringList() << "\\Inbox", QMailFolder::Incoming, QMailFolder::InboxFolder, QMailMessage::Incoming)
             << FlagInfo(QStringList() << "\\Drafts", QMailFolder::Drafts, QMailFolder::DraftsFolder, QMailMessage::Draft)
             << FlagInfo(QStringList() << "\\Trash", QMailFolder::Trash, QMailFolder::TrashFolder, QMailMessage::Trash)
             << FlagInfo(QStringList() << "\\Sent", QMailFolder::Sent, QMailFolder::SentFolder, QMailMessage::Sent)
-            << FlagInfo(QStringList() << "\\Spam" << "\\Junk", QMailFolder::Junk, QMailFolder::JunkFolder, QMailMessage::Junk);
+            << FlagInfo(QStringList() << "\\Spam" << "\\Junk", QMailFolder::Junk, QMailFolder::JunkFolder, QMailMessage::Junk)
+            << FlagInfo(QStringList() << "\\Archive", QMailFolder::Archive, QMailFolder::ArchiveFolder, QMailMessage::Archived);
 
         for (int i = 0; i < flagInfoList.count(); ++i) {
             QStringList flagNames(flagInfoList[i]._flagNames);
@@ -139,8 +150,9 @@ namespace {
                 }
             }
 
-            folder->setStatus(flag, isFlagged);
             if (isFlagged) {
+                folder->setStatus(flag, true);
+
                 QMailFolderId oldFolderId = account->standardFolder(standardFolder);
                 if (oldFolderId.isValid() && (oldFolderId != folder->id())) {
                     QMailFolder oldFolder(oldFolderId);
@@ -785,7 +797,7 @@ void ImapClient::mailboxListed(const QString &flags, const QString &path)
             if (mailboxPath == path) {
                 QMailFolder folder(boxId);
                 QMailFolder folderOriginal(folder);
-                setFolderFlags(&account, &folder, flags, _protocol.capabilities().contains("XLIST"));
+                setFolderFlags(&account, &folder, flags);
 
                 if (folder.status() != folderOriginal.status()) {
                     if (!QMailStore::instance()->updateFolder(&folder)) {
@@ -843,7 +855,7 @@ void ImapClient::mailboxListed(const QString &flags, const QString &path)
                 }
             }
 
-            setFolderFlags(&account, &folder, folderFlags, _protocol.capabilities().contains("XLIST")); // requires valid folder.id()
+            setFolderFlags(&account, &folder, folderFlags); // requires valid folder.id()
             _strategyContext->mailboxListed(folder, folderFlags);
 
             if (!QMailStore::instance()->updateFolder(&folder)) {

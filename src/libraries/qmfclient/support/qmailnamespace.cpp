@@ -407,6 +407,9 @@ static QMap<QByteArray, QStringList> standardFolderTranslations()
         } else if (folderName == QLatin1String("spam")) {
             QStringList spamList = transList.split(QLatin1Char(','), Qt::SkipEmptyParts);
             folderTranslations.insert("spam", spamList);
+        } else if (folderName == QLatin1String("archive")) {
+            QStringList archiveList = transList.split(QLatin1Char(','), Qt::SkipEmptyParts);
+            folderTranslations.insert("archive", archiveList);
         }
     }
     return folderTranslations;
@@ -423,7 +426,8 @@ static QList<StandardFolderInfo> standardFolders()
                             << StandardFolderInfo(QLatin1String("\\Drafts"), QMailFolder::Drafts, QMailFolder::DraftsFolder, QMailMessage::Draft, folderTranslations.value("drafts"))
                             << StandardFolderInfo(QLatin1String("\\Trash"), QMailFolder::Trash, QMailFolder::TrashFolder, QMailMessage::Trash, folderTranslations.value("trash"))
                             << StandardFolderInfo(QLatin1String("\\Sent"), QMailFolder::Sent, QMailFolder::SentFolder, QMailMessage::Sent, folderTranslations.value("sent"))
-                            << StandardFolderInfo(QLatin1String("\\Spam"), QMailFolder::Junk, QMailFolder::JunkFolder, QMailMessage::Junk, folderTranslations.value("spam"));
+                            << StandardFolderInfo(QLatin1String("\\Spam"), QMailFolder::Junk, QMailFolder::JunkFolder, QMailMessage::Junk, folderTranslations.value("spam"))
+                            << StandardFolderInfo(QLatin1String("\\Archive"), QMailFolder::Archive, QMailFolder::ArchiveFolder, QMailMessage::Archived, folderTranslations.value("archive"));
     }
     return standardFoldersList;
 }
