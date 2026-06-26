@@ -51,6 +51,8 @@ static QString PATH = QLatin1String("/messageserver");
 QMailMessageServerPrivate::QMailMessageServerPrivate(QMailMessageServer* parent)
     : OrgQtMessageserverInterface(SERVICE, PATH, QDBusConnection::sessionBus(), parent)
 {
+    QMailIpc::init();
+
     // Propagate received events as exposed signals
     connect(this, &OrgQtMessageserverInterface::actionStarted,
             parent, &QMailMessageServer::actionStarted);
@@ -374,7 +376,6 @@ QMailMessageServer::QMailMessageServer(QObject* parent)
     : QObject(parent),
       d(new QMailMessageServerPrivate(this))
 {
-    QMailIpc::init();
 }
 
 /*!
