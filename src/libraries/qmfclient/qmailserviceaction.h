@@ -317,7 +317,7 @@ Q_SIGNALS:
 
 protected:
     friend class QMailActionObserverPrivate;
-    QMailActionInfo(const QMailActionData &data, QSharedPointer<QMailMessageServer> server);
+    QMailActionInfo(const QMailActionData &data);
 
 private:
     Q_DECLARE_PRIVATE(QMailActionInfo)

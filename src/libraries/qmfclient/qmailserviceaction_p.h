@@ -48,7 +48,6 @@
 #include <QSharedPointer>
 
 #include "qmailserviceaction.h"
-#include "qmailmessageserver.h"
 
 class QMailServiceActionCommand
 {
@@ -67,8 +66,7 @@ class QMailServiceActionPrivate : public QObject
     Q_OBJECT
 
 public:
-    QMailServiceActionPrivate(QMailServiceAction *i,
-                              QSharedPointer<QMailMessageServer> server = QSharedPointer<QMailMessageServer>());
+    QMailServiceActionPrivate(QMailServiceAction *i);
 
     virtual ~QMailServiceActionPrivate();
 
@@ -112,7 +110,6 @@ protected:
     void emitChanges();
 
     QMailServiceAction *_interface;
-    QSharedPointer<QMailMessageServer> _server;
 
     QMailServiceAction::Connectivity _connectivity;
     QMailServiceAction::Activity _activity;
@@ -322,8 +319,7 @@ class QMailActionInfoPrivate : public QMailServiceActionPrivate
 {
     Q_OBJECT
 public:
-    QMailActionInfoPrivate(const QMailActionData &data, QMailActionInfo *i,
-                           QSharedPointer<QMailMessageServer> server);
+    QMailActionInfoPrivate(const QMailActionData &data, QMailActionInfo *i);
 
     quint64 actionId() const;
     QMailServerRequestType requestType() const;

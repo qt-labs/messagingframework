@@ -34,6 +34,7 @@
 #include "qmailserviceaction_p.h"
 #include "qmailipc.h"
 #include "qmailmessagekey.h"
+#include "qmailmessageserver.h"
 #include "qmailstore.h"
 #include "qmaillog.h"
 #include "qmaildisconnected.h"
@@ -64,10 +65,10 @@ QPair<uint, uint> messageActionParts(quint64 action)
 
 }
 
-QMailServiceActionPrivate::QMailServiceActionPrivate(QMailServiceAction *i,
-                                                     QSharedPointer<QMailMessageServer> server)
+Q_GLOBAL_STATIC(QMailMessageServer, messageServerInstance)
+
+QMailServiceActionPrivate::QMailServiceActionPrivate(QMailServiceAction *i)
     : _interface(i),
-      _server(server ? server : QSharedPointer<QMailMessageServer>(new QMailMessageServer)),
       _connectivity(QMailServiceAction::Offline),
       _activity(QMailServiceAction::Pending),
       _status(QMailServiceAction::Status::ErrNoError, QString(), QMailAccountId(), QMailFolderId(), QMailMessageId()),
@@ -80,13 +81,13 @@ QMailServiceActionPrivate::QMailServiceActionPrivate(QMailServiceAction *i,
       _progressChanged(false),
       _statusChanged(false)
 {
-    connect(_server.data(), &QMailMessageServer::activityChanged,
+    connect(messageServerInstance, &QMailMessageServer::activityChanged,
             this, &QMailServiceActionPrivate::activityChanged);
-    connect(_server.data(), &QMailMessageServer::connectivityChanged,
+    connect(messageServerInstance, &QMailMessageServer::connectivityChanged,
             this, &QMailServiceActionPrivate::connectivityChanged);
-    connect(_server.data(), &QMailMessageServer::statusChanged,
+    connect(messageServerInstance, &QMailMessageServer::statusChanged,
             this, &QMailServiceActionPrivate::statusChanged);
-    connect(_server.data(), &QMailMessageServer::progressChanged,
+    connect(messageServerInstance, &QMailMessageServer::progressChanged,
             this, &QMailServiceActionPrivate::progressChanged);
 }
 
@@ -102,7 +103,7 @@ void QMailServiceActionPrivate::cancelOperation()
             _pendingActions.first().action->cancelOperation();
             clearSubActions();
         }
-        _server->cancelTransfer(_action);
+        messageServerInstance->cancelTransfer(_action);
     }
 }
 
@@ -687,7 +688,7 @@ void QMailServiceAction::setStatus(QMailServiceAction::Status::ErrorCode c, cons
 QMailRetrievalActionPrivate::QMailRetrievalActionPrivate(QMailRetrievalAction *i)
     : QMailServiceActionPrivate(i)
 {
-    connect(_server.data(), &QMailMessageServer::retrievalCompleted,
+    connect(messageServerInstance, &QMailMessageServer::retrievalCompleted,
             this, &QMailRetrievalActionPrivate::retrievalCompleted);
 
     init();
@@ -696,7 +697,7 @@ QMailRetrievalActionPrivate::QMailRetrievalActionPrivate(QMailRetrievalAction *i
 void QMailRetrievalActionPrivate::retrieveFolderListHelper(const QMailAccountId &accountId,
                                                            const QMailFolderId &folderId, bool descending)
 {
-    _server->retrieveFolderList(newAction(), accountId, folderId, descending);
+    messageServerInstance->retrieveFolderList(newAction(), accountId, folderId, descending);
 }
 
 void QMailRetrievalActionPrivate::retrieveFolderList(const QMailAccountId &accountId, const QMailFolderId &folderId,
@@ -710,7 +711,7 @@ void QMailRetrievalActionPrivate::retrieveMessageListHelper(const QMailAccountId
                                                             const QMailFolderId &folderId, uint minimum,
                                                             const QMailMessageSortKey &sort)
 {
-    _server->retrieveMessageList(newAction(), accountId, folderId, minimum, sort);
+    messageServerInstance->retrieveMessageList(newAction(), accountId, folderId, minimum, sort);
 }
 
 void QMailRetrievalActionPrivate::retrieveMessageList(const QMailAccountId &accountId, const QMailFolderId &folderId,
@@ -725,13 +726,13 @@ void QMailRetrievalActionPrivate::retrieveMessageLists(const QMailAccountId &acc
                                                        uint minimum, const QMailMessageSortKey &sort)
 {
     Q_ASSERT(!_pendingActions.count());
-    _server->retrieveMessageLists(newAction(), accountId, folderIds, minimum, sort);
+    messageServerInstance->retrieveMessageLists(newAction(), accountId, folderIds, minimum, sort);
 }
 
 void QMailRetrievalActionPrivate::retrieveNewMessages(const QMailAccountId &accountId, const QMailFolderIdList &folderIds)
 {
     Q_ASSERT(!_pendingActions.count());
-    _server->retrieveNewMessages(newAction(), accountId, folderIds);
+    messageServerInstance->retrieveNewMessages(newAction(), accountId, folderIds);
 }
 
 void QMailRetrievalActionPrivate::createStandardFolders(const QMailAccountId &accountId)
@@ -749,7 +750,7 @@ void QMailRetrievalActionPrivate::createStandardFolders(const QMailAccountId &ac
             }
             return;
         } else {
-            _server->createStandardFolders(newAction(), accountId);
+            messageServerInstance->createStandardFolders(newAction(), accountId);
         }
     } else {
         qCDebug(lcMessaging) << "Standard folders matched for account: " << accountId;
@@ -762,27 +763,27 @@ void QMailRetrievalActionPrivate::createStandardFolders(const QMailAccountId &ac
 
 void QMailRetrievalActionPrivate::retrieveMessages(const QMailMessageIdList &messageIds, QMailRetrievalAction::RetrievalSpecification spec)
 {
-    _server->retrieveMessages(newAction(), messageIds, spec);
+    messageServerInstance->retrieveMessages(newAction(), messageIds, spec);
 }
 
 void QMailRetrievalActionPrivate::retrieveMessagePart(const QMailMessagePart::Location &partLocation)
 {
-    _server->retrieveMessagePart(newAction(), partLocation);
+    messageServerInstance->retrieveMessagePart(newAction(), partLocation);
 }
 
 void QMailRetrievalActionPrivate::retrieveMessageRange(const QMailMessageId &messageId, uint minimum)
 {
-    _server->retrieveMessageRange(newAction(), messageId, minimum);
+    messageServerInstance->retrieveMessageRange(newAction(), messageId, minimum);
 }
 
 void QMailRetrievalActionPrivate::retrieveMessagePartRange(const QMailMessagePart::Location &partLocation, uint minimum)
 {
-    _server->retrieveMessagePartRange(newAction(), partLocation, minimum);
+    messageServerInstance->retrieveMessagePartRange(newAction(), partLocation, minimum);
 }
 
 void QMailRetrievalActionPrivate::exportUpdatesHelper(const QMailAccountId &accountId)
 {
-    _server->exportUpdates(newAction(), accountId);
+    messageServerInstance->exportUpdates(newAction(), accountId);
 }
 
 void QMailRetrievalActionPrivate::exportUpdates(const QMailAccountId &accountId)
@@ -1182,11 +1183,11 @@ void QMailRetrievalAction::synchronize(const QMailAccountId &accountId, uint min
 QMailTransmitActionPrivate::QMailTransmitActionPrivate(QMailTransmitAction *i)
     : QMailServiceActionPrivate(i)
 {
-    connect(_server.data(), &QMailMessageServer::messagesTransmitted,
+    connect(messageServerInstance, &QMailMessageServer::messagesTransmitted,
             this, &QMailTransmitActionPrivate::handleMessagesTransmitted);
-    connect(_server.data(), &QMailMessageServer::messagesFailedTransmission,
+    connect(messageServerInstance, &QMailMessageServer::messagesFailedTransmission,
             this, &QMailTransmitActionPrivate::handleMessagesFailedTransmission);
-    connect(_server.data(), &QMailMessageServer::transmissionCompleted,
+    connect(messageServerInstance, &QMailMessageServer::transmissionCompleted,
             this, &QMailTransmitActionPrivate::handleTransmissionCompleted);
 
     init();
@@ -1194,14 +1195,14 @@ QMailTransmitActionPrivate::QMailTransmitActionPrivate(QMailTransmitAction *i)
 
 void QMailTransmitActionPrivate::transmitMessages(const QMailAccountId &accountId)
 {
-    _server->transmitMessages(newAction(), accountId);
+    messageServerInstance->transmitMessages(newAction(), accountId);
 
     emitChanges();
 }
 
 void QMailTransmitActionPrivate::transmitMessage(const QMailMessageId &messageId)
 {
-    _server->transmitMessage(newAction(), messageId);
+    messageServerInstance->transmitMessage(newAction(), messageId);
 
     emitChanges();
 }
@@ -1328,19 +1329,19 @@ void QMailTransmitAction::transmitMessage(const QMailMessageId &messageId)
 QMailStorageActionPrivate::QMailStorageActionPrivate(QMailStorageAction *i)
     : QMailServiceActionPrivate(i)
 {
-    connect(_server.data(), &QMailMessageServer::messagesDeleted,
+    connect(messageServerInstance, &QMailMessageServer::messagesDeleted,
             this, &QMailStorageActionPrivate::messagesEffected);
-    connect(_server.data(), &QMailMessageServer::messagesMoved,
+    connect(messageServerInstance, &QMailMessageServer::messagesMoved,
             this, &QMailStorageActionPrivate::messagesEffected);
-    connect(_server.data(), &QMailMessageServer::messagesCopied,
+    connect(messageServerInstance, &QMailMessageServer::messagesCopied,
             this, &QMailStorageActionPrivate::messagesEffected);
-    connect(_server.data(), &QMailMessageServer::messagesFlagged,
+    connect(messageServerInstance, &QMailMessageServer::messagesFlagged,
             this, &QMailStorageActionPrivate::messagesEffected);
-    connect(_server.data(), &QMailMessageServer::messagesAdded,
+    connect(messageServerInstance, &QMailMessageServer::messagesAdded,
             this, &QMailStorageActionPrivate::messagesAdded);
-    connect(_server.data(), &QMailMessageServer::messagesUpdated,
+    connect(messageServerInstance, &QMailMessageServer::messagesUpdated,
             this, &QMailStorageActionPrivate::messagesUpdated);
-    connect(_server.data(), &QMailMessageServer::storageActionCompleted,
+    connect(messageServerInstance, &QMailMessageServer::storageActionCompleted,
             this, &QMailStorageActionPrivate::storageActionCompleted);
 
     init();
@@ -1350,7 +1351,7 @@ void QMailStorageActionPrivate::onlineDeleteMessages(const QMailMessageIdList &i
 {
     Q_ASSERT(!_pendingActions.count());
 
-    _server->onlineDeleteMessages(newAction(), ids, QMailStore::CreateRemovalRecord);
+    messageServerInstance->onlineDeleteMessages(newAction(), ids, QMailStore::CreateRemovalRecord);
     // Successful as long as ids have been deleted,
     // this action doesn't have to be the one to have deleted them
     _ids.clear();
@@ -1359,21 +1360,21 @@ void QMailStorageActionPrivate::onlineDeleteMessages(const QMailMessageIdList &i
 
 void QMailStorageActionPrivate::discardMessages(const QMailMessageIdList &ids)
 {
-    _server->onlineDeleteMessages(newAction(), ids, QMailStore::NoRemovalRecord);
+    messageServerInstance->onlineDeleteMessages(newAction(), ids, QMailStore::NoRemovalRecord);
     _ids = ids;
     emitChanges();
 }
 
 void QMailStorageActionPrivate::onlineCopyMessages(const QMailMessageIdList &ids, const QMailFolderId &destination)
 {
-    _server->onlineCopyMessages(newAction(), ids, destination);
+    messageServerInstance->onlineCopyMessages(newAction(), ids, destination);
     _ids = ids;
     emitChanges();
 }
 
 void QMailStorageActionPrivate::onlineMoveMessages(const QMailMessageIdList &ids, const QMailFolderId &destination)
 {
-    _server->onlineMoveMessages(newAction(), ids, destination);
+    messageServerInstance->onlineMoveMessages(newAction(), ids, destination);
     _ids = ids;
     emitChanges();
 }
@@ -1382,7 +1383,7 @@ void QMailStorageActionPrivate::onlineFlagMessagesAndMoveToStandardFolder(const 
 {
     // Ensure that nothing is both set and unset
     setMask &= ~unsetMask;
-    _server->onlineFlagMessagesAndMoveToStandardFolder(newAction(), ids, setMask, unsetMask);
+    messageServerInstance->onlineFlagMessagesAndMoveToStandardFolder(newAction(), ids, setMask, unsetMask);
 
     _ids = ids;
     emitChanges();
@@ -1440,7 +1441,7 @@ void QMailStorageActionPrivate::addMessages(const QMailMessageList &list)
             metadata.append(message);
         }
     }
-    _server->addMessages(newAction(), metadata);
+    messageServerInstance->addMessages(newAction(), metadata);
     emitChanges();
 }
 
@@ -1500,7 +1501,7 @@ void QMailStorageActionPrivate::updateMessages(const QMailMessageList &list)
             metadata.append(message);
         }
     }
-    _server->updateMessages(newAction(), metadata);
+    messageServerInstance->updateMessages(newAction(), metadata);
 
     emitChanges();
 }
@@ -1511,14 +1512,14 @@ void QMailStorageActionPrivate::updateMessages(const QMailMessageMetaDataList &l
     _addedOrUpdatedIds.clear();
 
     QMailMessageMetaDataList metadata = list;
-    _server->updateMessages(newAction(), metadata);
+    messageServerInstance->updateMessages(newAction(), metadata);
 
     emitChanges();
 }
 
 void QMailStorageActionPrivate::deleteMessages(const QMailMessageIdList &ids)
 {
-    _server->deleteMessages(newAction(), ids);
+    messageServerInstance->deleteMessages(newAction(), ids);
 
     _ids = ids;
     emitChanges();
@@ -1526,13 +1527,13 @@ void QMailStorageActionPrivate::deleteMessages(const QMailMessageIdList &ids)
 
 void QMailStorageActionPrivate::rollBackUpdates(const QMailAccountId &mailAccountId)
 {
-    _server->rollBackUpdates(newAction(), mailAccountId);
+    messageServerInstance->rollBackUpdates(newAction(), mailAccountId);
     emitChanges();
 }
 
 void QMailStorageActionPrivate::moveToStandardFolder(const QMailMessageIdList& ids, quint64 standardFolder)
 {
-    _server->moveToStandardFolder(newAction(), ids, standardFolder);
+    messageServerInstance->moveToStandardFolder(newAction(), ids, standardFolder);
 
     _ids = ids;
     emitChanges();
@@ -1540,7 +1541,7 @@ void QMailStorageActionPrivate::moveToStandardFolder(const QMailMessageIdList& i
 
 void QMailStorageActionPrivate::moveToFolder(const QMailMessageIdList& ids, const QMailFolderId& folderId)
 {
-    _server->moveToFolder(newAction(), ids, folderId);
+    messageServerInstance->moveToFolder(newAction(), ids, folderId);
 
     _ids = ids;
     emitChanges();
@@ -1550,7 +1551,7 @@ void QMailStorageActionPrivate::flagMessages(const QMailMessageIdList &ids, quin
 {
     // Ensure that nothing is both set and unset
     setMask &= ~unsetMask;
-    _server->flagMessages(newAction(), ids, setMask, unsetMask);
+    messageServerInstance->flagMessages(newAction(), ids, setMask, unsetMask);
 
     _ids = ids;
     emitChanges();
@@ -1558,19 +1559,19 @@ void QMailStorageActionPrivate::flagMessages(const QMailMessageIdList &ids, quin
 
 void QMailStorageActionPrivate::restoreToPreviousFolder(const QMailMessageKey& key)
 {
-    _server->restoreToPreviousFolder(newAction(), key);
+    messageServerInstance->restoreToPreviousFolder(newAction(), key);
     emitChanges();
 }
 
 void QMailStorageActionPrivate::onlineCreateFolder(const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId)
 {
-    _server->onlineCreateFolder(newAction(), name, accountId, parentId);
+    messageServerInstance->onlineCreateFolder(newAction(), name, accountId, parentId);
     emitChanges();
 }
 
 void QMailStorageActionPrivate::onlineRenameFolder(const QMailFolderId &folderId, const QString &name)
 {
-    _server->onlineRenameFolder(newAction(), folderId, name);
+    messageServerInstance->onlineRenameFolder(newAction(), folderId, name);
     emitChanges();
 }
 
@@ -1578,13 +1579,13 @@ void QMailStorageActionPrivate::onlineDeleteFolder(const QMailFolderId &folderId
 {
     Q_ASSERT(!_pendingActions.count());
 
-    _server->onlineDeleteFolder(newAction(), folderId);
+    messageServerInstance->onlineDeleteFolder(newAction(), folderId);
     emitChanges();
 }
 
 void QMailStorageActionPrivate::onlineMoveFolder(const QMailFolderId &folderId, const QMailFolderId &newParentId)
 {
-    _server->onlineMoveFolder(newAction(), folderId, newParentId);
+    messageServerInstance->onlineMoveFolder(newAction(), folderId, newParentId);
     emitChanges();
 }
 
@@ -1958,13 +1959,13 @@ void QMailStorageAction::onlineMoveFolder(const QMailFolderId &folderId, const Q
 QMailSearchActionPrivate::QMailSearchActionPrivate(QMailSearchAction *i)
     : QMailServiceActionPrivate(i)
 {
-    connect(_server.data(), &QMailMessageServer::matchingMessageIds,
+    connect(messageServerInstance, &QMailMessageServer::matchingMessageIds,
             this, &QMailSearchActionPrivate::matchingMessageIds);
-    connect(_server.data(), &QMailMessageServer::remainingMessagesCount,
+    connect(messageServerInstance, &QMailMessageServer::remainingMessagesCount,
             this, &QMailSearchActionPrivate::handleRemainingMessagesCount);
-    connect(_server.data(), &QMailMessageServer::messagesCount,
+    connect(messageServerInstance, &QMailMessageServer::messagesCount,
             this, &QMailSearchActionPrivate::handleMessagesCount);
-    connect(_server.data(), &QMailMessageServer::searchCompleted,
+    connect(messageServerInstance, &QMailMessageServer::searchCompleted,
             this, &QMailSearchActionPrivate::searchCompleted);
 
     init();
@@ -1978,7 +1979,7 @@ void QMailSearchActionPrivate::searchMessages(const QMailMessageKey &filter, con
                                               QMailSearchAction::SearchSpecification spec,
                                               const QMailMessageSortKey &sort)
 {
-    _server->searchMessages(newAction(), filter, bodyText, spec, sort);
+    messageServerInstance->searchMessages(newAction(), filter, bodyText, spec, sort);
     emitChanges();
 }
 
@@ -1986,13 +1987,13 @@ void QMailSearchActionPrivate::searchMessages(const QMailMessageKey &filter, con
                                               QMailSearchAction::SearchSpecification spec, quint64 limit,
                                               const QMailMessageSortKey &sort)
 {
-    _server->searchMessages(newAction(), filter, bodyText, spec, limit, sort);
+    messageServerInstance->searchMessages(newAction(), filter, bodyText, spec, limit, sort);
     emitChanges();
 }
 
 void QMailSearchActionPrivate::countMessages(const QMailMessageKey &filter, const QString &bodyText)
 {
-    _server->countMessages(newAction(), filter, bodyText);
+    messageServerInstance->countMessages(newAction(), filter, bodyText);
     emitChanges();
 }
 
@@ -2000,7 +2001,7 @@ void QMailSearchActionPrivate::cancelOperation()
 {
     Q_ASSERT(_isValid && _action != 0);
     if (_isValid)
-        _server->cancelSearch(_action);
+        messageServerInstance->cancelSearch(_action);
 }
 
 void QMailSearchActionPrivate::init()
@@ -2244,21 +2245,20 @@ QMailMessageKey QMailSearchAction::temporaryKey()
     \sa messagesCount()
 */
 
-QMailActionInfoPrivate::QMailActionInfoPrivate(const QMailActionData &data, QMailActionInfo *i,
-                                               QSharedPointer<QMailMessageServer> server)
-    : QMailServiceActionPrivate(i, server),
+QMailActionInfoPrivate::QMailActionInfoPrivate(const QMailActionData &data, QMailActionInfo *i)
+    : QMailServiceActionPrivate(i),
       _requestType(data.requestType()),
       _actionCompleted(false)
 {
     // Service handler really should be sending the activity,
     // rather than us faking it..
-    connect(_server.data(), &QMailMessageServer::retrievalCompleted,
+    connect(messageServerInstance, &QMailMessageServer::retrievalCompleted,
             this, &QMailActionInfoPrivate::activityCompleted);
-    connect(_server.data(), &QMailMessageServer::storageActionCompleted,
+    connect(messageServerInstance, &QMailMessageServer::storageActionCompleted,
             this, &QMailActionInfoPrivate::activityCompleted);
-    connect(_server.data(), &QMailMessageServer::searchCompleted,
+    connect(messageServerInstance, &QMailMessageServer::searchCompleted,
             this, &QMailActionInfoPrivate::activityCompleted);
-    connect(_server.data(), &QMailMessageServer::transmissionCompleted,
+    connect(messageServerInstance, &QMailMessageServer::transmissionCompleted,
             this, &QMailActionInfoPrivate::activityCompleted);
 
     init();
@@ -2397,8 +2397,8 @@ QMailMessageId QMailActionInfoPrivate::statusMessageId() const
 */
 
 /*! \internal */
-QMailActionInfo::QMailActionInfo(const QMailActionData &data, QSharedPointer<QMailMessageServer> server)
-    : QMailServiceAction(*(new QMailActionInfoPrivate(data, this, server)), nullptr) // NB: No qobject parent!
+QMailActionInfo::QMailActionInfo(const QMailActionData &data)
+    : QMailServiceAction(*(new QMailActionInfoPrivate(data, this)), nullptr) // NB: No qobject parent!
 {
     Q_D(QMailActionInfo);
     connect(d, &QMailActionInfoPrivate::statusAccountIdChanged,
@@ -2506,14 +2506,14 @@ QMailActionObserverPrivate::QMailActionObserverPrivate(QMailActionObserver *i)
     : QMailServiceActionPrivate(i),
       _isReady(false)
 {
-    connect(_server.data(), &QMailMessageServer::actionStarted,
+    connect(messageServerInstance, &QMailMessageServer::actionStarted,
             this, &QMailActionObserverPrivate::actionStarted);
-    connect(_server.data(), &QMailMessageServer::actionsListed,
+    connect(messageServerInstance, &QMailMessageServer::actionsListed,
             this, &QMailActionObserverPrivate::actionsListed);
-    connect(_server.data(), &QMailMessageServer::activityChanged,
+    connect(messageServerInstance, &QMailMessageServer::activityChanged,
             this, &QMailActionObserverPrivate::onActivityChanged);
 
-    _server->listActions();
+    messageServerInstance->listActions();
 
     init();
 }
@@ -2525,7 +2525,7 @@ QList< QSharedPointer<QMailActionInfo> > QMailActionObserverPrivate::runningActi
 
 void QMailActionObserverPrivate::listActionsRequest()
 {
-    _server->listActions();
+    messageServerInstance->listActions();
 }
 
 void QMailActionObserverPrivate::actionsListed(const QMailActionDataList &actions)
@@ -2555,7 +2555,7 @@ void QMailActionObserverPrivate::actionStarted(const QMailActionData &action)
 
 QSharedPointer<QMailActionInfo> QMailActionObserverPrivate::addAction(const QMailActionData &action)
 {
-    QSharedPointer<QMailActionInfo> actionInfo(new QMailActionInfo(action, _server));
+    QSharedPointer<QMailActionInfo> actionInfo(new QMailActionInfo(action));
     _runningActions.insert(action.id(), actionInfo);
 
     return actionInfo;
@@ -2643,9 +2643,9 @@ void QMailActionObserver::listActionsRequest()
 QMailProtocolActionPrivate::QMailProtocolActionPrivate(QMailProtocolAction *i)
     : QMailServiceActionPrivate(i)
 {
-    connect(_server.data(), &QMailMessageServer::protocolResponse,
+    connect(messageServerInstance, &QMailMessageServer::protocolResponse,
             this, &QMailProtocolActionPrivate::handleProtocolResponse);
-    connect(_server.data(), &QMailMessageServer::protocolRequestCompleted,
+    connect(messageServerInstance, &QMailMessageServer::protocolRequestCompleted,
             this, &QMailProtocolActionPrivate::handleProtocolRequestCompleted);
 
     init();
@@ -2654,7 +2654,7 @@ QMailProtocolActionPrivate::QMailProtocolActionPrivate(QMailProtocolAction *i)
 void QMailProtocolActionPrivate::protocolRequest(const QMailAccountId &accountId, const QString &request,
                                                  const QVariantMap &data)
 {
-    _server->protocolRequest(newAction(), accountId, request, data);
+    messageServerInstance->protocolRequest(newAction(), accountId, request, data);
 }
 
 void QMailProtocolActionPrivate::handleProtocolResponse(quint64 action, const QString &response,
