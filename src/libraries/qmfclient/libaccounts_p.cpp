@@ -358,7 +358,7 @@ bool AccountSatisfyTheProperty(Accounts::Account* account, const QMailAccountKey
             Accounts::Service service = account->selectedService();
 
             account->selectService();
-            const bool enabled = account->enabled();
+            const bool enabled = account->isEnabled();
             account->selectService(service);
 
             quint64 status = account->valueAsUInt64(QLatin1String("status"));
@@ -506,7 +506,7 @@ QMailAccount LibAccountManager::account(const QMailAccountId &id) const
     result.setId(QMailAccountId(account->id()));
 
     account->selectService();
-    const bool enabled = account->enabled();
+    const bool enabled = account->isEnabled();
 
     account->selectService(service);
     QString name = account->valueAsString(QLatin1String("email/email_box_name"));
