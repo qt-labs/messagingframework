@@ -42,6 +42,7 @@
 #include <QString>
 #include <QStringList>
 #include <QPointer>
+#include <QElapsedTimer>
 
 #include <qmailmessageserver.h>
 #include <qmailmessageservice.h>
@@ -308,7 +309,7 @@ private:
         QMailServerRequestType requestType;
         QSet<QPointer<QMailMessageService> > services;
         CompletionSignal completion;
-        quint64 unixTimeExpiry;
+        quint64 expiryTimestamp;
         bool reported;
         // Fields for QMailActionInfo
         uint progressTotal;
@@ -361,6 +362,7 @@ private:
 
     QSet<QMailAccountId> _retrievalAccountIds;
     QSet<QMailAccountId> _transmissionAccountIds;
+    QElapsedTimer _expiryTimer;
 };
 
 class Request

@@ -350,7 +350,7 @@ const QString DontSend = "dontSend";
 const QString SendFailedTime = "sendFailedTime";
 const uint MaxSendFailedAttempts = 5;
 
-const int ExpirySeconds = 120;
+const int ExpiryMilliSeconds = 120 * 1000;
 
 void markFailedMessage(const QMailServiceAction::Status &status)
 {
@@ -444,6 +444,7 @@ ServiceHandler::ServiceHandler(QObject* parent)
     : QObject(parent),
       _requestsFile(requestsFileName())
 {
+    _expiryTimer.start();
     LongStream::cleanupTempFiles();
 
     QMailIpc::init();
@@ -1098,8 +1099,7 @@ void ServiceHandler::dispatchRequest()
         ActionData data;
         data.services = request->services;
         data.completion = request->completion;
-        // TODO: should use monotonic time, maybe QElapsedTimer
-        data.unixTimeExpiry = QDateTime::currentDateTime().toMSecsSinceEpoch() / 1000 + ExpirySeconds;
+        data.expiryTimestamp = _expiryTimer.elapsed() + ExpiryMilliSeconds;
         data.reported = false;
         data.requestType = request->requestType;
         data.progressTotal = 0;
@@ -1119,9 +1119,7 @@ void ServiceHandler::dispatchRequest()
             // This action is now underway
 
             if (mActionExpiry.isEmpty()) {
-                // Start the expiry timer. Convert to milliseconds, and avoid shooting too early
-                const int expiryMs = ExpirySeconds * 1000;
-                QTimer::singleShot(expiryMs + 50, this, &ServiceHandler::expireAction);
+                QTimer::singleShot(ExpiryMilliSeconds + 50, this, &ServiceHandler::expireAction);
             }
             mActionExpiry.append(request->action);
         } else {
@@ -1147,13 +1145,13 @@ void ServiceHandler::updateAction(quint64 action)
         mActionExpiry.append(action);
 
         // Update the expiry time for this action
-        mActiveActions[action].unixTimeExpiry = QDateTime::currentDateTime().toMSecsSinceEpoch() / 1000 + ExpirySeconds;
+        mActiveActions[action].expiryTimestamp = _expiryTimer.elapsed() + ExpiryMilliSeconds;
     }
 }
 
 void ServiceHandler::expireAction()
 {
-    quint64 now(QDateTime::currentDateTime().toMSecsSinceEpoch() / 1000);
+    quint64 now = _expiryTimer.elapsed();
 
     if (!mActionExpiry.isEmpty()) {
         quint64 action = *mActionExpiry.begin();
@@ -1163,8 +1161,11 @@ void ServiceHandler::expireAction()
             ActionData &data(it.value());
 
             // Is the oldest action expired?
-            if (data.unixTimeExpiry <= now) {
-                qCWarning(lcMessaging) << "Expired request:" << action;
+            if (data.expiryTimestamp <= now) {
+                qCWarning(lcMessaging) << "Expired request:" << action << "type:" << ::requestTypeNames[data.requestType];
+                foreach (QMailMessageService *service, data.services) {
+                    qCWarning(lcMessaging) << " service:" << (service ? service->service() : "null");
+                }
                 reportFailure(action, QMailServiceAction::Status::ErrTimeout, tr("Request is not progressing"));
                 emit activityChanged(action, QMailServiceAction::Failed);
 
@@ -1228,10 +1229,11 @@ void ServiceHandler::expireAction()
     QList<quint64>::iterator expiryIt(mActionExpiry.begin());
     while (expiryIt != mActionExpiry.end()) {
         if (mActiveActions.contains(*expiryIt)) {
-            quint64 nextExpiry(mActiveActions.value(*expiryIt).unixTimeExpiry);
+            quint64 nextExpiry = mActiveActions.value(*expiryIt).expiryTimestamp;
 
             // milliseconds until it expires
-            quint64 nextShot(nextExpiry <= now ? 0 : (nextExpiry - now) * 1000 + 50);
+            quint64 nextShot = nextExpiry <= now ? 0
+                                                 : (nextExpiry - now) + 50;
             QTimer::singleShot(nextShot, this, &ServiceHandler::expireAction);
             return;
         } else {
