@@ -48,7 +48,7 @@
 #define PLUGIN_KEY "messageservices"
 
 namespace {
-// The maximum number of push connections that may  be started by the message server process.
+// The maximum number of push connections that may be started by the message server process.
 int MaximumPushConnections = 10;
 
 class PluginMap : public QMap<QString, QMailMessageServicePlugin*>
@@ -69,7 +69,7 @@ private:
     QMailPluginManager _manager;
 };
 
-Q_GLOBAL_STATIC(PluginMap, pluginMap);
+Q_GLOBAL_STATIC(PluginMap, pluginMap)
 
 QMailMessageServicePlugin *mapping(const QString &key)
 {
@@ -1522,9 +1522,12 @@ void QMailMessageService::updateStatus(QMailServiceAction::Status::ErrorCode cod
 {
     if (code == QMailServiceAction::Status::ErrNoError) {
         if (action) {
-            emit statusChanged(QMailServiceAction::Status(QMailServiceAction::Status::ErrNoError, text, accountId, folderId, messageId), action);
+            emit statusChanged(QMailServiceAction::Status(QMailServiceAction::Status::ErrNoError,
+                                                          text, accountId, folderId, messageId),
+                               action);
         } else {
-            emit statusChanged(QMailServiceAction::Status(QMailServiceAction::Status::ErrNoError, text, accountId, folderId, messageId));
+            emit statusChanged(QMailServiceAction::Status(QMailServiceAction::Status::ErrNoError,
+                                                          text, accountId, folderId, messageId));
         }
     } else {
         // See if we can convert the error code into a readable message
@@ -1532,7 +1535,8 @@ void QMailMessageService::updateStatus(QMailServiceAction::Status::ErrorCode cod
         decorateServiceStatus(&message, code);
 
         if (action) {
-            emit statusChanged(QMailServiceAction::Status(code, message, accountId, folderId, messageId), action);
+            emit statusChanged(QMailServiceAction::Status(code, message, accountId, folderId, messageId),
+                               action);
         } else {
             emit statusChanged(QMailServiceAction::Status(code, message, accountId, folderId, messageId));
         }
@@ -1549,9 +1553,12 @@ void QMailMessageService::updateStatus(int code, const QString &text, const QMai
 {
     if (code == QMailServiceAction::Status::ErrNoError) {
         if (action) {
-            emit statusChanged(QMailServiceAction::Status(QMailServiceAction::Status::ErrNoError, text, accountId, folderId, messageId), action);
+            emit statusChanged(QMailServiceAction::Status(QMailServiceAction::Status::ErrNoError,
+                                                          text, accountId, folderId, messageId),
+                               action);
         }  else {
-            emit statusChanged(QMailServiceAction::Status(QMailServiceAction::Status::ErrNoError, text, accountId, folderId, messageId));
+            emit statusChanged(QMailServiceAction::Status(QMailServiceAction::Status::ErrNoError,
+                                                          text, accountId, folderId, messageId));
         }
     } else {
 
@@ -1563,9 +1570,12 @@ void QMailMessageService::updateStatus(int code, const QString &text, const QMai
         decorateSocketError(&message, code);
 
         if (action) {
-            emit statusChanged(QMailServiceAction::Status(QMailServiceAction::Status::ErrSystemError, message, accountId, folderId, messageId), action);
+            emit statusChanged(QMailServiceAction::Status(QMailServiceAction::Status::ErrSystemError,
+                                                          message, accountId, folderId, messageId),
+                               action);
         } else {
-            emit statusChanged(QMailServiceAction::Status(QMailServiceAction::Status::ErrSystemError, message, accountId, folderId, messageId));
+            emit statusChanged(QMailServiceAction::Status(QMailServiceAction::Status::ErrSystemError,
+                                                          message, accountId, folderId, messageId));
         }
     }
 }
@@ -1577,7 +1587,8 @@ void QMailMessageService::updateStatus(int code, const QString &text, const QMai
 
     The request has the identifier \a action.
 */
-bool QMailMessageSource::retrieveFolderList(const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending, quint64 action)
+bool QMailMessageSource::retrieveFolderList(const QMailAccountId &accountId, const QMailFolderId &folderId,
+                                            bool descending, quint64 action)
 {
     Q_UNUSED(accountId)
     Q_UNUSED(folderId)
@@ -1651,7 +1662,8 @@ bool QMailMessageSource::retrieveNewMessages(const QMailAccountId &accountId, co
 
     The request has the identifier \a action.
 */
-bool QMailMessageSource::retrieveMessages(const QMailMessageIdList &ids, QMailRetrievalAction::RetrievalSpecification spec, quint64 action)
+bool QMailMessageSource::retrieveMessages(const QMailMessageIdList &ids,
+                                          QMailRetrievalAction::RetrievalSpecification spec, quint64 action)
 {
     Q_UNUSED(ids)
     Q_UNUSED(spec)
@@ -1701,7 +1713,8 @@ bool QMailMessageSource::retrieveMessageRange(const QMailMessageId &messageId, u
 
     The request has the identifier \a action.
 */
-bool QMailMessageSource::retrieveMessagePartRange(const QMailMessagePart::Location &partLocation, uint minimum, quint64 action)
+bool QMailMessageSource::retrieveMessagePartRange(const QMailMessagePart::Location &partLocation,
+                                                  uint minimum, quint64 action)
 {
     Q_UNUSED(partLocation)
     Q_UNUSED(minimum)
@@ -1834,7 +1847,8 @@ bool QMailMessageSource::flagMessages(const QMailMessageIdList &ids, quint64 set
 
     The request has the identifier \a action.
 */
-bool QMailMessageSource::createFolder(const QString &name, const QMailAccountId &accountId, const QMailFolderId &parentId, quint64 action)
+bool QMailMessageSource::createFolder(const QString &name, const QMailAccountId &accountId,
+                                      const QMailFolderId &parentId, quint64 action)
 {
     Q_UNUSED(name)
     Q_UNUSED(accountId)
@@ -1999,8 +2013,8 @@ bool QMailMessageSource::prepareMessages(const QList<QPair<QMailMessagePart::Loc
 
     The request has the identifier \a action.
 */
-bool QMailMessageSource::protocolRequest(const QMailAccountId &accountId, const QString &request, const QVariantMap &data,
-                                         quint64 action)
+bool QMailMessageSource::protocolRequest(const QMailAccountId &accountId, const QString &request,
+                                         const QVariantMap &data, quint64 action)
 {
     Q_UNUSED(accountId)
     Q_UNUSED(request)
@@ -2062,7 +2076,8 @@ void QMailMessageSink::notImplemented(quint64 action)
 
     The request has the identifier \a action.
 */
-bool QMailMessageService::cancelOperation(QMailServiceAction::Status::ErrorCode code, const QString &text, quint64 action)
+bool QMailMessageService::cancelOperation(QMailServiceAction::Status::ErrorCode code,
+                                          const QString &text, quint64 action)
 {
     Q_UNUSED(code)
     Q_UNUSED(text)

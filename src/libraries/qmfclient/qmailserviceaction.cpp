@@ -97,7 +97,6 @@ QMailServiceActionPrivate::~QMailServiceActionPrivate()
 
 void QMailServiceActionPrivate::cancelOperation()
 {
-    Q_ASSERT(_action != 0 && _isValid);
     if (_isValid) {
         if (_pendingActions.count()) {
             _pendingActions.first().action->cancelOperation();
@@ -158,8 +157,7 @@ void QMailServiceActionPrivate::subActionActivityChanged(QMailServiceAction::Act
 {
     if (a == QMailServiceAction::Failed) {
         clearSubActions();
-    }
-    if (a == QMailServiceAction::Successful) {
+    } else if (a == QMailServiceAction::Successful) {
         if (_pendingActions.count()) {
             disconnectSubAction(_pendingActions.first().action);
             // Don't delete QObject while it's emitting a signal
@@ -173,6 +171,7 @@ void QMailServiceActionPrivate::subActionActivityChanged(QMailServiceAction::Act
             return;
         }
     }
+
     activityChanged(_action, a);
 }
 
@@ -1999,7 +1998,6 @@ void QMailSearchActionPrivate::countMessages(const QMailMessageKey &filter, cons
 
 void QMailSearchActionPrivate::cancelOperation()
 {
-    Q_ASSERT(_isValid && _action != 0);
     if (_isValid)
         messageServerInstance->cancelSearch(_action);
 }
@@ -2495,7 +2493,6 @@ QMailFolderId QMailActionInfo::statusFolderId() const
   \fn QMailActionInfo::statusMessageId() const
   This is a convience accessor for \l QMailServiceAction::Status::messageId
 */
-
 QMailMessageId QMailActionInfo::statusMessageId() const
 {
     Q_D(const QMailActionInfo);

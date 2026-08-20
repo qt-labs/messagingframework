@@ -38,6 +38,7 @@
 #include <QScopedPointer>
 
 class IdleNetworkSessionPrivate;
+
 class IdleNetworkSession : public QObject
 {
     Q_OBJECT

@@ -288,12 +288,19 @@ public:
 public Q_SLOTS:
     virtual bool cancelOperation(QMailServiceAction::Status::ErrorCode code, const QString &text) = 0;
     virtual bool cancelOperation(QMailServiceAction::Status::ErrorCode code, const QString &text, quint64 action);
-    bool cancelOperation() { return cancelOperation(QMailServiceAction::Status::ErrCancel, tr("Cancelled by user")); }
-    bool cancelOperation(quint64 action) { return cancelOperation(QMailServiceAction::Status::ErrCancel, tr("Cancelled by user"), action); }
+
+    bool cancelOperation()
+    {
+        return cancelOperation(QMailServiceAction::Status::ErrCancel, tr("Cancelled by user"));
+    }
+
+    bool cancelOperation(quint64 action)
+    {
+        return cancelOperation(QMailServiceAction::Status::ErrCancel, tr("Cancelled by user"), action);
+    }
 
 Q_SIGNALS:
     void availabilityChanged(bool available);
-
     void connectivityChanged(QMailServiceAction::Connectivity connectivity);
     void activityChanged(QMailServiceAction::Activity activity);
     void activityChanged(QMailServiceAction::Activity activity, quint64 action);
@@ -301,7 +308,6 @@ Q_SIGNALS:
     void statusChanged(const QMailServiceAction::Status status, quint64 action);
     void progressChanged(uint progress, uint total);
     void progressChanged(uint progress, uint total, quint64 action);
-
     void actionCompleted(bool success);
     void actionCompleted(bool success, quint64 action);
 

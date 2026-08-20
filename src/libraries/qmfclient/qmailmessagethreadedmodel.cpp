@@ -197,7 +197,7 @@ uint QMailMessageThreadedModelPrivate::limit() const
 
 void QMailMessageThreadedModelPrivate::setLimit(uint limit)
 {
-    if ( _limit != limit) {
+    if (_limit != limit) {
         if (limit == 0) {
             // Do full refresh
             _limit = limit;

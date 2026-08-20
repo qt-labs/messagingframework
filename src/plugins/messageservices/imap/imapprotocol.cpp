@@ -176,7 +176,7 @@ static int indexOfWithEscape(const QString &str, QChar c, int from, const QStrin
     return pos;
 }
 
-static QString token( QString str, QChar c1, QChar c2, int *index, const QString &ignoreEscape = QString())
+static QString token(QString str, QChar c1, QChar c2, int *index, const QString &ignoreEscape = QString())
 {
     int start, stop;
 
@@ -201,7 +201,7 @@ static QString token( QString str, QChar c1, QChar c2, int *index, const QString
     // Bypass the LF if necessary
     *index = stop + 1;
 
-    return str.mid( start, stop - start );
+    return str.mid(start, stop - start);
 }
 
 static QList<uint> sequenceUids(const QString &sequence)
@@ -1038,7 +1038,7 @@ QString RenameState::transmit(ImapContext *c)
         return QString();
     }
 
-    QString cmd(QString("RENAME %1 %2").arg(ImapProtocol::quoteString(from)).arg( ImapProtocol::quoteString(to)));
+    QString cmd(QString("RENAME %1 %2").arg(ImapProtocol::quoteString(from)).arg(ImapProtocol::quoteString(to)));
     return c->sendCommand(cmd);
 }
 
@@ -1121,7 +1121,7 @@ QString MoveState::transmit(ImapContext *c)
 
     QString from = _mailboxParents.last().first.path();
     QString to = buildNewPath(c, _mailboxParents.last().first, _mailboxParents.last().second);
-    QString cmd(QString("RENAME %1 %2").arg(ImapProtocol::quoteString(from)).arg( ImapProtocol::quoteString(to)));
+    QString cmd(QString("RENAME %1 %2").arg(ImapProtocol::quoteString(from)).arg(ImapProtocol::quoteString(to)));
     return c->sendCommand(cmd);
 }
 
@@ -1598,7 +1598,7 @@ void SelectedState::untaggedResponse(ImapContext *c, const QString &line)
     } else if (line.indexOf("UIDNEXT", 0, Qt::CaseInsensitive) != -1) {
         int start = 0;
         QString temp = token(line, '[', ']', &start);
-        QString nextStr = temp.mid( 8 );
+        QString nextStr = temp.mid(8);
         quint32 next = nextStr.toUInt(&result);
         if (!result)
             next = 0;
@@ -1606,7 +1606,7 @@ void SelectedState::untaggedResponse(ImapContext *c, const QString &line)
     } else if (line.indexOf("UNSEEN", 0, Qt::CaseInsensitive) != -1) {
         int start = 0;
         QString temp = token(line, '[', ']', &start);
-        QString unseenStr = temp.mid( 7 );
+        QString unseenStr = temp.mid(7);
         quint32 unseen = unseenStr.toUInt(&result);
         if (!result)
             unseen = 0;
@@ -2321,8 +2321,7 @@ void SearchState::untaggedResponse(ImapContext *c, const QString &line)
 
 QString SearchState::error(const QString &line)
 {
-    return line + '\n' + QObject::tr( "This server does not provide a complete "
-                       "IMAP4rev1 implementation." );
+    return line + '\n' + QObject::tr("This server does not provide a complete IMAP4rev1 implementation.");
 }
 
 
@@ -2408,8 +2407,7 @@ void UidSearchState::untaggedResponse(ImapContext *c, const QString &line)
 QString UidSearchState::error(const QString &line)
 {
     return line + QLatin1String("\n")
-        + QObject::tr( "This server does not provide a complete "
-                       "IMAP4rev1 implementation." );
+        + QObject::tr("This server does not provide a complete IMAP4rev1 implementation.");
 }
 
 
@@ -3301,9 +3299,9 @@ ImapProtocol::~ImapProtocol()
     delete _fsm;
 }
 
-bool ImapProtocol::open( const ImapConfiguration& config, qint64 bufferSize)
+bool ImapProtocol::open(const ImapConfiguration& config, qint64 bufferSize)
 {
-    if ( _transport && _transport->inUse() ) {
+    if (_transport && _transport->inUse()) {
         QString msg("Cannot open account; transport in use");
         qCWarning(lcIMAP) << objectName() << msg;
         emit connectionError(QMailServiceAction::Status::ErrConnectionInUse, msg);
@@ -3499,7 +3497,7 @@ void ImapProtocol::sendCompress()
     _fsm->setState(&_fsm->compressState);
 }
 
-void ImapProtocol::sendList( const QMailFolder &reference, const QString &mailbox )
+void ImapProtocol::sendList(const QMailFolder &reference, const QString &mailbox)
 {
     QString path;
     if (!reference.path().isEmpty()) {
@@ -3950,34 +3948,34 @@ QString ImapProtocol::newCommandId()
     QString id, out;
 
     _requestCount++;
-    id.setNum( _requestCount );
+    id.setNum(_requestCount);
     out = "a";
-    out = out.leftJustified( 4 - id.length(), '0' );
+    out = out.leftJustified(4 - id.length(), '0');
     out += id;
     return out;
 }
 
-QString ImapProtocol::commandId( QString in )
+QString ImapProtocol::commandId(QString in)
 {
     int pos = in.indexOf(' ');
     if (pos == -1)
         return "";
 
-    return in.left( pos ).trimmed();
+    return in.left(pos).trimmed();
 }
 
-OperationStatus ImapProtocol::commandResponse( QString in )
+OperationStatus ImapProtocol::commandResponse(QString in)
 {
     QString old = in;
-    int start = in.indexOf( ' ' );
-    start = in.indexOf( ' ', start );
-    int stop = in.indexOf( ' ', start + 1 );
+    int start = in.indexOf(' ');
+    start = in.indexOf(' ', start);
+    int stop = in.indexOf(' ', start + 1);
     if (start == -1 || stop == -1) {
         qCWarning(lcIMAP) << objectName() << qPrintable("could not parse command response: " + in);
         return OpFailed;
     }
 
-    in = in.mid( start, stop - start ).trimmed().toUpper();
+    in = in.mid(start, stop - start).trimmed().toUpper();
     OperationStatus status = OpFailed;
 
     if (in == "OK")
@@ -3990,7 +3988,7 @@ OperationStatus ImapProtocol::commandResponse( QString in )
     return status;
 }
 
-QString ImapProtocol::uid( const QString &identifier )
+QString ImapProtocol::uid(const QString &identifier)
 {
     return messageId(identifier);
 }
@@ -4095,53 +4093,54 @@ QString ImapProtocol::quoteString(const QString& input)
     return QMail::quoteString(result);
 }
 
-void ImapProtocol::createMail(const QString &uid, const QDateTime &timeStamp, int size, uint flags, const QString &detachedFile, const QStringList& structure)
+void ImapProtocol::createMail(const QString &uid, const QDateTime &timeStamp, int size, uint flags,
+                              const QString &detachedFile, const QStringList& structure)
 {
     QMailMessage mail;
-    if ( !structure.isEmpty() ) {
-        mail = QMailMessage::fromSkeletonRfc2822File( detachedFile );
-        bool wellFormed = setMessageContentFromStructure( structure, &mail );
+    if (!structure.isEmpty()) {
+        mail = QMailMessage::fromSkeletonRfc2822File(detachedFile);
+        bool wellFormed = setMessageContentFromStructure(structure, &mail);
 
         if (wellFormed && (mail.multipartType() != QMailMessage::MultipartNone)) {
-            mail.setStatus( QMailMessage::ContentAvailable, true );
-            mail.setSize( size );
+            mail.setStatus(QMailMessage::ContentAvailable, true);
+            mail.setSize(size);
         }
 
         // If we're fetching the structure, this is the first we've seen of this message
-        mail.setStatus( QMailMessage::New, true );
+        mail.setStatus(QMailMessage::New, true);
     } else {
         // No structure - we're fetching the body of a message we already know about
-        mail = QMailMessage::fromRfc2822File( detachedFile );
-        mail.setStatus( QMailMessage::ContentAvailable, true );
+        mail = QMailMessage::fromRfc2822File(detachedFile);
+        mail.setStatus(QMailMessage::ContentAvailable, true);
     }
 
     if (mail.status() & QMailMessage::ContentAvailable) {
         // ContentAvailable must also imply partial content available
-        mail.setStatus( QMailMessage::PartialContentAvailable, true );
+        mail.setStatus(QMailMessage::PartialContentAvailable, true);
     }
 
     if (flags & MFlag_Seen) {
-        mail.setStatus( QMailMessage::ReadElsewhere, true );
-        mail.setStatus( QMailMessage::Read, true );
+        mail.setStatus(QMailMessage::ReadElsewhere, true);
+        mail.setStatus(QMailMessage::Read, true);
     }
     if (flags & MFlag_Flagged) {
-        mail.setStatus( QMailMessage::ImportantElsewhere, true );
-        mail.setStatus( QMailMessage::Important, true );
+        mail.setStatus(QMailMessage::ImportantElsewhere, true);
+        mail.setStatus(QMailMessage::Important, true);
     }
     if (flags & MFlag_Answered) {
-        mail.setStatus( QMailMessage::Replied, true );
+        mail.setStatus(QMailMessage::Replied, true);
     }
     if (flags & MFlag_Forwarded) {
-        mail.setStatus( QMailMessage::Forwarded, true );
+        mail.setStatus(QMailMessage::Forwarded, true);
     }
     if (flags & MFlag_Deleted) {
-        mail.setStatus( QMailMessage::Removed, true);
+        mail.setStatus(QMailMessage::Removed, true);
     }
 
-    mail.setMessageType( QMailMessage::Email );
-    mail.setSize( size );
-    mail.setServerUid( uid.trimmed() );
-    mail.setReceivedDate( QMailTimeStamp( timeStamp ) );
+    mail.setMessageType(QMailMessage::Email);
+    mail.setSize(size);
+    mail.setServerUid(uid.trimmed());
+    mail.setReceivedDate(QMailTimeStamp(timeStamp));
 
     // The file we wrote to is detached, and the mailstore can assume ownership
 

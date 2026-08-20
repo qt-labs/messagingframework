@@ -48,10 +48,13 @@
 
 #include <limits.h>
 
+namespace {
+
 class MessageFlushedWrapper : public QMailMessageBufferFlushCallback
 {
     PopClient *context;
     bool isComplete;
+
 public:
     MessageFlushedWrapper(PopClient *_context, bool _isComplete)
         : context(_context)
@@ -65,6 +68,8 @@ public:
         context->removeAllFromBuffer(message);
     }
 };
+
+}
 
 PopClient::PopClient(const QMailAccountId &id, QObject* parent)
     : QObject(parent),
@@ -142,7 +147,7 @@ void PopClient::testConnection()
     closeConnection();
 
     PopConfiguration popCfg(config);
-    if ( popCfg.mailServer().isEmpty() ) {
+    if (popCfg.mailServer().isEmpty()) {
         status = Exit;
         operationFailed(QMailServiceAction::Status::ErrConfiguration, tr("Cannot open connection without POP server configuration"));
         return;
@@ -174,7 +179,7 @@ void PopClient::newConnection()
     config = QMailAccountConfiguration(config.id());
 
     PopConfiguration popCfg(config);
-    if ( popCfg.mailServer().isEmpty() ) {
+    if (popCfg.mailServer().isEmpty()) {
         status = Exit;
         operationFailed(QMailServiceAction::Status::ErrConfiguration, tr("Cannot open connection without POP server configuration"));
         return;
@@ -400,7 +405,7 @@ void PopClient::closeConnection()
 
     if (transport) {
         if (transport->isConnected()) {
-            if ( status == Exit ) {
+            if (status == Exit) {
                 // We have already sent our quit command
                 transport->close();
             } else {
@@ -998,7 +1003,7 @@ int PopClient::nextMsgServerPos()
 
     if (!selected) {
         // Processing message listing
-        if ( messageCount < newUids.count() ) {
+        if (messageCount < newUids.count()) {
             messageUid = newUids.at(messageCount);
             thisMsg = msgPosFromUidl(messageUid);
             mailSize = getSize(thisMsg);

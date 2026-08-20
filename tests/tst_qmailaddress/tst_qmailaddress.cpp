@@ -356,13 +356,13 @@ void tst_QMailAddress::constructor1_data()
 
 void tst_QMailAddress::constructor1()
 {
-    QFETCH( QString, from );
+    QFETCH(QString, from);
 
     QMailAddress addr(from);
-    QTEST( addr.isEmailAddress(), "valid_email_address" );
-    QTEST( addr.name(), "name" );
-    QTEST( addr.address(), "address" );
-    QTEST( addr.toString(), "to_string" );
+    QTEST(addr.isEmailAddress(), "valid_email_address");
+    QTEST(addr.name(), "name");
+    QTEST(addr.address(), "address");
+    QTEST(addr.toString(), "to_string");
 }
 
 //    QMailAddress::QMailAddress(const QString &name, const QString &addr);
@@ -628,14 +628,14 @@ void tst_QMailAddress::constructor2_data()
 
 void tst_QMailAddress::constructor2()
 {
-    QFETCH( QString, arg1 );
-    QFETCH( QString, arg2 );
+    QFETCH(QString, arg1);
+    QFETCH(QString, arg2);
 
     QMailAddress addr(arg1, arg2);
-    QTEST( addr.isEmailAddress(), "valid_email_address" );
-    QTEST( addr.name(), "name" );
-    QTEST( addr.address(), "address" );
-    QTEST( addr.toString(), "to_string" );
+    QTEST(addr.isEmailAddress(), "valid_email_address");
+    QTEST(addr.name(), "name");
+    QTEST(addr.address(), "address");
+    QTEST(addr.toString(), "to_string");
 }
 
 void tst_QMailAddress::name()
@@ -766,8 +766,8 @@ void tst_QMailAddress::groupMembers_data()
         << QString("Wizard Of Oz <wizard@oz.test>")
         << QString("Wizards: Wizard Of Oz <wizard@oz.test>;")
         << true
-        << ( QStringList() << "Wizard Of Oz" )
-        << ( QStringList() << "wizard@oz.test" );
+        << (QStringList() << "Wizard Of Oz")
+        << (QStringList() << "wizard@oz.test");
 
     /* It is not possible to create a group of one via ctor2
     QTest::newRow("Group-of-one ctor2")
@@ -782,8 +782,8 @@ void tst_QMailAddress::groupMembers_data()
         << "Wizard Of Oz <wizard@oz.test>, Rincewind <wizzard@uu.edu.example>"
         << "Wizard Group: Wizard Of Oz <wizard@oz.test>, Rincewind <wizzard@uu.edu.example>;"
         << true
-        << ( QStringList() << "Wizard Of Oz" << "Rincewind" )
-        << ( QStringList() << "wizard@oz.test" << "wizzard@uu.edu.example" );
+        << (QStringList() << "Wizard Of Oz" << "Rincewind")
+        << (QStringList() << "wizard@oz.test" << "wizzard@uu.edu.example");
 
     QTest::newRow("Group ctor2")
         << QString()
@@ -793,8 +793,8 @@ void tst_QMailAddress::groupMembers_data()
         << "Wizard Of Oz <wizard@oz.test>, Rincewind <wizzard@uu.edu.example>"
         << "Wizard Group: Wizard Of Oz <wizard@oz.test>, Rincewind <wizzard@uu.edu.example>;"
         << true
-        << ( QStringList() << "Wizard Of Oz" << "Rincewind" )
-        << ( QStringList() << "wizard@oz.test" << "wizzard@uu.edu.example" );
+        << (QStringList() << "Wizard Of Oz" << "Rincewind")
+        << (QStringList() << "wizard@oz.test" << "wizzard@uu.edu.example");
 
     QTest::newRow("Group with quoted member names ctor1")
         << "Wizard Group: \"Wizard Of Oz\" <wizard@oz.test>, \"Rincewind\" <wizzard@uu.edu.example>;"
@@ -804,8 +804,8 @@ void tst_QMailAddress::groupMembers_data()
         << "\"Wizard Of Oz\" <wizard@oz.test>, \"Rincewind\" <wizzard@uu.edu.example>"
         << "Wizard Group: \"Wizard Of Oz\" <wizard@oz.test>, \"Rincewind\" <wizzard@uu.edu.example>;"
         << true
-        << ( QStringList() << "Wizard Of Oz" << "Rincewind" )
-        << ( QStringList() << "wizard@oz.test" << "wizzard@uu.edu.example" );
+        << (QStringList() << "Wizard Of Oz" << "Rincewind")
+        << (QStringList() << "wizard@oz.test" << "wizzard@uu.edu.example");
 
     QTest::newRow("Group with quoted member names ctor2")
         << QString()
@@ -815,26 +815,26 @@ void tst_QMailAddress::groupMembers_data()
         << "\"Wizard Of Oz\" <wizard@oz.test>, \"Rincewind\" <wizzard@uu.edu.example>"
         << "Wizard Group: \"Wizard Of Oz\" <wizard@oz.test>, \"Rincewind\" <wizzard@uu.edu.example>;"
         << true
-        << ( QStringList() << "Wizard Of Oz" << "Rincewind" )
-        << ( QStringList() << "wizard@oz.test" << "wizzard@uu.edu.example" );
+        << (QStringList() << "Wizard Of Oz" << "Rincewind")
+        << (QStringList() << "wizard@oz.test" << "wizzard@uu.edu.example");
 }
 
 void tst_QMailAddress::groupMembers()
 {
-    QFETCH( QString, input );
-    QFETCH( QString, input_name );
-    QFETCH( QString, input_address );
+    QFETCH(QString, input);
+    QFETCH(QString, input_name);
+    QFETCH(QString, input_address);
 
     QMailAddress addr;
-    if ( !input.isEmpty() )
-        addr = QMailAddress( input );
+    if (!input.isEmpty())
+        addr = QMailAddress(input);
     else
-        addr = QMailAddress( input_name, input_address );
+        addr = QMailAddress(input_name, input_address);
 
-    QTEST( addr.name(), "name" );
-    QTEST( addr.address(), "address" );
-    QTEST( addr.toString(), "to_string" );
-    QTEST( addr.isGroup(), "is_group" );
+    QTEST(addr.name(), "name");
+    QTEST(addr.address(), "address");
+    QTEST(addr.toString(), "to_string");
+    QTEST(addr.isGroup(), "is_group");
 
     QStringList names, addresses;
     foreach (const QMailAddress& member, addr.groupMembers()) {
@@ -842,8 +842,8 @@ void tst_QMailAddress::groupMembers()
         addresses.append(member.address());
     }
 
-    QTEST( names, "member_names" );
-    QTEST( addresses, "member_addresses" );
+    QTEST(names, "member_names");
+    QTEST(addresses, "member_addresses");
 }
 
 void tst_QMailAddress::notGroup()
@@ -851,15 +851,15 @@ void tst_QMailAddress::notGroup()
     QString input("\"Wizard: Oz\" <wizard@oz.test>,Rincewind <wizzard@uu.edu.example>");
 
     QList<QMailAddress> list(QMailAddress::fromStringList(input));
-    QCOMPARE( list.count(), 2 );
+    QCOMPARE(list.count(), 2);
 
-    QCOMPARE( list.at(0).isGroup(), false );
-    QCOMPARE( list.at(0).name(), QString("Wizard: Oz") );
-    QCOMPARE( list.at(0).address(), QString("wizard@oz.test") );
+    QCOMPARE(list.at(0).isGroup(), false);
+    QCOMPARE(list.at(0).name(), QString("Wizard: Oz"));
+    QCOMPARE(list.at(0).address(), QString("wizard@oz.test"));
 
-    QCOMPARE( list.at(1).isGroup(), false );
-    QCOMPARE( list.at(1).name(), QString("Rincewind") );
-    QCOMPARE( list.at(1).address(), QString("wizzard@uu.edu.example") );
+    QCOMPARE(list.at(1).isGroup(), false);
+    QCOMPARE(list.at(1).name(), QString("Rincewind"));
+    QCOMPARE(list.at(1).address(), QString("wizzard@uu.edu.example"));
 }
 
 void tst_QMailAddress::toString()
@@ -939,7 +939,7 @@ void tst_QMailAddress::isPhoneNumber_data()
 
 void tst_QMailAddress::isPhoneNumber()
 {
-    QFETCH( QString, address );
+    QFETCH(QString, address);
 
     QMailAddress addr = QMailAddress(QString(), address);
     QTEST(addr.isPhoneNumber(), "phoneNumber");
@@ -980,7 +980,7 @@ void tst_QMailAddress::isEmailAddress_data()
 
 void tst_QMailAddress::isEmailAddress()
 {
-    QFETCH( QString, address );
+    QFETCH(QString, address);
 
     QMailAddress addr = QMailAddress(QString(), address);
     QTEST(addr.isEmailAddress(), "emailAddress");
@@ -1042,8 +1042,8 @@ void tst_QMailAddress::toStringList_data()
 
 void tst_QMailAddress::toStringList()
 {
-    QFETCH( QList<QMailAddress>, address_list );
-    QTEST( QMailAddress::toStringList(address_list), "string_list");
+    QFETCH(QList<QMailAddress>, address_list);
+    QTEST(QMailAddress::toStringList(address_list), "string_list");
 }
 
 void tst_QMailAddress::fromStringList1_data()
@@ -1181,8 +1181,8 @@ void tst_QMailAddress::fromStringList1_data()
 
 void tst_QMailAddress::fromStringList1()
 {
-    QFETCH( QString, string_list );
-    QTEST( QMailAddress::fromStringList(string_list), "address_list");
+    QFETCH(QString, string_list);
+    QTEST(QMailAddress::fromStringList(string_list), "address_list");
 }
 
 void tst_QMailAddress::fromStringList2()
@@ -1222,8 +1222,8 @@ void tst_QMailAddress::removeComments_data()
 
 void tst_QMailAddress::removeComments()
 {
-    QFETCH( QString, input );
-    QTEST( QMailAddress::removeComments(input), "output" );
+    QFETCH(QString, input);
+    QTEST(QMailAddress::removeComments(input), "output");
 }
 
 void tst_QMailAddress::removeWhitespace_data()
@@ -1262,8 +1262,8 @@ void tst_QMailAddress::removeWhitespace_data()
 
 void tst_QMailAddress::removeWhitespace()
 {
-    QFETCH( QString, input );
-    QTEST( QMailAddress::removeWhitespace(input), "output" );
+    QFETCH(QString, input);
+    QTEST(QMailAddress::removeWhitespace(input), "output");
 }
 
 QTEST_MAIN(tst_QMailAddress)

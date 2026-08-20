@@ -40,8 +40,8 @@ namespace {
 
 QString messageAddressText(const QMailMessageMetaData& m, bool incoming)
 {
-    //message sender or recipients
-    if ( incoming ) {
+    // message sender or recipients
+    if (incoming) {
         QMailAddress fromAddress(m.from());
         return fromAddress.toString();
     } else {

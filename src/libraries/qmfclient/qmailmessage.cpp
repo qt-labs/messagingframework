@@ -2878,7 +2878,7 @@ Q_GLOBAL_STATIC_WITH_ARGS(QList<QByteArray>, singleHeaders,
                            << "message-id:"
                            << "in-reply-to:"
                            << "references:"
-                           << "subject:"));
+                           << "subject:"))
 
 enum NewLineStatus { None, Cr, CrLf, Lf };
 

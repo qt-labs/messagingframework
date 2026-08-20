@@ -38,7 +38,8 @@ class QMailActionDataPrivate : public QSharedData
 {
 public:
     QMailActionDataPrivate();
-    QMailActionDataPrivate(QMailActionId id, QMailServerRequestType requestType, uint current, uint total, const QMailServiceAction::Status &status);
+    QMailActionDataPrivate(QMailActionId id, QMailServerRequestType requestType, uint current, uint total,
+                           const QMailServiceAction::Status &status);
     QMailActionDataPrivate(const QMailActionDataPrivate& other);
     ~QMailActionDataPrivate();
 
@@ -61,7 +62,8 @@ QMailActionDataPrivate::QMailActionDataPrivate()
 {
 }
 
-QMailActionDataPrivate::QMailActionDataPrivate(QMailActionId id, QMailServerRequestType rt, uint c, uint t, const QMailServiceAction::Status &s)
+QMailActionDataPrivate::QMailActionDataPrivate(QMailActionId id, QMailServerRequestType rt, uint c, uint t,
+                                               const QMailServiceAction::Status &s)
     : _id(id)
     , _requestType(rt)
     , _current(c)
@@ -129,7 +131,8 @@ QMailActionData::QMailActionData(QMailActionId id,
                                  const QMailFolderId &folderId,
                                  const QMailMessageId &messageId)
 {
-    const QMailServiceAction::Status status(QMailServiceAction::Status::ErrorCode(errorCode), text, accountId, folderId, messageId);
+    const QMailServiceAction::Status status(QMailServiceAction::Status::ErrorCode(errorCode),
+                                            text, accountId, folderId, messageId);
     d = new QMailActionDataPrivate(id, requestType, progressCurrent, progressTotal, status);
 }
 

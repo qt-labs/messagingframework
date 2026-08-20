@@ -53,6 +53,8 @@
 #define QMFALLOWCOMPRESS 0
 #endif
 
+namespace {
+
 class MessageFlushedWrapper : public QMailMessageBufferFlushCallback
 {
     ImapStrategyContext *context;
@@ -89,100 +91,99 @@ public:
     }
 };
 
-namespace {
+struct FlagInfo
+{
+    FlagInfo(const QStringList &flagNames, quint64 flag, QMailFolder::StandardFolder standardFolder, quint64 messageFlag)
+        : _flagNames(flagNames), _flag(flag), _standardFolder(standardFolder), _messageFlag(messageFlag) {}
 
-    struct FlagInfo
-    {
-        FlagInfo(const QStringList &flagNames, quint64 flag, QMailFolder::StandardFolder standardFolder, quint64 messageFlag)
-            : _flagNames(flagNames), _flag(flag), _standardFolder(standardFolder), _messageFlag(messageFlag) {}
+    QStringList _flagNames;
+    quint64 _flag;
+    QMailFolder::StandardFolder _standardFolder;
+    quint64 _messageFlag;
+};
 
-        QStringList _flagNames;
-        quint64 _flag;
-        QMailFolder::StandardFolder _standardFolder;
-        quint64 _messageFlag;
-    };
+void setFolderFlags(QMailAccount *account, QMailFolder *folder, const QString &flags)
+{
+    // Set permitted flags
+    bool childCreationPermitted(!flags.contains("\\NoInferiors", Qt::CaseInsensitive));
+    bool messagesPermitted(!flags.contains("\\NoSelect", Qt::CaseInsensitive));
+    folder->setStatus(QMailFolder::ChildCreationPermitted, childCreationPermitted);
+    folder->setStatus(QMailFolder::MessagesPermitted, messagesPermitted);
+    if (!folder->id().isValid()) {
+        qCWarning(lcIMAP) << "setFolderFlags must be called on folder in store " << folder->id();
+        return;
+    }
 
-    static void setFolderFlags(QMailAccount *account, QMailFolder *folder, const QString &flags)
-    {
-        // Set permitted flags
-        bool childCreationPermitted(!flags.contains("\\NoInferiors", Qt::CaseInsensitive));
-        bool messagesPermitted(!flags.contains("\\NoSelect", Qt::CaseInsensitive));
-        folder->setStatus(QMailFolder::ChildCreationPermitted, childCreationPermitted);
-        folder->setStatus(QMailFolder::MessagesPermitted, messagesPermitted);
-        if (!folder->id().isValid()) {
-            qCWarning(lcIMAP) << "setFolderFlags must be called on folder in store " << folder->id();
-            return;
+    // Set standard folder flags
+    //
+    // A server can report special-use flags (\Trash, \Sent, \Drafts, \Junk,
+    // \Archive, ...) in a plain LIST response even if it never advertises the
+    // XLIST or SPECIAL-USE capability (RFC 6154 explicitly permits this; some
+    // real servers, e.g. Proton, do exactly this). So we always
+    // check for these flags here rather than checking for XLIST/SPECIAL-USE.
+    //
+    // However, it's possible for a server to not report these flags at all,
+    // and yet QMail::detectStandardFolders() (qmailnamespace.cpp) might have
+    // correctly identified them by their name anyway. We don't want to
+    // incorrectly clear the flag here simply because the folder doesn't have
+    // an explicit flag. So below, a flag is only ever turned on when present.
+    // It is never turned off due to being absent.
+    QList<FlagInfo> flagInfoList;
+    flagInfoList << FlagInfo(QStringList() << "\\Inbox", QMailFolder::Incoming, QMailFolder::InboxFolder, QMailMessage::Incoming)
+                 << FlagInfo(QStringList() << "\\Drafts", QMailFolder::Drafts, QMailFolder::DraftsFolder, QMailMessage::Draft)
+                 << FlagInfo(QStringList() << "\\Trash", QMailFolder::Trash, QMailFolder::TrashFolder, QMailMessage::Trash)
+                 << FlagInfo(QStringList() << "\\Sent", QMailFolder::Sent, QMailFolder::SentFolder, QMailMessage::Sent)
+                 << FlagInfo(QStringList() << "\\Spam" << "\\Junk", QMailFolder::Junk, QMailFolder::JunkFolder, QMailMessage::Junk)
+                 << FlagInfo(QStringList() << "\\Archive", QMailFolder::Archive, QMailFolder::ArchiveFolder, QMailMessage::Archived);
+
+    for (int i = 0; i < flagInfoList.count(); ++i) {
+        QStringList flagNames(flagInfoList[i]._flagNames);
+        quint64 flag(flagInfoList[i]._flag);
+        QMailFolder::StandardFolder standardFolder(flagInfoList[i]._standardFolder);
+        quint64 messageFlag(flagInfoList[i]._messageFlag);
+        bool isFlagged = false;
+
+        foreach (const QString &flagName, flagNames) {
+            if (flags.contains(flagName, Qt::CaseInsensitive)) {
+                isFlagged = true;
+                break;
+            }
         }
 
-        // Set standard folder flags
-        //
-        // A server can report special-use flags (\Trash, \Sent, \Drafts, \Junk,
-        // \Archive, ...) in a plain LIST response even if it never advertises the
-        // XLIST or SPECIAL-USE capability (RFC 6154 explicitly permits this; some
-        // real servers, e.g. Proton, do exactly this). So we always
-        // check for these flags here rather than checking for XLIST/SPECIAL-USE.
-        //
-        // However, it's possible for a server to not report these flags at all,
-        // and yet QMail::detectStandardFolders() (qmailnamespace.cpp) might have
-        // correctly identified them by their name anyway. We don't want to
-        // incorrectly clear the flag here simply because the folder doesn't have
-        // an explicit flag. So below, a flag is only ever turned on when present.
-        // It is never turned off due to being absent.
-        QList<FlagInfo> flagInfoList;
-        flagInfoList << FlagInfo(QStringList() << "\\Inbox", QMailFolder::Incoming, QMailFolder::InboxFolder, QMailMessage::Incoming)
-            << FlagInfo(QStringList() << "\\Drafts", QMailFolder::Drafts, QMailFolder::DraftsFolder, QMailMessage::Draft)
-            << FlagInfo(QStringList() << "\\Trash", QMailFolder::Trash, QMailFolder::TrashFolder, QMailMessage::Trash)
-            << FlagInfo(QStringList() << "\\Sent", QMailFolder::Sent, QMailFolder::SentFolder, QMailMessage::Sent)
-            << FlagInfo(QStringList() << "\\Spam" << "\\Junk", QMailFolder::Junk, QMailFolder::JunkFolder, QMailMessage::Junk)
-            << FlagInfo(QStringList() << "\\Archive", QMailFolder::Archive, QMailFolder::ArchiveFolder, QMailMessage::Archived);
+        if (isFlagged) {
+            folder->setStatus(flag, true);
 
-        for (int i = 0; i < flagInfoList.count(); ++i) {
-            QStringList flagNames(flagInfoList[i]._flagNames);
-            quint64 flag(flagInfoList[i]._flag);
-            QMailFolder::StandardFolder standardFolder(flagInfoList[i]._standardFolder);
-            quint64 messageFlag(flagInfoList[i]._messageFlag);
-            bool isFlagged = false;
-
-            foreach (const QString &flagName, flagNames) {
-                if (flags.contains(flagName, Qt::CaseInsensitive)) {
-                    isFlagged = true;
-                    break;
+            QMailFolderId oldFolderId = account->standardFolder(standardFolder);
+            if (oldFolderId.isValid() && (oldFolderId != folder->id())) {
+                QMailFolder oldFolder(oldFolderId);
+                oldFolder.setStatus(flag, false);
+                // Do the updates in the right order, so if there is a crash
+                // there will be a graceful recovery next time folders are list.
+                // It is expected that no disconnected move operations will be outstanding
+                // otherwise flags for those messages may be updated incorrectly.
+                // So call exportUpdates before retrieveFolderList
+                QMailMessageKey oldFolderKey(QMailMessageKey::parentFolderId(oldFolderId));
+                if (!QMailStore::instance()->updateMessagesMetaData(oldFolderKey, messageFlag, false)) {
+                    qCWarning(lcMailStore) << "Unable to update messages in folder" << oldFolderId << "to remove flag" << flagNames;
+                }
+                if (!QMailStore::instance()->updateFolder(&oldFolder)) {
+                    qCWarning(lcMailStore) << "Unable to update folder" << oldFolderId << "to remove flag" << flagNames;
                 }
             }
-
-            if (isFlagged) {
-                folder->setStatus(flag, true);
-
-                QMailFolderId oldFolderId = account->standardFolder(standardFolder);
-                if (oldFolderId.isValid() && (oldFolderId != folder->id())) {
-                    QMailFolder oldFolder(oldFolderId);
-                    oldFolder.setStatus(flag, false);
-                    // Do the updates in the right order, so if there is a crash
-                    // there will be a graceful recovery next time folders are list.
-                    // It is expected that no disconnected move operations will be outstanding
-                    // otherwise flags for those messages may be updated incorrectly.
-                    // So call exportUpdates before retrieveFolderList
-                    QMailMessageKey oldFolderKey(QMailMessageKey::parentFolderId(oldFolderId));
-                    if (!QMailStore::instance()->updateMessagesMetaData(oldFolderKey, messageFlag, false)) {
-                        qCWarning(lcMailStore) << "Unable to update messages in folder" << oldFolderId << "to remove flag" << flagNames;
-                    }
-                    if (!QMailStore::instance()->updateFolder(&oldFolder)) {
-                        qCWarning(lcMailStore) << "Unable to update folder" << oldFolderId << "to remove flag" << flagNames;
-                    }
+            if (!oldFolderId.isValid() || (oldFolderId != folder->id())) {
+                account->setStandardFolder(standardFolder, folder->id());
+                if (!QMailStore::instance()->updateAccount(account)) {
+                    qCWarning(lcMailStore) << "Unable to update account" << account->id() << "to set flag" << flagNames;
                 }
-                if (!oldFolderId.isValid() || (oldFolderId != folder->id())) {
-                    account->setStandardFolder(standardFolder, folder->id());
-                    if (!QMailStore::instance()->updateAccount(account)) {
-                        qCWarning(lcMailStore) << "Unable to update account" << account->id() << "to set flag" << flagNames;
-                    }
-                    QMailMessageKey folderKey(QMailMessageKey::parentFolderId(folder->id()));
-                    if (!QMailStore::instance()->updateMessagesMetaData(folderKey, messageFlag, true)) {
-                        qCWarning(lcMailStore) << "Unable to update messages in folder" << folder->id() << "to set flag" << flagNames;
-                    }
+                QMailMessageKey folderKey(QMailMessageKey::parentFolderId(folder->id()));
+                if (!QMailStore::instance()->updateMessagesMetaData(folderKey, messageFlag, true)) {
+                    qCWarning(lcMailStore) << "Unable to update messages in folder" << folder->id() << "to set flag" << flagNames;
                 }
             }
         }
     }
+}
+
 }
 
 class IdleProtocol : public ImapProtocol
@@ -305,7 +306,7 @@ void IdleProtocol::idleContinuation(ImapCommand command, const QString &type)
 
 void IdleProtocol::idleCommandTransition(const ImapCommand command, const OperationStatus status)
 {
-    if ( status != OpOk ) {
+    if (status != OpOk) {
         idleTransportError();
         // Notify the client that idle session is not blocking the
         // main session login anymore for this folder.
@@ -314,57 +315,58 @@ void IdleProtocol::idleCommandTransition(const ImapCommand command, const Operat
     }
 
     QMailAccountConfiguration config(_client->account());
-    switch ( command ) {
-        case IMAP_Init:
-            if (receivedCapabilities()) {
-                // Already received capabilities in unsolicited response, no need to request them again
-                setReceivedCapabilities(false);
-                idleCommandTransition(IMAP_Capability, status);
-            } else {
-                // We need to request the capabilities
-                sendCapability();
-            }
-            break;
-        case IMAP_Capability:
-            if (!encrypted()) {
-                if (ImapAuthenticator::useEncryption(ImapConfiguration(config), capabilities())) {
-                    // Switch to encrypted mode
-                    sendStartTLS();
-                    break;
-                }
-            }
-            // We are now connected
-            logIn();
-            break;
-        case IMAP_StartTLS:
-            logIn();
-            break;
-        case IMAP_Login: // Fall through
-        case IMAP_Compress:
-        {
-            bool compressCapable(capabilities().contains("COMPRESS=DEFLATE", Qt::CaseInsensitive));
-            if (!encrypted() && QMFALLOWCOMPRESS && compressCapable && !compress()) {
-                // Server supports COMPRESS and we are not yet compressing
-                sendCompress(); // Must not pipeline compress
-            } else {
-                // Server does not support COMPRESS or already compressing
-                sendSelect(_folder);
-            }
-            break;
+
+    switch (command) {
+    case IMAP_Init:
+        if (receivedCapabilities()) {
+            // Already received capabilities in unsolicited response, no need to request them again
+            setReceivedCapabilities(false);
+            idleCommandTransition(IMAP_Capability, status);
+        } else {
+            // We need to request the capabilities
+            sendCapability();
         }
-        case IMAP_Select:
-            sendIdle();
-            break;
-        case IMAP_Idle:
-            // Restart idling (TODO: unless we're closing)
-            sendIdle();
-            break;
-        case IMAP_Logout:
-            // Ensure connection is closed on logout
-            close();
-            break;
-        default:        //default = all critical messages
-            qCWarning(lcIMAP) << objectName() << "IDLE: IMAP Idle unknown command response: " << command;
+        break;
+    case IMAP_Capability:
+        if (!encrypted()) {
+            if (ImapAuthenticator::useEncryption(ImapConfiguration(config), capabilities())) {
+                // Switch to encrypted mode
+                sendStartTLS();
+                break;
+            }
+        }
+        // We are now connected
+        logIn();
+        break;
+    case IMAP_StartTLS:
+        logIn();
+        break;
+    case IMAP_Login: // Fall through
+    case IMAP_Compress:
+    {
+        bool compressCapable(capabilities().contains("COMPRESS=DEFLATE", Qt::CaseInsensitive));
+        if (!encrypted() && QMFALLOWCOMPRESS && compressCapable && !compress()) {
+            // Server supports COMPRESS and we are not yet compressing
+            sendCompress(); // Must not pipeline compress
+        } else {
+            // Server does not support COMPRESS or already compressing
+            sendSelect(_folder);
+        }
+        break;
+    }
+    case IMAP_Select:
+        sendIdle();
+        break;
+    case IMAP_Idle:
+        // Restart idling (TODO: unless we're closing)
+        sendIdle();
+        break;
+    case IMAP_Logout:
+        // Ensure connection is closed on logout
+        close();
+        break;
+    default:        //default = all critical messages
+        qCWarning(lcIMAP) << objectName() << "IDLE: IMAP Idle unknown command response: " << command;
     }
 }
 
@@ -482,8 +484,9 @@ void ImapClient::newConnection()
 
     QMailAccountConfiguration config(_accountId);
     ImapConfiguration imapCfg(config);
-    if ( imapCfg.mailServer().isEmpty() ) {
-        operationFailed(QMailServiceAction::Status::ErrConfiguration, tr("Cannot open connection without IMAP server configuration"));
+    if (imapCfg.mailServer().isEmpty()) {
+        operationFailed(QMailServiceAction::Status::ErrConfiguration,
+                        tr("Cannot open connection without IMAP server configuration"));
         return;
     }
 
@@ -1483,7 +1486,7 @@ void ImapClient::handleConnectionError(QMailServiceAction::Status::ErrorCode cod
 void ImapClient::closeConnection()
 {
     _inactiveTimer.stop();
-    if ( _protocol.inUse() ) {
+    if (_protocol.inUse()) {
         _protocol.close();
     }
 }
@@ -1519,7 +1522,7 @@ void ImapClient::connectionInactive()
     Q_ASSERT(_closeCount >= 0);
     if (_closeCount == 0) {
         _rapidClosing = false;
-        if ( _protocol.connected()) {
+        if (_protocol.connected()) {
             emit statusChanged( tr("Logging out") );
             _protocol.sendLogout();
             // Client MUST read tagged response, but if connection hangs in logout state newConnection will autoClose.
@@ -1693,12 +1696,14 @@ void ImapClient::monitor(const QMailFolderIdList &mailboxIds)
             protocol->setObjectName(QString("I:%1").arg(count));
             _monitored.insert(id, protocol);
             _waitingForIdleFolderIds.append(id);
+
             connect(protocol, &IdleProtocol::idleNewMailNotification,
                     this, &ImapClient::idleNewMailNotification);
             connect(protocol,  &IdleProtocol::idleFlagsChangedNotification,
                     this, &ImapClient::idleFlagsChangedNotification);
             connect(protocol, &IdleProtocol::transportError,
                     this, &ImapClient::pushEmailError);
+
             protocol->open(imapCfg);
         }
     }
