@@ -284,8 +284,9 @@ private:
     bool dispatchSearchMessages(Request *req);
     bool dispatchProtocolRequest(Request *req);
 
-    void reportFailure(quint64, QMailServiceAction::Status::ErrorCode, const QString& = QString(),
-                       const QMailAccountId& = QMailAccountId(), const QMailFolderId& = QMailFolderId(),
+    void reportFailure(quint64, QMailServiceAction::Status::ErrorCode, const QString &text,
+                       const QMailAccountId &accountId,
+                       const QMailFolderId& = QMailFolderId(),
                        const QMailMessageId& = QMailMessageId());
     void reportFailure(quint64, const QMailServiceAction::Status);
 
@@ -368,7 +369,15 @@ private:
 class Request
 {
 public:
-    Request(QMailServerRequestType requestType) : requestType(requestType) {}
+    Request(QMailServerRequestType requestType,
+            const QMailAccountId &accountId = QMailAccountId(),
+            const QMailFolderId &folderId = QMailFolderId(),
+            const QMailMessageId &messageId = QMailMessageId())
+        : requestType(requestType)
+        , accountId(accountId)
+        , folderId(folderId)
+        , messageId(messageId)
+    {}
     virtual ~Request() {}
 
     quint64 action;
@@ -377,6 +386,9 @@ public:
     ServiceHandler::RequestServicer servicer;
     ServiceHandler::CompletionSignal completion;
     QMailServerRequestType requestType;
+    QMailAccountId accountId;
+    QMailFolderId folderId;
+    QMailMessageId messageId;
 };
 
 #endif

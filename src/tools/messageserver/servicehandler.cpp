@@ -547,7 +547,8 @@ void ServiceHandler::removeServiceFromActions(QMailMessageService *removeService
     for (auto it(mRequests.begin()); it != mRequests.end();) {
         if ((*it)->services.contains(removeService) || (*it)->preconditions.contains(removeService)) {
             reportFailure((*it)->action, QMailServiceAction::Status::ErrFrameworkFault,
-                          tr("Service became unavailable, couldn't dispatch"));
+                          tr("Service became unavailable, couldn't dispatch"),
+                          QMailAccountId());
             it = mRequests.erase(it);
             continue;
         }
@@ -1110,8 +1111,8 @@ void ServiceHandler::dispatchRequest()
         data.requestType = request->requestType;
         data.progressTotal = 0;
         data.progressCurrent = 0;
-        data.status = QMailServiceAction::Status(QMailServiceAction::Status::ErrNoError,
-                                                 QString(), QMailAccountId(), QMailFolderId(), QMailMessageId());
+        data.status = QMailServiceAction::Status(QMailServiceAction::Status::ErrNoError, QString(),
+                                                 request->accountId, request->folderId, request->messageId);
 
         mActiveActions.insert(request->action, data);
         qCDebug(lcMessaging) << "Running action" << ::requestTypeNames[data.requestType] << request->action;
@@ -1173,7 +1174,10 @@ void ServiceHandler::expireAction()
                 foreach (QMailMessageService *service, data.services) {
                     qCWarning(lcMessaging) << " service:" << (service ? service->service() : "null");
                 }
-                reportFailure(action, QMailServiceAction::Status::ErrTimeout, tr("Request is not progressing"));
+
+                data.status.errorCode = QMailServiceAction::Status::ErrTimeout;
+                data.status.text = tr("Request is not progressing");
+                reportFailure(action, data.status);
                 emit activityChanged(action, QMailServiceAction::Failed);
 
                 QSet<QMailAccountId> serviceAccounts;
@@ -1297,7 +1301,7 @@ void ServiceHandler::cancelTransfer(quint64 action)
                                                                                  _transmissionAccountIds.constEnd()));
         }
 
-        //The ActionData might have already been deleted by actionCompleted, triggered by cancelOperation
+        // The ActionData might have already been deleted by actionCompleted, triggered by cancelOperation
         it = mActiveActions.find(action);
         if (it != mActiveActions.end())
             mActiveActions.erase(it);
@@ -1309,13 +1313,17 @@ void ServiceHandler::cancelTransfer(quint64 action)
         auto it = mRequests.begin(), end = mRequests.end();
         for ( ; it != end; ++it) {
             if ((*it)->action == action) {
+                // Report this action as failed
+                reportFailure(action, QMailServiceAction::Status::ErrCancel, tr("Cancelled by user"),
+                              (*it)->accountId, (*it)->folderId, (*it)->messageId);
                 mRequests.erase(it);
-                break;
+                return;
             }
         }
 
-        // Report this action as failed
-        reportFailure(action, QMailServiceAction::Status::ErrCancel, tr("Cancelled by user"));
+        // report anyway if we don't find it
+        reportFailure(action, QMailServiceAction::Status::ErrCancel, tr("Cancelled by user"),
+                      QMailAccountId());
     }
 }
 
@@ -1337,10 +1345,8 @@ class TransmitAccountMessagesRequest : public Request
 {
 public:
     TransmitAccountMessagesRequest(QMailAccountId accountId)
-        : Request(TransmitMessagesRequestType)
-        , accountId(accountId) {}
-
-    QMailAccountId accountId;
+        : Request(TransmitMessagesRequestType, accountId)
+    {}
 };
 
 void ServiceHandler::transmitMessages(quint64 action, const QMailAccountId &accountId)
@@ -1350,7 +1356,8 @@ void ServiceHandler::transmitMessages(quint64 action, const QMailAccountId &acco
 
     if (sinks.isEmpty()) {
         reportFailure(action, QMailServiceAction::Status::ErrNoConnection,
-                      tr("Unable to enqueue messages for transmission"));
+                      tr("Unable to enqueue messages for transmission"),
+                      QMailAccountId());
     } else {
         // We need to see if any sources are required to prepare these messages
         QMailMessageKey accountKey(QMailMessageKey::parentAccountId(accountId));
@@ -1392,10 +1399,8 @@ class TransmitMessageRequest : public Request
 {
 public:
     TransmitMessageRequest(QMailMessageId id)
-        : Request(TransmitMessagesRequestType)
-        , messageId(id) {}
-
-    QMailMessageId messageId;
+        : Request(TransmitMessagesRequestType, QMailAccountId(), QMailFolderId(), id)
+    {}
 };
 
 void ServiceHandler::transmitMessage(quint64 action, const QMailMessageId &messageId)
@@ -1405,7 +1410,8 @@ void ServiceHandler::transmitMessage(quint64 action, const QMailMessageId &messa
     QSet<QMailMessageService*> sinks(sinkServiceSet(accountId));
     if (sinks.isEmpty()) {
         reportFailure(action, QMailServiceAction::Status::ErrNoConnection,
-                      tr("Unable to enqueue messages for transmission"));
+                      tr("Unable to enqueue messages for transmission"),
+                      QMailAccountId(), QMailFolderId(), messageId);
     } else {
         // We need to see if any sources are required to prepare these messages
         // We need to prepare messages to:
@@ -1539,13 +1545,9 @@ class RetrieveFolderListRequest : public Request
 {
 public:
     RetrieveFolderListRequest(QMailAccountId accountId, QMailFolderId folderId, bool descending)
-        : Request(RetrieveFolderListRequestType)
-        , accountId(accountId)
-        , folderId(folderId)
+        : Request(RetrieveFolderListRequestType, accountId, folderId)
         , descending(descending) {}
 
-    QMailAccountId accountId;
-    QMailFolderId folderId;
     bool descending;
 };
 
@@ -1555,7 +1557,8 @@ void ServiceHandler::retrieveFolderList(quint64 action, const QMailAccountId &ac
     QSet<QMailMessageService*> sources(sourceServiceSet(accountId));
     if (sources.isEmpty()) {
         reportFailure(action, QMailServiceAction::Status::ErrNoConnection,
-                      tr("Unable to retrieve folder list for unconfigured account"));
+                      tr("Unable to retrieve folder list for unconfigured account"),
+                      accountId, folderId);
     } else {
         enqueueRequest(new RetrieveFolderListRequest(accountId, folderId, descending), action, sources,
                        &ServiceHandler::dispatchRetrieveFolderListAccount, &ServiceHandler::retrievalReady);
@@ -1590,14 +1593,11 @@ class RetrieveMessageListRequest : public Request
 {
 public:
     RetrieveMessageListRequest(QMailAccountId accountId, QMailFolderId folderId, uint minimum, QMailMessageSortKey sort)
-        : Request(RetrieveMessageListRequestType)
-        , accountId(accountId)
-        , folderId(folderId)
+        : Request(RetrieveMessageListRequestType, accountId, folderId)
         , minimum(minimum)
-        , sort(sort) {}
+        , sort(sort)
+    {}
 
-    QMailAccountId accountId;
-    QMailFolderId folderId;
     uint minimum;
     QMailMessageSortKey sort;
 };
@@ -1608,7 +1608,8 @@ void ServiceHandler::retrieveMessageList(quint64 action, const QMailAccountId &a
     QSet<QMailMessageService*> sources(sourceServiceSet(accountId));
     if (sources.isEmpty()) {
         reportFailure(action, QMailServiceAction::Status::ErrNoConnection,
-                      tr("Unable to retrieve message list for unconfigured account"));
+                      tr("Unable to retrieve message list for unconfigured account"),
+                      accountId, folderId);
     } else {
         enqueueRequest(new RetrieveMessageListRequest(accountId, folderId, minimum, sort), action, sources,
                        &ServiceHandler::dispatchRetrieveMessageList, &ServiceHandler::retrievalReady);
@@ -1643,13 +1644,12 @@ class RetrieveMessageListsRequest : public Request
 public:
     RetrieveMessageListsRequest(QMailAccountId accountId, const QMailFolderIdList &folderIds, uint minimum,
                                 QMailMessageSortKey sort)
-        : Request(RetrieveMessageListRequestType)
-        , accountId(accountId)
+        : Request(RetrieveMessageListRequestType, accountId)
         , folderIds(folderIds)
         , minimum(minimum)
-        , sort(sort) {}
+        , sort(sort)
+    {}
 
-    QMailAccountId accountId;
     QMailFolderIdList folderIds;
     uint minimum;
     QMailMessageSortKey sort;
@@ -1662,7 +1662,8 @@ void ServiceHandler::retrieveMessageLists(quint64 action, const QMailAccountId &
     QSet<QMailMessageService*> sources(sourceServiceSet(accountId));
     if (sources.isEmpty()) {
         reportFailure(action, QMailServiceAction::Status::ErrNoConnection,
-                      tr("Unable to retrieve message list for unconfigured account"));
+                      tr("Unable to retrieve message list for unconfigured account"),
+                      accountId);
     } else {
         enqueueRequest(new RetrieveMessageListsRequest(accountId, folderIds, minimum, sort), action, sources,
                        &ServiceHandler::dispatchRetrieveMessageLists, &ServiceHandler::retrievalReady);
@@ -1695,11 +1696,9 @@ class RetrieveNewMessagesRequest : public Request
 {
 public:
     RetrieveNewMessagesRequest(QMailAccountId accountId, QMailFolderIdList folderIds)
-        : Request(RetrieveNewMessagesRequestType)
-        , accountId(accountId)
+        : Request(RetrieveNewMessagesRequestType, accountId)
         , folderIds(folderIds) {}
 
-    QMailAccountId accountId;
     QMailFolderIdList folderIds;
 };
 
@@ -1708,7 +1707,8 @@ void ServiceHandler::retrieveNewMessages(quint64 action, const QMailAccountId &a
     QSet<QMailMessageService*> sources(sourceServiceSet(accountId));
     if (sources.isEmpty()) {
         reportFailure(action, QMailServiceAction::Status::ErrNoConnection,
-                      tr("Unable to retrieve new messages for unconfigured account"));
+                      tr("Unable to retrieve new messages for unconfigured account"),
+                      accountId);
     } else {
         enqueueRequest(new RetrieveNewMessagesRequest(accountId, folderIds), action, sources,
                        &ServiceHandler::dispatchRetrieveNewMessages, &ServiceHandler::retrievalReady);
@@ -1741,10 +1741,8 @@ class CreateStandardFoldersRequest : public Request
 {
 public:
     CreateStandardFoldersRequest(QMailAccountId accountId)
-        : Request(RetrieveFolderListRequestType)
-        , accountId(accountId) {}
-
-    QMailAccountId accountId;
+        : Request(RetrieveFolderListRequestType, accountId)
+    {}
 };
 
 void ServiceHandler::createStandardFolders(quint64 action, const QMailAccountId &accountId)
@@ -1752,7 +1750,8 @@ void ServiceHandler::createStandardFolders(quint64 action, const QMailAccountId 
     QSet<QMailMessageService*> sources(sourceServiceSet(accountId));
     if (sources.isEmpty()) {
         reportFailure(action, QMailServiceAction::Status::ErrNoConnection,
-                      tr("Unable to retrieve standard folders for unconfigured account"));
+                      tr("Unable to retrieve standard folders for unconfigured account"),
+                      accountId);
     } else {
         enqueueRequest(new CreateStandardFoldersRequest(accountId), action, sources,
                        &ServiceHandler::dispatchCreateStandardFolders, &ServiceHandler::retrievalReady);
@@ -1799,7 +1798,8 @@ void ServiceHandler::retrieveMessages(quint64 action, const QMailMessageIdList &
     QSet<QMailMessageService*> sources(sourceServiceSet(messageLists.keys()));
     if (sources.isEmpty()) {
         reportFailure(action, QMailServiceAction::Status::ErrNoConnection,
-                      tr("Unable to retrieve messages for unconfigured account"));
+                      tr("Unable to retrieve messages for unconfigured account"),
+                      QMailAccountId());
     } else {
         enqueueRequest(new RetrieveMessagesRequest(messageLists, spec), action, sources,
                        &ServiceHandler::dispatchRetrieveMessages, &ServiceHandler::retrievalReady);
@@ -1839,11 +1839,9 @@ class RetrieveMessagePartRequest : public Request
 {
 public:
     RetrieveMessagePartRequest(QMailAccountId accountId, const QMailMessagePart::Location &partLocation)
-        : Request(RetrieveMessagePartRequestType)
-        , accountId(accountId)
+        : Request(RetrieveMessagePartRequestType, accountId)
         , partLocation(partLocation) {}
 
-    QMailAccountId accountId;
     QMailMessagePart::Location partLocation;
 };
 
@@ -1853,7 +1851,8 @@ void ServiceHandler::retrieveMessagePart(quint64 action, const QMailMessagePart:
     QSet<QMailMessageService*> sources(sourceServiceSet(accountIds));
     if (sources.isEmpty()) {
         reportFailure(action, QMailServiceAction::Status::ErrNoConnection,
-                      tr("Unable to retrieve message part for unconfigured account"));
+                      tr("Unable to retrieve message part for unconfigured account"),
+                      QMailAccountId());
     } else {
         enqueueRequest(new RetrieveMessagePartRequest(*accountIds.begin(), partLocation), action, sources,
                        &ServiceHandler::dispatchRetrieveMessagePart, &ServiceHandler::retrievalReady);
@@ -1888,13 +1887,10 @@ class RetrieveMessageRangeRequest : public Request
 {
 public:
     RetrieveMessageRangeRequest(QMailAccountId accountId, QMailMessageId messageId, uint minimum)
-        : Request(RetrieveMessageRangeRequestType)
-        , accountId(accountId)
-        , messageId(messageId)
-        , minimum(minimum) {}
+        : Request(RetrieveMessageRangeRequestType, accountId, QMailFolderId(), messageId)
+        , minimum(minimum)
+    {}
 
-    QMailAccountId accountId;
-    QMailMessageId messageId;
     uint minimum;
 };
 
@@ -1904,7 +1900,8 @@ void ServiceHandler::retrieveMessageRange(quint64 action, const QMailMessageId &
     QSet<QMailMessageService*> sources(sourceServiceSet(accountIds));
     if (sources.isEmpty()) {
         reportFailure(action, QMailServiceAction::Status::ErrNoConnection,
-                      tr("Unable to retrieve message range for unconfigured account"));
+                      tr("Unable to retrieve message range for unconfigured account"),
+                      QMailAccountId(), QMailFolderId(), messageId);
     } else {
         enqueueRequest(new RetrieveMessageRangeRequest(*accountIds.begin(), messageId, minimum), action, sources,
                        &ServiceHandler::dispatchRetrieveMessageRange, &ServiceHandler::retrievalReady);
@@ -1941,12 +1938,11 @@ public:
     RetrieveMessagePartRangeRequest(QMailAccountId accountId,
                                     const QMailMessagePart::Location &partLocation,
                                     uint minimum)
-        : Request(RetrieveMessagePartRangeRequestType)
-        , accountId(accountId)
+        : Request(RetrieveMessagePartRangeRequestType, accountId)
         , partLocation(partLocation)
-        , minimum(minimum) {}
+        , minimum(minimum)
+    {}
 
-    QMailAccountId accountId;
     QMailMessagePart::Location partLocation;
     uint minimum;
 };
@@ -1957,7 +1953,8 @@ void ServiceHandler::retrieveMessagePartRange(quint64 action, const QMailMessage
     QSet<QMailMessageService*> sources(sourceServiceSet(accountIds));
     if (sources.isEmpty()) {
         reportFailure(action, QMailServiceAction::Status::ErrNoConnection,
-                      tr("Unable to retrieve message part range for unconfigured account"));
+                      tr("Unable to retrieve message part range for unconfigured account"),
+                      QMailAccountId());
     } else {
         enqueueRequest(new RetrieveMessagePartRangeRequest(*accountIds.begin(), partLocation, minimum), action, sources,
                        &ServiceHandler::dispatchRetrieveMessagePartRange, &ServiceHandler::retrievalReady);
@@ -1992,10 +1989,8 @@ class ExportUpdatesRequest : public Request
 {
 public:
     ExportUpdatesRequest(QMailAccountId accountId)
-        : Request(ExportUpdatesRequestType)
-        , accountId(accountId) {}
-
-    QMailAccountId accountId;
+        : Request(ExportUpdatesRequestType, accountId)
+    {}
 };
 
 void ServiceHandler::exportUpdates(quint64 action, const QMailAccountId &accountId)
@@ -2003,7 +1998,8 @@ void ServiceHandler::exportUpdates(quint64 action, const QMailAccountId &account
     QSet<QMailMessageService*> sources(sourceServiceSet(accountId));
     if (sources.isEmpty()) {
         reportFailure(action, QMailServiceAction::Status::ErrNoConnection,
-                      tr("Unable to export updates for unconfigured account"));
+                      tr("Unable to export updates for unconfigured account"),
+                      accountId);
     } else {
         enqueueRequest(new ExportUpdatesRequest(accountId), action, sources,
                        &ServiceHandler::dispatchExportUpdates, &ServiceHandler::retrievalReady);
@@ -2035,7 +2031,8 @@ class OnlineDeleteMessagesRequest : public Request
 public:
     OnlineDeleteMessagesRequest(const QMap<QMailAccountId, QMailMessageIdList> &messageLists)
         : Request(DeleteMessagesRequestType)
-        , messageLists(messageLists) {}
+        , messageLists(messageLists)
+    {}
 
     QMap<QMailAccountId, QMailMessageIdList> messageLists;
 };
@@ -2053,7 +2050,8 @@ void ServiceHandler::onlineDeleteMessages(quint64 action, const QMailMessageIdLi
         sources = sourceServiceSet(messageLists.keys());
         if (sources.isEmpty()) {
             reportFailure(action, QMailServiceAction::Status::ErrNoConnection,
-                          tr("Unable to delete messages for unconfigured account"));
+                          tr("Unable to delete messages for unconfigured account"),
+                          QMailAccountId());
         } else {
             QString description(tr("Deleting messages"));
             enqueueRequest(new OnlineDeleteMessagesRequest(messageLists), action, sources,
@@ -2074,7 +2072,8 @@ void ServiceHandler::discardMessages(quint64 action, QMailMessageIdList messageI
         && !QMailStore::instance()->removeMessages(QMailMessageKey::id(messageIds), QMailStore::NoRemovalRecord)) {
         qCWarning(lcMessaging) << "Unable to service request to discard messages";
 
-        reportFailure(action, QMailServiceAction::Status::ErrEnqueueFailed, tr("Unable to discard messages"));
+        reportFailure(action, QMailServiceAction::Status::ErrEnqueueFailed, tr("Unable to discard messages"),
+                      QMailAccountId());
         return;
     }
 
@@ -2113,7 +2112,8 @@ public:
     CopyToLocalRequest(const QMailMessageIdList &messageIds, QMailFolderId destination)
         : Request(CopyMessagesRequestType)
         , messageIds(messageIds)
-        , destination(destination) {}
+        , destination(destination)
+    {}
 
     QMailMessageIdList messageIds;
     QMailFolderId destination;
@@ -2125,7 +2125,8 @@ public:
     OnlineCopyMessagesRequest(const QMailMessageIdList &messageIds, QMailFolderId destination)
         : Request(CopyMessagesRequestType)
         , messageIds(messageIds)
-        , destination(destination) {}
+        , destination(destination)
+    {}
 
     QMailMessageIdList messageIds;
     QMailFolderId destination;
@@ -2145,10 +2146,12 @@ void ServiceHandler::onlineCopyMessages(quint64 action, const QMailMessageIdList
         QSet<QMailMessageService*> sources(sourceServiceSet(accountIds));
         if (sources.isEmpty()) {
             reportFailure(action, QMailServiceAction::Status::ErrNoConnection,
-                          tr("Unable to copy messages to unconfigured account"));
+                          tr("Unable to copy messages to unconfigured account"),
+                          QMailAccountId());
         } else if (sources.count() > 1) {
             reportFailure(action, QMailServiceAction::Status::ErrFrameworkFault,
-                          tr("Unable to copy messages to multiple destination accounts!"));
+                          tr("Unable to copy messages to multiple destination accounts!"),
+                          QMailAccountId());
         } else {
             enqueueRequest(new OnlineCopyMessagesRequest(messageIds, destination), action, sources,
                            &ServiceHandler::dispatchOnlineCopyMessages, &ServiceHandler::storageActionCompleted);
@@ -2167,7 +2170,8 @@ bool ServiceHandler::dispatchOnlineCopyMessages(Request *req)
 
     if (accountIds.count() != 1) {
         reportFailure(request->action, QMailServiceAction::Status::ErrNoConnection,
-                      tr("Unable to copy messages to unconfigured account"));
+                      tr("Unable to copy messages to unconfigured account"),
+                      QMailAccountId());
         return false;
     } else {
         QMailAccountId accountId(*accountIds.begin());
@@ -2232,7 +2236,8 @@ public:
     OnlineMoveMessagesRequest(const QMap<QMailAccountId, QMailMessageIdList> &messageLists, QMailFolderId destination)
         : Request(MoveMessagesRequestType)
         , messageLists(messageLists)
-        , destination(destination) {}
+        , destination(destination)
+    {}
 
     QMap<QMailAccountId, QMailMessageIdList> messageLists;
     QMailFolderId destination;
@@ -2247,7 +2252,8 @@ void ServiceHandler::onlineMoveMessages(quint64 action, const QMailMessageIdList
     sources = sourceServiceSet(messageLists.keys());
     if (sources.isEmpty()) {
         reportFailure(action, QMailServiceAction::Status::ErrNoConnection,
-                      tr("Unable to move messages for unconfigured account"));
+                      tr("Unable to move messages for unconfigured account"),
+                      QMailAccountId());
     } else {
         enqueueRequest(new OnlineMoveMessagesRequest(messageLists, destination), action, sources,
                        &ServiceHandler::dispatchOnlineMoveMessages, &ServiceHandler::storageActionCompleted);
@@ -2285,7 +2291,8 @@ public:
         : Request(FlagMessagesRequestType)
         , messageLists(messageLists)
         , setMask(setMask)
-        , unsetMask(unsetMask) {}
+        , unsetMask(unsetMask)
+    {}
 
     QMap<QMailAccountId, QMailMessageIdList> messageLists;
     quint64 setMask;
@@ -2301,7 +2308,8 @@ void ServiceHandler::onlineFlagMessagesAndMoveToStandardFolder(quint64 action, c
     sources = sourceServiceSet(messageLists.keys());
     if (sources.isEmpty()) {
         reportFailure(action, QMailServiceAction::Status::ErrNoConnection,
-                      tr("Unable to flag messages for unconfigured account"));
+                      tr("Unable to flag messages for unconfigured account"),
+                      QMailAccountId());
     } else {
         enqueueRequest(new OnlineFlagMessagesAndMoveToStandardFolderRequest(messageLists, setMask, unsetMask),
                        action, sources,
@@ -2322,7 +2330,8 @@ void ServiceHandler::addMessages(quint64 action, const QMailMessageMetaDataList 
         if (m.contentScheme() != scheme) {
             reportFailure(action,
                           QMailServiceAction::Status::ErrFrameworkFault,
-                          tr("Unable to async add messages, inconsistent contentscheme"));
+                          tr("Unable to async add messages, inconsistent contentscheme"),
+                          QMailAccountId());
         }
     }
     for (const QMailMessageMetaData &m : messages) {
@@ -2349,9 +2358,9 @@ void ServiceHandler::addMessages(quint64 action, const QMailMessageMetaDataList 
     }
 
     if (failure) {
-        reportFailure(action,
-                      QMailServiceAction::Status::ErrFrameworkFault,
-                      tr("Unable to async add messages"));
+        reportFailure(action, QMailServiceAction::Status::ErrFrameworkFault,
+                      tr("Unable to async add messages"),
+                      QMailAccountId());
         return;
     }
 
@@ -2373,7 +2382,8 @@ void ServiceHandler::updateMessages(quint64 action, const QMailMessageMetaDataLi
         if (m.contentScheme() != scheme) {
             reportFailure(action,
                           QMailServiceAction::Status::ErrFrameworkFault,
-                          tr("Unable to async update messages, inconsistent contentscheme"));
+                          tr("Unable to async update messages, inconsistent contentscheme"),
+                          QMailAccountId());
         }
     }
     for (const QMailMessageMetaData &m : messages) {
@@ -2410,7 +2420,8 @@ void ServiceHandler::updateMessages(quint64 action, const QMailMessageMetaDataLi
     if (failure) {
         reportFailure(action,
                       QMailServiceAction::Status::ErrFrameworkFault,
-                      tr("Unable to async update messages"));
+                      tr("Unable to async update messages"),
+                      QMailAccountId());
         return;
     }
 
@@ -2454,7 +2465,8 @@ void ServiceHandler::deleteMessages(quint64 action, const QMailMessageIdList& me
         && !QMailStore::instance()->removeMessages(QMailMessageKey::id(messageIds),
                                                    QMailStore::CreateRemovalRecord)) {
         qCWarning(lcMessaging) << "Unable to service request to delete messages";
-        reportFailure(action, QMailServiceAction::Status::ErrFrameworkFault, tr("Could not delete messages"));
+        reportFailure(action, QMailServiceAction::Status::ErrFrameworkFault, tr("Could not delete messages"),
+                      QMailAccountId());
         return;
     }
 
@@ -2518,13 +2530,12 @@ class OnlineCreateFolderRequest : public Request
 {
 public:
     OnlineCreateFolderRequest(const QString &name, QMailAccountId accountId, QMailFolderId parentId)
-        : Request(CreateFolderRequestType)
+        : Request(CreateFolderRequestType, accountId)
         , name(name)
-        , accountId(accountId)
-        , parentId(parentId) {}
+        , parentId(parentId)
+    {}
 
     QString name;
-    QMailAccountId accountId;
     QMailFolderId parentId;
 };
 
@@ -2545,7 +2556,8 @@ void ServiceHandler::onlineCreateFolder(quint64 action, const QString &name, con
                        &ServiceHandler::dispatchOnlineCreateFolder, &ServiceHandler::storageActionCompleted);
     } else {
         reportFailure(action, QMailServiceAction::Status::ErrInvalidData,
-                      tr("Unable to create folder for invalid account"));
+                      tr("Unable to create folder for invalid account"),
+                      QMailAccountId());
     }
 }
 
@@ -2571,11 +2583,10 @@ class OnlineRenameFolderRequest : public Request
 {
 public:
     OnlineRenameFolderRequest(QMailFolderId folderId, const QString &newFolderName)
-        : Request(RenameFolderRequestType)
-        , folderId(folderId)
-        , newFolderName(newFolderName) {}
+        : Request(RenameFolderRequestType, QMailAccountId(), folderId)
+        , newFolderName(newFolderName)
+    {}
 
-    QMailFolderId folderId;
     QString newFolderName;
 };
 
@@ -2588,7 +2599,8 @@ void ServiceHandler::onlineRenameFolder(quint64 action, const QMailFolderId &fol
         enqueueRequest(new OnlineRenameFolderRequest(folderId, name), action, sources,
                        &ServiceHandler::dispatchOnlineRenameFolder, &ServiceHandler::storageActionCompleted);
     } else {
-        reportFailure(action, QMailServiceAction::Status::ErrInvalidData, tr("Unable to rename invalid folder"));
+        reportFailure(action, QMailServiceAction::Status::ErrInvalidData, tr("Unable to rename invalid folder"),
+                      QMailAccountId());
     }
 }
 
@@ -2615,10 +2627,8 @@ class OnlineDeleteFolderRequest : public Request
 {
 public:
     OnlineDeleteFolderRequest(QMailFolderId folderId)
-        : Request(DeleteFolderRequestType)
-        , folderId(folderId) {}
-
-    QMailFolderId folderId;
+        : Request(DeleteFolderRequestType, QMailAccountId(), folderId)
+    {}
 };
 
 void ServiceHandler::onlineDeleteFolder(quint64 action, const QMailFolderId &folderId)
@@ -2630,7 +2640,8 @@ void ServiceHandler::onlineDeleteFolder(quint64 action, const QMailFolderId &fol
         enqueueRequest(new OnlineDeleteFolderRequest(folderId), action, sources,
                        &ServiceHandler::dispatchOnlineDeleteFolder, &ServiceHandler::storageActionCompleted);
     } else {
-        reportFailure(action, QMailServiceAction::Status::ErrInvalidData, tr("Unable to delete invalid folder"));
+        reportFailure(action, QMailServiceAction::Status::ErrInvalidData, tr("Unable to delete invalid folder"),
+                      QMailAccountId());
     }
 }
 
@@ -2655,11 +2666,10 @@ class OnlineMoveFolderRequest : public Request
 {
 public:
     OnlineMoveFolderRequest(QMailFolderId folderId, QMailFolderId newParentId)
-        : Request(MoveFolderRequestType)
-        , folderId(folderId)
-        , newParentId(newParentId) {}
+        : Request(MoveFolderRequestType, QMailAccountId(), folderId)
+        , newParentId(newParentId)
+    {}
 
-    QMailFolderId folderId;
     QMailFolderId newParentId;
 };
 
@@ -2671,7 +2681,8 @@ void ServiceHandler::onlineMoveFolder(quint64 action, const QMailFolderId &folde
         enqueueRequest(new OnlineMoveFolderRequest(folderId, newParentId), action, sources,
                        &ServiceHandler::dispatchOnlineMoveFolder, &ServiceHandler::storageActionCompleted);
     } else {
-        reportFailure(action, QMailServiceAction::Status::ErrInvalidData, tr("Unable to move invalid folder"));
+        reportFailure(action, QMailServiceAction::Status::ErrInvalidData, tr("Unable to move invalid folder"),
+                      QMailAccountId());
     }
 }
 
@@ -2749,7 +2760,8 @@ void ServiceHandler::searchMessages(quint64 action, const QMailMessageKey &filte
         QSet<QMailMessageService*> sources(sourceServiceSet(searchAccountIds));
         if (sources.isEmpty()) {
             reportFailure(action, QMailServiceAction::Status::ErrNoConnection,
-                          tr("Unable to search messages for unconfigured account"));
+                          tr("Unable to search messages for unconfigured account"),
+                          QMailAccountId());
         } else {
             enqueueRequest(new SearchMessagesRequest(searchAccountIds, filter, bodyText, limit, sort, searchType),
                            action, sources,
@@ -2862,6 +2874,7 @@ void ServiceHandler::onStatusChanged(const QMailServiceAction::Status s, quint64
     if (it != mActiveActions.end()) {
         it->status = s;
     }
+
     emit statusChanged(a, s);
 }
 
@@ -3057,12 +3070,11 @@ class ProtocolRequest : public Request
 {
 public:
     ProtocolRequest(QMailAccountId accountId, const QString &request, const QVariantMap &requestData)
-        : Request(ProtocolRequestRequestType)
-        , accountId(accountId)
+        : Request(ProtocolRequestRequestType, accountId)
         , request(request)
-        , requestData(requestData) {}
+        , requestData(requestData)
+    {}
 
-    QMailAccountId accountId;
     QString request;
     QVariantMap requestData;
 };
@@ -3073,7 +3085,8 @@ void ServiceHandler::protocolRequest(quint64 action, const QMailAccountId &accou
     QSet<QMailMessageService*> sources(sourceServiceSet(accountId));
     if (sources.isEmpty()) {
         reportFailure(action, QMailServiceAction::Status::ErrNoConnection,
-                      tr("Unable to forward protocol-specific request for unconfigured account"));
+                      tr("Unable to forward protocol-specific request for unconfigured account"),
+                      accountId);
     } else {
         enqueueRequest(new ProtocolRequest(accountId, request, data), action, sources,
                        &ServiceHandler::dispatchProtocolRequest, &ServiceHandler::protocolRequestCompleted);
@@ -3338,7 +3351,8 @@ void ServiceHandler::reportPastFailures()
     while (!_failedRequests.isEmpty()) {
         quint64 action(_failedRequests.takeFirst());
         reportFailure(action, QMailServiceAction::Status::ErrFrameworkFault,
-                      tr("Failed to perform requested action!"));
+                      tr("Failed to perform requested action!"),
+                      QMailAccountId());
     }
 }
 
