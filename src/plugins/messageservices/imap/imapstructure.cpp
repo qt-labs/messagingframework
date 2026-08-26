@@ -408,7 +408,8 @@ void setPartFromDescription(const QStringList &details, QMailMessagePart *part)
     ++next;
 }
 
-void setMultipartFromDescription(const QStringList &structure, QMailMessagePartContainer *container, QMailMessagePart *part, uint *size, bool *wellFormed)
+void setMultipartFromDescription(const QStringList &structure, QMailMessagePartContainer *container,
+                                 QMailMessagePart *part, uint *size, bool *wellFormed)
 {
     QStringList details = decomposeElements(structure.last());
 

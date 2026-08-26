@@ -96,7 +96,8 @@ void ExportUpdatesCommand::execute()
     static_cast<QMailRetrievalAction*>(_action.data())->exportUpdates(_accountId);
 }
 
-RetrieveFolderListCommand::RetrieveFolderListCommand(const QMailAccountId &accountId, const QMailFolderId &folderId, bool descending)
+RetrieveFolderListCommand::RetrieveFolderListCommand(const QMailAccountId &accountId, const QMailFolderId &folderId,
+                                                     bool descending)
 {
     _action = QPointer<QMailServiceAction>(new QMailRetrievalAction());
     _accountId = accountId;
@@ -109,7 +110,8 @@ void RetrieveFolderListCommand::execute()
     static_cast<QMailRetrievalAction*>(_action.data())->retrieveFolderList(_accountId, QMailFolderId());
 }
 
-RetrieveMessageListCommand::RetrieveMessageListCommand(const QMailAccountId &accountId, const QMailFolderId &folderId, uint minimum, const QMailMessageSortKey &sort)
+RetrieveMessageListCommand::RetrieveMessageListCommand(const QMailAccountId &accountId, const QMailFolderId &folderId,
+                                                       uint minimum, const QMailMessageSortKey &sort)
 {
     _action = QPointer<QMailServiceAction>(new QMailRetrievalAction());
     _accountId = accountId;
@@ -123,7 +125,9 @@ void RetrieveMessageListCommand::execute()
     static_cast<QMailRetrievalAction*>(_action.data())->retrieveMessageList(_accountId, _folderId, _minimum, _sort);
 }
 
-RetrieveMessageListsCommand::RetrieveMessageListsCommand(const QMailAccountId &accountId, const QMailFolderIdList &folderIds, uint minimum, const QMailMessageSortKey &sort)
+RetrieveMessageListsCommand::RetrieveMessageListsCommand(const QMailAccountId &accountId,
+                                                         const QMailFolderIdList &folderIds,
+                                                         uint minimum, const QMailMessageSortKey &sort)
 {
     _action = QPointer<QMailServiceAction>(new QMailRetrievalAction());
     _accountId = accountId;

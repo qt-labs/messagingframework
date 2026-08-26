@@ -105,10 +105,14 @@ SmtpService::SmtpService(const QMailAccountId &accountId)
       _capabilityFetcher(nullptr),
       _capabilityFetchTimeout(0)
 {
-    connect(&_client, SIGNAL(progressChanged(uint, uint)), this, SIGNAL(progressChanged(uint, uint)));
-    connect(&_client, SIGNAL(errorOccurred(int, QString)), this, SLOT(errorOccurred(int, QString)));
-    connect(&_client, SIGNAL(errorOccurred(QMailServiceAction::Status, QString)), this, SLOT(errorOccurred(QMailServiceAction::Status, QString)));
-    connect(&_client, &SmtpClient::statusChanged, this, &SmtpService::handleStatusChange);
+    connect(&_client, SIGNAL(progressChanged(uint, uint)),
+            this, SIGNAL(progressChanged(uint, uint)));
+    connect(&_client, SIGNAL(errorOccurred(int, QString)),
+            this, SLOT(errorOccurred(int, QString)));
+    connect(&_client, SIGNAL(errorOccurred(QMailServiceAction::Status, QString)),
+            this, SLOT(errorOccurred(QMailServiceAction::Status, QString)));
+    connect(&_client, &SmtpClient::statusChanged,
+            this, &SmtpService::handleStatusChange);
 
     fetchCapabilities();
 }

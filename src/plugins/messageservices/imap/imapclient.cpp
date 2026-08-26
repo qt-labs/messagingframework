@@ -36,6 +36,7 @@
 #include "imapconfiguration.h"
 #include "imapstrategy.h"
 #include "imaplog.h"
+
 #include <longstream_p.h>
 #include <qmailmessagebuffer.h>
 #include <qmailfolder.h>
@@ -43,6 +44,7 @@
 #include <qmaildisconnected.h>
 #include <qmailcodec.h>
 #include <qmailcrypto.h>
+
 #include <limits.h>
 #include <QFile>
 #include <QDir>
@@ -264,6 +266,7 @@ void IdleProtocol::onCredentialsStatusChanged()
 
     disconnect(_credentials, &QMailCredentialsInterface::statusChanged,
                this, &IdleProtocol::onCredentialsStatusChanged);
+
     switch (_credentials->status()) {
     case (QMailCredentialsInterface::Ready):
         sendLogin(QMailAccountConfiguration(_client->account()), _credentials);
@@ -590,182 +593,182 @@ void ImapClient::checkCommandResponse(ImapCommand command, OperationStatus statu
 
 void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
 {
-    switch ( command ) {
-        case IMAP_Init:
-            // We need to request the capabilities. Even in the case that an unsolicited response
-            // has been received, as some servers report incomplete info in unsolicited responses,
-            // missing the IDLE capability.
-            // Currently idle connections must be established before main connection will
-            // service requests.
-            emit statusChanged( tr("Checking capabilities" ) );
-            _protocol.sendCapability();
-            break;
+    switch (command) {
+    case IMAP_Init:
+        // We need to request the capabilities. Even in the case that an unsolicited response
+        // has been received, as some servers report incomplete info in unsolicited responses,
+        // missing the IDLE capability.
+        // Currently idle connections must be established before main connection will
+        // service requests.
+        emit statusChanged( tr("Checking capabilities" ) );
+        _protocol.sendCapability();
+        break;
 
-        case IMAP_Capability:
-        {
-            if (_protocol.authenticated()) {
-                // Received capabilities after logging in, continue with post login process
-                Q_ASSERT(_protocol.receivedCapabilities());
-                _protocol.setReceivedCapabilities(true);
-                commandTransition(IMAP_Login, status);
-                break;
-            }
-
-            if (!_protocol.encrypted()) {
-                QMailAccountConfiguration config(_accountId);
-                if (ImapAuthenticator::useEncryption(ImapConfiguration(config),
-                                                     _protocol.capabilities())) {
-                    // Switch to encrypted mode
-                    emit statusChanged(tr("Starting TLS"));
-                    _protocol.sendStartTLS();
-                    break;
-                }
-            }
-
-            // We are now connected
-            QMailFolderIdList idleFolders;
-            if (_protocol.supportsCapability("IDLE")
-                && _pushConnectionsReserved) {
-                idleFolders = configurationIdleFolderIds();
-            }
-            // Start / stop idle connections, to keep only idles
-            monitor(idleFolders);
-
-            if (isPushEmailEstablished()) {
-                // Login is postponed after idle connections, see
-                // IMAP_Idle_Continuation
-                logIn();
-            }
+    case IMAP_Capability:
+    {
+        if (_protocol.authenticated()) {
+            // Received capabilities after logging in, continue with post login process
+            Q_ASSERT(_protocol.receivedCapabilities());
+            _protocol.setReceivedCapabilities(true);
+            commandTransition(IMAP_Login, status);
             break;
         }
 
-        case IMAP_Idle_Continuation:
+        if (!_protocol.encrypted()) {
+            QMailAccountConfiguration config(_accountId);
+            if (ImapAuthenticator::useEncryption(ImapConfiguration(config),
+                                                 _protocol.capabilities())) {
+                // Switch to encrypted mode
+                emit statusChanged(tr("Starting TLS"));
+                _protocol.sendStartTLS();
+                break;
+            }
+        }
+
+        // We are now connected
+        QMailFolderIdList idleFolders;
+        if (_protocol.supportsCapability("IDLE")
+            && _pushConnectionsReserved) {
+            idleFolders = configurationIdleFolderIds();
+        }
+        // Start / stop idle connections, to keep only idles
+        monitor(idleFolders);
+
+        if (isPushEmailEstablished()) {
+            // Login is postponed after idle connections, see
+            // IMAP_Idle_Continuation
             logIn();
-            break;
+        }
+        break;
+    }
 
-        case IMAP_StartTLS:
-            // Check capabilities for encrypted mode
+    case IMAP_Idle_Continuation:
+        logIn();
+        break;
+
+    case IMAP_StartTLS:
+        // Check capabilities for encrypted mode
+        _protocol.sendCapability();
+        break;
+
+    case IMAP_Login:
+    {
+        // After logging in server capabilities reported may change  so we need to request
+        // capabilities again, unless already received in an unsolicited response
+        if (!_protocol.receivedCapabilities()) {
+            emit statusChanged(tr("Checking capabilities"));
             _protocol.sendCapability();
             break;
-
-        case IMAP_Login:
-        {
-            // After logging in server capabilities reported may change  so we need to request
-            // capabilities again, unless already received in an unsolicited response
-            if (!_protocol.receivedCapabilities()) {
-                emit statusChanged(tr("Checking capabilities"));
-                _protocol.sendCapability();
-                break;
-            }
-
-            // Now that we know the capabilities, check for Reference and idle support
-            QMailAccount account(_accountId);
-            QMailAccountConfiguration config(_accountId);
-            ImapConfiguration imapCfg(config);
-            bool supportsReferences(_protocol.capabilities().contains("URLAUTH", Qt::CaseInsensitive)
-                                    && _protocol.capabilities().contains("CATENATE", Qt::CaseInsensitive)
-                                    // No FWOD support for IMAPS
-                                    && (static_cast<QMailTransport::EncryptType>(imapCfg.mailEncryption()) != QMailTransport::Encrypt_SSL));
-
-            if (((account.status() & QMailAccount::CanReferenceExternalData) && !supportsReferences)
-                || (!(account.status() & QMailAccount::CanReferenceExternalData) && supportsReferences)
-                || (imapCfg.pushCapable() != _protocol.supportsCapability("IDLE"))
-                || (imapCfg.capabilities() != _protocol.capabilities())) {
-                account.setStatus(QMailAccount::CanReferenceExternalData, supportsReferences);
-                imapCfg.setPushCapable(_protocol.supportsCapability("IDLE"));
-                imapCfg.setCapabilities(_protocol.capabilities());
-                if (!QMailStore::instance()->updateAccount(&account, &config)) {
-                    qCWarning(lcMailStore) << "Unable to update account" << account.id() << "to set imap4 configuration";
-                }
-            }
-
-            // After logging in server capabilities reported may change so we need to
-            // check if IDLE is already established, when enabled
-            if (_protocol.supportsCapability("IDLE") && _pushConnectionsReserved) {
-                // This is a noop when IDLE is already established
-                // for the given folders
-                monitor(configurationIdleFolderIds());
-                emit statusChanged(tr("Logging in idle connection"));
-            }
-
-            bool compressCapable(_protocol.capabilities().contains("COMPRESS=DEFLATE", Qt::CaseInsensitive));
-            if (!_protocol.encrypted() && QMFALLOWCOMPRESS && compressCapable && !_protocol.compress()) {
-                _protocol.sendCompress(); // MUST not pipeline compress
-            } else {
-                // Server does not support compression, continue with post compress step
-                commandTransition(IMAP_Compress, status);
-            }
-            break;
         }
 
-        case IMAP_Compress:
-            // Sent a compress, or logged in and server doesn't support compress
-            if (!_protocol.capabilities().contains("QRESYNC", Qt::CaseInsensitive)) {
-                _strategyContext->commandTransition(IMAP_Login, status);
-            } else {
-                if (!_qresyncEnabled) {
-                    _protocol.sendEnable("QRESYNC CONDSTORE");
-                    _qresyncEnabled = true;
-                }
-            }
-            break;
+        // Now that we know the capabilities, check for Reference and idle support
+        QMailAccount account(_accountId);
+        QMailAccountConfiguration config(_accountId);
+        ImapConfiguration imapCfg(config);
+        bool supportsReferences(_protocol.capabilities().contains("URLAUTH", Qt::CaseInsensitive)
+                                && _protocol.capabilities().contains("CATENATE", Qt::CaseInsensitive)
+                                // No FWOD support for IMAPS
+                                && (static_cast<QMailTransport::EncryptType>(imapCfg.mailEncryption()) != QMailTransport::Encrypt_SSL));
 
-        case IMAP_Enable:
-            // Equivalent to having just logged in
+        if (((account.status() & QMailAccount::CanReferenceExternalData) && !supportsReferences)
+            || (!(account.status() & QMailAccount::CanReferenceExternalData) && supportsReferences)
+            || (imapCfg.pushCapable() != _protocol.supportsCapability("IDLE"))
+            || (imapCfg.capabilities() != _protocol.capabilities())) {
+            account.setStatus(QMailAccount::CanReferenceExternalData, supportsReferences);
+            imapCfg.setPushCapable(_protocol.supportsCapability("IDLE"));
+            imapCfg.setCapabilities(_protocol.capabilities());
+            if (!QMailStore::instance()->updateAccount(&account, &config)) {
+                qCWarning(lcMailStore) << "Unable to update account" << account.id() << "to set imap4 configuration";
+            }
+        }
+
+        // After logging in server capabilities reported may change so we need to
+        // check if IDLE is already established, when enabled
+        if (_protocol.supportsCapability("IDLE") && _pushConnectionsReserved) {
+            // This is a noop when IDLE is already established
+            // for the given folders
+            monitor(configurationIdleFolderIds());
+            emit statusChanged(tr("Logging in idle connection"));
+        }
+
+        bool compressCapable(_protocol.capabilities().contains("COMPRESS=DEFLATE", Qt::CaseInsensitive));
+        if (!_protocol.encrypted() && QMFALLOWCOMPRESS && compressCapable && !_protocol.compress()) {
+            _protocol.sendCompress(); // MUST not pipeline compress
+        } else {
+            // Server does not support compression, continue with post compress step
+            commandTransition(IMAP_Compress, status);
+        }
+        break;
+    }
+
+    case IMAP_Compress:
+        // Sent a compress, or logged in and server doesn't support compress
+        if (!_protocol.capabilities().contains("QRESYNC", Qt::CaseInsensitive)) {
             _strategyContext->commandTransition(IMAP_Login, status);
-            break;
-
-        case IMAP_Noop:
-        {
-            QMailAccountConfiguration config(_accountId);
-            _inactiveTimer.start(_closeCount ? MaxTimeBeforeNoop
-                                             : ImapConfiguration(config).timeTillLogout() % MaxTimeBeforeNoop);
-            break;
+        } else {
+            if (!_qresyncEnabled) {
+                _protocol.sendEnable("QRESYNC CONDSTORE");
+                _qresyncEnabled = true;
+            }
         }
+        break;
 
-        case IMAP_Logout:
-            // Ensure connection is closed on logout
-            _protocol.close();
-            break;
+    case IMAP_Enable:
+        // Equivalent to having just logged in
+        _strategyContext->commandTransition(IMAP_Login, status);
+        break;
 
-        case IMAP_Select:
-        case IMAP_Examine:
-        case IMAP_QResync:
-            if (_protocol.mailbox().isSelected()) {
-                const ImapMailboxProperties &properties(_protocol.mailbox());
+    case IMAP_Noop:
+    {
+        QMailAccountConfiguration config(_accountId);
+        _inactiveTimer.start(_closeCount ? MaxTimeBeforeNoop
+                                         : ImapConfiguration(config).timeTillLogout() % MaxTimeBeforeNoop);
+        break;
+    }
 
-                // See if we have anything to record about this mailbox
-                QMailFolder folder(properties.id);
+    case IMAP_Logout:
+        // Ensure connection is closed on logout
+        _protocol.close();
+        break;
 
-                bool modified(false);
-                if ((folder.serverCount() != properties.exists) || (folder.serverUnreadCount() != properties.unseen)) {
-                    folder.setServerCount(properties.exists);
-                    folder.setServerUnreadCount(properties.unseen);
-                    modified = true;
+    case IMAP_Select:
+    case IMAP_Examine:
+    case IMAP_QResync:
+        if (_protocol.mailbox().isSelected()) {
+            const ImapMailboxProperties &properties(_protocol.mailbox());
 
-                    // See how this compares to the local mailstore count
-                    updateFolderCountStatus(&folder);
+            // See if we have anything to record about this mailbox
+            QMailFolder folder(properties.id);
+
+            bool modified(false);
+            if ((folder.serverCount() != properties.exists) || (folder.serverUnreadCount() != properties.unseen)) {
+                folder.setServerCount(properties.exists);
+                folder.setServerUnreadCount(properties.unseen);
+                modified = true;
+
+                // See how this compares to the local mailstore count
+                updateFolderCountStatus(&folder);
+            }
+
+            QString supportsForwarded(properties.permanentFlags.contains("$Forwarded", Qt::CaseInsensitive) ? "true" : QString());
+            if (folder.customField("qmf-supports-forwarded") != supportsForwarded) {
+                if (supportsForwarded.isEmpty()) {
+                    folder.removeCustomField("qmf-supports-forwarded");
+                } else {
+                    folder.setCustomField("qmf-supports-forwarded", supportsForwarded);
                 }
+                modified = true;
+            }
 
-                QString supportsForwarded(properties.permanentFlags.contains("$Forwarded", Qt::CaseInsensitive) ? "true" : QString());
-                if (folder.customField("qmf-supports-forwarded") != supportsForwarded) {
-                    if (supportsForwarded.isEmpty()) {
-                        folder.removeCustomField("qmf-supports-forwarded");
-                    } else {
-                        folder.setCustomField("qmf-supports-forwarded", supportsForwarded);
-                    }
-                    modified = true;
-                }
-
-                if (modified) {
-                    if (!QMailStore::instance()->updateFolder(&folder)) {
-                        qCWarning(lcMailStore) << "Unable to update folder" << folder.id() << "to update server counts!";
-                    }
+            if (modified) {
+                if (!QMailStore::instance()->updateFolder(&folder)) {
+                    qCWarning(lcMailStore) << "Unable to update folder" << folder.id() << "to update server counts!";
                 }
             }
-        // fall through
-        default:
-            _strategyContext->commandTransition(command, status);
+        }
+    // fall through
+    default:
+        _strategyContext->commandTransition(command, status);
     }
 }
 
@@ -804,7 +807,8 @@ void ImapClient::mailboxListed(const QString &flags, const QString &path)
 
                 if (folder.status() != folderOriginal.status()) {
                     if (!QMailStore::instance()->updateFolder(&folder)) {
-                        qCWarning(lcMailStore) << "Unable to update folder for account:" << folder.parentAccountId() << "path:" << folder.path();
+                        qCWarning(lcMailStore) << "Unable to update folder for account:" << folder.parentAccountId()
+                                               << "path:" << folder.path();
                     }
                 }
 
@@ -846,7 +850,8 @@ void ImapClient::mailboxListed(const QString &flags, const QString &path)
                 || (path.startsWith(baseFolder, Qt::CaseInsensitive) && (path.length() == baseFolder.length()))
                 || (path.startsWith(baseFolder + _protocol.delimiter(), Qt::CaseInsensitive))) {
                 if (!QMailStore::instance()->addFolder(&folder)) {
-                    qCWarning(lcMailStore) << "Unable to add folder for account:" << folder.parentAccountId() << "path:" << folder.path();
+                    qCWarning(lcMailStore) << "Unable to add folder for account:" << folder.parentAccountId()
+                                           << "path:" << folder.path();
                 } else {
                     //set inbox as standardFolder
                     if (QString::compare(path, "INBOX", Qt::CaseInsensitive) == 0) {
@@ -862,7 +867,8 @@ void ImapClient::mailboxListed(const QString &flags, const QString &path)
             _strategyContext->mailboxListed(folder, folderFlags);
 
             if (!QMailStore::instance()->updateFolder(&folder)) {
-                qCWarning(lcMailStore) << "Unable to update folder for account:" << folder.parentAccountId() << "path:" << folder.path();
+                qCWarning(lcMailStore) << "Unable to update folder for account:" << folder.parentAccountId()
+                                       << "path:" << folder.path();
             }
 
             boxId = mailboxId(mailboxPath);
@@ -949,7 +955,8 @@ void ImapClient::messageFetched(QMailMessage& mail, const QString &detachedFilen
                 mail.setStatus(QMailMessage::PartialContentAvailable, true);
             }
         } else {
-            qCWarning(lcIMAP) << "Unable to find existing message for uid:" << mail.serverUid() << "account:" << _accountId;
+            qCWarning(lcIMAP) << "Unable to find existing message for uid:" << mail.serverUid()
+                              << "account:" << _accountId;
         }
     }
     mail.setCustomField("qmf-detached-filename", detachedFilename);
@@ -1001,7 +1008,8 @@ static bool updateParts(QMailMessagePart &part, const QByteArray &bodyData)
 
     if (part.multipartType() == QMailMessage::MultipartNone) {
         // The body data is for this part only
-        part.setBody(QMailMessageBody::fromData(bodyData, part.contentType(), part.transferEncoding(), QMailMessageBody::AlreadyEncoded));
+        part.setBody(QMailMessageBody::fromData(bodyData, part.contentType(), part.transferEncoding(),
+                                                QMailMessageBody::AlreadyEncoded));
         part.removeHeaderField("X-qmf-internal-partial-content");
     } else {
         const QByteArray &boundary(part.contentType().boundary());
@@ -1242,7 +1250,8 @@ void ImapClient::dataFetched(const QString &uid, const QString &section, const Q
             }
 
             // Set the content into the mail
-            mail->setBody(QMailMessageBody::fromFile(fileName, mail->contentType(), mail->transferEncoding(), QMailMessageBody::AlreadyEncoded));
+            mail->setBody(QMailMessageBody::fromFile(fileName, mail->contentType(), mail->transferEncoding(),
+                                                     QMailMessageBody::AlreadyEncoded));
             mail->setStatus(QMailMessage::PartialContentAvailable, true);
 
             const uint totalSize(existingSize + size);
@@ -1297,7 +1306,8 @@ void ImapClient::dataFetched(const QString &uid, const QString &section, const Q
 
             if (part.multipartType() == QMailMessage::MultipartNone) {
                 // The body data is for this part only
-                part.setBody(QMailMessageBody::fromFile(fileName, part.contentType(), part.transferEncoding(), QMailMessageBody::AlreadyEncoded));
+                part.setBody(QMailMessageBody::fromFile(fileName, part.contentType(), part.transferEncoding(),
+                                                        QMailMessageBody::AlreadyEncoded));
 
                 const int totalSize(existingSize + size);
                 if (totalSize >= part.contentDisposition().size()) {
@@ -1350,7 +1360,8 @@ void ImapClient::dataFetched(const QString &uid, const QString &section, const Q
         QMailMessageBuffer::instance()->setCallback(mail, callback);
     } else {
         qCWarning(lcIMAP) << "Unable to handle dataFetched - uid:" << uid << "section:" << section;
-        operationFailed(QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to handle dataFetched without context"));
+        operationFailed(QMailServiceAction::Status::ErrFrameworkFault,
+                        tr("Unable to handle dataFetched without context"));
     }
 }
 
@@ -1406,7 +1417,8 @@ void ImapClient::partHeaderFetched(const QString &uid, const QString &section, c
         QMailMessageBuffer::instance()->setCallback(mail, callback);
     } else {
         qCWarning(lcIMAP) << "Unable to handle partHeaderFetched - uid:" << uid << "section:" << section;
-        operationFailed(QMailServiceAction::Status::ErrFrameworkFault, tr("Unable to handle partHeaderFetched without context"));
+        operationFailed(QMailServiceAction::Status::ErrFrameworkFault,
+                        tr("Unable to handle partHeaderFetched without context"));
     }
 }
 
@@ -1553,7 +1565,8 @@ void ImapClient::operationFailed(QMailServiceAction::Status::ErrorCode code, con
 
 QMailFolderId ImapClient::mailboxId(const QString &path) const
 {
-    QMailFolderIdList folderIds = QMailStore::instance()->queryFolders(QMailFolderKey::parentAccountId(_accountId) & QMailFolderKey::path(path));
+    QMailFolderIdList folderIds = QMailStore::instance()->queryFolders(QMailFolderKey::parentAccountId(_accountId)
+                                                                       & QMailFolderKey::path(path));
     if (folderIds.count() == 1)
         return folderIds.first();
 
@@ -1562,7 +1575,8 @@ QMailFolderId ImapClient::mailboxId(const QString &path) const
 
 QMailFolderIdList ImapClient::mailboxIds() const
 {
-    return QMailStore::instance()->queryFolders(QMailFolderKey::parentAccountId(_accountId), QMailFolderSortKey::path(Qt::AscendingOrder));
+    return QMailStore::instance()->queryFolders(QMailFolderKey::parentAccountId(_accountId),
+                                                QMailFolderSortKey::path(Qt::AscendingOrder));
 }
 
 QStringList ImapClient::serverUids(const QMailFolderId &folderId) const
@@ -1654,6 +1668,7 @@ QMailFolderIdList ImapClient::configurationIdleFolderIds()
     QMailFolderIdList folderIds;
     if (!imapCfg.pushEnabled())
         return folderIds;
+
     foreach (QString folderName, imapCfg.pushFolders()) {
         QMailFolderId idleFolderId(mailboxId(folderName));
         if (idleFolderId.isValid()) {

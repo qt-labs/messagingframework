@@ -37,12 +37,14 @@
 #include "serviceactionqueue.h"
 #include "imaplog.h"
 
-#include <QtPlugin>
-#include <QTimer>
 #include <qmailmessage.h>
 #include <qmaildisconnected.h>
-#include <QCoreApplication>
+
 #include <typeinfo>
+
+#include <QtPlugin>
+#include <QTimer>
+#include <QCoreApplication>
 
 namespace {
 
@@ -1541,7 +1543,7 @@ void ImapService::disable()
     _source->retrievalTerminated();
     qCDebug(lcIMAP) << "account disabled, terminating the client.";
     delete _client;
-    _client = 0;
+    _client = nullptr;
 }
 
 void ImapService::disablePushEmail()
@@ -1663,6 +1665,7 @@ void ImapService::initiatePushEmail()
     qCDebug(lcIMAP) << "Attempting to establish push email for account" << _accountId
                     << QMailAccount(_accountId).name();
     QMailFolderIdList ids(_client->configurationIdleFolderIds());
+
     if (ids.count()) {
         _establishingPushEmail = true;
         setPersistentConnectionStatus(true);
@@ -1685,7 +1688,7 @@ void ImapService::retryPushEmail()
         const int oneHour = 60*60;
         qCDebug(lcIMAP) << "Push email connection could not be established. Reattempting to establish in"
                         << _pushRetry << "seconds";
-        _restartPushEmailTimer->start(_pushRetry*1000);
+        _restartPushEmailTimer->start(_pushRetry * 1000);
         _pushRetry = qMin(oneHour, _pushRetry * 2);
     }
     _establishingPushEmail = false;
@@ -1754,12 +1757,15 @@ void ImapService::closeIdleSession()
         _networkSession->disconnect();
         _networkSession->close();
         delete _networkSession;
-        _networkSession = 0;
+        _networkSession = nullptr;
     }
     _networkSessionTimer->stop();
     _networkSessionTimer->disconnect();
 }
 
+// TODO: this is currently dead code due to qt6 having removed QNetworkSession and QNetworkConfiguration.
+// Should investigate into QNetworkInformation here or in IdleNetworkSession (see also commit 9254f18ed9c8eb9),
+// or some other way of tracking.
 void ImapService::onOnlineStateChanged(bool isOnline)
 {
     qCDebug(lcIMAP) << "IDLE Session: Network state changed: " << isOnline;
@@ -1775,7 +1781,8 @@ void ImapService::onOnlineStateChanged(bool isOnline)
 
 void ImapService::onSessionOpened()
 {
-    if (!_networkSession || sender() != _networkSession) return;
+    if (!_networkSession || sender() != _networkSession)
+        return;
 
     // stop timer
     _networkSessionTimer->stop();

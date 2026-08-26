@@ -351,6 +351,7 @@ void MessageServer::readLogSettings() const
                                        : LC_MESSAGING ".smtp.debug=false"));
         }
     }
+
     settings.endGroup();
     if (!rules.isEmpty()) {
         QLoggingCategory::setFilterRules(rules.join('\n'));

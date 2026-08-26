@@ -3591,7 +3591,8 @@ void ImapProtocol::sendMove(const QMailFolder &mailbox, const QMailFolderId &new
     _fsm->setState(&_fsm->moveState);
 }
 
-void ImapProtocol::sendSearchMessages(const QMailMessageKey &key, const QString &body, const QMailMessageSortKey &sort, bool count)
+void ImapProtocol::sendSearchMessages(const QMailMessageKey &key, const QString &body,
+                                      const QMailMessageSortKey &sort, bool count)
 {
     _fsm->searchMessageState.setParameters(key, body, sort, count);
     _fsm->setState(&_fsm->searchMessageState);
