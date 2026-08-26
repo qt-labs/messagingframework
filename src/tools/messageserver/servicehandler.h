@@ -288,7 +288,7 @@ private:
                        const QMailAccountId &accountId,
                        const QMailFolderId& = QMailFolderId(),
                        const QMailMessageId& = QMailMessageId());
-    void reportFailure(quint64, const QMailServiceAction::Status);
+    void reportStatus(quint64, const QMailServiceAction::Status);
 
     void updateAction(quint64);
 

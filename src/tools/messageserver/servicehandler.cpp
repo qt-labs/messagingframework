@@ -1177,8 +1177,7 @@ void ServiceHandler::expireAction()
 
                 data.status.errorCode = QMailServiceAction::Status::ErrTimeout;
                 data.status.text = tr("Request is not progressing");
-                reportFailure(action, data.status);
-                emit activityChanged(action, QMailServiceAction::Failed);
+                reportStatus(action, data.status);
 
                 QSet<QMailAccountId> serviceAccounts;
 
@@ -3243,7 +3242,8 @@ void ServiceHandler::onStatusChanged(const QMailServiceAction::Status status)
         if (it != mActiveActions.end()) {
             it->status = status;
         }
-        reportFailure(action, status);
+
+        reportStatus(action, status);
     }
 }
 
@@ -3279,10 +3279,10 @@ void ServiceHandler::reportFailure(quint64 action, QMailServiceAction::Status::E
                                    const QMailAccountId &accountId, const QMailFolderId &folderId,
                                    const QMailMessageId &messageId)
 {
-    reportFailure(action, QMailServiceAction::Status(code, text, accountId, folderId, messageId));
+    reportStatus(action, QMailServiceAction::Status(code, text, accountId, folderId, messageId));
 }
 
-void ServiceHandler::reportFailure(quint64 action, const QMailServiceAction::Status status)
+void ServiceHandler::reportStatus(quint64 action, const QMailServiceAction::Status status)
 {
     if (status.errorCode != QMailServiceAction::Status::ErrNoError
         && mActiveActions.contains(action)
