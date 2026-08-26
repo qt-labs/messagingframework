@@ -391,25 +391,20 @@ static QMap<QByteArray, QStringList> standardFolderTranslations()
         QStringList list = line.split(QLatin1Char('='), Qt::SkipEmptyParts);
         QString folderName = list.at(0);
         QString transList = list.at(1);
+        QStringList translations = transList.split(QLatin1Char(','), Qt::SkipEmptyParts);
 
         if (folderName == QLatin1String("inbox")) {
-            QStringList inboxList = transList.split(QLatin1Char(','), Qt::SkipEmptyParts);
-            folderTranslations.insert("inbox", inboxList);
+            folderTranslations.insert("inbox", translations);
         } else if (folderName == QLatin1String("drafts")) {
-            QStringList draftsList = transList.split(QLatin1Char(','), Qt::SkipEmptyParts);
-            folderTranslations.insert("drafts", draftsList);
+            folderTranslations.insert("drafts", translations);
         } else if (folderName == QLatin1String("trash")) {
-            QStringList trashList = transList.split(QLatin1Char(','), Qt::SkipEmptyParts);
-            folderTranslations.insert("trash", trashList);
+            folderTranslations.insert("trash", translations);
         } else if (folderName == QLatin1String("sent")) {
-            QStringList sentList = transList.split(QLatin1Char(','), Qt::SkipEmptyParts);
-            folderTranslations.insert("sent", sentList);
+            folderTranslations.insert("sent", translations);
         } else if (folderName == QLatin1String("spam")) {
-            QStringList spamList = transList.split(QLatin1Char(','), Qt::SkipEmptyParts);
-            folderTranslations.insert("spam", spamList);
+            folderTranslations.insert("spam", translations);
         } else if (folderName == QLatin1String("archive")) {
-            QStringList archiveList = transList.split(QLatin1Char(','), Qt::SkipEmptyParts);
-            folderTranslations.insert("archive", archiveList);
+            folderTranslations.insert("archive", translations);
         }
     }
     return folderTranslations;
