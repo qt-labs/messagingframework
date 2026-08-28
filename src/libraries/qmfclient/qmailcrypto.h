@@ -121,7 +121,7 @@ private:
     Private *d;
 };
 
-class QMailCryptographicServiceInterface
+class QMF_EXPORT QMailCryptographicServiceInterface
 {
 public:
     virtual ~QMailCryptographicServiceInterface() {}
