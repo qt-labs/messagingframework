@@ -39,6 +39,7 @@
 #include <QCoreApplication>
 
 #include "qmailaccountconfiguration.h"
+#include "qmaillog.h"
 
 struct SignedContainerFinder
 {
@@ -222,19 +223,34 @@ QMailCrypto::SignatureResult QMailCryptographicService::sign(QMailMessagePartCon
     return QMailCrypto::BadSignature;
 }
 
-bool QMailCryptographicService::canDecrypt(const QMailMessagePartContainer &part)
+bool QMailCryptographicService::canDecrypt(const QMailMessagePartContainer &part, const QString &pluginName)
 {
-    return instance()->decryptionEngine(part) != nullptr;
+    if (pluginName.isEmpty()) {
+        return instance()->decryptionEngine(part) != nullptr;
+    } else {
+        QMailCryptographicServiceInterface *engine = instance()->instance(pluginName);
+        if (!engine)
+            qCWarning(lcMessaging) << "no such crypto plugin:" << pluginName;
+        return engine && engine->canDecrypt(part);
+    }
 }
 
 QMailCrypto::DecryptionResult QMailCryptographicService::decrypt(QMailMessagePartContainer *part,
+                                                                 const QString &pluginName,
                                                                  QMailCrypto::PassphraseCallback cb)
 {
     if (!part || !part->isEncrypted()) {
         return QMailCrypto::DecryptionResult(QMailCrypto::NoDigitalEncryption);
     }
 
-    QMailCryptographicServiceInterface *engine = instance()->decryptionEngine(*part);
+    QMailCryptographicServiceInterface *engine = nullptr;
+    if (pluginName.isEmpty()) {
+        engine = instance()->decryptionEngine(*part);
+    } else {
+        engine = instance()->instance(pluginName);
+        if (!engine)
+            qCWarning(lcMessaging) << "no such crypto plugin:" << pluginName;
+    }
     if (engine) {
         engine->setPassphraseCallback(cb);
         QMailCrypto::DecryptionResult result = engine->decrypt(part);

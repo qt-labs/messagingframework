@@ -165,8 +165,9 @@ public:
                                              const QStringList &keys,
                                              QMailCrypto::PassphraseCallback cb = nullptr);
 
-    static bool canDecrypt(const QMailMessagePartContainer &part);
+    static bool canDecrypt(const QMailMessagePartContainer &part, const QString &pluginName = QString());
     static QMailCrypto::DecryptionResult decrypt(QMailMessagePartContainer *part,
+                                                 const QString &pluginName = QString(),
                                                  QMailCrypto::PassphraseCallback cb = nullptr);
 
 private:
