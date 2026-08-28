@@ -506,21 +506,18 @@ QMailAccount LibAccountManager::account(const QMailAccountId &id) const
     result.setId(QMailAccountId(account->id()));
 
     account->selectService();
-    const bool enabled = account->isEnabled();
+    result.setName(account->displayName());
+    result.setStatus(QMailAccount::Enabled, account->isEnabled());
 
     account->selectService(service);
-    QString name = account->valueAsString(QLatin1String("email/email_box_name"));
-    if (name.isEmpty())
-        name = account->displayName();
-    result.setName(name);
     result.setMessageType(static_cast<QMailMessageMetaData::MessageType>(account->valueAsInt(QLatin1String("type"))));
     result.setStatus(account->valueAsUInt64(QLatin1String("status")));
+
     const bool isDefault = account->valueAsBool(QLatin1String("email/default"));
     const bool canTransmit = account->valueAsBool(QLatin1String("canTransmit"), true);
     const bool appendSignature = account->valueAsBool(QLatin1String("signatureEnabled"), true);
     const bool hasPersistentConnection = account->valueAsBool(QLatin1String("hasPersistentConnection"), false);
 
-    result.setStatus(QMailAccount::Enabled, enabled);
     result.setStatus(QMailAccount::PreferredSender, isDefault);
     result.setStatus(QMailAccount::CanTransmit, canTransmit);
     result.setStatus(QMailAccount::AppendSignature, appendSignature);
@@ -848,6 +845,14 @@ void LibAccountManager::updateAccountCustomFields(QSharedPointer<Accounts::Accou
     account->endGroup();
 }
 
+// avoid writing back every value with some change detection
+static void updateValue(QSharedPointer<Accounts::Account> account, const QString &key, const QVariant &value)
+{
+    if (account->value(key) != value) {
+        account->setValue(key, value);
+    }
+}
+
 bool LibAccountManager::updateSharedAccount(QMailAccount *account,
                                             QMailAccountConfiguration *config)
 {
@@ -866,44 +871,51 @@ bool LibAccountManager::updateSharedAccount(QMailAccount *account,
     }
 
     Accounts::Service service = services.first();
-    Q_ASSERT(service.isValid());
-    Q_ASSERT(service.serviceType() == QLatin1String("e-mail"));
+
+    if (!service.isValid()
+        || service.serviceType() != QLatin1String("e-mail")) {
+        qCWarning(lcMessaging) << "Unexpected account service state, ignoring update on" << id;
+        return false;
+    }
 
     if (account) {
-        sharedAccount->selectService(service);
-        bool isEmailBoxName = false;
-        if (!sharedAccount->valueAsString(QLatin1String("email/email_box_name")).isEmpty()) {
-            isEmailBoxName = true;
-            sharedAccount->setValue(QLatin1String("email/email_box_name"), account->name());
-        }
         sharedAccount->selectService();
-        if (isEmailBoxName) {
-            sharedAccount->setDisplayName(sharedAccount->valueAsString(QLatin1String("username")));
-        } else {
-            sharedAccount->setDisplayName(account->name());
+
+        QString displayName = account->name();
+        if (sharedAccount->displayName() != displayName) {
+            sharedAccount->setDisplayName(displayName);
         }
-        sharedAccount->setEnabled(account->status() & QMailAccount::Enabled);
+
+        bool enabled = account->status() & QMailAccount::Enabled;
+        if (sharedAccount->isEnabled() != enabled) {
+            sharedAccount->setEnabled(enabled);
+        }
+
         sharedAccount->selectService(service);
-        sharedAccount->setValue(QLatin1String("type"), static_cast<int>(account->messageType()));
-        sharedAccount->setValue(QLatin1String("status"), account->status());
         bool signatureEnabled = account->status() & QMailAccount::AppendSignature;
-        sharedAccount->setValue(QLatin1String("signatureEnabled"), signatureEnabled);
         bool hasPersistentConnection = account->status() & QMailAccount::HasPersistentConnection;
-        sharedAccount->setValue(QLatin1String("hasPersistentConnection"), hasPersistentConnection);
-        sharedAccount->setValue(QLatin1String("signature"), account->signature());
-        sharedAccount->setValue(QLatin1String("emailaddress"), account->fromAddress().address());
-        sharedAccount->setValue(QLatin1String("fullName"), account->fromAddress().name());
-        sharedAccount->setValue(QLatin1String("emailAliases"), toStringList(account->fromAliases()));
+
+        updateValue(sharedAccount, QLatin1String("type"), static_cast<int>(account->messageType()));
+        updateValue(sharedAccount, QLatin1String("status"), account->status());
+        updateValue(sharedAccount, QLatin1String("signatureEnabled"), signatureEnabled);
+        updateValue(sharedAccount, QLatin1String("hasPersistentConnection"), hasPersistentConnection);
+        updateValue(sharedAccount, QLatin1String("signature"), account->signature());
+        updateValue(sharedAccount, QLatin1String("emailaddress"), account->fromAddress().address());
+        updateValue(sharedAccount, QLatin1String("fullName"), account->fromAddress().name());
+        updateValue(sharedAccount, QLatin1String("emailAliases"), toStringList(account->fromAliases()));
+
         if (account->lastSynchronized().isValid()) {
-            sharedAccount->setValue(QLatin1String("lastSynchronized"), static_cast<quint64>(account->lastSynchronized().toLocalTime().toSecsSinceEpoch()));
+            updateValue(sharedAccount, QLatin1String("lastSynchronized"),
+                        static_cast<quint64>(account->lastSynchronized().toLocalTime().toSecsSinceEpoch()));
         } else {
-            sharedAccount->setValue(QLatin1String("lastSynchronized"), quint64(0));
+            updateValue(sharedAccount, QLatin1String("lastSynchronized"), quint64(0));
         }
+
         bool isDefault = account->status() & QMailAccount::PreferredSender;
         bool canTransmit = account->status() & QMailAccount::CanTransmit;
-        sharedAccount->setValue(QLatin1String("email/default"), isDefault);
-        sharedAccount->setValue(QLatin1String("canTransmit"), canTransmit);
-        sharedAccount->setValue(QLatin1String("iconPath"), account->iconPath());
+        updateValue(sharedAccount, QLatin1String("email/default"), isDefault);
+        updateValue(sharedAccount, QLatin1String("canTransmit"), canTransmit);
+        updateValue(sharedAccount, QLatin1String("iconPath"), account->iconPath());
 
         if (customFieldsModified(*account)) {
             updateAccountCustomFields(sharedAccount, account->customFields());
@@ -1035,7 +1047,10 @@ bool LibAccountManager::updateSharedAccount(QMailAccount *account,
         }
     }
 
-    return sharedAccount->syncAndBlock();
+    m_updatingExternalState = true;
+    bool success = sharedAccount->syncAndBlock();
+    m_updatingExternalState = false;
+    return success;
 }
 
 bool LibAccountManager::updateAccount(QMailAccount *account,
@@ -1073,11 +1088,11 @@ void LibAccountManager::clearContent()
 
 QSharedPointer<Accounts::Account> LibAccountManager::getAccount(const QMailAccountId &id) const
 {
-    //get account from the manager
+    // get account from the manager
     QSharedPointer<Accounts::Account> account(Accounts::Account::fromId(manager.data(), id.toULongLong()));
 
     if (!account) {
-        qCWarning(lcMessaging) << Q_FUNC_INFO << "Account with was not found" ;
+        qCWarning(lcMessaging) << Q_FUNC_INFO << "Account was not found" << id;
         reportAccountError(manager->lastError());
         return account;
     }
@@ -1100,10 +1115,7 @@ bool LibAccountManager::accountValid(Accounts::AccountId id) const
         return false;
     }
 
-    // Account should already have the type "e-mail",
-    // ignore extra checks
-
-    return true;
+    return !account->services(QLatin1String("e-mail")).isEmpty();
 }
 
 void LibAccountManager::onAccountCreated(Accounts::AccountId id)
@@ -1126,6 +1138,10 @@ void LibAccountManager::onAccountRemoved(Accounts::AccountId id)
 
 void LibAccountManager::onAccountUpdated(Accounts::AccountId id)
 {
+    if (m_updatingExternalState) {
+        return;
+    }
+
     if (!accountValid(id))
         return;
 

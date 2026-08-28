@@ -69,6 +69,7 @@ public:
 
 private:
     QSharedPointer<Accounts::Manager> manager;
+    bool m_updatingExternalState = false;
 
     void onAccountCreated(Accounts::AccountId id);
     void onAccountRemoved(Accounts::AccountId id);
