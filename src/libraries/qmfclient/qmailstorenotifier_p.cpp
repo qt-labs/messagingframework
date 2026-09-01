@@ -175,8 +175,7 @@ void QMailStoreNotifier::notifyAccountsChange(QMailStore::ChangeType changeType,
         }
 
         QSet<QMailAccountId> idsSet = QSet<QMailAccountId>(ids.constBegin(), ids.constEnd());
-        switch (changeType)
-        {
+        switch (changeType) {
         case QMailStore::Added:
             addAccountsBuffer += idsSet;
             break;
@@ -210,8 +209,7 @@ void QMailStoreNotifier::notifyMessagesChange(QMailStore::ChangeType changeType,
         }
 
         QSet<QMailMessageId> idsSet = QSet<QMailMessageId>(ids.constBegin(), ids.constEnd());
-        switch (changeType)
-        {
+        switch (changeType) {
         case QMailStore::Added:
             addMessagesBuffer += idsSet;
             break;
@@ -249,8 +247,7 @@ void QMailStoreNotifier::notifyMessagesDataChange(QMailStore::ChangeType changeT
             flushTimer.start();
         }
 
-        switch (changeType)
-        {
+        switch (changeType) {
         case QMailStore::Added:
             addMessagesDataBuffer.append(data);
             break;
@@ -322,8 +319,7 @@ void QMailStoreNotifier::notifyThreadsChange(QMailStore::ChangeType changeType, 
         }
 
         QSet<QMailThreadId> idsSet = QSet<QMailThreadId>(ids.constBegin(), ids.constEnd());
-        switch (changeType)
-        {
+        switch (changeType) {
         case QMailStore::Added:
             addThreadsBuffer += idsSet;
             break;
@@ -347,7 +343,6 @@ void QMailStoreNotifier::notifyThreadsChange(QMailStore::ChangeType changeType, 
     }
 }
 
-
 void QMailStoreNotifier::notifyFoldersChange(QMailStore::ChangeType changeType, const QMailFolderIdList& ids)
 {
     // Use the preFlushTimer to activate buffering when multiple changes occur proximately
@@ -358,8 +353,7 @@ void QMailStoreNotifier::notifyFoldersChange(QMailStore::ChangeType changeType, 
         }
 
         QSet<QMailFolderId> idsSet = QSet<QMailFolderId>(ids.constBegin(), ids.constEnd());
-        switch (changeType)
-        {
+        switch (changeType) {
         case QMailStore::Added:
             addFoldersBuffer += idsSet;
             break;
@@ -459,7 +453,8 @@ bool QMailStoreNotifier::isIpcConnectionEstablished() const
 
 static void dBusDisconnect(const char *method, QMailStoreNotifier *obj, const char *slot)
 {
-    QDBusConnection::sessionBus().disconnect(QString(), QString(), QString::fromLatin1("org.qt.mailstore"), QString::fromLatin1(method), obj, slot);
+    QDBusConnection::sessionBus().disconnect(QString(), QString(), QString::fromLatin1("org.qt.mailstore"),
+                                             QString::fromLatin1(method), obj, slot);
 }
 
 void QMailStoreNotifier::disconnectIpc()

@@ -490,7 +490,7 @@ void QMailFolderMessageSet::foldersUpdated(const QMailFolderIdList &ids)
 
 
     if (ids.contains(d->_id)) {
-        //update our folder name
+        // update our folder name
         d->_name.clear();
 
         update(this);
@@ -747,7 +747,7 @@ void QMailAccountMessageSet::accountsUpdated(const QMailAccountIdList &ids)
     Q_D(QMailAccountMessageSet);
 
     if (ids.contains(d->_id)) {
-        //update our account name
+        // update our account name
         d->_name.clear();
         update(this);
     }
@@ -859,7 +859,8 @@ QMailFolderKey QMailAccountMessageSet::rootFolderKey() const
 class QMailFilterMessageSetPrivate : public QMailMessageSetPrivate
 {
 public:
-    QMailFilterMessageSetPrivate(QMailMessageSetContainer *container, const QMailMessageKey &key, const QString &name, bool minimized)
+    QMailFilterMessageSetPrivate(QMailMessageSetContainer *container, const QMailMessageKey &key,
+                                 const QString &name, bool minimized)
         : QMailMessageSetPrivate(container),
           _key(key),
           _name(name),
@@ -894,7 +895,8 @@ public:
 
     \sa setUpdatesMinimized()
 */
-QMailFilterMessageSet::QMailFilterMessageSet(QMailMessageSetContainer *container, const QMailMessageKey &key, const QString &name, bool minimalUpdates)
+QMailFilterMessageSet::QMailFilterMessageSet(QMailMessageSetContainer *container, const QMailMessageKey &key,
+                                             const QString &name, bool minimalUpdates)
     : QMailMessageSet(new QMailFilterMessageSetPrivate(container, key, name, minimalUpdates))
 {
 }

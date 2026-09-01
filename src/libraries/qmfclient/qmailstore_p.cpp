@@ -282,7 +282,7 @@ bool QMailStorePrivate::updateFolder(QMailFolder *folder,
 {
     bool success = QMailStoreSql::updateFolder(folder, updatedFolderIds, modifiedAccountIds);
     if (success) {
-        //update the folder cache
+        // update the folder cache
         if (folderCache.contains(folder->id()))
             folderCache.insert(*folder);
     }
@@ -327,108 +327,106 @@ void QMailStorePrivate::updateMessageValues(const QMailMessageKey::Properties& p
                                             const QMailMessageMetaData &values,
                                             QMailMessageMetaData *metaData) const
 {
-    QPair<QString, QString> uriElements;
-
     foreach (QMailMessageKey::Property p, messagePropertyList()) {
         switch (properties & p) {
-            case QMailMessageKey::Id:
-                metaData->setId(values.id());
-                break;
+        case QMailMessageKey::Id:
+            metaData->setId(values.id());
+            break;
 
-            case QMailMessageKey::Type:
-                metaData->setMessageType(values.messageType());
-                break;
+        case QMailMessageKey::Type:
+            metaData->setMessageType(values.messageType());
+            break;
 
-            case QMailMessageKey::ParentFolderId:
-                metaData->setParentFolderId(values.parentFolderId());
-                break;
+        case QMailMessageKey::ParentFolderId:
+            metaData->setParentFolderId(values.parentFolderId());
+            break;
 
-            case QMailMessageKey::Sender:
-                metaData->setFrom(values.from());
-                break;
+        case QMailMessageKey::Sender:
+            metaData->setFrom(values.from());
+            break;
 
-            case QMailMessageKey::Recipients:
-                metaData->setRecipients(values.recipients());
-                break;
+        case QMailMessageKey::Recipients:
+            metaData->setRecipients(values.recipients());
+            break;
 
-            case QMailMessageKey::Subject:
-                metaData->setSubject(values.subject());
-                break;
+        case QMailMessageKey::Subject:
+            metaData->setSubject(values.subject());
+            break;
 
-            case QMailMessageKey::TimeStamp:
-                metaData->setDate(values.date());
-                break;
+        case QMailMessageKey::TimeStamp:
+            metaData->setDate(values.date());
+            break;
 
-            case QMailMessageKey::ReceptionTimeStamp:
-                metaData->setReceivedDate(values.receivedDate());
-                break;
+        case QMailMessageKey::ReceptionTimeStamp:
+            metaData->setReceivedDate(values.receivedDate());
+            break;
 
-            case QMailMessageKey::Status:
-                metaData->setStatus(values.status());
-                break;
+        case QMailMessageKey::Status:
+            metaData->setStatus(values.status());
+            break;
 
-            case QMailMessageKey::ParentAccountId:
-                metaData->setParentAccountId(values.parentAccountId());
-                break;
+        case QMailMessageKey::ParentAccountId:
+            metaData->setParentAccountId(values.parentAccountId());
+            break;
 
-            case QMailMessageKey::ServerUid:
-                metaData->setServerUid(values.serverUid());
-                break;
+        case QMailMessageKey::ServerUid:
+            metaData->setServerUid(values.serverUid());
+            break;
 
-            case QMailMessageKey::Size:
-                metaData->setSize(values.size());
-                break;
+        case QMailMessageKey::Size:
+            metaData->setSize(values.size());
+            break;
 
-            case QMailMessageKey::ContentCategory:
-                metaData->setContentCategory(values.contentCategory());
-                break;
+        case QMailMessageKey::ContentCategory:
+            metaData->setContentCategory(values.contentCategory());
+            break;
 
-            case QMailMessageKey::PreviousParentFolderId:
-                metaData->setPreviousParentFolderId(values.previousParentFolderId());
-                break;
+        case QMailMessageKey::PreviousParentFolderId:
+            metaData->setPreviousParentFolderId(values.previousParentFolderId());
+            break;
 
-            case QMailMessageKey::ContentScheme:
-                metaData->setContentScheme(values.contentScheme());
-                break;
+        case QMailMessageKey::ContentScheme:
+            metaData->setContentScheme(values.contentScheme());
+            break;
 
-            case QMailMessageKey::ContentIdentifier:
-                metaData->setContentIdentifier(values.contentIdentifier());
-                break;
+        case QMailMessageKey::ContentIdentifier:
+            metaData->setContentIdentifier(values.contentIdentifier());
+            break;
 
-            case QMailMessageKey::InResponseTo:
-                metaData->setInResponseTo(values.inResponseTo());
-                break;
+        case QMailMessageKey::InResponseTo:
+            metaData->setInResponseTo(values.inResponseTo());
+            break;
 
-            case QMailMessageKey::ResponseType:
-                metaData->setResponseType(values.responseType());
-                break;
+        case QMailMessageKey::ResponseType:
+            metaData->setResponseType(values.responseType());
+            break;
 
-            case QMailMessageKey::CopyServerUid:
-                metaData->setCopyServerUid(values.copyServerUid());
-                break;
+        case QMailMessageKey::CopyServerUid:
+            metaData->setCopyServerUid(values.copyServerUid());
+            break;
 
-            case QMailMessageKey::RestoreFolderId:
-                metaData->setRestoreFolderId((values.restoreFolderId()));
-                break;
+        case QMailMessageKey::RestoreFolderId:
+            metaData->setRestoreFolderId((values.restoreFolderId()));
+            break;
 
-            case QMailMessageKey::ListId:
-                metaData->setListId(values.listId());
-                break;
+        case QMailMessageKey::ListId:
+            metaData->setListId(values.listId());
+            break;
 
-            case QMailMessageKey::RfcId:
-                metaData->setRfcId(values.rfcId());
-                break;
+        case QMailMessageKey::RfcId:
+            metaData->setRfcId(values.rfcId());
+            break;
 
-            case QMailMessageKey::Preview:
-                metaData->setPreview(values.preview());
-                break;
+        case QMailMessageKey::Preview:
+            metaData->setPreview(values.preview());
+            break;
 
-            case QMailMessageKey::ParentThreadId:
-                metaData->setParentThreadId(values.parentThreadId());
-                break;
+        case QMailMessageKey::ParentThreadId:
+            metaData->setParentThreadId(values.parentThreadId());
+            break;
 
-            default:
-                break;
+        default:
+            break;
         }
     }
 
@@ -647,7 +645,7 @@ QMailFolder QMailStorePrivate::folder(const QMailFolderId &id) const
 
     QMailFolder result = QMailStoreSql::folder(id);
     if (result.id().isValid()) {
-        //update cache
+        // update cache
         folderCache.insert(result);
     }
     return result;
@@ -680,7 +678,7 @@ QMailMessageMetaData QMailStorePrivate::messageMetaData(const QMailMessageId &id
         return messageCache.lookup(id);
     }
 
-    //if not in the cache, then preload the cache with the id and its most likely requested siblings
+    // if not in the cache, then preload the cache with the id and its most likely requested siblings
     preloadHeaderCache(id);
 
     return messageCache.lookup(id);

@@ -116,4 +116,4 @@ struct QmfMetaTypeRegister
     } \
     Q_IMPLEMENT_USER_METATYPE_WITH_OPERATORS(TYPE)
 
-#endif //QMAILIPC_H
+#endif

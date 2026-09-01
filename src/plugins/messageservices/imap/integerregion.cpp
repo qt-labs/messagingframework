@@ -383,7 +383,7 @@ QList<int> IntegerRegion::toList(const QString &region)
 
 
 #if 0
-//TODO Convert these tests to standard qunit style
+// TODO Convert these tests to standard qunit style
 #include <QDebug>
 
 /*

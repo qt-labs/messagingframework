@@ -819,7 +819,7 @@ void ImapDeleteFolderStrategy::deleteFolder(const QMailFolderId &folderId, ImapS
         deleteFolder(fid, context);
     }
 
-    //now the parent is safe to delete
+    // now the parent is safe to delete
     _inProgress++;
     context->protocol().sendDelete(QMailFolder(folderId));
 }
@@ -896,7 +896,7 @@ void ImapRenameFolderStrategy::folderRenamed(ImapStrategyContextBase *context, c
         return; // don't call context->operationCompleted in case of error
     }
     if (!context->protocol().delimiter().isNull()) {
-        //only update if we're dealing with a hierarchical system
+        // only update if we're dealing with a hierarchical system
         QChar delimiter = context->protocol().delimiter();
         if (folder.path().count(delimiter) == 0) {
             name = newPath;
@@ -983,7 +983,7 @@ void ImapMoveFolderStrategy::folderMoved(ImapStrategyContextBase *context, const
     }
     QString name;
     if (!context->protocol().delimiter().isNull()) {
-        //only update if we're dealing with a hierarchical system
+        // only update if we're dealing with a hierarchical system
         QChar delimiter = context->protocol().delimiter();
         if (folder.path().count(delimiter) == 0) {
             name = newPath;
@@ -1940,7 +1940,7 @@ void ImapSearchMessageStrategy::folderListCompleted(ImapStrategyContextBase *con
 void ImapSearchMessageStrategy::folderListFolderAction(ImapStrategyContextBase *context)
 {
     if (_canceled)
-        return; //stop it searching
+        return; // stop it searching
 
     SearchData search(_searches.first());
     _limit = search.limit;
@@ -2284,7 +2284,7 @@ void ImapSynchronizeBaseStrategy::handleSelect(ImapStrategyContextBase *context)
 
 void ImapSynchronizeBaseStrategy::handleUidFetch(ImapStrategyContextBase *context)
 {
-    if (_transferState == Preview) {    //getting headers
+    if (_transferState == Preview) { // getting headers
         --_outstandingPreviews;
         if (!_outstandingPreviews) {
             // Flush any pending messages now so that _completionList is up to date
@@ -3375,7 +3375,7 @@ void ImapUpdateMessagesFlagsStrategy::processFolder(ImapStrategyContextBase *con
 {
     QMailFolderId folderId(_currentMailbox.id());
 
-    //not not try select an unselectable mailbox
+    // not not try select an unselectable mailbox
     if (!_folderStatus.contains(folderId) || !(_folderStatus.value(folderId) & NoSelect))
         selectFolder(context, _currentMailbox);
 }
@@ -4069,7 +4069,7 @@ void ImapCopyMessagesStrategy::messageListFolderAction(ImapStrategyContextBase *
     if (_currentMailbox.id().isValid() && (_currentMailbox.id() == _destination.id())) {
         // This message is already in the destination folder - we need to append a new copy
         // after closing the destination folder
-        context->protocol().sendClose(); //TODO: change this, e.g. use expunge
+        context->protocol().sendClose(); // TODO: change this, e.g. use expunge
     } else {
         ImapFetchSelectedMessagesStrategy::messageListFolderAction(context);
     }

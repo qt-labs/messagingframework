@@ -1226,7 +1226,7 @@ QString ListState::transmit(ImapContext *c)
 
     if (!params._reference.isEmpty()) {
         if (c->protocol()->delimiterUnknown()) {
-            //Don't do anything, we're waiting on our delimiter.
+            // Don't do anything, we're waiting on our delimiter.
             return QString();
         }
     }
@@ -1277,7 +1277,7 @@ void ListState::untaggedResponse(ImapContext *c, const QString &line)
     flags = token(str, '(', ')', &index);
 
     delimiter = token(str, ' ', ' ', &index);
-    if (c->protocol()->delimiterUnknown()) { //only figure it out precisely if needed
+    if (c->protocol()->delimiterUnknown()) { // only figure it out precisely if needed
         if (delimiter == "NIL") {
             c->protocol()->setFlatHierarchy(true);
         } else {
@@ -1292,7 +1292,7 @@ void ListState::untaggedResponse(ImapContext *c, const QString &line)
         }
     }
 
-    index--;    //to point back to previous ' ' so we can find it with next search
+    index--; // to point back to previous ' ' so we can find it with next search
     path = token(str, ' ', '\n', &index).trimmed();
     pos = 0;
     if (!token(path, '"', '"', &pos, "\\\"").isNull()) {
@@ -1960,12 +1960,12 @@ QString SearchMessageState::transmit(ImapContext *c)
 
     if (!search.body.isEmpty()) {
         QString tempLast = searchQueries.takeLast();
-        QString searchBody = search.body.toUtf8(); //utf8 is backwards compatible with 7 bit ascii
+        QString searchBody = search.body.toUtf8(); // utf8 is backwards compatible with 7 bit ascii
         searchQueries.append(tempLast + QString(") (BODY {%2}").arg(searchBody.size()));
         searchQueries.append(searchBody + ")");
     }
 
-    QString suffix = " NOT DELETED"; //needed because of limitations in fetching deleted messages
+    QString suffix = " NOT DELETED"; // needed because of limitations in fetching deleted messages
     QString tempLast = searchQueries.takeLast();
     searchQueries.append(tempLast.append(suffix));
 
@@ -2040,7 +2040,7 @@ QStringList SearchMessageState::convertValue(const QVariant &value, const QMailM
     }
     case QMailMessageKey::Subject: {
         _utf8 |= !(isPrintable(value.toString()));
-        QString subject = value.toString().toUtf8(); //utf8 is backwards compatible with 7 bit ascii
+        QString subject = value.toString().toUtf8(); // utf8 is backwards compatible with 7 bit ascii
 
         if (comparer == QMailKey::Equal || comparer == QMailKey::Includes) {
             QStringList result = QStringList(QString("SUBJECT {%1}").arg(subject.size()));

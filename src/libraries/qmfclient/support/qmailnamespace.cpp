@@ -514,7 +514,7 @@ bool QMail::detectStandardFolders(const QMailAccountId &accountId)
 bool QMail::isMessageServerRunning()
 {
     QDBusConnection sessionBus = QDBusConnection::sessionBus();
-    return sessionBus.isConnected() && sessionBus.interface()->isServiceRegistered("org.qt.messageserver");
+    return sessionBus.isConnected() && sessionBus.interface()->isServiceRegistered(QLatin1String("org.qt.messageserver"));
 }
 
 /*!

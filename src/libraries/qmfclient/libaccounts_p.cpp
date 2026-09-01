@@ -100,39 +100,40 @@ bool AccountCompareProperty(Accounts::Account* account, Property value, QMailKey
         }
 
         Property argument = arguments.front().value<Property>();
+
         switch (op) {
-            case QMailKey::Equal:
-                return value == argument;
+        case QMailKey::Equal:
+            return value == argument;
 
-            case QMailKey::NotEqual:
-                return value != argument;
+        case QMailKey::NotEqual:
+            return value != argument;
 
-            default:
-                qCWarning(lcMessaging) << "This comparator is not supported" << op;
-                break;
+        default:
+            qCWarning(lcMessaging) << "This comparator is not supported" << op;
+            break;
         }
 
     } else {
         switch (op) {
-            case QMailKey::Includes:
-            case QMailKey::Present:
-                foreach (const QVariant& argument, arguments) {
-                    if (argument.canConvert<Property>() && argument.value<Property>() == value)
-                        return true;
-                }
-                return false;
+        case QMailKey::Includes:
+        case QMailKey::Present:
+            foreach (const QVariant& argument, arguments) {
+                if (argument.canConvert<Property>() && argument.value<Property>() == value)
+                    return true;
+            }
+            return false;
 
-            case QMailKey::Excludes:
-            case QMailKey::Absent:
-                foreach (const QVariant& argument, arguments) {
-                    if (argument.canConvert<Property>() && argument.value<Property>() == value)
-                        return false;
-                }
-                return true;
+        case QMailKey::Excludes:
+        case QMailKey::Absent:
+            foreach (const QVariant& argument, arguments) {
+                if (argument.canConvert<Property>() && argument.value<Property>() == value)
+                    return false;
+            }
+            return true;
 
-            default:
-                qCWarning(lcMessaging) << "This comparator is not supported" << op;
-                break;
+        default:
+            qCWarning(lcMessaging) << "This comparator is not supported" << op;
+            break;
         }
     }
 
@@ -157,57 +158,57 @@ bool AccountCompareProperty(Accounts::Account*, quint64 value, QMailKey::Compara
         }
 
         switch (op) {
-            case QMailKey::LessThan:
-                return value < argument;
+        case QMailKey::LessThan:
+            return value < argument;
 
-            case QMailKey::LessThanEqual:
-                return value <= argument;
+        case QMailKey::LessThanEqual:
+            return value <= argument;
 
-            case QMailKey::GreaterThan:
-                return value > argument;
+        case QMailKey::GreaterThan:
+            return value > argument;
 
-            case QMailKey::GreaterThanEqual:
-                return value >= argument;
+        case QMailKey::GreaterThanEqual:
+            return value >= argument;
 
-            case QMailKey::Equal:
-                return value == argument;
+        case QMailKey::Equal:
+            return value == argument;
 
-            case QMailKey::NotEqual:
-                return value != argument;
+        case QMailKey::NotEqual:
+            return value != argument;
 
-            case QMailKey::Includes:
-            case QMailKey::Present:
-                return ((value & argument) == argument);
+        case QMailKey::Includes:
+        case QMailKey::Present:
+            return ((value & argument) == argument);
 
-            case QMailKey::Excludes:
-            case QMailKey::Absent:
-                return !(value & argument);
+        case QMailKey::Excludes:
+        case QMailKey::Absent:
+            return !(value & argument);
 
-            default:
-                qCWarning(lcMessaging) << "This comparator is not supported" << op;
-                break;
+        default:
+            qCWarning(lcMessaging) << "This comparator is not supported" << op;
+            break;
         }
     } else {
         switch (op) {
-            case QMailKey::Includes:
-            case QMailKey::Present:
-                foreach (const QVariant& argument, arguments) {
-                    if (value == argument.toULongLong())
-                        return true;
-                }
-                return false;
+        case QMailKey::Includes:
+        case QMailKey::Present:
+            foreach (const QVariant& argument, arguments) {
+                if (value == argument.toULongLong())
+                    return true;
+            }
+            return false;
 
-            case QMailKey::Excludes:
-            case QMailKey::Absent:
-                foreach (const QVariant& argument, arguments) {
-                    if (value == argument.toULongLong())
-                        return false;
-                }
-                return true;
+        case QMailKey::Excludes:
+        case QMailKey::Absent:
+            foreach (const QVariant& argument, arguments) {
+                if (value == argument.toULongLong())
+                    return false;
+            }
+            return true;
 
-            default:
-                qCWarning(lcMessaging) << "This comparator is not supported" << op;
-                break;
+        default:
+            qCWarning(lcMessaging) << "This comparator is not supported" << op;
+            break;
         }
     }
     Q_ASSERT(false);
@@ -230,57 +231,57 @@ bool AccountCompareProperty(Accounts::Account*, const QString& value, QMailKey::
 
         QString argument = arguments.front().toString();
         switch (op) {
-            case QMailKey::LessThan:
-                return value < argument;
+        case QMailKey::LessThan:
+            return value < argument;
 
-            case QMailKey::LessThanEqual:
-                return value <= argument;
+        case QMailKey::LessThanEqual:
+            return value <= argument;
 
-            case QMailKey::GreaterThan:
-                return value > argument;
+        case QMailKey::GreaterThan:
+            return value > argument;
 
-            case QMailKey::GreaterThanEqual:
-                return value >= argument;
+        case QMailKey::GreaterThanEqual:
+            return value >= argument;
 
-            case QMailKey::Equal:
-                return value == argument;
+        case QMailKey::Equal:
+            return value == argument;
 
-            case QMailKey::NotEqual:
-                return value != argument;
+        case QMailKey::NotEqual:
+            return value != argument;
 
-            case QMailKey::Includes:
-            case QMailKey::Present:
-                return value.contains(argument);
+        case QMailKey::Includes:
+        case QMailKey::Present:
+            return value.contains(argument);
 
-            case QMailKey::Excludes:
-            case QMailKey::Absent:
-                return !value.contains(argument);
+        case QMailKey::Excludes:
+        case QMailKey::Absent:
+            return !value.contains(argument);
 
-            default:
-                qCWarning(lcMessaging) << "This comparator is not supported" << op;
-                break;
+        default:
+            qCWarning(lcMessaging) << "This comparator is not supported" << op;
+            break;
         }
     } else {
         switch (op) {
-            case QMailKey::Includes:
-            case QMailKey::Present:
-                foreach (const QVariant& argument, arguments) {
-                    if (value == argument.toString())
-                        return true;
-                }
-                return false;
+        case QMailKey::Includes:
+        case QMailKey::Present:
+            foreach (const QVariant& argument, arguments) {
+                if (value == argument.toString())
+                    return true;
+            }
+            return false;
 
-            case QMailKey::Excludes:
-            case QMailKey::Absent:
-                foreach (const QVariant& argument, arguments) {
-                    if (value == argument.toString())
-                        return false;
-                }
-                return true;
+        case QMailKey::Excludes:
+        case QMailKey::Absent:
+            foreach (const QVariant& argument, arguments) {
+                if (value == argument.toString())
+                    return false;
+            }
+            return true;
 
-            default:
-                qCWarning(lcMessaging) << "This comparator is not supported" << op;
-                break;
+        default:
+            qCWarning(lcMessaging) << "This comparator is not supported" << op;
+            break;
         }
     }
     Q_ASSERT(false);
@@ -302,28 +303,29 @@ bool AccountCompareProperty(Accounts::Account* account, QMailKey::Comparator op,
     account->beginGroup(QLatin1String("customFields"));
 
     bool result = false;
+
     switch (op) {
-        case QMailKey::Equal:
-            result = account->contains(key) && (account->valueAsString(key) == value);
-            break;
+    case QMailKey::Equal:
+        result = account->contains(key) && (account->valueAsString(key) == value);
+        break;
 
-        case QMailKey::NotEqual:
-            result = !account->contains(key) || (account->valueAsString(key) != value);
-            break;
+    case QMailKey::NotEqual:
+        result = !account->contains(key) || (account->valueAsString(key) != value);
+        break;
 
-        case QMailKey::Includes:
-        case QMailKey::Present:
-            result = account->contains(key) &&  account->valueAsString(key).contains(value);
-            break;
+    case QMailKey::Includes:
+    case QMailKey::Present:
+        result = account->contains(key) &&  account->valueAsString(key).contains(value);
+        break;
 
-        case QMailKey::Excludes:
-        case QMailKey::Absent:
-            result = !(account->contains(key) && account->valueAsString(key).contains(value));
-            break;
+    case QMailKey::Excludes:
+    case QMailKey::Absent:
+        result = !(account->contains(key) && account->valueAsString(key).contains(value));
+        break;
 
-        default:
-            qCWarning(lcMessaging) << "This comparator is not supported" << op;
-            break;
+    default:
+        qCWarning(lcMessaging) << "This comparator is not supported" << op;
+        break;
     }
     account->endGroup();
     return result;
@@ -334,61 +336,62 @@ bool AccountSatisfyTheProperty(Accounts::Account* account, const QMailAccountKey
     Q_ASSERT(account);
 
     switch (argument.property) {
-        case QMailAccountKey::Id:
-            return AccountCompareProperty<QMailAccountId>
-                (account, QMailAccountId(account->id()),
-                 argument.op, argument.valueList);
+    case QMailAccountKey::Id:
+        return AccountCompareProperty<QMailAccountId>
+            (account, QMailAccountId(account->id()),
+             argument.op, argument.valueList);
 
-        case QMailAccountKey::Name:
-            return AccountCompareProperty<const QString&>
-                (account, account->displayName(),
-                 argument.op, argument.valueList);
+    case QMailAccountKey::Name:
+        return AccountCompareProperty<const QString&>
+            (account, account->displayName(),
+             argument.op, argument.valueList);
 
-        case QMailAccountKey::MessageType:
-            return AccountCompareProperty<quint64>
-                (account, account->valueAsInt(QLatin1String("type")),
-                 argument.op, argument.valueList);
+    case QMailAccountKey::MessageType:
+        return AccountCompareProperty<quint64>
+            (account, account->valueAsInt(QLatin1String("type")),
+             argument.op, argument.valueList);
 
-        case QMailAccountKey::FromAddress:
-            return AccountCompareProperty<const QString&>
-                (account, QMailAddress(account->valueAsString(QLatin1String("emailaddress"))).address(),
-                 argument.op, argument.valueList);
+    case QMailAccountKey::FromAddress:
+        return AccountCompareProperty<const QString&>
+            (account, QMailAddress(account->valueAsString(QLatin1String("emailaddress"))).address(),
+             argument.op, argument.valueList);
 
-        case QMailAccountKey::Status: {
-            Accounts::Service service = account->selectedService();
+    case QMailAccountKey::Status: {
+        Accounts::Service service = account->selectedService();
 
-            account->selectService();
-            const bool enabled = account->isEnabled();
-            account->selectService(service);
+        account->selectService();
+        const bool enabled = account->isEnabled();
+        account->selectService(service);
 
-            quint64 status = account->valueAsUInt64(QLatin1String("status"));
-            status &= (~QMailAccount::Enabled);
-            status |= enabled ? (QMailAccount::Enabled) : 0;
+        quint64 status = account->valueAsUInt64(QLatin1String("status"));
+        status &= (~QMailAccount::Enabled);
+        status |= enabled ? (QMailAccount::Enabled) : 0;
 
-            bool canTransmit = account->valueAsBool(QLatin1String("canTransmit"), true);
-            status &= (~QMailAccount::CanTransmit);
-            status |= canTransmit ? (QMailAccount::CanTransmit) : 0;
+        bool canTransmit = account->valueAsBool(QLatin1String("canTransmit"), true);
+        status &= (~QMailAccount::CanTransmit);
+        status |= canTransmit ? (QMailAccount::CanTransmit) : 0;
 
-            bool appendSignature = account->valueAsBool(QLatin1String("signatureEnabled"), true);
-            status &= (~QMailAccount::AppendSignature);
-            status |= appendSignature ? (QMailAccount::AppendSignature) : 0;
+        bool appendSignature = account->valueAsBool(QLatin1String("signatureEnabled"), true);
+        status &= (~QMailAccount::AppendSignature);
+        status |= appendSignature ? (QMailAccount::AppendSignature) : 0;
 
-            bool hasPersistentConnection = account->valueAsBool(QLatin1String("hasPersistentConnection"), false);
-            status &= (~QMailAccount::HasPersistentConnection);
-            status |= hasPersistentConnection ? (QMailAccount::HasPersistentConnection) : 0;
+        bool hasPersistentConnection = account->valueAsBool(QLatin1String("hasPersistentConnection"), false);
+        status &= (~QMailAccount::HasPersistentConnection);
+        status |= hasPersistentConnection ? (QMailAccount::HasPersistentConnection) : 0;
 
-            return AccountCompareProperty<quint64>(account,
-                                                   status,
-                                                   argument.op, argument.valueList);
-        }
-
-        case QMailAccountKey::Custom:
-            return AccountCompareProperty(account, argument.op, argument.valueList);
-
-        default:
-            qCWarning(lcMessaging) << "This property is not supported" << argument.property;
-            break;
+        return AccountCompareProperty<quint64>(account,
+                                               status,
+                                               argument.op, argument.valueList);
     }
+
+    case QMailAccountKey::Custom:
+        return AccountCompareProperty(account, argument.op, argument.valueList);
+
+    default:
+        qCWarning(lcMessaging) << "This property is not supported" << argument.property;
+        break;
+    }
+
     return false;
 }
 
@@ -709,7 +712,7 @@ bool LibAccountManager::addAccount(QMailAccount *account,
     sharedAccount->setValue(QLatin1String("emailaddress"), account->fromAddress().address());
     sharedAccount->setValue(QLatin1String("fullName"), account->fromAddress().name());
     sharedAccount->setValue(QLatin1String("emailAliases"), toStringList(account->fromAliases()));
-    //Account was never synced
+    // Account was never synced
     sharedAccount->setValue(QLatin1String("lastSynchronized"), quint64(0));
     sharedAccount->setValue(QLatin1String("iconPath"), account->iconPath());
     const bool canTransmit = (account->status() & QMailAccount::CanTransmit);
@@ -760,7 +763,7 @@ bool LibAccountManager::addAccount(QMailAccount *account,
         return false;
     }
 
-    //Extract the insert id
+    // Extract the insert id
     QMailAccountId insertId = QMailAccountId(sharedAccount->id());
     account->setId(insertId);
     if (config) {

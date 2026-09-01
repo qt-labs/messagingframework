@@ -667,7 +667,7 @@ void PopClient::processResponse(const QString &response)
         break;
 
     case Exit:
-        closeConnection(); //close regardless of response
+        closeConnection(); // close regardless of response
         retrieveOperationCompleted();
         waitForInput = true;
         break;
@@ -835,7 +835,7 @@ void PopClient::nextAction()
                 // Retrieve the whole message
                 nextCommand = ("RETR " + temp);
                 nextStatus = Retr;
-            } else {                                //only header
+            } else { // only header
                 nextCommand = ("TOP " + temp + " 0");
                 nextStatus = Top;
             }

@@ -90,7 +90,7 @@ public:
     {
         _intervalTimer.stop();
         if (interval > 0 && _service->_client) {
-            _intervalTimer.start(interval*1000*60); // interval minutes
+            _intervalTimer.start(interval * 1000 * 60); // interval minutes
         }
     }
 
@@ -98,7 +98,7 @@ public:
     {
         _pushIntervalTimer.stop();
         if (pushInterval > 0 && _service->_client) {
-            _pushIntervalTimer.start(pushInterval*1000*60); // interval minutes
+            _pushIntervalTimer.start(pushInterval * 1000 * 60); // interval minutes
         }
     }
 
@@ -321,7 +321,8 @@ bool ImapService::Source::doRetrieveMessageLists(const QMailAccountId &accountId
     return true;
 }
 
-bool ImapService::Source::retrieveMessages(const QMailMessageIdList &messageIds, QMailRetrievalAction::RetrievalSpecification spec)
+bool ImapService::Source::retrieveMessages(const QMailMessageIdList &messageIds,
+                                           QMailRetrievalAction::RetrievalSpecification spec)
 {
     Q_ASSERT(!_unavailable);
     if (!_service->_client) {
@@ -495,7 +496,7 @@ bool ImapService::Source::retrieveMessagePartRange(const QMailMessagePart::Locat
 void ImapService::Source::queueDisconnectedOperations(const QMailAccountId &accountId)
 {
     Q_ASSERT(!_unavailable);
-    //sync disconnected move and copy operations for account
+    // sync disconnected move and copy operations for account
 
     QMailFolderIdList folderList = QMailStore::instance()->queryFolders(QMailFolderKey::parentAccountId(accountId));
     bool pendingDisconnectedOperations = false;
@@ -808,7 +809,8 @@ bool ImapService::Source::flagMessages(const QMailMessageIdList &messageIds, qui
                 _service->_client->strategyContext()->moveMessagesStrategy.clearSelection();
                 _service->_client->strategyContext()->moveMessagesStrategy.appendMessageSet(messageIds, archiveId);
 
-                appendStrategy(&_service->_client->strategyContext()->moveMessagesStrategy, SIGNAL(messagesFlagged(QMailMessageIdList)));
+                appendStrategy(&_service->_client->strategyContext()->moveMessagesStrategy,
+                               SIGNAL(messagesFlagged(QMailMessageIdList)));
 
                 if (!_unavailable)
                     return initiateStrategy();
@@ -826,7 +828,8 @@ bool ImapService::Source::flagMessages(const QMailMessageIdList &messageIds, qui
                     _service->_client->strategyContext()->moveMessagesStrategy.appendMessageSet(it.value(), it.key());
                 }
 
-                appendStrategy(&_service->_client->strategyContext()->moveMessagesStrategy, SIGNAL(messagesFlagged(QMailMessageIdList)));
+                appendStrategy(&_service->_client->strategyContext()->moveMessagesStrategy,
+                               SIGNAL(messagesFlagged(QMailMessageIdList)));
                 if (!_unavailable)
                     return initiateStrategy();
                 return true;
@@ -986,8 +989,8 @@ bool ImapService::Source::createFolder(const QString &name, const QMailAccountId
         _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("No account specified"));
         return false;
     }
-    //here we'll create a QMailFolder and give it to the strategy
-    //if it is successful, we'll let it register it as a real folder in the QMailStore
+    // here we'll create a QMailFolder and give it to the strategy
+    // if it is successful, we'll let it register it as a real folder in the QMailStore
     if (name.isEmpty()) {
         _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("Cannot create empty named folder"));
         return false;
@@ -1020,7 +1023,7 @@ bool ImapService::Source::createStandardFolders(const QMailAccountId &accountId)
     defaultFolders << QMailFolder::DraftsFolder << QMailFolder::SentFolder <<
                      QMailFolder::TrashFolder << QMailFolder::JunkFolder;
 
-    //fix me create the names from the translations
+    // fix me create the names from the translations
     foreach (QMailFolder::StandardFolder folder, defaultFolders) {
         QMailFolderId standardFolderId = account.standardFolder(folder);
 
@@ -1045,7 +1048,7 @@ bool ImapService::Source::createStandardFolders(const QMailAccountId &accountId)
         }
     }
 
-    //Create the folder in the root
+    // Create the folder in the root
     QMailFolder dummyParent;
     for (int i = 0; i < folderNames.size(); ++i) {
         qCDebug(lcIMAP) << "Creating folder: " << folderNames.at(i);
@@ -1079,7 +1082,7 @@ bool ImapService::Source::deleteFolder(const QMailFolderId &folderId)
     QMailFolder folder(folderId);
     queueDisconnectedOperations(folder.parentAccountId());
 
-    //remove remote copy
+    // remove remote copy
     _service->_client->strategyContext()->deleteFolderStrategy.deleteFolder(folderId);
     appendStrategy(&_service->_client->strategyContext()->deleteFolderStrategy);
     if (!_unavailable)
@@ -1171,7 +1174,7 @@ bool ImapService::Source::doSearchMessages(const QMailMessageKey &searchCriteria
     }
 
     if (searchCriteria.isEmpty() && bodyText.isEmpty()) {
-        //we're not going to do an empty search (which returns all emails..)
+        // we're not going to do an empty search (which returns all emails..)
         _service->errorOccurred(QMailServiceAction::Status::ErrInvalidData, tr("Empty search provided"));
         return false;
     }
@@ -1342,6 +1345,7 @@ void ImapService::Source::handleRetrievalCompleted()
         if (_mailCheckPhase == RetrieveFolders) {
             QMailFolderIdList folders;
             _mailCheckPhase = RetrieveMessages;
+
             if (!_mailCheckFolderId.isValid()) {
                 // Full check all folders
                 _actionQueue.append(new RetrieveMessageListCommand(_service->accountId(), QMailFolderId(),
@@ -1358,16 +1362,21 @@ void ImapService::Source::handleRetrievalCompleted()
             }
             _queuedFoldersFullCheck.removeAll(_mailCheckFolderId);
             emit _service->actionCompleted(true);
+
             return;
-        } else if (_service->_establishingPushEmail) {
+        }
+
+        if (_service->_establishingPushEmail) {
             // Push email is successfully established for all push folders
             _service->_establishingPushEmail = false;
             _service->_pushRetry = ThirtySeconds;
             qCDebug(lcIMAP) << "Push email established for account" << _service->_accountId
                             << QMailAccount(_service->_accountId).name();
         }
+
         _queuedMailCheckInProgress = false;
     }
+
     emit _service->actionCompleted(true);
 
     if (_synchronizing) {
@@ -1478,13 +1487,13 @@ void ImapService::Source::emitActionSuccessfullyCompleted()
 ImapService::ImapService(const QMailAccountId &accountId)
     : QMailMessageService(),
       _accountId(accountId),
-      _client(0),
+      _client(nullptr),
       _source(new Source(this)),
       _restartPushEmailTimer(new QTimer(this)),
       _establishingPushEmail(false),
       _idling(false),
       _accountWasPushEnabled(false),
-      _networkSession(0),
+      _networkSession(nullptr),
       _networkSessionTimer(new QTimer(this))
 {
     QMailAccount account(accountId);
@@ -1502,11 +1511,12 @@ void ImapService::enable()
     _client = new ImapClient(_accountId, this);
     _source->initClientConnections();
     _establishingPushEmail = false;
+
     connect(_client, SIGNAL(progressChanged(uint, uint)), this, SIGNAL(progressChanged(uint, uint)));
-    connect(_client, SIGNAL(progressChanged(uint, uint)), _source, SLOT(resetExpiryTimer()));
     connect(_client, SIGNAL(errorOccurred(int, QString)), this, SLOT(errorOccurred(int, QString)));
     connect(_client, SIGNAL(errorOccurred(QMailServiceAction::Status::ErrorCode, QString)),
             this, SLOT(errorOccurred(QMailServiceAction::Status::ErrorCode, QString)));
+    connect(_client, &ImapClient::progressChanged, _source, &ImapService::Source::resetExpiryTimer);
     connect(_client, &ImapClient::statusChanged, this, &ImapService::handleStatusChange);
     connect(_client, &ImapClient::pushEmailError, this, &ImapService::retryPushEmail);
 
@@ -1548,11 +1558,10 @@ void ImapService::disable()
 
 void ImapService::disablePushEmail()
 {
-    QMailAccountConfiguration accountCfg(_accountId);
-    ImapConfiguration imapCfg(accountCfg);
     _restartPushEmailTimer->stop();
     setPersistentConnectionStatus(false);
     _accountWasPushEnabled = false;
+
     if (_client && _client->pushConnectionsReserved() > 0) {
         releasePushConnections(_client->pushConnectionsReserved());
         _client->setPushConnectionsReserved(0);

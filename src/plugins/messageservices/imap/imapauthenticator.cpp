@@ -69,7 +69,9 @@ QList<QByteArray> ImapAuthenticator::getAuthentication(const ImapConfiguration &
         result.append(QByteArray("AUTHENTICATE ") + auth);
     } else if (svcCfg.mailAuthentication() == QMail::XOAuth2Mechanism) {
         result.append(QByteArray("AUTHENTICATE XOAUTH2"));
-        result.append(QString::fromLatin1("user=%1\001auth=Bearer %2\001\001").arg(credentials.username()).arg(credentials.accessToken()).toUtf8().toBase64());
+        result.append(QString::fromLatin1("user=%1\001auth=Bearer %2\001\001")
+                          .arg(credentials.username())
+                          .arg(credentials.accessToken()).toUtf8().toBase64());
     } else if (svcCfg.mailAuthentication() == QMail::PlainMechanism) {
         QByteArray username(credentials.username().toUtf8());
         QByteArray password(credentials.password().toUtf8());

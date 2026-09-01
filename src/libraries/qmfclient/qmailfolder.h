@@ -77,7 +77,8 @@ public:
 
     QMailFolder();
 
-    QMailFolder(const QString& name, const QMailFolderId& parentFolderId = QMailFolderId(), const QMailAccountId& parentAccountId = QMailAccountId());
+    QMailFolder(const QString& name, const QMailFolderId& parentFolderId = QMailFolderId(),
+                const QMailAccountId& parentAccountId = QMailAccountId());
     explicit QMailFolder(const QMailFolderId& id);
     QMailFolder(const QMailFolder& other);
 

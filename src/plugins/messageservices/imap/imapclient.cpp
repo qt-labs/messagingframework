@@ -166,20 +166,24 @@ void setFolderFlags(QMailAccount *account, QMailFolder *folder, const QString &f
                 // So call exportUpdates before retrieveFolderList
                 QMailMessageKey oldFolderKey(QMailMessageKey::parentFolderId(oldFolderId));
                 if (!QMailStore::instance()->updateMessagesMetaData(oldFolderKey, messageFlag, false)) {
-                    qCWarning(lcMailStore) << "Unable to update messages in folder" << oldFolderId << "to remove flag" << flagNames;
+                    qCWarning(lcMailStore) << "Unable to update messages in folder" << oldFolderId
+                                           << "to remove flag" << flagNames;
                 }
                 if (!QMailStore::instance()->updateFolder(&oldFolder)) {
-                    qCWarning(lcMailStore) << "Unable to update folder" << oldFolderId << "to remove flag" << flagNames;
+                    qCWarning(lcMailStore) << "Unable to update folder" << oldFolderId
+                                           << "to remove flag" << flagNames;
                 }
             }
             if (!oldFolderId.isValid() || (oldFolderId != folder->id())) {
                 account->setStandardFolder(standardFolder, folder->id());
                 if (!QMailStore::instance()->updateAccount(account)) {
-                    qCWarning(lcMailStore) << "Unable to update account" << account->id() << "to set flag" << flagNames;
+                    qCWarning(lcMailStore) << "Unable to update account" << account->id()
+                                           << "to set flag" << flagNames;
                 }
                 QMailMessageKey folderKey(QMailMessageKey::parentFolderId(folder->id()));
                 if (!QMailStore::instance()->updateMessagesMetaData(folderKey, messageFlag, true)) {
-                    qCWarning(lcMailStore) << "Unable to update messages in folder" << folder->id() << "to set flag" << flagNames;
+                    qCWarning(lcMailStore) << "Unable to update messages in folder" << folder->id()
+                                           << "to set flag" << flagNames;
                 }
             }
         }
@@ -368,7 +372,7 @@ void IdleProtocol::idleCommandTransition(const ImapCommand command, const Operat
         // Ensure connection is closed on logout
         close();
         break;
-    default:        //default = all critical messages
+    default: // default = all critical messages
         qCWarning(lcIMAP) << objectName() << "IDLE: IMAP Idle unknown command response: " << command;
     }
 }
@@ -559,7 +563,7 @@ void ImapClient::checkCommandResponse(ImapCommand command, OperationStatus statu
             operationFailed(QMailServiceAction::Status::ErrFileSystemFull, _protocol.lastError());
             break;
 
-        default:        //default = all critical messages
+        default: // default = all critical messages
         {
             QString msg;
             if (_accountId.isValid()) {
@@ -750,7 +754,9 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
                 updateFolderCountStatus(&folder);
             }
 
-            QString supportsForwarded(properties.permanentFlags.contains("$Forwarded", Qt::CaseInsensitive) ? "true" : QString());
+            QString supportsForwarded(properties.permanentFlags.contains("$Forwarded", Qt::CaseInsensitive)
+                                          ? "true" : QString());
+
             if (folder.customField("qmf-supports-forwarded") != supportsForwarded) {
                 if (supportsForwarded.isEmpty()) {
                     folder.removeCustomField("qmf-supports-forwarded");
@@ -833,7 +839,7 @@ void ImapClient::mailboxListed(const QString &flags, const QString &path)
             }
 
             if (QString::compare(path, "INBOX", Qt::CaseInsensitive) == 0) {
-                //don't let inbox be deleted/renamed
+                // don't let inbox be deleted/renamed
                 folder.setStatus(QMailFolder::DeletionPermitted, false);
                 folder.setStatus(QMailFolder::RenamePermitted, false);
                 folderFlags.append(" \\Inbox");
@@ -853,7 +859,7 @@ void ImapClient::mailboxListed(const QString &flags, const QString &path)
                     qCWarning(lcMailStore) << "Unable to add folder for account:" << folder.parentAccountId()
                                            << "path:" << folder.path();
                 } else {
-                    //set inbox as standardFolder
+                    // set inbox as standardFolder
                     if (QString::compare(path, "INBOX", Qt::CaseInsensitive) == 0) {
                         account.setStandardFolder(QMailFolder::InboxFolder, folder.id());
                         if (!QMailStore::instance()->updateAccount(&account)) {
