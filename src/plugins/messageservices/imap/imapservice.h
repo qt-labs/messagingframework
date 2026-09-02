@@ -70,7 +70,6 @@ private slots:
 
     void handleStatusChange(const QString &text);
     // Only used for IMAP IDLE, network session for other request types are managed by the caller.
-    void createIdleSession();
     void openIdleSession();
     void closeIdleSession();
 

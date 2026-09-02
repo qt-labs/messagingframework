@@ -62,7 +62,8 @@ public:
     ~ImapClient();
 
     QMailAccountId account() const;
-    void requestRapidClose() { _requestRapidClose = true; } // Close connection ASAP, unless interactive checking occurred recently
+    // Close connection ASAP, unless interactive checking occurred recently
+    void requestRapidClose();
 
     void newConnection();
     void cancelTransfer(QMailServiceAction::Status::ErrorCode code, const QString &text);
@@ -84,11 +85,10 @@ public:
     QStringList deletedMessages(const QMailFolderId &folderId) const;
 
     bool isPushEmailEstablished();
-    void stopIdleConnections() { monitor(QMailFolderIdList()); }
+    void stopIdleConnections();
     QMailFolderIdList configurationIdleFolderIds();
     void removeAllFromBuffer(QMailMessage *message);
-    int pushConnectionsReserved() { return _pushConnectionsReserved; }
-    void setPushConnectionsReserved(int reserved) { _pushConnectionsReserved = reserved; }
+    int pushConnectionsReserved();
     void setIdlingForFolder(const QMailFolderId &id); // internal
 
 signals:

@@ -1496,6 +1496,12 @@ ImapService::ImapService(const QMailAccountId &accountId)
       _networkSession(nullptr),
       _networkSessionTimer(new QTimer(this))
 {
+    // Fail after 10 sec if no network reply is received
+    _networkSessionTimer->setSingleShot(true);
+    _networkSessionTimer->setInterval(10000);
+    connect(_networkSessionTimer, &QTimer::timeout,
+            this, &ImapService::onSessionConnectionTimeout);
+
     QMailAccount account(accountId);
     if (account.status() & QMailAccount::Enabled) {
         enable();
@@ -1534,15 +1540,11 @@ void ImapService::enablePushEmail()
     QMailAccountConfiguration accountCfg(_accountId);
     ImapConfiguration imapCfg(accountCfg);
 
-    int allowedConnections = reservePushConnections(imapCfg.pushFolders().count());
-    if (allowedConnections > 0) {
-        _client->setPushConnectionsReserved(allowedConnections);
-        _accountWasPushEnabled = true;
-        _previousPushFolders = imapCfg.pushFolders();
-        _pushRetry = ThirtySeconds;
+    _accountWasPushEnabled = true;
+    _previousPushFolders = imapCfg.pushFolders();
+    _pushRetry = ThirtySeconds;
 
-        initiatePushEmail();
-    }
+    initiatePushEmail();
 }
 
 void ImapService::disable()
@@ -1563,8 +1565,6 @@ void ImapService::disablePushEmail()
     _accountWasPushEnabled = false;
 
     if (_client && _client->pushConnectionsReserved() > 0) {
-        releasePushConnections(_client->pushConnectionsReserved());
-        _client->setPushConnectionsReserved(0);
         _client->stopIdleConnections();
     }
     closeIdleSession();
@@ -1667,7 +1667,7 @@ void ImapService::initiatePushEmail()
     setPersistentConnectionStatus(false);
 
     if (!_networkSession || _networkSession->state() != IdleNetworkSession::Connected) {
-        createIdleSession();
+        openIdleSession();
         return;
     }
 
@@ -1730,16 +1730,6 @@ void ImapService::handleStatusChange(const QString &text)
     updateStatus(QMailServiceAction::Status::ErrNoError, text, _accountId);
 }
 
-void ImapService::createIdleSession()
-{
-    // Fail after 10 sec if no network reply is received
-    _networkSessionTimer->setSingleShot(true);
-    _networkSessionTimer->setInterval(10000);
-    connect(_networkSessionTimer, &QTimer::timeout,
-            this, &ImapService::onSessionConnectionTimeout);
-    openIdleSession();
-}
-
 void ImapService::openIdleSession()
 {
     closeIdleSession();
@@ -1769,7 +1759,6 @@ void ImapService::closeIdleSession()
         _networkSession = nullptr;
     }
     _networkSessionTimer->stop();
-    _networkSessionTimer->disconnect();
 }
 
 // TODO: this is currently dead code due to qt6 having removed QNetworkSession and QNetworkConfiguration.
@@ -1793,9 +1782,7 @@ void ImapService::onSessionOpened()
     if (!_networkSession || sender() != _networkSession)
         return;
 
-    // stop timer
     _networkSessionTimer->stop();
-    _networkSessionTimer->disconnect();
 
     qCDebug(lcIMAP) << "IDLE session opened, state" << _networkSession->state();
     connect(_networkSession, &IdleNetworkSession::stateChanged,

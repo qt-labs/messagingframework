@@ -57,6 +57,8 @@
 
 namespace {
 
+int MaximumPushConnections = 10;
+
 class MessageFlushedWrapper : public QMailMessageBufferFlushCallback
 {
     ImapStrategyContext *context;
@@ -407,7 +409,7 @@ ImapClient::ImapClient(const QMailAccountId &id, QObject* parent)
       _credentials(QMailCredentialsFactory::getCredentialsHandlerForAccount(QMailAccountConfiguration(id)))
 {
     static int count(0);
-    ++count;
+    count++;
 
     _protocol.setObjectName(QString("%1").arg(count));
     _strategyContext = new ImapStrategyContext(this);
@@ -631,8 +633,7 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
 
         // We are now connected
         QMailFolderIdList idleFolders;
-        if (_protocol.supportsCapability("IDLE")
-            && _pushConnectionsReserved) {
+        if (_protocol.supportsCapability("IDLE")) {
             idleFolders = configurationIdleFolderIds();
         }
         // Start / stop idle connections, to keep only idles
@@ -688,9 +689,8 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
 
         // After logging in server capabilities reported may change so we need to
         // check if IDLE is already established, when enabled
-        if (_protocol.supportsCapability("IDLE") && _pushConnectionsReserved) {
-            // This is a noop when IDLE is already established
-            // for the given folders
+        if (_protocol.supportsCapability("IDLE")) {
+            // This is a noop when IDLE is already established for the given folders
             monitor(configurationIdleFolderIds());
             emit statusChanged(tr("Logging in idle connection"));
         }
@@ -828,8 +828,9 @@ void ImapClient::mailboxListed(const QString &flags, const QString &path)
             folder.setDisplayName(QMailCodec::decodeModifiedUtf7(*it));
             folder.setStatus(QMailFolder::Incoming, true);
             // Set synchronization flag the same as parent folder, or true if there's no parent
-            bool synchronize = parentId.isValid() ?
-                        QMailFolder(parentId).status() & QMailFolder::SynchronizationEnabled : true;
+            bool synchronize = parentId.isValid()
+                                   ? QMailFolder(parentId).status() & QMailFolder::SynchronizationEnabled
+                                   : true;
             folder.setStatus(QMailFolder::SynchronizationEnabled, synchronize);
 
             // The reported flags pertain to the listed folder only
@@ -1061,7 +1062,7 @@ static bool updateParts(QMailMessagePart &part, const QByteArray &bodyData)
                     if (!updateParts(part.partAt(partIndex), partBodyData))
                         return false;
 
-                    ++partIndex;
+                    partIndex++;
                 }
 
                 if (bodyData[nextPos] == CarriageReturnChar) {
@@ -1491,6 +1492,11 @@ QMailAccountId ImapClient::account() const
     return _accountId;
 }
 
+void ImapClient::requestRapidClose()
+{
+    _requestRapidClose = true;
+}
+
 void ImapClient::handleSocketConnectionError(int code, const QString &msg)
 {
     operationFailed(code, msg);
@@ -1611,15 +1617,15 @@ QStringList ImapClient::serverUids(QMailMessageKey key) const
 
 QMailMessageKey ImapClient::messagesKey(const QMailFolderId &folderId) const
 {
-    return (QMailMessageKey::parentAccountId(_accountId) &
-            QMailDisconnected::sourceKey(folderId));
+    return (QMailMessageKey::parentAccountId(_accountId)
+            & QMailDisconnected::sourceKey(folderId));
 }
 
 QMailMessageKey ImapClient::trashKey(const QMailFolderId &folderId) const
 {
-    return (QMailMessageKey::parentAccountId(_accountId) &
-            QMailDisconnected::sourceKey(folderId) &
-            QMailMessageKey::status(QMailMessage::Trash));
+    return (QMailMessageKey::parentAccountId(_accountId)
+            & QMailDisconnected::sourceKey(folderId)
+            & QMailMessageKey::status(QMailMessage::Trash));
 }
 
 QStringList ImapClient::deletedMessages(const QMailFolderId &folderId) const
@@ -1653,8 +1659,18 @@ bool ImapClient::isPushEmailEstablished()
     return !_monitored.isEmpty() && _waitingForIdleFolderIds.isEmpty();
 }
 
+void ImapClient::stopIdleConnections()
+{
+    monitor(QMailFolderIdList());
+}
+
 void ImapClient::setIdlingForFolder(const QMailFolderId &id)
 {
+    if (!_monitored.contains(id)) {
+        qCWarning(lcIMAP) << Q_FUNC_INFO << "called with id not existing in existing connections" << id;
+        return;
+    }
+
     if (_monitored.value(id)->connected()
         && !_idleTimer.isActive()) {
         _idleTimer.start();
@@ -1699,6 +1715,7 @@ void ImapClient::monitor(const QMailFolderIdList &mailboxIds)
             protocol->close(); // Instead of closing could reuse below in some cases
             delete protocol;
             _waitingForIdleFolderIds.removeOne(id);
+            _pushConnectionsReserved--;
         }
     }
 
@@ -1711,8 +1728,14 @@ void ImapClient::monitor(const QMailFolderIdList &mailboxIds)
 
     foreach (QMailFolderId id, mailboxIds) {
         if (!_monitored.contains(id)) {
+            if (_pushConnectionsReserved == MaximumPushConnections) {
+                qCWarning(lcIMAP) << "Maximum idle session count reached, not tracking all configured folders";
+                break;
+            }
+
             qCDebug(lcIMAP) << "start monitoring folder" << id;
-            ++count;
+            _pushConnectionsReserved++;
+            count++;
             IdleProtocol *protocol = new IdleProtocol(this, QMailFolder(id), _credentials);
             protocol->setObjectName(QString("I:%1").arg(count));
             _monitored.insert(id, protocol);
@@ -1758,6 +1781,11 @@ void ImapClient::removeAllFromBuffer(QMailMessage *message)
     }
 }
 
+int ImapClient::pushConnectionsReserved()
+{
+    return _pushConnectionsReserved;
+}
+
 void ImapClient::logIn()
 {
     emit statusChanged(tr("Logging in"));
@@ -1769,8 +1797,7 @@ void ImapClient::logIn()
                 this, &ImapClient::onCredentialsStatusChanged);
     } else {
         qCWarning(lcIMAP) << "credential retrieval failed with:" << _credentials->lastError();
-        operationFailed(QMailServiceAction::Status::ErrConfiguration,
-                        _credentials->lastError());
+        operationFailed(QMailServiceAction::Status::ErrConfiguration, _credentials->lastError());
     }
 }
 

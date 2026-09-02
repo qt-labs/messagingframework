@@ -282,9 +282,6 @@ public:
     virtual bool requiresReregistration() const { return false; }
     virtual bool usesConcurrentActions() const { return false; }
 
-    static int reservePushConnections(int connections);
-    static void releasePushConnections(int connections);
-
 public Q_SLOTS:
     virtual bool cancelOperation(QMailServiceAction::Status::ErrorCode code, const QString &text) = 0;
     virtual bool cancelOperation(QMailServiceAction::Status::ErrorCode code, const QString &text, quint64 action);
