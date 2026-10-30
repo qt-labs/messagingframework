@@ -633,7 +633,7 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
 
         // We are now connected
         QMailFolderIdList idleFolders;
-        if (_protocol.supportsCapability("IDLE")) {
+        if (_protocol.supportsIdling()) {
             idleFolders = configurationIdleFolderIds();
         }
         // Start / stop idle connections, to keep only idles
@@ -677,10 +677,10 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
 
         if (((account.status() & QMailAccount::CanReferenceExternalData) && !supportsReferences)
             || (!(account.status() & QMailAccount::CanReferenceExternalData) && supportsReferences)
-            || (imapCfg.pushCapable() != _protocol.supportsCapability("IDLE"))
+            || (imapCfg.pushCapable() != _protocol.supportsIdling())
             || (imapCfg.capabilities() != _protocol.capabilities())) {
             account.setStatus(QMailAccount::CanReferenceExternalData, supportsReferences);
-            imapCfg.setPushCapable(_protocol.supportsCapability("IDLE"));
+            imapCfg.setPushCapable(_protocol.supportsIdling());
             imapCfg.setCapabilities(_protocol.capabilities());
             if (!QMailStore::instance()->updateAccount(&account, &config)) {
                 qCWarning(lcMailStore) << "Unable to update account" << account.id() << "to set imap4 configuration";
@@ -689,7 +689,7 @@ void ImapClient::commandTransition(ImapCommand command, OperationStatus status)
 
         // After logging in server capabilities reported may change so we need to
         // check if IDLE is already established, when enabled
-        if (_protocol.supportsCapability("IDLE")) {
+        if (_protocol.supportsIdling()) {
             // This is a noop when IDLE is already established for the given folders
             monitor(configurationIdleFolderIds());
             emit statusChanged(tr("Logging in idle connection"));
@@ -1651,12 +1651,7 @@ void ImapClient::updateFolderCountStatus(QMailFolder *folder)
 
 bool ImapClient::isPushEmailEstablished()
 {
-    QMailAccountConfiguration config(account());
-    ImapConfiguration imapCfg(config);
-    if (!imapCfg.pushEnabled() || configurationIdleFolderIds().isEmpty())
-        return true;
-
-    return !_monitored.isEmpty() && _waitingForIdleFolderIds.isEmpty();
+    return _monitored.isEmpty() || _waitingForIdleFolderIds.isEmpty();
 }
 
 void ImapClient::stopIdleConnections()
@@ -1721,8 +1716,7 @@ void ImapClient::monitor(const QMailFolderIdList &mailboxIds)
 
     QMailAccountConfiguration config(account());
     ImapConfiguration imapCfg(config);
-    if (!_protocol.supportsCapability("IDLE")
-        || !imapCfg.pushEnabled()) {
+    if (!_protocol.supportsIdling() || !imapCfg.pushEnabled()) {
         return;
     }
 

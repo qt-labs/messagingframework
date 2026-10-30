@@ -3454,6 +3454,12 @@ bool ImapProtocol::supportsCapability(const QString& name) const
     return _capabilities.contains(name);
 }
 
+bool ImapProtocol::supportsIdling() const
+{
+    // IDLE is built-in in IMAP4rev2, see RFC9051
+    return _capabilities.contains("IDLE") || _capabilities.contains("IMAP4rev2");
+}
+
 void ImapProtocol::sendCapability()
 {
     _fsm->setState(&_fsm->capabilityState);

@@ -165,6 +165,7 @@ public:
     void setCapabilities(const QStringList &);
 
     bool supportsCapability(const QString& name) const;
+    bool supportsIdling() const;
 
     const ImapMailboxProperties &mailbox() const { return _mailbox; }
 
