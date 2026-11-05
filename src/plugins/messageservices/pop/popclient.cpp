@@ -153,6 +153,10 @@ void PopClient::testConnection()
         return;
     }
 
+    if (credentials && !credentials->init(popCfg)) {
+        qCWarning(lcPOP) << "credential initialisation error:" << credentials->lastError();
+    }
+
     createTransport();
 
     status = Init;
