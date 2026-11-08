@@ -52,6 +52,8 @@ private slots:
 
     void test_connection();
     void test_auth();
+    void test_capabilities_data();
+    void test_capabilities();
 
 private:
     SmtpClient *mClient = nullptr;
@@ -129,6 +131,64 @@ void tst_SmtpClient::test_auth()
     QCOMPARE(updateStatus.takeFirst().first(), QString::fromLatin1("DNS lookup"));
     QCOMPARE(updateStatus.takeFirst().first(), QString::fromLatin1("Connected"));
     QCOMPARE(updateStatus.takeFirst().first(), QString::fromLatin1("Connected"));
+}
+
+Q_DECLARE_METATYPE(QMailTransport::EncryptType)
+void tst_SmtpClient::test_capabilities_data()
+{
+    QTest::addColumn<QString>("server");
+    QTest::addColumn<int>("port");
+    QTest::addColumn<QMailTransport::EncryptType>("encryption");
+    QTest::addColumn<int>("authMechanism");
+
+    QTest::newRow("smtp.free.fr NONE") << "smtp.free.fr"
+                                       << 25 << QMailTransport::Encrypt_NONE << int(QMail::NoMechanism);
+
+    // Expose AUTH before and after encryption is established.
+    QTest::newRow("smtp.free.fr STARTTLS") << "smtp.free.fr"
+                                           << 587 << QMailTransport::Encrypt_TLS << int(QMail::CramMd5Mechanism);
+
+    // Don't expose AUTH before STARTTLS is done.
+    QTest::newRow("smtp.gmail.com STARTTLS") << "smtp.gmail.com"
+                                             << 587 << QMailTransport::Encrypt_TLS << int(QMail::XOAuth2Mechanism);
+
+    QTest::newRow("smtp.strato.de SSL") << "smtp.strato.de"
+                                        << 465 << QMailTransport::Encrypt_SSL << int(QMail::PlainMechanism);
+}
+
+void tst_SmtpClient::test_capabilities()
+{
+    QMailAccount account;
+    account.setName("Test account for fetching capabilities with SMTP");
+    account.setMessageType(QMailMessage::Email);
+    account.setCustomField("test_account", "true");
+
+    QFETCH(QString, server);
+    QFETCH(int, port);
+    QFETCH(QMailTransport::EncryptType, encryption);
+    QFETCH(int, authMechanism);
+
+    QMailAccountConfiguration config;
+    config.addServiceConfiguration("smtp");
+    SmtpConfigurationEditor smtp(&config);
+    smtp.setSmtpServer(server);
+    smtp.setSmtpPort(port);
+    smtp.setSmtpEncryption(encryption);
+    smtp.setSmtpAuthFromCapabilities(true);
+
+    QVERIFY(QMailStore::instance()->addAccount(&account, &config));
+
+    SmtpClient *client = new SmtpClient(account.id(), this);
+
+    QSignalSpy completed(client, &SmtpClient::fetchCapabilitiesFinished);
+
+    client->fetchCapabilities();
+    QVERIFY(completed.wait(5000));
+    delete client;
+
+    QMailAccountConfiguration modConfig(account.id());
+    SmtpConfiguration modSmtp(modConfig);
+    QCOMPARE(modSmtp.smtpAuthentication(), authMechanism);
 }
 
 QTEST_MAIN(tst_SmtpClient)

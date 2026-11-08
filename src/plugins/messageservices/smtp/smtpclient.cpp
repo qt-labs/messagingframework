@@ -516,10 +516,15 @@ void SmtpClient::nextAction(const QString &response)
                     }
                 }
 
-                // Available authentication mechanisms
                 SmtpConfigurationEditor smtpCfg(&config);
-                if (smtpCfg.smtpAuthentication() == QMail::NoMechanism
+                // Some servers provide the AUTH capabilities only over encrypted transport.
+                // So wait for the encrypted pass in case of SSL and STARTTLS mechanisms.
+                bool storeAuthMechanism = (transport->isEncrypted()
+                                           || smtpCfg.smtpEncryption() == QMailTransport::Encrypt_NONE);
+                if (storeAuthMechanism
+                    && smtpCfg.smtpAuthentication() == QMail::NoMechanism
                     && smtpCfg.smtpAuthFromCapabilities()) {
+                    // Available authentication mechanisms
                     QStringList authCaps;
                     foreach (QString const& capability, capabilities) {
                         if (capability.startsWith("AUTH", Qt::CaseInsensitive)) {
@@ -527,7 +532,8 @@ void SmtpClient::nextAction(const QString &response)
                         }
                     }
                     QMail::SaslMechanism authType = QMailAuthenticator::authFromCapabilities(authCaps);
-                    if (authType != QMail::NoMechanism) {
+                    if (authType != QMail::NoMechanism
+                        && (transport->isEncrypted() || !authCaps.isEmpty())) {
                         smtpCfg.setSmtpAuthentication(authType);
                         if (!QMailStore::instance()->updateAccountConfiguration(&config)) {
                             qCWarning(lcSMTP) << "Unable to update account" << config.id()
@@ -536,16 +542,9 @@ void SmtpClient::nextAction(const QString &response)
                     }
                 }
 
-                if (fetchingCapabilities) {
-                    status = Done;
-                    transport->close();
-                    qCDebug(lcSMTP) << "Closed connection";
-                    emit fetchCapabilitiesFinished();
-                } else {
-                    // Proceed to TLS negotiation
-                    status = StartTLS;
-                    nextAction(QString());
-                }
+                // Proceed to TLS negotiation, if any
+                status = StartTLS;
+                nextAction(QString());
             }
         } else {
             operationFailed(QMailServiceAction::Status::ErrUnknownResponse, response);
@@ -560,6 +559,11 @@ void SmtpClient::nextAction(const QString &response)
         if (useTLS && !transport->isEncrypted()) {
             sendCommand("STARTTLS");
             status = TLS;
+        } else if (fetchingCapabilities) {
+            status = Done;
+            transport->close();
+            qCDebug(lcSMTP) << "Closed connection";
+            emit fetchCapabilitiesFinished();
         } else {
             status = Connected;
             nextAction(QString());
