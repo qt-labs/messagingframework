@@ -140,20 +140,25 @@ void tst_SmtpClient::test_capabilities_data()
     QTest::addColumn<int>("port");
     QTest::addColumn<QMailTransport::EncryptType>("encryption");
     QTest::addColumn<int>("authMechanism");
+    QTest::addColumn<int>("sizeLimit");
 
     QTest::newRow("smtp.free.fr NONE") << "smtp.free.fr"
-                                       << 25 << QMailTransport::Encrypt_NONE << int(QMail::NoMechanism);
+                                       << 25 << QMailTransport::Encrypt_NONE
+                                       << int(QMail::NoMechanism) << 78643200;
 
     // Expose AUTH before and after encryption is established.
     QTest::newRow("smtp.free.fr STARTTLS") << "smtp.free.fr"
-                                           << 587 << QMailTransport::Encrypt_TLS << int(QMail::CramMd5Mechanism);
+                                           << 587 << QMailTransport::Encrypt_TLS
+                                           << int(QMail::CramMd5Mechanism) << 78643200;
 
     // Don't expose AUTH before STARTTLS is done.
     QTest::newRow("smtp.gmail.com STARTTLS") << "smtp.gmail.com"
-                                             << 587 << QMailTransport::Encrypt_TLS << int(QMail::XOAuth2Mechanism);
+                                             << 587 << QMailTransport::Encrypt_TLS
+                                             << int(QMail::XOAuth2Mechanism) << 35882577;
 
     QTest::newRow("smtp.strato.de SSL") << "smtp.strato.de"
-                                        << 465 << QMailTransport::Encrypt_SSL << int(QMail::PlainMechanism);
+                                        << 465 << QMailTransport::Encrypt_SSL
+                                        << int(QMail::PlainMechanism) << 104857600;
 }
 
 void tst_SmtpClient::test_capabilities()
@@ -167,6 +172,7 @@ void tst_SmtpClient::test_capabilities()
     QFETCH(int, port);
     QFETCH(QMailTransport::EncryptType, encryption);
     QFETCH(int, authMechanism);
+    QFETCH(int, sizeLimit);
 
     QMailAccountConfiguration config;
     config.addServiceConfiguration("smtp");
@@ -189,6 +195,7 @@ void tst_SmtpClient::test_capabilities()
     QMailAccountConfiguration modConfig(account.id());
     SmtpConfiguration modSmtp(modConfig);
     QCOMPARE(modSmtp.smtpAuthentication(), authMechanism);
+    QCOMPARE(modSmtp.value("messageSizeLimit").toInt(), sizeLimit);
 }
 
 QTEST_MAIN(tst_SmtpClient)

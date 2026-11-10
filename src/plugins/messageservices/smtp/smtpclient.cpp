@@ -491,6 +491,7 @@ void SmtpClient::nextAction(const QString &response)
                 // Now that we know the capabilities, check for Reference support
                 bool supportsBURL(false);
                 bool supportsChunking(false);
+                int sizeLimit = 0;
 
                 foreach (const QString &capability, capabilities) {
                     // Although technically only BURL is needed for Reference support, CHUNKING
@@ -499,6 +500,8 @@ void SmtpClient::nextAction(const QString &response)
                         supportsBURL = true;
                     } else if (capability == "CHUNKING") {
                         supportsChunking = true;
+                    } else if (capability.startsWith("SIZE ")) {
+                        sizeLimit = capability.mid(5).toInt();
                     }
                 }
 
@@ -517,6 +520,7 @@ void SmtpClient::nextAction(const QString &response)
                 }
 
                 SmtpConfigurationEditor smtpCfg(&config);
+                bool configModified = false;
                 // Some servers provide the AUTH capabilities only over encrypted transport.
                 // So wait for the encrypted pass in case of SSL and STARTTLS mechanisms.
                 bool storeAuthMechanism = (transport->isEncrypted()
@@ -535,11 +539,19 @@ void SmtpClient::nextAction(const QString &response)
                     if (authType != QMail::NoMechanism
                         && (transport->isEncrypted() || !authCaps.isEmpty())) {
                         smtpCfg.setSmtpAuthentication(authType);
-                        if (!QMailStore::instance()->updateAccountConfiguration(&config)) {
-                            qCWarning(lcSMTP) << "Unable to update account" << config.id()
-                                              << "with auth type" << authType;
-                        }
+                        configModified = true;
                     }
+                }
+
+                // Store the SIZE extension as an account setting.
+                if (sizeLimit != smtpCfg.value("messageSizeLimit", "0").toInt()) {
+                    smtpCfg.setValue("messageSizeLimit", QString::number(sizeLimit));
+                    configModified = true;
+                }
+
+                if (configModified
+                    && !QMailStore::instance()->updateAccountConfiguration(&config)) {
+                    qCWarning(lcSMTP) << "Unable to update account" << config.id();
                 }
 
                 // Proceed to TLS negotiation, if any
